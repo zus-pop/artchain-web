@@ -1,16 +1,37 @@
+"use client";
+
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox"; // Giả sử bạn có component Checkbox
-import DatingProfileScroller from "./DatingProfileScroller";
-import Link from "next/link";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function LoginForm({
   className,
+  onToggle,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & {
+  onToggle?: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    staySignedIn: false,
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Login:", formData);
+  };
 
   return (
     <div
@@ -20,24 +41,47 @@ export function LoginForm({
       <Card className="overflow-hidden p-0 bg-white">
         {/* Giữ nguyên grid-cols-2 cho bố cục 2 cột */}
         <CardContent className="grid p-0">
-          <form className="p-6 md:p-8 flex flex-col items-center justify-center">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8 flex flex-col items-center justify-center">
             <div className="flex flex-col items-center text-center mb-8 w-full max-w-xs md:max-w-sm">
               <h1 className="text-5xl font-bold text-gray-900 mb-5">Sign in</h1>
             </div>
             {/* Sử dụng w-full max-w-xs/sm để giới hạn chiều rộng của form bên trong cột */}
             <div className="flex flex-col gap-6 w-full max-w-xs md:max-w-sm">
-              {/* Trường nhập liệu số điện thoại */}
+              {/* Username field */}
               <div className="grid gap-3">
                 <Label
-                  htmlFor="phone-number"
+                  htmlFor="username"
                   className="text-xs font-semibold uppercase text-gray-700"
                 >
-                  Phone number
+                  Username
                 </Label>
                 <Input
-                  id="phone-number"
-                  type="tel"
-                  placeholder="Enter phone number"
+                  id="username"
+                  name="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  required
+                  className="bg-input text-gray-900 border-border placeholder:text-gray-400 h-12"
+                />
+              </div>
+              
+              {/* Password field */}
+              <div className="grid gap-3">
+                <Label
+                  htmlFor="password"
+                  className="text-xs font-semibold uppercase text-gray-700"
+                >
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
                   required
                   className="bg-input text-gray-900 border-border placeholder:text-gray-400 h-12"
                 />
@@ -45,7 +89,14 @@ export function LoginForm({
               <div className="h-px bg-gray-400 my-2 w-full" />
               {/* Checkbox "Stay signed in" */}
               <div className="flex items-center space-x-2">
-                <Checkbox id="stay-signed-in" />
+                <Checkbox 
+                  id="stay-signed-in" 
+                  checked={formData.staySignedIn}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, staySignedIn: checked as boolean }))
+                  }
+                  className="data-[state=checked]:bg-black data-[state=checked]:border-black"
+                />
                 <Label htmlFor="stay-signed-in" className="text-sm text-gray-700">
                   Stay signed in
                 </Label>
@@ -71,15 +122,13 @@ export function LoginForm({
                   {"Can't sign in?"}
                 </span>
 
-                {/* <a
-                  href="/register"
-                  className="text-sm font-semibold uppercase underline-offset-4 hover:underline text-gray-900"
+                <button
+                  type="button"
+                  onClick={onToggle}
+                  className="cursor-pointer text-sm font-semibold uppercase underline-offset-4 hover:underline text-gray-900"
                 >
                   Create account
-                </a> */}
-                <Link href="/register" className="text-sm font-semibold uppercase underline-offset-4 hover:underline text-gray-900">
-                  Create account
-                </Link>
+                </button>
               </div>
             </div>
           </form>
