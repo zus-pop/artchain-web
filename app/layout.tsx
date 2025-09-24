@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Iridescence from "@/components/Iridescence";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,8 +26,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning
       >
+        <div className="fixed inset-0 -z-10">
+          <Iridescence
+            color={[0.8157, 0.3373, 0.4157]}
+            mouseReact={false}
+            amplitude={0.1}
+            speed={0.5}
+          />
+        </div>
         {children}
       </body>
     </html>
