@@ -1,8 +1,9 @@
+import Iridescence from "@/components/Iridescence";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
+import ReactQueryProvider from "@/components/react-query-provider";
 import "./globals.css";
-import Iridescence from "@/components/Iridescence";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,17 +27,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
-        <div className="fixed inset-0 -z-10">
-          <Iridescence
-            color={[0.8157, 0.3373, 0.4157]}
-            mouseReact={false}
-            amplitude={0.1}
-            speed={0.5}
-          />
-        </div>
-        {children}
+        <ReactQueryProvider>
+          <Toaster richColors />
+          <div className="fixed inset-0 -z-10">
+            <Iridescence
+              color={[0.8157, 0.3373, 0.4157]}
+              mouseReact={false}
+              amplitude={0.1}
+              speed={0.5}
+            />
+          </div>
+          {children}
+        </ReactQueryProvider>
       </body>
     </html>
   );
