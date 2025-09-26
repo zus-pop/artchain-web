@@ -14,7 +14,6 @@ export default function Home() {
       <main className="flex flex-col items-center text-center w-full">
         {/* Phần Hero Section chứa tiêu đề, mô tả và các nút tải */}
         <HeroSection />
-
         {/* Phần Mockup hiển thị giao diện web và mobile */}
         <MockupSection />
 
