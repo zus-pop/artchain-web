@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence, easeInOut } from "framer-motion";
 import { Menu, X, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import LanguageDropdown from "@/components/LanguageDropdown";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
@@ -18,6 +19,8 @@ export default function Header2() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const pathname = usePathname();
+  const router = useRouter();
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
 
@@ -28,6 +31,22 @@ export default function Header2() {
     { name: t.prizes, href: "/prizes", key: "prizes" },
   ];
 
+  // Aggressive prefetching - preload all routes immediately
+  useEffect(() => {
+    const prefetchRoutes = async () => {
+      const routes = ["/", "/competitions", "/gallery", "/prizes", "/auth"];
+      routes.forEach(route => {
+        if (route !== pathname) {
+          router.prefetch(route);
+        }
+      });
+    };
+    
+    // Prefetch after a short delay to not block initial render
+    const timer = setTimeout(prefetchRoutes, 100);
+    return () => clearTimeout(timer);
+  }, [pathname, router]);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
@@ -35,6 +54,14 @@ export default function Header2() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Instant navigation handler
+  const handleNavClick = (href: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    if (href !== pathname) {
+      router.push(href);
+    }
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -99,9 +126,9 @@ export default function Header2() {
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
             >
               <Link
-                prefetch={false}
                 href="/"
                 className="flex items-center space-x-3"
+                onClick={(e) => handleNavClick("/", e)}
               >
                 <div className="relative">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 shadow-lg">
@@ -127,41 +154,61 @@ export default function Header2() {
             </motion.div>
 
             <nav className="hidden items-center space-x-1 lg:flex">
-              {navItems.map((item, index) => (
-                <motion.div
-                  key={item.key}
-                  variants={itemVariants}
-                  className="relative"
-                  onMouseEnter={() => setHoveredItem(item.key)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <Link
-                    prefetch={false}
-                    href={item.href}
-                    className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-500 ${
-                      isScrolled 
-                        ? "text-gray-700 hover:text-gray-900" 
-                        : "text-gray-200 hover:text-white"
-                    }`}
+              {navItems.map((item, index) => {
+                const isActive = pathname === item.href;
+                return (
+                  <motion.div
+                    key={item.key}
+                    variants={itemVariants}
+                    className="relative"
+                    onMouseEnter={() => setHoveredItem(item.key)}
+                    onMouseLeave={() => setHoveredItem(null)}
                   >
-                    {hoveredItem === item.key && (
-                      <motion.div
-                        className="bg-white/10 absolute inset-0 rounded-lg"
-                        layoutId="navbar-hover"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 30,
-                        }}
-                      />
-                    )}
-                    <span className="relative z-10">{item.name}</span>
-                  </Link>
-                </motion.div>
-              ))}
+                    <Link
+                      href={item.href}
+                      onClick={(e) => handleNavClick(item.href, e)}
+                      className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-all duration-500 ${
+                        isActive
+                          ? isScrolled
+                            ? "text-blue-600 bg-blue-50"
+                            : "text-white bg-white/20"
+                          : isScrolled 
+                            ? "text-gray-700 hover:text-gray-900" 
+                            : "text-gray-200 hover:text-white"
+                      }`}
+                    >
+                      {(hoveredItem === item.key && !isActive) && (
+                        <motion.div
+                          className="bg-white/10 absolute inset-0 rounded-lg"
+                          layoutId="navbar-hover"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      {isActive && (
+                        <motion.div
+                          className={`absolute inset-0 rounded-lg ${
+                            isScrolled ? "bg-blue-50" : "bg-white/20"
+                          }`}
+                          layoutId="navbar-active"
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                          }}
+                        />
+                      )}
+                      <span className="relative z-10">{item.name}</span>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </nav>
 
             <motion.div
@@ -173,8 +220,8 @@ export default function Header2() {
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
-                  prefetch={false}
                   href="/auth"
+                  onClick={(e) => handleNavClick("/auth", e)}
                   className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 inline-flex items-center space-x-2 rounded-lg px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200"
                 >
                   <span>{t.join}</span>
@@ -227,18 +274,27 @@ export default function Header2() {
             >
               <div className="space-y-6 p-6">
                 <div className="space-y-1">
-                  {navItems.map((item) => (
-                    <motion.div key={item.key} variants={mobileItemVariants}>
-                      <Link
-                        prefetch={false}
-                        href={item.href}
-                        className="text-white hover:bg-white/10 block rounded-lg px-4 py-3 font-medium transition-colors duration-200"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    </motion.div>
-                  ))}
+                  {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <motion.div key={item.key} variants={mobileItemVariants}>
+                        <Link
+                          href={item.href}
+                          onClick={(e) => {
+                            handleNavClick(item.href, e);
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className={`block rounded-lg px-4 py-3 font-medium transition-colors duration-200 ${
+                            isActive
+                              ? "text-blue-300 bg-blue-500/20"
+                              : "text-white hover:bg-white/10"
+                          }`}
+                        >
+                          {item.name}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
                 </div>
 
                 <motion.div
@@ -246,10 +302,12 @@ export default function Header2() {
                   variants={mobileItemVariants}
                 >
                   <Link
-                    prefetch={false}
                     href="/auth"
+                    onClick={(e) => {
+                      handleNavClick("/auth", e);
+                      setIsMobileMenuOpen(false);
+                    }}
                     className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 block w-full rounded-lg py-3 text-center font-medium transition-all duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {t.login}
                   </Link>

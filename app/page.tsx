@@ -8,7 +8,6 @@ import StatsAndTestimonials from "@/components/sections/StatsAndTestimonials";
 
 export default function Home() {
   return (
-    // Bỏ đi grid layout cũ để các section có thể chiếm toàn bộ chiều rộng
     <div className="font-sans min-h-screen">
       <div className="flex flex-col items-center text-center w-full">
         {/* Phần Hero Section chứa tiêu đề, mô tả và các nút tải */}
