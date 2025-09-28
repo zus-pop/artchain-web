@@ -3,8 +3,10 @@
 import { useLoginMutation } from "@/apis/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FloatingInput } from "@/components/ui/floating-input";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -31,6 +33,8 @@ export function LoginForm({
 }: React.ComponentProps<"div"> & {
   onToggle?: () => void;
 }) {
+  const { currentLanguage } = useLanguageStore();
+  const translations = useTranslation(currentLanguage);
   const {
     control,
     handleSubmit,
@@ -65,115 +69,75 @@ export function LoginForm({
 
   return (
     <div
-      className={cn("flex flex-col gap-6 w-full mx-auto", className)}
+      className={cn("flex flex-col gap-3 w-full mx-auto", className)}
       {...props}
     >
       <Card className="overflow-hidden p-0 bg-white">
         {/* Giữ nguyên grid-cols-2 cho bố cục 2 cột */}
         <CardContent className="grid p-0">
-          <form className="p-6 md:p-8 flex flex-col items-center justify-center">
-            <div className="flex flex-col items-center text-center mb-8 w-full max-w-xs md:max-w-sm">
-              <h1 className="text-5xl font-bold text-gray-900 mb-5">Sign in</h1>
+          <form className="p-4 md:p-6 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center text-center mb-4 w-full max-w-xs md:max-w-sm">
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">{translations.signIn}</h1>
             </div>
             {/* Sử dụng w-full max-w-xs/sm để giới hạn chiều rộng của form bên trong cột */}
-            <div className="flex flex-col gap-6 w-full max-w-xs md:max-w-sm">
+            <div className="flex flex-col gap-3 w-full max-w-xs md:max-w-sm">
               {/* Username field */}
-              <div className="grid gap-3">
-                <Label
-                  htmlFor="username"
-                  className="text-xs font-semibold uppercase text-gray-700"
-                >
-                  Username
-                </Label>
+              <div className="grid gap-1">
                 <Controller
                   control={control}
                   name="username"
                   render={({ field }) => (
-                    <Input
-                      id="username"
-                      placeholder="Enter your username"
-                      required
-                      className="bg-input text-gray-900 border-border placeholder:text-gray-400 h-12"
+                    <FloatingInput
+                      label={translations.username}
+                      error={errors.username?.message}
                       {...field}
                     />
                   )}
                 />
-                {errors.username && (
-                  <span className="text-red-400">
-                    {errors.username.message}
-                  </span>
-                )}
               </div>
 
               {/* Password field */}
-              <div className="grid gap-3">
-                <Label
-                  htmlFor="password"
-                  className="text-xs font-semibold uppercase text-gray-700"
-                >
-                  Password
-                </Label>
+              <div className="grid gap-1">
                 <Controller
                   control={control}
                   name="password"
                   render={({ field }) => (
-                    <Input
-                      id="password"
+                    <FloatingInput
                       type="password"
-                      placeholder="Enter your password"
-                      required
-                      className="bg-input text-gray-900 border-border placeholder:text-gray-400 h-12"
+                      label={translations.password}
+                      error={errors.password?.message}
                       {...field}
                     />
                   )}
                 />
-                {errors.password && (
-                  <span className="text-red-400">
-                    {errors.password.message}
-                  </span>
-                )}
               </div>
-              <div className="h-px bg-gray-400 my-2 w-full" />
-              {/* Checkbox "Stay signed in" */}
-              <div className="flex items-center space-x-2">
-                {/* <Controller
-                  control={control}
-                  name="staySignedIn"
-                  render={({ field }) => (
-                    <Checkbox
-                      id="stay-signed-in"
-                      checked={field.value}
-                      className="data-[state=checked]:bg-black data-[state=checked]:border-black"
-                      {...field}
-                    />
-                  )}
-                /> */}
-                <Label
-                  htmlFor="stay-signed-in"
-                  className="text-sm text-gray-700"
-                >
-                  Stay signed in
-                </Label>
+              <div className="h-px bg-gray-400 my-1 w-full" />
+              {/* Stay signed in text */}
+              <div className="flex items-center justify-center">
+                <span className="text-sm text-gray-500">
+                  {translations.staySignedIn}
+                </span>
               </div>
 
               {/* Nút mũi tên và văn bản dưới cùng */}
-              <div className="flex flex-col items-center gap-4 mt-8">
+              <div className="flex flex-col items-center gap-3 mt-4">
                 <button
                   onClick={handleSubmit(handleLogin)}
                   type="submit"
                   disabled={!isValid || isPending}
-                  className="cursor-pointer relative after:content-['Login'] after:text-white after:absolute after:text-nowrap after:scale-0 hover:after:scale-100 after:duration-200 w-16 h-16 rounded-full border-4 border-rose-200 bg-black flex items-center justify-center duration-300 hover:rounded-[50px] hover:w-36 group/button overflow-hidden active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="cursor-pointer relative after:content-[attr(data-label)] after:text-white after:absolute after:text-nowrap after:scale-0 hover:after:scale-100 after:duration-200 w-12 h-12 rounded-full border-3 border-blue-200 bg-black flex items-center justify-center duration-300 hover:rounded-[40px] hover:w-28 group/button overflow-hidden active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  data-label={translations.login}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
-                    className="w-8 h-8 fill-white delay-50 duration-200 group-hover/button:translate-x-30"
+                    className="w-6 h-6 fill-white delay-50 duration-200 group-hover/button:translate-x-30"
                   >
                     <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path>
                   </svg>
                 </button>
                 <span className="text-sm font-semibold uppercase text-gray-500">
-                  {"Can't sign in?"}
+                  {translations.cantSignIn}
                 </span>
 
                 <button
@@ -181,7 +145,7 @@ export function LoginForm({
                   onClick={onToggle}
                   className="cursor-pointer text-sm font-semibold uppercase underline-offset-4 hover:underline text-gray-900"
                 >
-                  Create account
+                  {translations.createAccount}
                 </button>
               </div>
             </div>

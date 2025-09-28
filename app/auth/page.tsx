@@ -4,10 +4,9 @@ import React from 'react'
 
 const page = () => {
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="max-w-sm md:max-w-6xl">
-      <AuthContainer />
-        {/* <LoginForm /> */}
+    <div className="min-h-screen flex items-center justify-center p-4 pt-20">
+      <div className="w-full max-w-4xl">
+        <AuthContainer />
       </div>
     </div>
   )

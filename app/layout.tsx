@@ -1,4 +1,5 @@
 import Iridescence from "@/components/Iridescence";
+import Header2 from "@/components/mvpblocks/header-2";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
@@ -34,13 +35,16 @@ export default function RootLayout({
           <Toaster richColors />
           <div className="fixed inset-0 -z-10">
             <Iridescence
-              color={[0.8157, 0.3373, 0.4157]}
+              color={[0.2, 0.1, 0.5]}
               mouseReact={false}
               amplitude={0.1}
               speed={0.5}
             />
           </div>
-          {children}
+          <Header2 />
+          <main className="relative z-10">
+            {children}
+          </main>
         </ReactQueryProvider>
       </body>
     </html>
