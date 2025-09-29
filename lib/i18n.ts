@@ -47,6 +47,17 @@ export const translations = {
     portraitOfGirl: 'Chân Dung Cô Gái',
     abstractArt: 'Nghệ Thuật Trừu Tượng',
     
+    // Profile Page
+    galleryTab: 'Thư Viện',
+    collections: 'Bộ Sưu Tập', 
+    aboutTab: 'Giới Thiệu',
+    friends: 'Bạn Bè',
+    photos: 'Ảnh',
+    comments: 'Bình Luận',
+    collectionsPlaceholder: 'Bộ sưu tập sẽ hiển thị ở đây.',
+    competitionsPlaceholder: 'Danh sách các cuộc thi mà người dùng đã tham gia hoặc thắng giải.',
+    aboutPlaceholder: 'Tiểu sử, liên kết và thông tin nghệ sĩ.',
+    
     // Competition Showcase
     ongoingCompetitions: 'Cuộc Thi',
     ongoingCompetitionsHighlight: 'Đang Diễn Ra',
@@ -139,6 +150,17 @@ export const translations = {
     sunsetOverRiver: 'Sunset Over River',
     portraitOfGirl: 'Portrait of a Girl',
     abstractArt: 'Abstract Art',
+    
+    // Profile Page
+    galleryTab: 'Gallery',
+    collections: 'Collections',
+    aboutTab: 'About',
+    friends: 'Friends',
+    photos: 'Photos',
+    comments: 'Comments',
+    collectionsPlaceholder: 'Collections will appear here.',
+    competitionsPlaceholder: 'List of competitions that the user has participated in or won.',
+    aboutPlaceholder: 'Biography, links and artist information.',
     
     // Competition Showcase
     ongoingCompetitions: 'Ongoing',
