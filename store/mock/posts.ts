@@ -13,7 +13,7 @@ export const mockArtPosts: ArtPost[] = [
   {
     id: '1',
     title: 'Dreamscape',
-    imageUrl: 'https://images.unsplash.com/photo-1504198453319-5ce911bafcde',
+    imageUrl: 'https://images.unsplash.com/flagged/photo-1572392640988-ba48d1a74457?q=80&w=1364&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     description: 'A surreal digital landscape representing dreams.',
     createdAt: '2025-09-28T10:30:00Z',
     likes: 124,
@@ -43,7 +43,7 @@ export const mockArtPosts: ArtPost[] = [
   {
     id: '4',
     title: 'Cyber Samurai',
-    imageUrl: 'https://images.unsplash.com/photo-1508923567004-3a6b8004f3d3',
+    imageUrl: 'https://images.unsplash.com/photo-1578301978018-3005759f48f7?q=80&w=2044&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
     description: 'A futuristic samurai rendered in 3D.',
     createdAt: '2025-09-23T17:30:00Z',
     likes: 203,

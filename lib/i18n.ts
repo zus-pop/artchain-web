@@ -104,6 +104,28 @@ export const translations = {
     readyDesc: 'Tham gia cộng đồng nghệ thuật ArtChain và bắt đầu hành trình sáng tạo của bạn ngay hôm nay',
     registerFree: 'Đăng Ký Miễn Phí',
     viewCompetitions: 'Xem Cuộc Thi',
+    
+    // Register Form
+    selectAccountType: 'Chọn loại tài khoản bạn muốn đăng ký',
+    iAmCompetitor: 'Tôi là thí sinh',
+    competitorDesc: 'Tham gia cuộc thi nghệ thuật',
+    iAmGuardian: 'Tôi là người đại diện',
+    guardianDesc: 'Đại diện cho thí sinh tham gia',
+    continue: 'Tiếp Tục',
+    registerCompetitor: 'Register',
+    registerGuardian: 'Register',
+    fillCompetitorInfo: 'Điền thông tin để tạo tài khoản thí sinh',
+    fillGuardianInfo: 'Điền thông tin để tạo tài khoản người đại diện',
+    fullName: 'Họ và Tên',
+    birthday: 'Ngày Sinh',
+    schoolName: 'Tên Trường',
+    ward: 'Phường/Xã',
+    grade: 'Lớp',
+    register: 'Đăng Ký',
+    processing: 'Đang xử lý...',
+    back: 'Quay Lại',
+    dontHaveAccount: 'Chưa có tài khoản?',
+    signInNow: 'Đăng Nhập Ngay',
   },
   en: {
     // Header
@@ -208,6 +230,28 @@ export const translations = {
     readyDesc: 'Join ArtChain art community and start your creative journey today',
     registerFree: 'Register Free',
     viewCompetitions: 'View Competitions',
+    
+    // Register Form
+    selectAccountType: 'Select the type of account you want to register',
+    iAmCompetitor: 'I am a competitor',
+    competitorDesc: 'Participate in art competitions',
+    iAmGuardian: 'I am a guardian',
+    guardianDesc: 'Representative for competitors',
+    continue: 'Continue',
+    registerCompetitor: 'Register',
+    registerGuardian: 'Register',
+    fillCompetitorInfo: 'Fill in information to create competitor account',
+    fillGuardianInfo: 'Fill in information to create guardian account',
+    fullName: 'Full Name',
+    birthday: 'Birthday',
+    schoolName: 'School Name',
+    ward: 'Ward',
+    grade: 'Grade',
+    register: 'Register',
+    processing: 'Processing...',
+    back: 'Go Back',
+    dontHaveAccount: "Don't have an account?",
+    signInNow: 'Sign In Now',
   }
 } as const;
 

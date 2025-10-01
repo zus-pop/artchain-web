@@ -57,7 +57,7 @@ export default function RootLayout({
           <Toaster richColors />
           <div className="fixed inset-0 -z-10">
             <Iridescence
-              color={[0.2, 0.1, 0.5]}
+              color={[0.118, 0.533, 0.898]}
               mouseReact={false}
               amplitude={0.1}
               speed={0.5}

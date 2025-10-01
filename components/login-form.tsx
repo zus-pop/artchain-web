@@ -1,8 +1,6 @@
 "use client";
 
 import { useLoginMutation } from "@/apis/auth";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { FloatingInput } from "@/components/ui/floating-input";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
@@ -48,20 +46,7 @@ export function LoginForm({
       staySignedIn: false,
     },
   });
-  //   const [formData, setFormData] = useState({
-  //     username: "",
-  //     password: "",
-  //     staySignedIn: false,
-  //   });
   const { mutate, isPending } = useLoginMutation();
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    // setFormData((prev) => ({
-    //   ...prev,
-    //   [name]: type === "checkbox" ? checked : value,
-    // }));
-  };
 
   const handleLogin = (data: Schema) => {
     mutate(data);
@@ -72,10 +57,7 @@ export function LoginForm({
       className={cn("flex flex-col gap-3 w-full mx-auto", className)}
       {...props}
     >
-      <Card className="overflow-hidden p-0 bg-white">
-        {/* Giữ nguyên grid-cols-2 cho bố cục 2 cột */}
-        <CardContent className="grid p-0">
-          <form className="p-4 md:p-6 flex flex-col items-center justify-center">
+      <form className="p-4 md:p-6 flex flex-col items-center justify-center">
             <div className="flex flex-col items-center text-center mb-4 w-full max-w-xs md:max-w-sm">
               <h1 className="text-3xl font-bold text-gray-900 mb-3">{translations.signIn}</h1>
             </div>
@@ -150,13 +132,6 @@ export function LoginForm({
               </div>
             </div>
           </form>
-
-          {/* Cột hình ảnh - Thay bằng DatingProfileScroller */}
-          {/* <div className="bg-muted relative hidden md:flex items-center justify-center p-4">
-            <DatingProfileScroller />
-          </div> */}
-        </CardContent>
-      </Card>
     </div>
   );
 }
