@@ -5,6 +5,7 @@ export const translations = {
     // Header
     home: 'Trang Chủ',
     competitions: 'Cuộc Thi',
+    contests: 'Cuộc Thi',
     gallery: 'Triển Lãm',
     prizes: 'Giải Thưởng',
     login: 'Đăng Nhập',
@@ -131,6 +132,7 @@ export const translations = {
     // Header
     home: 'Home',
     competitions: 'Competitions',
+    contests: 'Contests',
     gallery: 'Gallery',
     prizes: 'Prizes',
     login: 'Login',

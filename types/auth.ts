@@ -16,6 +16,15 @@ export interface RegisterRequest {
   grade?: string;
 }
 
+export interface User {
+  id: string;
+  username: string;
+  fullName: string;
+  email: string;
+  role: "GUARDIAN" | "COMPETITOR";
+}
+
 export interface AuthResponse {
   access_token: string;
+  user?: User;
 }

@@ -10,7 +10,8 @@ interface FloatingInputProps extends React.InputHTMLAttributes<HTMLInputElement>
 
 const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
   ({ className, label, error, id, ...props }, ref) => {
-    const inputId = id || `floating-input-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = React.useId();
+    const inputId = id || `floating-input-${generatedId}`;
     
     return (
       <div className="relative w-full">

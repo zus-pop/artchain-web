@@ -49,7 +49,11 @@ export function LoginForm({
   const { mutate, isPending } = useLoginMutation();
 
   const handleLogin = (data: Schema) => {
-    mutate(data);
+    // Chỉ gửi username và password theo LoginRequest interface
+    mutate({
+      username: data.username,
+      password: data.password,
+    });
   };
 
   return (
