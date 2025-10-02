@@ -103,8 +103,10 @@ export const translations = {
     testimonialDesc: 'Lời chia sẻ từ những nghệ sĩ đã thành công trên nền tảng ArtChain',
     readyToBeNextArtist: 'Sẵn Sàng Trở Thành Nghệ Sĩ Tiếp Theo?',
     readyDesc: 'Tham gia cộng đồng nghệ thuật ArtChain và bắt đầu hành trình sáng tạo của bạn ngay hôm nay',
+    joinArtChainCommunity: 'Tham gia cộng đồng nghệ thuật ArtChain và bắt đầu hành trình sáng tạo của bạn ngay hôm nay',
     registerFree: 'Đăng Ký Miễn Phí',
     viewCompetitions: 'Xem Cuộc Thi',
+    viewContests: 'Xem Cuộc Thi',
     
     // Register Form
     selectAccountType: 'Chọn loại tài khoản bạn muốn đăng ký',
@@ -230,8 +232,10 @@ export const translations = {
     testimonialDesc: 'Testimonials from artists who have succeeded on ArtChain platform',
     readyToBeNextArtist: 'Ready To Be The Next Artist?',
     readyDesc: 'Join ArtChain art community and start your creative journey today',
+    joinArtChainCommunity: 'Join ArtChain art community and start your creative journey today',
     registerFree: 'Register Free',
     viewCompetitions: 'View Competitions',
+    viewContests: 'View Contests',
     
     // Register Form
     selectAccountType: 'Select the type of account you want to register',

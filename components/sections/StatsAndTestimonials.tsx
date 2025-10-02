@@ -1,8 +1,16 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useAuthStore } from "@/store/auth-store";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 const StatsAndTestimonials = () => {
+  const { accessToken } = useAuthStore();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+  
   const stats = [
     {
       number: "2,500+",
@@ -111,7 +119,7 @@ const StatsAndTestimonials = () => {
 
               {/* Content */}
               <p className="text-gray-300 text-center mb-6 italic leading-relaxed">
-                "{testimonial.content}"
+                &ldquo;{testimonial.content}&rdquo;
               </p>
 
               {/* Author */}
@@ -124,29 +132,31 @@ const StatsAndTestimonials = () => {
           ))}
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-3xl p-8 backdrop-blur-sm border border-white/10">
-          <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            Sẵn Sàng Trở Thành Nghệ Sĩ Tiếp Theo?
-          </h3>
-          <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-            Tham gia cộng đồng nghệ thuật ArtChain và bắt đầu hành trình sáng tạo của bạn ngay hôm nay
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a 
-              href="/register"
-              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-8 rounded-xl hover:shadow-lg transition-all duration-200"
-            >
-              Đăng Ký Miễn Phí
-            </a>
-            <a 
-              href="/competitions"
-              className="border-2 border-white/20 text-white font-semibold py-3 px-8 rounded-xl hover:border-white/40 transition-all duration-200"
-            >
-              Xem Cuộc Thi
-            </a>
+        {/* CTA Section - Only show if not logged in */}
+        {!accessToken && (
+          <div className="text-center bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-3xl p-8 backdrop-blur-sm border border-white/10">
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {t.readyToBeNextArtist}
+            </h3>
+            <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+              {t.joinArtChainCommunity}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link 
+                href="/auth"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-8 rounded-xl hover:shadow-lg transition-all duration-200"
+              >
+                {t.registerFree}
+              </Link>
+              <Link 
+                href="/contests"
+                className="border-2 border-white/20 text-white font-semibold py-3 px-8 rounded-xl hover:border-white/40 transition-all duration-200"
+              >
+                {t.viewContests}
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
