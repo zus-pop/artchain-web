@@ -20,9 +20,15 @@ export function useGetContests(status?: ContestStatus) {
   return useQuery({
     queryKey: ["contests", status],
     queryFn: async () => {
-      const params = status ? { status } : {};
-      const response = await myAxios.get("/contests", { params });
-      return response.data.data as Contest[];
+      try {
+        const params = status ? { status } : {};
+        const response = await myAxios.get("/contests", { params });
+        // API /contests trả về array trực tiếp
+        return response.data as Contest[] || [];
+      } catch (error) {
+        console.error("Error fetching contests:", error);
+        return [];
+      }
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: false,
@@ -34,8 +40,13 @@ export function useGetContestById(id: number) {
   return useQuery({
     queryKey: ["contest", id],
     queryFn: async () => {
-      const response = await myAxios.get(`/contests/${id}`);
-      return response.data.data as Contest;
+      try {
+        const response = await myAxios.get(`/contests/${id}`);
+        return response.data.data as Contest;
+      } catch (error) {
+        console.error("Error fetching contest by ID:", error);
+        throw error;
+      }
     },
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // 5 minutes
