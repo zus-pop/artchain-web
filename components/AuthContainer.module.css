@@ -1,0 +1,253 @@
+.container {
+  background-color: #fff;
+  border-radius: 20px;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  position: relative;
+  overflow: hidden;
+  width: 900px;
+  max-width: 100%;
+  min-height: 500px;
+}
+
+.formContainer {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  transition: all 0.6s ease-in-out;
+}
+
+.signIn {
+  left: 0;
+  width: 50%;
+  z-index: 2;
+}
+
+.container.active .signIn {
+  transform: translateX(100%);
+}
+
+.signUp {
+  left: 0;
+  width: 50%;
+  opacity: 0;
+  z-index: 1;
+}
+
+.container.active .signUp {
+  transform: translateX(100%);
+  opacity: 1;
+  z-index: 5;
+  animation: show 0.6s;
+}
+
+@keyframes show {
+  0%, 49.99% {
+    opacity: 0;
+    z-index: 1;
+  }
+  
+  50%, 100% {
+    opacity: 1;
+    z-index: 5;
+  }
+}
+
+.overlayContainer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: transform 0.6s ease-in-out;
+  z-index: 100;
+}
+
+.container.active .overlayContainer{
+  transform: translateX(-100%);
+}
+
+.overlay {
+  background: transparent;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 0 0;
+  color: #FFFFFF;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.container.active .overlay {
+  transform: translateX(50%);
+}
+
+.overlayPanel {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 20px;
+  text-align: center;
+  top: 0;
+  height: 100%;
+  width: 50%;
+  transform: translateX(0);
+  transition: transform 0.6s ease-in-out;
+}
+
+.overlayLeft {
+  transform: translateX(-20%);
+}
+
+.container.active .overlayLeft {
+  transform: translateX(0);
+}
+
+.overlayRight {
+  right: 0;
+  transform: translateX(0);
+}
+
+.container.active .overlayRight {
+  transform: translateX(20%);
+}
+
+.form {
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 30px 40px;
+  height: 100%;
+  text-align: center;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.inputGroup {
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.input {
+  background-color: #eee;
+  border: none;
+  padding: 12px 15px;
+  margin: 8px 0;
+  width: 100%;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.formButton {
+  border-radius: 20px;
+  border: 1px solid #1E88E5;
+  background-color: #1E88E5;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+
+.formButton:active {
+  transform: scale(0.95);
+}
+
+.formButton:focus {
+  outline: none;
+}
+
+.overlayButton {
+  border-radius: 20px;
+  border: 1px solid #FFFFFF;
+  background-color: transparent;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 12px 45px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 80ms ease-in;
+  cursor: pointer;
+}
+
+.overlayButton:active {
+  transform: scale(0.95);
+}
+
+.overlayPanel h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.overlayPanel p {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 20px;
+  letter-spacing: 0.5px;
+  margin: 20px 0 30px;
+  color: #555;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.nameFieldsContainer {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.nameFieldsContainer .inputGroup {
+  flex: 1;
+}
+
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+    max-width: 400px;
+    min-height: 500px;
+  }
+  
+  .signIn, .signUp {
+    width: 100%;
+  }
+  
+  .overlayContainer {
+    display: none;
+  }
+  
+  .form {
+    padding: 0 30px;
+  }
+}
