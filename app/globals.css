@@ -1,6 +1,105 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Artist Theme Variables */
+:root {
+  /* Nền và chữ chính (Light Mode) */
+  --background: hsl(0 0% 97%);         /* Màu nền xám nhạt #f7f7f7 */
+  --foreground: hsl(0 0% 12%);         /* Màu chữ chính gần đen #1f1f1f */
+
+  /* Thẻ, Popover (Nền trắng) */
+  --card: hsl(0 0% 100%);              /* Nền thẻ sản phẩm trắng */
+  --card-foreground: hsl(0 0% 12%);    /* Chữ trên thẻ */
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(0 0% 12%);
+
+  /* Màu chủ đạo (Primary) */
+  --primary: hsl(2 68% 58%);           /* Màu đỏ cam nút bấm #d9534f */
+  --primary-foreground: hsl(0 0% 100%);  /* Chữ trắng trên nút */
+
+  /* Màu phụ (Secondary) */
+  --secondary: hsl(0 0% 20%);          /* Màu xám đậm của tiêu đề #333333 */
+  --secondary-foreground: hsl(0 0% 100%); /* Chữ trắng trên nền phụ */
+
+  /* Màu Muted (văn bản mờ hơn) */
+  --muted: hsl(0 0% 90%);              /* Nền xám nhạt hơn */
+  --muted-foreground: hsl(0 0% 47%);   /* Chữ xám của giá tiền #777777 */
+
+  /* Màu Accent (điểm nhấn phụ) */
+  --accent: hsl(0 75% 95%);            /* Một màu hồng/đỏ rất nhạt làm nền */
+  --accent-foreground: hsl(2 68% 58%); /* Chữ màu đỏ cam trên nền accent */
+
+  /* Viền và Input */
+  --border: hsl(0 0% 90%);             /* Viền xám nhạt */
+  --input: hsl(0 0% 95%);              /* Nền ô input */
+  --ring: hsl(2 68% 58%);              /* Màu viền khi focus */
+
+  /* Fonts */
+  --font-sans: 'Lato', 'Open Sans', sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+}
+
+/* Artist Theme Styles */
+.artist-hero {
+  background: linear-gradient(
+    135deg,
+    hsl(355 70% 25%) 0%,
+    hsl(15 80% 35%) 20%,
+    hsl(60 90% 45%) 40%,
+    hsl(120 70% 40%) 60%,
+    hsl(240 80% 45%) 80%,
+    hsl(300 75% 35%) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.artist-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+.artist-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.product-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary:hover {
+  background: hsl(2 68% 52%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 83, 79, 0.3);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -129,3 +228,51 @@
     overflow: hidden;
   }
 }
+
+.shine {
+  font-size: 1em;
+  font-weight: 900;
+  color: rgba(0, 61, 229, 0.3);
+  background: #3d4565;
+  background-image: linear-gradient(
+    -40deg,
+    transparent 0%,
+    transparent 40%,
+    #fff 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-size: 50px;
+  -webkit-background-size: 50px;
+  animation: shine 5s infinite;
+  -webkit-animation: shine 5s infinite;
+}
+
+@keyframes shine {
+  0%,
+  10% {
+    background-position: -200px;
+  }
+  20% {
+    background-position: top left;
+  }
+  100% {
+    background-position: 200px;
+  }
+}
+
+@-webkit-keyframes shine {
+  0%,
+  10% {
+    background-position: -200px;
+  }
+  20% {
+    background-position: top left;
+  }
+  100% {
+    background-position: 200px;
+  }
+}
+
