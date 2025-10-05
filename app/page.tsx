@@ -1,6 +1,7 @@
 import ArtistHeroSection from "@/components/sections/ArtistHeroSection";
 import ArtistNavigation from "@/components/sections/ArtistNavigation";
 import ArtistGallery from "@/components/sections/ArtistGallery";
+import ContestShowcase from "@/components/sections/CompetitionShowcase";
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       </div>
       <div className="h-1/3 bg-gray-100">
       <ArtistNavigation />
+      <ContestShowcase />
       <ArtistGallery />
       </div>
     </div>

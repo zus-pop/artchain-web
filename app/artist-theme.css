@@ -152,8 +152,7 @@
 
 .product-card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: none;
   transition: all 0.3s ease;
 }
 

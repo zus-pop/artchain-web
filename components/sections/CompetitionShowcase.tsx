@@ -3,47 +3,46 @@
 import React from "react";
 import Link from "next/link";
 import { useGetContests } from "@/apis/contests";
-import { Calendar, Trophy, Clock } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 const ContestShowcase = () => {
   // Get active contests from API
   const { data: contests, isLoading, error } = useGetContests("ACTIVE");
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
-
-  const getTimeRemaining = (endDate: string) => {
-    const now = new Date();
-    const end = new Date(endDate);
-    const diff = end.getTime() - now.getTime();
-    
-    if (diff <= 0) return "Đã kết thúc";
-    
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days > 0) return `Còn ${days} ngày`;
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    return `Còn ${hours} giờ`;
-  };
-
-  const getGradientByIndex = (index: number) => {
-    const gradients = [
-      "from-green-400 to-blue-500",
-      "from-purple-400 to-pink-500", 
-      "from-yellow-400 to-red-500",
-      "from-blue-400 to-indigo-500",
-      "from-pink-400 to-rose-500",
-      "from-teal-400 to-cyan-500"
+  // --- HÀM MÀU MỚI ---
+  // Cung cấp một bộ màu hoàn chỉnh cho mỗi thẻ dựa trên index
+  const getContestColors = (index: number) => {
+    const colorSchemes = [
+      {
+        bg: "bg-purple-500",
+        accent: "bg-purple-400",
+        shadow: "shadow-purple-400",
+        button: "bg-purple-600 hover:bg-purple-400",
+      },
+      {
+        bg: "bg-blue-500",
+        accent: "bg-blue-400",
+        shadow: "shadow-blue-400",
+        button: "bg-blue-600 hover:bg-blue-400",
+      },
+      {
+        bg: "bg-green-500",
+        accent: "bg-green-400",
+        shadow: "shadow-green-400",
+        button: "bg-green-600 hover:bg-green-400",
+      },
+      {
+        bg: "bg-rose-500",
+        accent: "bg-rose-400",
+        shadow: "shadow-rose-400",
+        button: "bg-rose-600 hover:bg-rose-400",
+      },
     ];
-    return gradients[index % gradients.length];
+    return colorSchemes[index % colorSchemes.length];
   };
 
   if (isLoading) {
+    // Giữ nguyên giao diện loading
     return (
       <div className="w-full py-20 px-4">
         <div className="max-w-6xl mx-auto">
@@ -68,6 +67,7 @@ const ContestShowcase = () => {
   }
 
   if (error) {
+    // Giữ nguyên giao diện lỗi
     return (
       <div className="w-full py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
@@ -81,85 +81,56 @@ const ContestShowcase = () => {
   }
 
   // Show only first 3 contests for showcase
-  const displayContests = contests?.slice(0, 3) || [];
+  const displayContests = contests?.slice(0, 2) || [];
 
   return (
-    <div className="w-full py-20 px-4">
+    <div className="w-full py-20 px-4 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Cuộc Thi <span className="text-blue-400">Đang Diễn Ra</span>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800">
+            Cuộc Thi <span className="text-red-500">Đang Diễn Ra</span>
           </h2>
-          <p className="text-gray-300 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Tham gia ngay các cuộc thi hấp dẫn và thể hiện tài năng nghệ thuật của bạn
           </p>
         </div>
 
-        {/* Contest Cards */}
+        {/* --- KHỐI THẺ CUỘC THI ĐÃ ĐƯỢC CẬP NHẬT --- */}
         {displayContests.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayContests.map((contest, index) => (
-              <div 
-                key={contest.contestId}
-                className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6 hover:scale-105 transition-transform duration-300 hover:border-white/20"
-              >
-                {/* Status Badge */}
-                <div className="flex justify-between items-start mb-4">
-                  <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-medium">
-                    Đang diễn ra
-                  </span>
-                  <div className="text-right">
-                    <div className="flex items-center text-yellow-400">
-                      <Trophy className="h-4 w-4 mr-1" />
-                      <span className="font-bold text-sm">{contest.numOfAward} giải</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contest Info */}
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {contest.title}
-                </h3>
-                <p className="text-gray-300 mb-4 text-sm leading-relaxed line-clamp-2">
-                  {contest.description}
-                </p>
-
-                {/* Stats */}
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-gray-400 text-sm">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    <span>Kết thúc: {formatDate(contest.endDate)}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {displayContests.map((contest, index) => {
+              const colors = getContestColors(index); // Lấy bộ màu cho thẻ hiện tại
+              return (
+                <div
+                  key={contest.contestId}
+                  className={`group flex flex-col justify-between gap-4 min-h-[240px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl ${colors.bg} ${colors.shadow}`}
+                >
+                  {/* Khối trang trí ở góc */}
+                  <div
+                    className={`absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg ${colors.accent}`}
+                  />
+                  
+                  {/* Nội dung thẻ */}
+                  <div className="z-10">
+                    <h3 className="text-2xl font-bold mb-2 text-white">
+                      {contest.title}
+                    </h3>
+                    <p className="text-gray-200 line-clamp-3">
+                      {contest.description}
+                    </p>
                   </div>
                   
-                  <div className="flex items-center text-green-400 text-sm">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <span>{getTimeRemaining(contest.endDate)}</span>
-                  </div>
+                  {/* Nút hành động */}
+                  <Link
+                    href={`/contests/${contest.contestId}`}
+                    className={`z-10 w-fit text-white font-semibold rounded p-2 px-6 transition-colors duration-200 ${colors.button}`}
+                  >
+                    Xem Chi Tiết
+                  </Link>
                 </div>
-
-                {/* Progress Bar */}
-                <div className="mb-6">
-                  <div className="bg-gray-700 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full bg-gradient-to-r ${getGradientByIndex(index)} rounded-full`}
-                      style={{ width: `${Math.min(65 + index * 10, 100)}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-gray-400 text-xs mt-1">
-                    Cuộc thi đang thu hút sự quan tâm
-                  </p>
-                </div>
-
-                {/* Action Button */}
-                <Link 
-                  href={`/contests/${contest.contestId}`}
-                  className={`w-full bg-gradient-to-r ${getGradientByIndex(index)} text-white font-semibold py-3 px-6 rounded-xl hover:shadow-lg transition-all duration-200 block text-center`}
-                >
-                  Xem Chi Tiết
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-16">
@@ -174,15 +145,14 @@ const ContestShowcase = () => {
         )}
 
         {/* View All Button */}
-        <div className="text-center mt-12">
-          <Link 
+        <div className="text-center mt-16">
+          <Link
             href="/contests"
-            className="inline-flex items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 px-8 rounded-xl hover:shadow-lg transition-all duration-200"
+
           >
-            Xem Tất Cả Cuộc Thi
-            <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
+            <button className="group group-hover:before:duration-500 group-hover:after:duration-500 after:duration-500 hover:border-rose-300 hover:before:[box-shadow:_20px_20px_20px_30px_#a21caf] duration-500 before:duration-500 hover:duration-500 underline underline-offset-2 hover:after:-right-8 hover:before:right-12 hover:before:-bottom-8 hover:before:blur hover:underline hover:underline-offset-4 origin-left hover:decoration-2 hover:text-rose-300 relative bg-neutral-800 h-16 w-64 border text-left p-3 text-gray-50 text-base font-bold rounded-lg overflow-hidden before:absolute before:w-12 before:h-12 before:content[''] before:right-1 before:top-1 before:z-10 before:bg-violet-500 before:rounded-full before:blur-lg after:absolute after:z-10 after:w-20 after:h-20 after:content[''] after:bg-rose-300 after:right-8 after:top-3 after:rounded-full after:blur-lg">
+            Xem Thêm
+    </button>
           </Link>
         </div>
       </div>
