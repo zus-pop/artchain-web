@@ -53,7 +53,10 @@ const ContestShowcase = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6 animate-pulse">
+              <div
+                key={i}
+                className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6 animate-pulse"
+              >
                 <div className="h-6 bg-gray-700 rounded mb-4"></div>
                 <div className="h-4 bg-gray-700 rounded mb-2"></div>
                 <div className="h-3 bg-gray-700 rounded mb-4"></div>
@@ -92,45 +95,43 @@ const ContestShowcase = () => {
             Cuộc Thi <span className="text-red-500">Đang Diễn Ra</span>
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Tham gia ngay các cuộc thi hấp dẫn và thể hiện tài năng nghệ thuật của bạn
+            Tham gia ngay các cuộc thi hấp dẫn và thể hiện tài năng nghệ thuật
+            của bạn
           </p>
         </div>
 
         {/* --- KHỐI THẺ CUỘC THI ĐÃ ĐƯỢC CẬP NHẬT --- */}
         {displayContests.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            {displayContests.map((contest, index) => {
-              const colors = getContestColors(index); // Lấy bộ màu cho thẻ hiện tại
-              return (
+            {displayContests.map((contest) => (
+              <div
+                key={contest.contestId}
+                className={`group m-5 flex flex-col justify-between gap-4 min-h-[240px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md`}
+              >
+                {/* Khối trang trí ở góc */}
                 <div
-                  key={contest.contestId}
-                  className={`group flex flex-col justify-between gap-4 min-h-[240px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl ${colors.bg} ${colors.shadow}`}
-                >
-                  {/* Khối trang trí ở góc */}
-                  <div
-                    className={`absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg ${colors.accent}`}
-                  />
-                  
-                  {/* Nội dung thẻ */}
-                  <div className="z-10">
-                    <h3 className="text-2xl font-bold mb-2 text-white">
-                      {contest.title}
-                    </h3>
-                    <p className="text-gray-200 line-clamp-3">
-                      {contest.description}
-                    </p>
-                  </div>
-                  
-                  {/* Nút hành động */}
-                  <Link
-                    href={`/contests/${contest.contestId}`}
-                    className={`z-10 w-fit text-white font-semibold rounded p-2 px-6 transition-colors duration-200 ${colors.button}`}
-                  >
-                    Xem Chi Tiết
-                  </Link>
+                  className={`absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]`}
+                />
+
+                {/* Nội dung thẻ */}
+                <div className="z-10">
+                  <h3 className="text-2xl font-bold mb-2 text-white">
+                    {contest.title}
+                  </h3>
+                  <p className="text-gray-100 line-clamp-3">
+                    {contest.description}
+                  </p>
                 </div>
-              );
-            })}
+
+                {/* Nút hành động */}
+                <Link
+                  href={`/contests/${contest.contestId}`}
+                  className={`z-10 w-fit text-gray-800 font-semibold rounded p-2 px-6 transition-colors duration-200 bg-white bg-opacity-20 hover:bg-opacity-40`}
+                >
+                  Xem Chi Tiết
+                </Link>
+              </div>
+            ))}
           </div>
         ) : (
           <div className="text-center py-16">
@@ -146,13 +147,16 @@ const ContestShowcase = () => {
 
         {/* View All Button */}
         <div className="text-center mt-16">
-          <Link
-            href="/contests"
-
-          >
-            <button className="group group-hover:before:duration-500 group-hover:after:duration-500 after:duration-500 hover:border-rose-300 hover:before:[box-shadow:_20px_20px_20px_30px_#a21caf] duration-500 before:duration-500 hover:duration-500 underline underline-offset-2 hover:after:-right-8 hover:before:right-12 hover:before:-bottom-8 hover:before:blur hover:underline hover:underline-offset-4 origin-left hover:decoration-2 hover:text-rose-300 relative bg-neutral-800 h-16 w-64 border text-left p-3 text-gray-50 text-base font-bold rounded-lg overflow-hidden before:absolute before:w-12 before:h-12 before:content[''] before:right-1 before:top-1 before:z-10 before:bg-violet-500 before:rounded-full before:blur-lg after:absolute after:z-10 after:w-20 after:h-20 after:content[''] after:bg-rose-300 after:right-8 after:top-3 after:rounded-full after:blur-lg">
-            Xem Thêm
-    </button>
+          <Link href="/contests">
+            <button className="overflow-hidden relative w-32 p-2 h-12 bg-gray-800 text-white border-none rounded-md text-xl font-bold cursor-pointer z-10 group">
+              Explore!
+              <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-200 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-right" />
+              <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-400 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-right" />
+              <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-600 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-1000 duration-500 origin-right" />
+              <span className="absolute inset-0 z-10 flex items-center justify-center text-2xl text-[--secondary-foreground] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                →
+              </span>
+            </button>
           </Link>
         </div>
       </div>
