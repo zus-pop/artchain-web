@@ -2,37 +2,40 @@
 
 import React from "react";
 import Image from "next/image";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 const ArtistGallery = () => {
+    const { currentLanguage } = useLanguageStore();
+    const t = useTranslation(currentLanguage);
+
   const paintings = [
     {
       id: 1,
-      title: "DuongCongSon",
-      price: "$35.00",
-      image: "https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?w=500&auto=format&fit=crop",
-      description: "Beautiful landscape painting"
+      image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=500&fit=crop",
+      description: t.sunsetOverRiver,
+      title: "Nguyễn Văn A"
     },
     {
       id: 2,
-      title: "DuongCongSon",
-      price: "$45.00",
-      image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=500&auto=format&fit=crop",
-      description: "Classical portrait artwork"
+      image: "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=400&h=500&fit=crop",
+      description: t.portraitOfGirl,
+      title: "Trần Thị B"
     },
     {
       id: 3,
-      title: "DuongCongSon",
-      price: "$55.00",
-      image: "https://images.unsplash.com/photo-1562657835-31f4568615c4?w=500&auto=format&fit=crop",
-      description: "Vibrant floral composition"
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=500&fit=crop",
+      description: t.abstractArt,
+      title: "Lê Văn C"
     },
     {
       id: 4,
       title: "DuongCongSon",
       price: "$35.00",
-      image: "https://images.unsplash.com/photo-1579965342575-16428a7c8881?w=500&auto=format&fit=crop",
-      description: "Elegant portrait with flowers"
-    }
+      image:
+        "https://images.unsplash.com/photo-1579965342575-16428a7c8881?w=500&auto=format&fit=crop",
+      description: "Elegant portrait with flowers",
+    },
   ];
 
   return (
@@ -51,7 +54,10 @@ const ArtistGallery = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {paintings.map((painting) => (
             // Dòng dưới đây đã được thay đổi: đã xóa class "border"
-            <div key={painting.id} className="product-card overflow-hidden group rounded-lg shadow-lg">
+            <div
+              key={painting.id}
+              className="product-card overflow-hidden group rounded-lg shadow-lg"
+            >
               {/* Product Image */}
               <div className="relative h-80 overflow-hidden">
                 <img

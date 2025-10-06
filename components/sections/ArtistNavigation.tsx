@@ -165,10 +165,10 @@ const styles = `
                 className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
               >
                 <Globe className="h-4 w-4" />
-                <span className="hidden sm:block">
+                {/* <span className="hidden sm:block">
                   {currentLang.code} 
-                </span>
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                </span> */}
+                <ChevronDown className={`h-2 w-2 transition-transform duration-200 ${
                   isLanguageDropdownOpen ? "rotate-180" : ""
                 }`} />
               </button>
@@ -180,7 +180,7 @@ const styles = `
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+                    className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
                   >
                     <div className="py-2">
                       {languages.map((language) => (

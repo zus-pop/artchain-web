@@ -42,32 +42,37 @@ const ContestShowcase = () => {
   };
 
   if (isLoading) {
-    // Giữ nguyên giao diện loading
-    return (
-      <div className="w-full py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Cuộc Thi <span className="text-blue-400">Đang Diễn Ra</span>
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-black/40 backdrop-blur-sm border border-white/10 rounded-3xl p-6 animate-pulse"
-              >
-                <div className="h-6 bg-gray-700 rounded mb-4"></div>
-                <div className="h-4 bg-gray-700 rounded mb-2"></div>
-                <div className="h-3 bg-gray-700 rounded mb-4"></div>
-                <div className="h-10 bg-gray-700 rounded"></div>
-              </div>
-            ))}
-          </div>
+  return (
+    <div className="w-full py-20 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            Cuộc Thi <span className="text-red-500]">Đang Diễn Ra</span>
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="bg-[var(--primary)] bg-opacity-90 backdrop-blur-sm border border-white/10 rounded-3xl p-6 animate-pulse relative overflow-hidden"
+            >
+              {/* Accent giả giống góc dưới bên phải */}
+              <div className="absolute -bottom-8 -right-8 w-1/2 h-1/2 bg-white/10 rounded-xl" />
+
+              {/* Nội dung giả */}
+              <div className="h-6 w-3/4 bg-white/30 rounded mb-4"></div>
+              <div className="h-4 w-full bg-white/20 rounded mb-2"></div>
+              <div className="h-3 w-5/6 bg-white/20 rounded mb-4"></div>
+              <div className="h-10 w-32 bg-white/30 rounded"></div>
+            </div>
+          ))}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
+
 
   if (error) {
     // Giữ nguyên giao diện lỗi
@@ -136,7 +141,7 @@ const ContestShowcase = () => {
         ) : (
           <div className="text-center py-16">
             <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-white mb-2">
+            <h3 className="text-2xl font-semibold text-yellow-300 mb-2">
               Chưa có cuộc thi nào đang diễn ra
             </h3>
             <p className="text-gray-400">

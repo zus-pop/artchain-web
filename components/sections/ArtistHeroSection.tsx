@@ -12,20 +12,20 @@ const ArtistHeroSection = () => {
           <div className="max-w-6xl mx-auto flex justify-between items-center text-white/90 text-sm">
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-1">
-                📧 artistexample@gmail.com
+                📧 sonduongcong8@gmail.com 
               </span>
               <span className="flex items-center gap-1">
-                📞 6646 88 0550
+                📞 0818954955
               </span>
             </div>
             <div className="flex items-center gap-6">
-              <a href="#" className="hover:text-white transition-colors">Facebook</a>
-              <a href="#" className="hover:text-white transition-colors">Twitter</a>
-              <a href="#" className="hover:text-white transition-colors">Pinterest</a>
-              <a href="#" className="hover:text-white transition-colors">Email</a>
-              <a href="#" className="hover:text-white transition-colors">Instagram</a>
+              <a href="#" className="hover:text-yellow-300 transition-colors">Facebook</a>
+              <a href="#" className="hover:text-yellow-300 transition-colors">Github</a>
+              <a href="#" className="hover:text-yellow-300 transition-colors">Pinterest</a>
+              <a href="#" className="hover:text-yellow-300 transition-colors">Email</a>
+              <a href="#" className="hover:text-yellow-300 transition-colors">Instagram</a>
               <a href="/cart" className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white font-medium transition-colors">
-                🛒 Cart
+                Join now
               </a>
             </div>
           </div>
