@@ -14,7 +14,7 @@ const HeroSection = () => {
     <div className="w-full flex flex-col items-center text-center px-4 py-20 sm:py-28">
       {/* Tiêu đề chính */}
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white">
-        {t.heroTitle} <span className="text-sky-800">{t.heroTitleHighlight}</span>{" "}
+        {t.heroTitle} <span className="text-black shine">{t.heroTitleHighlight}</span>{" "}
         {t.heroTitleSuffix}
       </h1>
 

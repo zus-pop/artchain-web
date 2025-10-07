@@ -1,32 +1,26 @@
-import FooterGlow from "@/components/mvpblocks/footer-glow";
-
-import HeroSection from "@/components/sections/HeroSection";
-import MockupSection from "@/components/sections/MockupSection";
-import OnboardingFeatures from "@/components/sections/OnboardingFeatures";
+import ArtistHeroSection from "@/components/sections/ArtistHeroSection";
+import ArtistNavigation from "@/components/sections/ArtistNavigation";
+import ArtistGallery from "@/components/sections/ArtistGallery";
 import ContestShowcase from "@/components/sections/CompetitionShowcase";
-import StatsAndTestimonials from "@/components/sections/StatsAndTestimonials";
 
 export default function Home() {
   return (
-    <div className="font-sans min-h-screen">
-      <div className="flex flex-col items-center text-center w-full">
-        {/* Phần Hero Section chứa tiêu đề, mô tả và các nút tải */}
-        <HeroSection />
-        
-        {/* Phần hiển thị các cuộc thi đang diễn ra */}
-        <ContestShowcase />
-        
-        {/* Phần Mockup hiển thị giao diện web và mobile */}
-        <MockupSection />
-
-        {/* Phần giới thiệu tính năng chi tiết */}
-        <OnboardingFeatures />
-        
-        {/* Phần thống kê và testimonials */}
-        <StatsAndTestimonials />
+    <div className="h-screen flex flex-col">
+      <div
+        className="h-2/3 flex items-center justify-center relative bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%%3D%3D&auto=format&fit=crop&w=2058&q=80')`,
+        }}
+      >
+        <ArtistHeroSection />
       </div>
-
-      <FooterGlow />
+      <div className="h-1/3 bg-gray-100">
+      <ArtistNavigation />
+      <ContestShowcase />
+      <ArtistGallery />
+      <ArtistGallery />
+      <ArtistGallery />
+      </div>
     </div>
   );
 }
