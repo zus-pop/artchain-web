@@ -20,7 +20,8 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
             "absolute -left-0.5 top-2 bottom-2 w-1.5 rounded bg-gradient-to-b transition-all duration-300 group-focus-within:opacity-100",
             error 
               ? "from-red-500 to-red-600 opacity-100" 
-              : "from-blue-500 to-purple-500 opacity-70"
+              // Thay đổi: Gradient từ đỏ sang vàng
+              : "from-red-500 to-yellow-500 opacity-70"
           )}></span>
           <input
             ref={ref}
@@ -29,7 +30,8 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
               "peer w-full pl-6 pr-12 pt-6 pb-2 text-sm text-gray-800 bg-white border rounded-lg shadow-md focus:border-transparent focus:ring-2 focus:outline-none transition-all duration-300 delay-200 placeholder-transparent",
               error 
                 ? "border-red-300 focus:ring-red-300" 
-                : "border-gray-200 focus:ring-blue-300",
+                // Thay đổi: Viền focus màu vàng
+                : "border-gray-200 focus:ring-yellow-300",
               className
             )}
             placeholder=""
@@ -41,7 +43,8 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
               "absolute left-6 top-3.5 text-sm transition-all duration-200 ease-in-out peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-focus:top-1 peer-focus:text-sm peer-focus:font-semibold cursor-text",
               error 
                 ? "text-red-500 peer-focus:text-red-500" 
-                : "text-gray-500 peer-focus:text-blue-500"
+                // Thay đổi: Chữ label khi focus có màu đỏ
+                : "text-gray-500 peer-focus:text-red-500"
             )}
           >
             {label}

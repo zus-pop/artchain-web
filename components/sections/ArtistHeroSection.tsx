@@ -24,7 +24,7 @@ const ArtistHeroSection = () => {
               <a href="#" className="hover:text-yellow-300 transition-colors">Pinterest</a>
               <a href="#" className="hover:text-yellow-300 transition-colors">Email</a>
               <a href="#" className="hover:text-yellow-300 transition-colors">Instagram</a>
-              <a href="/cart" className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white font-medium transition-colors">
+              <a href="/auth" className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded text-white font-medium transition-colors">
                 Join now
               </a>
             </div>
