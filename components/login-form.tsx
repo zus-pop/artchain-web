@@ -1,6 +1,6 @@
 "use client";
 
-import { useLoginMutation } from "@/apis/auth";
+import { useLoginMutation } from "@/hooks/useLoginMutation";
 import { FloatingInput } from "@/components/ui/floating-input";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";

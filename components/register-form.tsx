@@ -7,7 +7,7 @@ import { FloatingSelect } from "@/components/ui/floating-select";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRegisterMutation } from "../apis/auth";
+import { useRegisterMutation } from "@/hooks/useRegisterMutation";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { useWards } from "@/hooks/useWards";
