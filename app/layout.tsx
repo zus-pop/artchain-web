@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import ReactQueryProvider from "@/components/react-query-provider";
 import { AuthInitializer } from "@/components/AuthInitializer";
 import "./globals.css";
+import ArtistNavigation from "@/components/sections/ArtistNavigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,7 +58,7 @@ export default function RootLayout({
             <Toaster richColors />
             <div className="fixed inset-0 -z-10">
             </div>
-            {/* <Header2 /> */}
+                  <ArtistNavigation />
             <main className="relative z-10">
               {children}
             </main>

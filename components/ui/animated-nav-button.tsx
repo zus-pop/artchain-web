@@ -35,7 +35,7 @@ export function AnimatedNavButton({
     >
       <div
         className={cn(
-          "bg-blue-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute top-[4px] group-hover:w-[184px] z-10 duration-500",
+          "bg-red-400 rounded-xl h-12 w-1/4 flex items-center justify-center absolute top-[4px] group-hover:w-[184px] z-10 duration-500",
           isBack ? "left-1" : "right-1"
         )}
       >

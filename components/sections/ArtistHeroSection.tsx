@@ -8,8 +8,8 @@ const ArtistHeroSection = () => {
       {/* Hero Section with Background Image - 2/3 Screen */}
       <div>
         {/* Contact Info Bar - Transparent with bottom border only */}
-        <div className="absolute top-0 left-0 right-0 bg-transparent border-b border-white/30 py-3 px-4 z-20">
-          <div className="max-w-6xl mx-auto flex justify-between items-center text-white/90 text-sm">
+        <div className="absolute top-0 left-0 right-0 bg-transparent py-3 px-4 z-20">
+          {/* <div className="max-w-6xl mx-auto flex justify-between items-center text-white/90 text-sm">
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-1">
                 📧 sonduongcong8@gmail.com 
@@ -28,7 +28,7 @@ const ArtistHeroSection = () => {
                 Join now
               </a>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Dark Overlay */}

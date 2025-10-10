@@ -1,30 +1,65 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown, Globe, User, Settings, LogOut, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Giả lập dữ liệu từ file i18n của bạn
+import { useAuth } from "@/hooks/useAuth";
+import { useLogoutMutation } from "@/hooks/useLogoutMutation";
+import { useMeQuery } from "@/hooks/useMeQuery";
 
 const ArtistNavigation = () => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
   const { currentLanguage, setLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+  
+  // Auth hooks
+  const { isAuthenticated, user } = useAuth();
+  const { data: userData } = useMeQuery();
+  const { mutate: logout } = useLogoutMutation();
 
-  // Handle click outside dropdown
+  // Use userData from API if available, fallback to store user
+  const displayUser = userData || user;
+
+  // Handle click outside dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
         setIsLanguageDropdownOpen(false);
+      }
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+        setIsUserDropdownOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Helper functions for user display
+  const getDisplayName = () => {
+    return displayUser?.fullName || displayUser?.username || "User";
+  };
+
+  const getAvatarInitial = () => {
+    const name = getDisplayName();
+    return name.charAt(0).toUpperCase();
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  const handleNavClick = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Handle navigation
+    e.preventDefault();
+    window.location.href = href;
+  };
 
   const languages = [
     { code: 'vi' },
@@ -45,7 +80,7 @@ const styles = `
       --round: 10px;
       --p-x: 8px;
       --p-y: 4px;
-      --w-label: 150px;
+      --w-label: 100px;
       display: flex;
       align-items: center;
       padding: var(--p-y) var(--p-x);
@@ -158,56 +193,155 @@ const styles = `
               <div className="slidebar" />
             </div>
 
-            {/* Language Dropdown instead of Search Icon */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-              >
-                <Globe className="h-4 w-4" />
-                {/* <span className="hidden sm:block">
-                  {currentLang.code} 
-                </span> */}
-                <ChevronDown className={`h-2 w-2 transition-transform duration-200 ${
-                  isLanguageDropdownOpen ? "rotate-180" : ""
-                }`} />
-              </button>
-
-              <AnimatePresence>
-                {isLanguageDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+            {/* Right side actions */}
+            <div className="flex items-center space-x-2">
+              {/* User Auth Section */}
+              {isAuthenticated ? (
+                <div className="relative" ref={userDropdownRef}>
+                  <button
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                   >
-                    <div className="py-2">
-                      {languages.map((language) => (
-                        <button
-                          key={language.code}
-                          onClick={() => {
-                            setLanguage(language.code as 'vi' | 'en');
-                            setIsLanguageDropdownOpen(false);
-                          }}
-                          className={`flex w-full items-center space-x-3 px-4 py-3 text-sm transition-colors duration-150 ${
-                            currentLanguage === language.code
-                              ? "bg-blue-50 text-blue-600"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="text-lg">{language.code}</span>
-                          {currentLanguage === language.code && (
-                            <div className="ml-auto">
-                              <div className="h-2 w-2 rounded-full bg-blue-600"></div>
-                            </div>
-                          )}
-                        </button>
-                      ))}
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                      displayUser?.role === "GUARDIAN" ? "bg-green-500" : "bg-red-500"
+                    }`}>
+                      {getAvatarInitial()}
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <span className="max-w-32 truncate">
+                      {getDisplayName()}
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                      isUserDropdownOpen ? "rotate-180" : ""
+                    }`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {isUserDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                        className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+                      >
+                        <div className="p-4 border-b border-gray-100">
+                          <div className="flex items-center space-x-3">
+                            <div className={`h-12 w-12 rounded-full flex items-center justify-center text-white text-lg font-bold ${
+                              displayUser?.role === "GUARDIAN" ? "bg-green-500" : "bg-red-500"
+                            }`}>
+                              {getAvatarInitial()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {getDisplayName()}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {displayUser?.role === "GUARDIAN" ? "Guardian" : "Competitor"}
+                              </p>
+                              <p className="text-xs text-gray-400 truncate">
+                                {displayUser?.email || "email@example.com"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="py-2">
+                          <Link
+                            href="/me"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          >
+                            <User className="h-4 w-4" />
+                            <span>Hồ sơ cá nhân</span>
+                          </Link>
+                          
+                          <button
+                            onClick={() => {
+                              // TODO: Add settings navigation
+                              setIsUserDropdownOpen(false);
+                            }}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span>Cài đặt</span>
+                          </button>
+
+                          <div className="border-t border-gray-100 my-1"></div>
+
+                          <button
+                            onClick={() => {
+                              handleLogout();
+                              setIsUserDropdownOpen(false);
+                            }}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            <span>Đăng xuất</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link
+                  href="/auth"
+                  onClick={(e) => handleNavClick("/auth", e)}
+                  className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 inline-flex items-center space-x-2 rounded-lg px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200"
+                >
+                  <span>{t.join}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+
+              {/* Language Dropdown */}
+              <div className="relative" ref={languageDropdownRef}>
+                <button
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                  className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                >
+                  <Globe className="h-4 w-4" />
+                  <ChevronDown className={`h-2 w-2 transition-transform duration-200 ${
+                    isLanguageDropdownOpen ? "rotate-180" : ""
+                  }`} />
+                </button>
+
+                <AnimatePresence>
+                  {isLanguageDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+                    >
+                      <div className="py-2">
+                        {languages.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => {
+                              setLanguage(language.code as 'vi' | 'en');
+                              setIsLanguageDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center space-x-3 px-4 py-3 text-sm transition-colors duration-150 ${
+                              currentLanguage === language.code
+                                ? "bg-red-50 text-red-600"
+                                : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            <span className="text-lg">{language.code}</span>
+                            {currentLanguage === language.code && (
+                              <div className="ml-auto">
+                                <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
