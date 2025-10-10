@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Globe } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useLanguageStore, Language } from '@/store/language-store';
 
 const languages = [
@@ -19,7 +19,7 @@ export default function LanguageDropdown({ isScrolled = false }: LanguageDropdow
   const { currentLanguage, setLanguage } = useLanguageStore();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
+  // const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

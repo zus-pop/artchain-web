@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Trophy, Filter, Clock } from "lucide-react";
 import { useGetContests, ContestStatus } from "@/apis/contests";
 import Link from "next/link";
+import Image from "next/image";
 
 const statusColors = {
   UPCOMING: "bg-blue-500",
@@ -147,7 +148,7 @@ export default function ContestsPage() {
                       {/* Contest Banner */}
                       <div className="relative h-48 rounded-lg mb-4 overflow-hidden">
                         {contest.bannerUrl ? (
-                          <img 
+                          <Image 
                             src={contest.bannerUrl} 
                             alt={contest.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

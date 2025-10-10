@@ -4,13 +4,13 @@ import React, { useState } from "react";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
 import Image from "next/image";
-import { useTranslation } from "@/lib/i18n";
-import { useLanguageStore } from "@/store/language-store";
+// import { useTranslation } from "@/lib/i18n";
+// import { useLanguageStore } from "@/store/language-store";
 
 const AuthContainer = () => {
   const [isRegister, setIsRegister] = useState(false);
-  const { currentLanguage } = useLanguageStore();
-  const translations = useTranslation(currentLanguage);
+  // const { currentLanguage } = useLanguageStore();
+  // const translations = useTranslation(currentLanguage);
 
   return (
     <div className="min-h-screen flex justify-center px-4 pt-16 pb-0"

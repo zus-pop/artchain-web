@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className={`${lobster.variable} font-sans antialiased`}>
       {children}
     </div>
   );

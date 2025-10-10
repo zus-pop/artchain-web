@@ -6,27 +6,30 @@ import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
 
 const ArtistGallery = () => {
-    const { currentLanguage } = useLanguageStore();
-    const t = useTranslation(currentLanguage);
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const paintings = [
     {
       id: 1,
-      image: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=500&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=500&fit=crop",
       description: t.sunsetOverRiver,
-      title: "Nguyễn Văn A"
+      title: "Nguyễn Văn A",
     },
     {
       id: 2,
-      image: "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=400&h=500&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1578321272176-b7bbc0679853?w=400&h=500&fit=crop",
       description: t.portraitOfGirl,
-      title: "Trần Thị B"
+      title: "Trần Thị B",
     },
     {
       id: 3,
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=500&fit=crop",
+      image:
+        "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=500&fit=crop",
       description: t.abstractArt,
-      title: "Lê Văn C"
+      title: "Lê Văn C",
     },
     {
       id: 4,
@@ -53,17 +56,18 @@ const ArtistGallery = () => {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {paintings.map((painting) => (
-            // Dòng dưới đây đã được thay đổi: đã xóa class "border"
             <div
               key={painting.id}
-              className="product-card overflow-hidden group rounded-lg shadow-lg"
+              className="overflow-hidden group shadow-lg"
             >
               {/* Product Image */}
               <div className="relative h-80 overflow-hidden">
-                <img
+                <Image
                   src={painting.image}
                   alt={painting.description}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  width={400}
+                  height={500}
                 />
 
                 {/* Hover Overlay */}

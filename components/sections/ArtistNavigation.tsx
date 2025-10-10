@@ -31,7 +31,7 @@ const ArtistNavigation = () => {
     { code: 'en' }
   ];
 
-  const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
+  // const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   const navItems = [
     { label: t.home, href: "/", active: true },

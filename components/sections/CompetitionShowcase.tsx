@@ -9,38 +9,6 @@ const ContestShowcase = () => {
   // Get active contests from API
   const { data: contests, isLoading, error } = useGetContests("ACTIVE");
 
-  // --- HÀM MÀU MỚI ---
-  // Cung cấp một bộ màu hoàn chỉnh cho mỗi thẻ dựa trên index
-  const getContestColors = (index: number) => {
-    const colorSchemes = [
-      {
-        bg: "bg-purple-500",
-        accent: "bg-purple-400",
-        shadow: "shadow-purple-400",
-        button: "bg-purple-600 hover:bg-purple-400",
-      },
-      {
-        bg: "bg-blue-500",
-        accent: "bg-blue-400",
-        shadow: "shadow-blue-400",
-        button: "bg-blue-600 hover:bg-blue-400",
-      },
-      {
-        bg: "bg-green-500",
-        accent: "bg-green-400",
-        shadow: "shadow-green-400",
-        button: "bg-green-600 hover:bg-green-400",
-      },
-      {
-        bg: "bg-rose-500",
-        accent: "bg-rose-400",
-        shadow: "shadow-rose-400",
-        button: "bg-rose-600 hover:bg-rose-400",
-      },
-    ];
-    return colorSchemes[index % colorSchemes.length];
-  };
-
   if (isLoading) {
   return (
     <div className="w-full py-20 px-4">
