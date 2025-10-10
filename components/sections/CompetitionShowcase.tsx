@@ -60,7 +60,7 @@ const ContestShowcase = () => {
   const displayContests = contests?.slice(0, 2) || [];
 
   return (
-    <div className="w-full py-20 px-4 bg-gray-50">
+    <div className="mb-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
