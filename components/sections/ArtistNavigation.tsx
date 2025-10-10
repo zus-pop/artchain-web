@@ -4,21 +4,36 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
-import { ChevronDown, Globe, User, Settings, LogOut, ArrowRight } from "lucide-react";
+import {
+  ChevronDown,
+  Globe,
+  User,
+  Settings,
+  LogOut,
+  ArrowRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useLogoutMutation } from "@/hooks/useLogoutMutation";
 import { useMeQuery } from "@/hooks/useMeQuery";
 
-const ArtistNavigation = () => {
+interface ArtistNavigationProps {
+  children?: React.ReactNode;
+  defaultTab?: number;
+}
+
+const ArtistNavigation: React.FC<ArtistNavigationProps> = ({ 
+  children,
+  defaultTab = 0
+}) => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(defaultTab);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const { currentLanguage, setLanguage } = useLanguageStore();
-  // Giả sử useTranslation trả về object có các key là t.home, t.contests, t.join, ...
   const t = useTranslation(currentLanguage);
-  
+
   // Auth hooks
   const { isAuthenticated, user } = useAuth();
   const { data: userData } = useMeQuery();
@@ -27,13 +42,28 @@ const ArtistNavigation = () => {
   // Use userData from API if available, fallback to store user
   const displayUser = userData || user;
 
+  // Handle tab change
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+  };
+
+  // Get children as array to render based on activeTab
+  const childrenArray = React.Children.toArray(children);
+  const activeContent = childrenArray[activeTab];
+
   // Handle click outside dropdowns
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target as Node)) {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
         setIsLanguageDropdownOpen(false);
       }
-      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
         setIsUserDropdownOpen(false);
       }
     };
@@ -56,26 +86,27 @@ const ArtistNavigation = () => {
     logout();
   };
 
-  const handleNavClick = (href: string, e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleNavClick = (
+    href: string,
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
     // Handle navigation
     e.preventDefault();
     window.location.href = href;
   };
 
-  const languages = [
-    { code: 'vi' },
-    { code: 'en' }
-  ];
+  const languages = [{ code: "vi" }, { code: "en" }];
+
+  // const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   const navItems = [
     { label: t.home, href: "/", active: true },
     { label: t.contests, href: "/contests" },
     { label: t.gallery, href: "/gallery" },
-    { label: t.prizes, href: "/prizes" }
+    { label: t.prizes, href: "/prizes" },
   ];
-  
-// Giữ nguyên Styles đã định nghĩa
-const styles = `
+  // Trong ứng dụng thực tế, bạn sẽ lấy giá trị này từ state hoặc context.
+  const styles = `
     .nav-wrap {
       --round: 10px;
       --p-x: 8px;
@@ -91,8 +122,6 @@ const styles = `
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       z-index: 1;
-      /* Thêm flex-shrink để nav không bị co lại khi không đủ chỗ */
-      flex-shrink: 0;
     }
 
     .nav-wrap input {
@@ -157,201 +186,235 @@ const styles = `
     .rd-4:checked ~ .slidebar { transform: translateX(calc(3 * var(--w-label))); }
   `;
 
-
   return (
     <>
       <style>{styles}</style>
       <nav className="bg-white shadow-sm border-t border-gray-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4">
-          {/* Cấu trúc mới: [Logo] [Center Section: Nav + Auth] [Language Dropdown] */}
+        <div className="mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            
-            {/* 1. Logo (Riêng biệt bên trái) */}
-            <div className="flex items-center flex-shrink-0">
+            {/* Logo */}
+            <Link
+              href="/"
+              className="flex items-center flex-shrink-0 cursor-pointer"
+            >
+              {/* Thêm cursor-pointer để hiển thị đây là một liên kết */}
               <div className="text-red-500 text-2xl font-bold mr-2">✓</div>
               <div>
                 <div className="font-bold text-gray-800">Artist</div>
                 <div className="text-xs text-gray-500">WORDPRESS THEME</div>
               </div>
+            </Link>
+
+            {/* New Navigation Menu */}
+            <div className="nav-wrap">
+              {navItems.map((item, index) => (
+                <React.Fragment key={item.label}>
+                  <input
+                    checked={activeTab === index}
+                    onChange={() => handleTabChange(index)}
+                    type="radio"
+                    id={`rd-${index + 1}`}
+                    name="radio"
+                    className={`rd-${index + 1}`}
+                    hidden
+                  />
+                  <a href="#" onClick={(e) => {
+                    e.preventDefault();
+                    handleTabChange(index);
+                  }}>
+                    <label htmlFor={`rd-${index + 1}`} className="nav-label">
+                      <span>{item.label}</span>
+                    </label>
+                  </a>
+                </React.Fragment>
+              ))}
+              <div className="slidebar" />
             </div>
 
-            {/* 2. Cụm Trung tâm: Nav Links + Auth/User */}
-            {/* Sử dụng flex-grow để cụm này chiếm hết không gian còn trống ở giữa */}
-            <div className="flex items-center space-x-4 flex-grow justify-center">
-                
-                {/* Navigation Menu */}
-                <div className="nav-wrap">
-                  {navItems.map((item, index) => (
-                    <React.Fragment key={item.label}>
-                      <input
-                        defaultChecked={item.active}
-                        type="radio"
-                        id={`rd-${index + 1}`}
-                        name="radio"
-                        className={`rd-${index + 1}`}
-                        hidden
-                      />
-                      <a href={item.href}>
-                        <label htmlFor={`rd-${index + 1}`} className="nav-label">
-                          <span>{item.label}</span>
-                        </label>
-                      </a>
-                    </React.Fragment>
-                  ))}
-                  <div className="slidebar" />
-                </div>
-                
-                {/* User Auth Section (Đặt ngay sau Navlink) */}
-                {isAuthenticated ? (
-                  <div className="relative flex-shrink-0" ref={userDropdownRef}>
-                    <button
-                      onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                      className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+            {/* Right side actions */}
+            <div className="flex items-center space-x-2">
+              {/* User Auth Section */}
+              {isAuthenticated ? (
+                <div className="relative" ref={userDropdownRef}>
+                  <button
+                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                    className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                  >
+                    <div
+                      className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
+                        displayUser?.role === "GUARDIAN"
+                          ? "bg-green-500"
+                          : "bg-red-500"
+                      }`}
                     >
-                      <div className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
-                        displayUser?.role === "GUARDIAN" ? "bg-green-500" : "bg-red-500"
-                      }`}>
-                        {getAvatarInitial()}
-                      </div>
-                      <span className="max-w-32 truncate hidden sm:inline">
-                        {getDisplayName()}
-                      </span>
-                      <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
-                        isUserDropdownOpen ? "rotate-180" : ""
-                      }`} />
-                    </button>
-
-                    <AnimatePresence>
-                      {isUserDropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                          className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
-                        >
-                          <div className="p-4 border-b border-gray-100">
-                            <div className="flex items-center space-x-3">
-                              <div className={`h-12 w-12 rounded-full flex items-center justify-center text-white text-lg font-bold ${
-                                displayUser?.role === "GUARDIAN" ? "bg-green-500" : "bg-red-500"
-                              }`}>
-                                {getAvatarInitial()}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 truncate">
-                                  {getDisplayName()}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {displayUser?.role === "GUARDIAN" ? "Guardian" : "Competitor"}
-                                </p>
-                                <p className="text-xs text-gray-400 truncate">
-                                  {displayUser?.email || "email@example.com"}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="py-2">
-                            <Link
-                              href="/me"
-                              onClick={() => setIsUserDropdownOpen(false)}
-                              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                            >
-                              <User className="h-4 w-4" />
-                              <span>Hồ sơ cá nhân</span>
-                            </Link>
-                            
-                            <button
-                              onClick={() => {
-                                // TODO: Add settings navigation
-                                setIsUserDropdownOpen(false);
-                              }}
-                              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                            >
-                              <Settings className="h-4 w-4" />
-                              <span>Cài đặt</span>
-                            </button>
-
-                            <div className="border-t border-gray-100 my-1"></div>
-
-                            <button
-                              onClick={() => {
-                                handleLogout();
-                                setIsUserDropdownOpen(false);
-                              }}
-                              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
-                            >
-                              <LogOut className="h-4 w-4" />
-                              <span>Đăng xuất</span>
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <Link
-                    href="/auth"
-                    onClick={(e) => handleNavClick("/auth", e)}
-                    className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 inline-flex items-center space-x-2 rounded-lg px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200 flex-shrink-0"
-                  >
-                    <span>{t.join}</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                )}
-            </div>
-            
-            {/* 3. Language Dropdown (Riêng biệt bên phải) */}
-            <div className="relative flex-shrink-0" ref={languageDropdownRef}>
-              <button
-                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-              >
-                <Globe className="h-4 w-4" />
-                <ChevronDown className={`h-2 w-2 transition-transform duration-200 ${
-                  isLanguageDropdownOpen ? "rotate-180" : ""
-                }`} />
-              </button>
-
-              <AnimatePresence>
-                {isLanguageDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
-                  >
-                    <div className="py-2">
-                      {languages.map((language) => (
-                        <button
-                          key={language.code}
-                          onClick={() => {
-                            setLanguage(language.code as 'vi' | 'en');
-                            setIsLanguageDropdownOpen(false);
-                          }}
-                          className={`flex w-full items-center space-x-3 px-4 py-3 text-sm transition-colors duration-150 ${
-                            currentLanguage === language.code
-                              ? "bg-red-50 text-red-600"
-                              : "text-gray-700 hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="text-lg">{language.code}</span>
-                          {currentLanguage === language.code && (
-                            <div className="ml-auto">
-                              <div className="h-2 w-2 rounded-full bg-red-600"></div>
-                            </div>
-                          )}
-                        </button>
-                      ))}
+                      {getAvatarInitial()}
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    <span className="max-w-32 truncate">
+                      {getDisplayName()}
+                    </span>
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform duration-200 ${
+                        isUserDropdownOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {isUserDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                        }}
+                        className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+                      >
+                        <div className="p-4 border-b border-gray-100">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`h-12 w-12 rounded-full flex items-center justify-center text-white text-lg font-bold ${
+                                displayUser?.role === "GUARDIAN"
+                                  ? "bg-green-500"
+                                  : "bg-red-500"
+                              }`}
+                            >
+                              {getAvatarInitial()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {getDisplayName()}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {displayUser?.role === "GUARDIAN"
+                                  ? "Guardian"
+                                  : "Competitor"}
+                              </p>
+                              <p className="text-xs text-gray-400 truncate">
+                                {displayUser?.email || "email@example.com"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="py-2">
+                          <Link
+                            href="/me"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          >
+                            <User className="h-4 w-4" />
+                            <span>Hồ sơ cá nhân</span>
+                          </Link>
+
+                          <button
+                            onClick={() => {
+                              // TODO: Add settings navigation
+                              setIsUserDropdownOpen(false);
+                            }}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          >
+                            <Settings className="h-4 w-4" />
+                            <span>Cài đặt</span>
+                          </button>
+
+                          <div className="border-t border-gray-100 my-1"></div>
+
+                          <button
+                            onClick={() => {
+                              handleLogout();
+                              setIsUserDropdownOpen(false);
+                            }}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            <span>Đăng xuất</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link
+                  href="/auth"
+                  onClick={(e) => handleNavClick("/auth", e)}
+                  className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 inline-flex items-center space-x-2 rounded-lg px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200"
+                >
+                  <span>{t.join}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+
+              {/* Language Dropdown */}
+              <div className="relative" ref={languageDropdownRef}>
+                <button
+                  onClick={() =>
+                    setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
+                  }
+                  className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                >
+                  <Globe className="h-4 w-4" />
+                  <ChevronDown
+                    className={`h-2 w-2 transition-transform duration-200 ${
+                      isLanguageDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {isLanguageDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 25,
+                      }}
+                      className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+                    >
+                      <div className="py-2">
+                        {languages.map((language) => (
+                          <button
+                            key={language.code}
+                            onClick={() => {
+                              setLanguage(language.code as "vi" | "en");
+                              setIsLanguageDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center space-x-3 px-4 py-3 text-sm transition-colors duration-150 ${
+                              currentLanguage === language.code
+                                ? "bg-red-50 text-red-600"
+                                : "text-gray-700 hover:bg-gray-50"
+                            }`}
+                          >
+                            <span className="text-lg">{language.code}</span>
+                            {currentLanguage === language.code && (
+                              <div className="ml-auto">
+                                <div className="h-2 w-2 rounded-full bg-red-600"></div>
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
       </nav>
+      
+      {/* Content area for active tab */}
+      {activeContent && (
+        <div className="w-full">
+          {activeContent}
+        </div>
+      )}
     </>
   );
 };
