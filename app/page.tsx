@@ -21,26 +21,26 @@ export default function Home() {
       <div className="flex-1 bg-gray-100">
         <ArtistNavigation defaultTab={0}>
           {/* Home Tab */}
-          <TabPanel className="container mx-auto px-4 py-8">
+          <TabPanel className="container px-4 py-8">
             <ContestShowcase />
             <ArtistGallery />
           </TabPanel>
 
           {/* Contests Tab */}
-          <TabPanel className="container mx-auto px-4 py-8">
+          <TabPanel className="container px-4 py-8">
             <ContestShowcase />
             <ContestShowcase />
           </TabPanel>
 
           {/* Gallery Tab */}
-          <TabPanel className="container mx-auto px-4 py-8">
+          <TabPanel className="container px-4 py-8">
             <ArtistGallery />
             <ArtistGallery />
             <ArtistGallery />
           </TabPanel>
 
           {/* Prizes Tab */}
-          <TabPanel className="container mx-auto px-4 py-8">
+          <TabPanel className="container px-4 py-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <h3 className="text-xl font-bold mb-2">First Prize</h3>

@@ -43,8 +43,7 @@ const ArtistGallery = () => {
 
   return (
     <section>
-      <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
+      <div className="mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-800 mb-4">
             Our <span className="text-red-500">Paintings</span>
@@ -53,14 +52,9 @@ const ArtistGallery = () => {
           <p className="text-gray-600 text-lg">OUR PRODUCTS</p>
         </div>
 
-        {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {paintings.map((painting) => (
-            <div
-              key={painting.id}
-              className="overflow-hidden group shadow-lg"
-            >
-              {/* Product Image */}
+            <div key={painting.id} className="overflow-hidden group shadow-lg">
               <div className="relative h-80 overflow-hidden">
                 <Image
                   src={painting.image}
@@ -69,16 +63,12 @@ const ArtistGallery = () => {
                   width={400}
                   height={500}
                 />
-
-                {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                   <button className="bg-white text-gray-800 py-2 px-6 rounded-full font-semibold opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 hover:bg-gray-200">
                     Add To Cart
                   </button>
                 </div>
               </div>
-
-              {/* Product Info */}
               <div className="p-6 text-center bg-white">
                 <h3 className="font-serif text-xl font-semibold text-gray-800 mb-2">
                   {painting.title}

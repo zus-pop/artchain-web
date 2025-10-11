@@ -12,7 +12,7 @@ const ContestShowcase = () => {
   if (isLoading) {
   return (
     <div className="w-full py-20 px-4">
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             Cuộc Thi <span className="text-red-500]">Đang Diễn Ra</span>
@@ -25,10 +25,7 @@ const ContestShowcase = () => {
               key={i}
               className="bg-[var(--primary)] bg-opacity-90 backdrop-blur-sm border border-white/10 rounded-3xl p-6 animate-pulse relative overflow-hidden"
             >
-              {/* Accent giả giống góc dưới bên phải */}
               <div className="absolute -bottom-8 -right-8 w-1/2 h-1/2 bg-white/10 rounded-xl" />
-
-              {/* Nội dung giả */}
               <div className="h-6 w-3/4 bg-white/30 rounded mb-4"></div>
               <div className="h-4 w-full bg-white/20 rounded mb-2"></div>
               <div className="h-3 w-5/6 bg-white/20 rounded mb-4"></div>
@@ -43,7 +40,6 @@ const ContestShowcase = () => {
 
 
   if (error) {
-    // Giữ nguyên giao diện lỗi
     return (
       <div className="w-full py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
@@ -56,7 +52,6 @@ const ContestShowcase = () => {
     );
   }
 
-  // Show only first 3 contests for showcase
   const displayContests = contests?.slice(0, 2) || [];
 
   return (
@@ -73,7 +68,6 @@ const ContestShowcase = () => {
           </p>
         </div>
 
-        {/* --- KHỐI THẺ CUỘC THI ĐÃ ĐƯỢC CẬP NHẬT --- */}
         {displayContests.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {displayContests.map((contest) => (
@@ -81,12 +75,10 @@ const ContestShowcase = () => {
                 key={contest.contestId}
                 className={`group m-5 flex flex-col justify-between gap-4 min-h-[240px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md`}
               >
-                {/* Khối trang trí ở góc */}
                 <div
                   className={`absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]`}
                 />
 
-                {/* Nội dung thẻ */}
                 <div className="z-10">
                   <h3 className="text-2xl font-bold mb-2 text-white">
                     {contest.title}
@@ -95,8 +87,6 @@ const ContestShowcase = () => {
                     {contest.description}
                   </p>
                 </div>
-
-                {/* Nút hành động */}
                 <Link
                   href={`/contests/${contest.contestId}`}
                   className={`z-10 w-fit text-gray-800 font-semibold rounded p-2 px-6 transition-colors duration-200 bg-white bg-opacity-20 hover:bg-opacity-40`}
@@ -118,7 +108,6 @@ const ContestShowcase = () => {
           </div>
         )}
 
-        {/* View All Button */}
         <div className="text-center mt-16">
           <Link href="/contests">
             <button className="overflow-hidden relative w-32 p-2 h-12 bg-gray-800 text-white border-none rounded-md text-xl font-bold cursor-pointer z-10 group">

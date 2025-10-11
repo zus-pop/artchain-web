@@ -7,20 +7,26 @@ import ArtistNavigation from "@/components/sections/ArtistNavigation";
 
 // Định nghĩa các đường dẫn bạn muốn ẩn header
 const HIDDEN_PATHS = ["/"]; // Trang chủ
-const ACTIVE_TAB = ["/contests", "/gallery", "/prizes"];
+
+// Định nghĩa các đường dẫn và giá trị defaultTab tương ứng
+// contest: 1, gallery: 2, prizes: 3
+const ACTIVE_PATHS_TABS: { [key: string]: number } = {
+  "/contests": 1,
+  "/gallery": 2,
+  "/prizes": 3,
+};
 
 export function HeaderWrapper() {
   const pathname = usePathname();
-  // Kiểm tra nếu đường dẫn hiện tại nằm trong danh sách ẩn
   const isHidden = HIDDEN_PATHS.includes(pathname);
-  const isActive = ACTIVE_TAB.includes(pathname);
+  const defaultTab = ACTIVE_PATHS_TABS[pathname];
+  const isActive = defaultTab !== undefined;
+
   if (isHidden) {
-    return null; 
+    return null;
   }
   if (isActive) {
-    return <ArtistNavigation defaultTab={2} />;
+    return <ArtistNavigation defaultTab={defaultTab} />;
   }
-
-  // Render header cho các trang khác
   return <ArtistNavigation />;
 }
