@@ -1,22 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { CreateUserDialog } from "@/components/admin/create-user-dialog";
+import { DeleteUserDialog } from "@/components/admin/delete-user-dialog";
+import { EditUserDialog } from "@/components/admin/edit-user-dialog";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Breadcrumb } from "@/components/breadcrumb";
-import { CreateUserDialog } from "@/components/admin/create-user-dialog";
-import { EditUserDialog } from "@/components/admin/edit-user-dialog";
-import { DeleteUserDialog } from "@/components/admin/delete-user-dialog";
-import { User, UserRole, UserStatus } from "@/types/dashboard";
+import { User, UserRole, UserStatus } from "@/types";
 import {
-  IconPlus,
   IconPencil,
-  IconTrash,
-  IconUserPause,
-  IconUserCheck,
+  IconPlus,
   IconSearch,
+  IconTrash,
+  IconUserCheck,
+  IconUserPause,
 } from "@tabler/icons-react";
+import { useState } from "react";
 
 export default function AccountsManagementPage() {
   // State for users list

@@ -1,27 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Campaign, CampaignStatus } from "@/types/dashboard";
 import {
-  IconTrendingUp,
-  IconPlus,
-  IconEye,
   IconEdit,
-  IconTrash,
-  IconCalendar,
-  IconMoneybag,
-  IconSearch,
+  IconEye,
   IconFilter,
+  IconMoneybag,
+  IconPlus,
+  IconSearch,
   IconTarget,
+  IconTrash,
+  IconTrendingUp,
   IconUsers,
 } from "@tabler/icons-react";
-import { Campaign, CampaignStatus } from "@/types/dashboard";
+import { useState } from "react";
 
 export default function CampaignsPage() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
+  const [campaigns, _setCampaigns] = useState<Campaign[]>([
     {
       id: "1",
       title: "ArtChain Community Fund",
@@ -166,7 +165,7 @@ export default function CampaignsPage() {
     0
   );
   const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE").length;
-  const completedCampaigns = campaigns.filter(
+  const _completedCampaigns = campaigns.filter(
     (c) => c.status === "COMPLETED"
   ).length;
 

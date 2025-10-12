@@ -1,23 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   IconAward,
-  IconTrophy,
-  IconMedal,
-  IconStar,
-  IconPlus,
-  IconEye,
   IconEdit,
-  IconTrash,
+  IconEye,
+  IconMedal,
   IconPalette,
+  IconPlus,
+  IconStar,
   IconTag,
+  IconTrash,
+  IconTrophy,
 } from "@tabler/icons-react";
+import { useState } from "react";
 
 type AwardTemplateType =
   | "GOLD"

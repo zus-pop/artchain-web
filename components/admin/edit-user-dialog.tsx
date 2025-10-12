@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import {
-  User,
-  UserRole,
-  UserStatus,
-  EditUserFormData,
-} from "@/types/dashboard";
+import { EditUserFormData, User, UserRole, UserStatus } from "@/types";
+import { useEffect, useState } from "react";
 
 interface EditUserDialogProps {
   open: boolean;

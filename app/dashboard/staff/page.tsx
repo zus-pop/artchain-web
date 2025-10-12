@@ -1,7 +1,8 @@
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 export default function StaffDashboardPage() {
   return (
@@ -224,7 +225,7 @@ export default function StaffDashboardPage() {
                     </div>
                   </a>
 
-                  <a
+                  <Link
                     href="/dashboard/staff/posts/create"
                     className="flex items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors duration-200"
                   >
@@ -249,7 +250,7 @@ export default function StaffDashboardPage() {
                       </p>
                       <p className="text-xs text-gray-500">New announcement</p>
                     </div>
-                  </a>
+                  </Link>
                 </div>
               </div>
 
@@ -281,7 +282,7 @@ export default function StaffDashboardPage() {
                           Painting approved
                         </p>
                         <p className="text-xs text-gray-500">
-                          "Sunset Dreams" by Alice Chen
+                          &ldquo;Sunset Dreams&rdquo; by Alice Chen
                         </p>
                       </div>
                     </div>

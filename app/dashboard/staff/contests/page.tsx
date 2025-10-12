@@ -1,26 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Contest, ContestStatus } from "@/types/dashboard";
 import {
-  IconTrophy,
-  IconSearch,
-  IconFilter,
-  IconEye,
-  IconPlus,
-  IconCalendar,
-  IconUsers,
-  IconClock,
   IconCircleCheck,
   IconCircleX,
   IconEdit,
+  IconEye,
+  IconFilter,
+  IconPlus,
+  IconSearch,
   IconTrash,
+  IconTrophy,
+  IconUsers,
 } from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function ContestsManagementPage() {
   const [contests] = useState<Contest[]>([

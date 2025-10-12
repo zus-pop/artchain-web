@@ -1,21 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
-  IconUsers,
-  IconMail,
-  IconBriefcase,
-  IconStar,
-  IconSend,
   IconArrowLeft,
+  IconBriefcase,
   IconCheck,
-  IconX,
+  IconMail,
+  IconSend,
+  IconUsers,
 } from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
 
 type Specialization =
   | "Mixed Media"

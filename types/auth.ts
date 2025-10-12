@@ -16,14 +16,20 @@ export interface RegisterRequest {
 }
 
 export interface WhoAmI {
-  id: string;
-  username: string;
+  userId: string;
   fullName: string;
   email: string;
-  role: "GUARDIAN" | "COMPETITOR" | "ADMIN" | "STAFF";
+  role: UserRole;
+  phone?: string;
+  birthday?: string;
+  schoolName?: string;
+  ward?: string;
+  grade?: string;
 }
 
 export interface AuthResponse {
   access_token: string;
   user?: WhoAmI;
 }
+
+export type UserRole = "COMPETITOR" | "GUARDIAN" | "ADMIN" | "STAFF";

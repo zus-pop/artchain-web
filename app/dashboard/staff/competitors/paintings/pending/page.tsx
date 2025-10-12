@@ -124,7 +124,7 @@ export default function PendingPaintingsPage() {
       )
     );
     setIsRejectModalOpen(false);
-    setRejectionReason("");
+    setRejectionReason(reason);
     if (selectedPainting?.id === paintingId) {
       setIsViewModalOpen(false);
       setSelectedPainting(null);
@@ -418,8 +418,8 @@ export default function PendingPaintingsPage() {
               </div>
 
               <p className="text-sm text-gray-600 mb-4">
-                Are you sure you want to reject "{selectedPainting.title}" by{" "}
-                {selectedPainting.competitorName}?
+                Are you sure you want to reject &ldquo;{selectedPainting.title}
+                &rdquo; by {selectedPainting.competitorName}?
               </p>
 
               <div className="mb-4">

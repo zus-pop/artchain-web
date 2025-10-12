@@ -1,24 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
-  IconTrophy,
-  IconSearch,
-  IconFilter,
-  IconEye,
-  IconPlus,
-  IconMedal,
   IconAward,
-  IconStar,
-  IconCalendar,
-  IconUsers,
   IconCurrencyDollar,
+  IconEye,
+  IconFilter,
+  IconMedal,
+  IconPlus,
+  IconSearch,
+  IconStar,
+  IconTrophy,
+  IconUsers,
 } from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
 
 type AwardType = "GOLD" | "SILVER" | "BRONZE" | "HONORABLE_MENTION" | "SPECIAL";
 
@@ -455,7 +454,7 @@ export default function AwardsManagementPage() {
                                       {award.winnerName}
                                     </div>
                                     <div className="text-sm text-gray-500">
-                                      "{award.artworkTitle}"
+                                      &ldquo;{award.artworkTitle}&rdquo;
                                     </div>
                                     <div className="text-xs text-gray-400">
                                       Age {award.winnerAge} • {award.category}

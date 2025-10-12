@@ -1,5 +1,7 @@
 // Dashboard Types - Centralized interface definitions for staff and admin dashboards
 
+import { UserRole } from "./auth";
+
 // =============================================================================
 // STAFF DASHBOARD TYPES
 // =============================================================================
@@ -258,7 +260,6 @@ export interface PostFormData {
 // =============================================================================
 
 // User Management Types
-export type UserRole = "COMPETITOR" | "GUARDIAN" | "STAFF" | "ADMIN";
 export type UserStatus = "ACTIVE" | "SUSPENDED" | "PENDING";
 
 export interface User {

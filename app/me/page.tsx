@@ -42,23 +42,6 @@ const UserProfilePage = () => {
     }
   }, []); // [] đảm bảo chỉ chạy một lần khi component mount
 
-  // Hàm helper để format ngày sinh
-  const formatBirthday = (isoDate: string | undefined): string => {
-    if (!isoDate) return "N/A";
-    try {
-      // Chuyển đổi chuỗi ISO thành đối tượng Date
-      const date = new Date(isoDate);
-      // Format thành dd/mm/yyyy
-      return date.toLocaleDateString("vi-VN", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-    } catch (e) {
-      return "Invalid Date";
-    }
-  };
-
   return (
     <>
       <section className="relative block h-96">
@@ -139,12 +122,12 @@ const UserProfilePage = () => {
 
                 {/* Right side - Stats (giữ nguyên) */}
                 <div className="w-full lg:w-6/12 px-4 mt-2">
-                    <div className="flex justify-center lg:justify-end items-center divide-x divide-gray-300">
-                      <UserProfileCards
-                        birthday={authUser?.birthday}
-                        ward={authUser?.ward}
-                      />
-                      {/* <div className="text-center px-6">
+                  <div className="flex justify-center lg:justify-end items-center divide-x divide-gray-300">
+                    <UserProfileCards
+                      birthday={authUser?.birthday}
+                      ward={authUser?.ward}
+                    />
+                    {/* <div className="text-center px-6">
                         <span className="text-2xl font-bold block uppercase tracking-wide text-gray-600">
                           22
                         </span>
@@ -168,14 +151,13 @@ const UserProfilePage = () => {
                           {t.comments}
                         </span>
                       </div> */}
-                    </div>
-
+                  </div>
                 </div>
               </div>
               <div className="py-10 border-t border-gray-200 text-center">
                 <div className="flex flex-wrap justify-center">
                   <div className="w-full px-4">
-                    <div className="w-3/5 p-2 pt-3 pb-1.5 flex flex-col rounded-xl backdrop-blur-lg bg-gray-50/10 text-gray-200 w-full mx-auto mb-6">
+                    <div className="p-2 pt-3 pb-1.5 flex flex-col rounded-xl backdrop-blur-lg bg-gray-50/10 text-gray-200 w-full mx-auto mb-6">
                       <div className="flex divide-x divide-neutral-800">
                         <div className="flex-1 pr-6">
                           <p className="text-xs font-medium text-neutral-500">

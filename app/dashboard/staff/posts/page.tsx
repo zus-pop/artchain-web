@@ -1,22 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
-import {
-  IconFileText,
-  IconPlus,
-  IconEye,
-  IconEdit,
-  IconTrash,
-  IconCalendar,
-  IconUser,
-  IconSearch,
-  IconFilter,
-} from "@tabler/icons-react";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Post, PostStatus } from "@/types/dashboard";
+import {
+  IconEdit,
+  IconEye,
+  IconFileText,
+  IconFilter,
+  IconPlus,
+  IconSearch,
+  IconTrash,
+  IconUser,
+} from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([
@@ -170,13 +170,13 @@ export default function PostsPage() {
                     hidden from main listings for better organization
                   </p>
                 </div>
-                <a
+                <Link
                   href="/dashboard/staff/posts/create"
                   className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
                   Create New Post
-                </a>
+                </Link>
               </div>
 
               {/* Statistics Cards */}

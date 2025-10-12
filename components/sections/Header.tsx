@@ -23,9 +23,9 @@ interface ArtistNavigationProps {
   defaultTab?: number;
 }
 
-const Header: React.FC<ArtistNavigationProps> = ({ 
+const Header: React.FC<ArtistNavigationProps> = ({
   children,
-  defaultTab = 0
+  defaultTab = 0,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -81,7 +81,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
 
   // Helper functions for user display
   const getDisplayName = () => {
-    return displayUser?.fullName || displayUser?.username || "User";
+    return displayUser?.fullName || "User";
   };
 
   const getAvatarInitial = () => {
@@ -103,21 +103,24 @@ const Header: React.FC<ArtistNavigationProps> = ({
 
   const languages = [{ code: "vi" }, { code: "en" }];
 
-  const navItems = React.useMemo(() => [
-    { label: t.home, href: "/", active: true },
-    { label: t.contests, href: "/contests" },
-    { label: t.gallery, href: "/gallery" },
-    { label: t.prizes, href: "/prizes" },
-  ], [t]);
+  const navItems = React.useMemo(
+    () => [
+      { label: t.home, href: "/", active: true },
+      { label: t.contests, href: "/contests" },
+      { label: t.gallery, href: "/gallery" },
+      { label: t.prizes, href: "/prizes" },
+    ],
+    [t]
+  );
 
   // Update active tab based on current route
   // 💡 SỬA ĐỔI CHỦ YẾU Ở ĐÂY: Luôn gọi setActiveTab với currentIndex.
   // Nếu currentIndex là -1 (không khớp), không có tab nào được active.
   useEffect(() => {
-    const currentIndex = navItems.findIndex(item => item.href === pathname);
+    const currentIndex = navItems.findIndex((item) => item.href === pathname);
     setActiveTab(currentIndex);
   }, [pathname, navItems]);
-  
+
   // Trong ứng dụng thực tế, bạn sẽ lấy giá trị này từ state hoặc context.
   const styles = `
     .nav-wrap {
@@ -234,8 +237,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     className={`rd-${index + 1}`}
                     hidden
                   />
-                  <Link href={item.href} onClick={(e) => handleNavClick(item.href, e)}>
-                    <label htmlFor={`rd-${index + 1}`} className="nav-label cursor-pointer">
+                  <Link
+                    href={item.href}
+                    onClick={(e) => handleNavClick(item.href, e)}
+                  >
+                    <label
+                      htmlFor={`rd-${index + 1}`}
+                      className="nav-label cursor-pointer"
+                    >
                       <span>{item.label}</span>
                     </label>
                   </Link>
@@ -421,13 +430,9 @@ const Header: React.FC<ArtistNavigationProps> = ({
           </div>
         </div>
       </nav>
-      
+
       {/* Content area for active tab */}
-      {activeContent && (
-        <div className="w-full">
-          {activeContent}
-        </div>
-      )}
+      {activeContent && <div className="w-full">{activeContent}</div>}
     </>
   );
 };

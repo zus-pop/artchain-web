@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Post, PostStatus } from "@/types/dashboard";
 import {
-  IconFileText,
   IconArrowLeft,
-  IconEdit,
-  IconTrash,
   IconCalendar,
-  IconUser,
+  IconEdit,
   IconEye,
   IconShare,
+  IconTrash,
+  IconUser,
 } from "@tabler/icons-react";
-import { Post, PostStatus } from "@/types/dashboard";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function ViewPostPage() {
   // In a real app, you'd get the post ID from the URL params
@@ -153,13 +153,13 @@ Ready to join the revolution? Create your free account today and start exploring
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <a
+                <Link
                   href="/dashboard/staff/posts"
                   className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   <IconArrowLeft className="h-5 w-5" />
                   Back to Posts
-                </a>
+                </Link>
                 <h2 className="text-2xl font-bold text-gray-900">
                   Post Details
                 </h2>

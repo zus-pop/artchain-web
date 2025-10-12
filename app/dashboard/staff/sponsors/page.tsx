@@ -20,7 +20,7 @@ import {
 import { Sponsor, SponsorStatus } from "@/types/dashboard";
 
 export default function SponsorsPage() {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([
+  const [sponsors, _setSponsors] = useState<Sponsor[]>([
     {
       id: "1",
       name: "John Smith",

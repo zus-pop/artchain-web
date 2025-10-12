@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Post, PostStatus } from "@/types/dashboard";
 import {
-  IconFileText,
   IconArrowLeft,
   IconDeviceFloppy,
-  IconSend,
-  IconCalendar,
-  IconTag,
   IconEye,
+  IconSend,
+  IconTag,
 } from "@tabler/icons-react";
-import { Post, PostStatus } from "@/types/dashboard";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface PostFormData {
   title: string;

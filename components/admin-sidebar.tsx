@@ -1,14 +1,14 @@
 "use client";
 
-import * as React from "react";
 import {
   IconChartBar,
   IconDashboard,
   IconReport,
   IconSettings,
-  IconUsers,
   IconShield,
+  IconUsers,
 } from "@tabler/icons-react";
+import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
@@ -22,6 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 const data = {
   user: {
@@ -122,10 +123,10 @@ export function AdminSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/">
+              <Link href="/">
                 <IconShield className="!size-5 text-blue-600" />
                 <span className="text-base font-semibold">ArtChain Admin</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

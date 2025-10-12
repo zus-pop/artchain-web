@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
-  IconTrophy,
-  IconSearch,
-  IconEye,
-  IconUsers,
   IconClock,
-  IconTrendingUp,
-  IconCalendar,
+  IconEye,
   IconFileText,
+  IconSearch,
+  IconTrendingUp,
+  IconTrophy,
+  IconUsers,
 } from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
 
 interface ActiveContest {
   id: string;

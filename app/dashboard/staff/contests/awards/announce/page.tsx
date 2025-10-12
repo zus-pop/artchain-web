@@ -1,23 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
-  IconTrophy,
-  IconSend,
   IconArrowLeft,
   IconCheck,
-  IconX,
-  IconUsers,
-  IconMail,
-  IconCalendar,
-  IconFileText,
   IconEye,
+  IconFileText,
+  IconMail,
+  IconSend,
+  IconTrophy,
+  IconUsers,
 } from "@tabler/icons-react";
+import Link from "next/link";
+import { useState } from "react";
 
 type AwardType = "GOLD" | "SILVER" | "BRONZE" | "HONORABLE_MENTION" | "SPECIAL";
 
@@ -337,8 +335,10 @@ export default function AnnounceResultsPage() {
                                   </span>
                                 </div>
                                 <p className="text-gray-600 mb-2">
-                                  <strong>"{winner.artworkTitle}"</strong> • Age{" "}
-                                  {winner.age}
+                                  <strong>
+                                    &ldquo;{winner.artworkTitle}&rdquo;
+                                  </strong>{" "}
+                                  • Age {winner.age}
                                 </p>
                                 <p className="text-sm text-gray-600 mb-2">
                                   {winner.description}
@@ -402,7 +402,8 @@ export default function AnnounceResultsPage() {
                             • All participants will be notified of the results
                           </li>
                           <li>
-                            • Awards will be marked as "announced" in the system
+                            • Awards will be marked as &ldquo;announced&rdquo;
+                            in the system
                           </li>
                           <li>
                             • Results will be published on the contest page
