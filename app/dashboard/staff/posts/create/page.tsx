@@ -14,7 +14,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 interface PostFormData {
   title: string;
@@ -25,7 +25,15 @@ interface PostFormData {
   tags: string[];
 }
 
-export default function CreatePostPage() {
+export default function CreatePostSuspense() {
+  return (
+    <Suspense>
+      <CreatePostPage />
+    </Suspense>
+  );
+}
+
+export function CreatePostPage() {
   const searchParams = useSearchParams();
   const postId = searchParams.get("id");
   const isEditing = !!postId;
@@ -109,7 +117,7 @@ Ready to join the revolution? Create your free account today and start exploring
     }
   }, [isEditing, postId]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,

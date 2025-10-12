@@ -13,7 +13,7 @@ import { IconTrash, IconUpload } from "@tabler/icons-react";
 import { School } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -56,7 +56,15 @@ const paintingUploadSchema = z.object({
 
 type PaintingUploadForm = z.infer<typeof paintingUploadSchema>;
 
-export default function PaintingUpload() {
+export default function PaintingUploadSuspense() {
+  return (
+    <Suspense>
+      <PaintingUpload />
+    </Suspense>
+  );
+}
+
+export function PaintingUpload() {
   const router = useRouter();
   const params = useSearchParams();
   const contestId = params.get("contestId");

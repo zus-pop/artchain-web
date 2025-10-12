@@ -20,7 +20,7 @@ import {
 import { useState } from "react";
 
 export default function CampaignsPage() {
-  const [campaigns, _setCampaigns] = useState<Campaign[]>([
+  const [campaigns] = useState<Campaign[]>([
     {
       id: "1",
       title: "ArtChain Community Fund",
@@ -165,9 +165,9 @@ export default function CampaignsPage() {
     0
   );
   const activeCampaigns = campaigns.filter((c) => c.status === "ACTIVE").length;
-  const _completedCampaigns = campaigns.filter(
-    (c) => c.status === "COMPLETED"
-  ).length;
+  //   const _completedCampaigns = campaigns.filter(
+  //     (c) => c.status === "COMPLETED"
+  //   ).length;
 
   return (
     <SidebarProvider
