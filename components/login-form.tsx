@@ -1,6 +1,6 @@
 "use client";
 
-import { useLoginMutation } from "@/apis/auth";
+import { useLoginMutation } from "@/hooks/useLoginMutation";
 import { FloatingInput } from "@/components/ui/floating-input";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
@@ -62,8 +62,7 @@ export function LoginForm({
     >
       <form className="p-4 md:p-6 flex flex-col items-center justify-center">
         <div className="flex flex-col items-center text-center mb-4 w-full max-w-xs md:max-w-sm">
-          {/* Thay đổi: Dùng màu secondary cho tiêu đề */}
-          <h1 className="text-3xl font-bold text-secondary mb-3">
+          <h1 className="text-3xl font-bold text-gray-800 mb-3">
             {translations.signIn}
           </h1>
         </div>
@@ -112,10 +111,10 @@ export function LoginForm({
                 type="checkbox"
               />
               {/* Thay đổi: Dùng màu secondary cho viền checkbox */}
-              <span className="absolute left-1/2 top-1/2 h-[1em] w-[1em] -translate-x-1/2 -translate-y-1/2 rounded-[0.25em] border-[1px] border-secondary"></span>
+              <span className="absolute left-1/2 top-1/2 h-[1em] w-[1em] -translate-x-1/2 -translate-y-1/2 rounded-[0.25em] border-[1px] border-black"></span>
               <svg
                 // Thay đổi: Stroke mặc định là secondary, khi check là primary
-                className="absolute left-1/2 top-1/2 h-[2em] w-[2em] -translate-x-1/2 -translate-y-1/2 stroke-secondary duration-500 ease-out [stroke-dasharray:100] [stroke-dashoffset:100] peer-checked:stroke-primary peer-checked:[stroke-dashoffset:0]"
+                className="absolute left-1/2 top-1/2 h-[2em] w-[2em] -translate-x-1/2 -translate-y-1/2 stroke-black duration-500 ease-out [stroke-dasharray:100] [stroke-dashoffset:100] peer-checked:stroke-black peer-checked:[stroke-dashoffset:0]"
                 viewBox="0 0 38 37"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"

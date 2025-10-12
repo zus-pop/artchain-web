@@ -1,4 +1,3 @@
-import React from "react";
 import myAxios from "@/lib/custom-axios";
 import { AuthResponse, LoginRequest, RegisterRequest, WhoAmI } from "@/types";
 import { useMutation, useQuery } from "@tanstack/react-query";

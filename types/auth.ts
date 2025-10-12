@@ -9,7 +9,6 @@ export interface RegisterRequest {
   email: string;
   fullName: string;
   role: "GUARDIAN" | "COMPETITOR";
-  // Optional fields for COMPETITOR
   birthday?: string;
   schoolName?: string;
   ward?: string;

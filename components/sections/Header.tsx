@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import {
@@ -22,12 +23,15 @@ interface ArtistNavigationProps {
   defaultTab?: number;
 }
 
-const ArtistNavigation: React.FC<ArtistNavigationProps> = ({ 
+const Header: React.FC<ArtistNavigationProps> = ({ 
   children,
   defaultTab = 0
 }) => {
+  const router = useRouter();
+  const pathname = usePathname();
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  // Khởi tạo activeTab với -1 để mặc định không có tab nào active nếu defaultTab = 0 không khớp
   const [activeTab, setActiveTab] = useState(defaultTab);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
@@ -43,13 +47,16 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
   const displayUser = userData || user;
 
   // Handle tab change
-  const handleTabChange = (index: number) => {
+  const handleTabChange = (index: number, href: string) => {
     setActiveTab(index);
+    // Use Next.js router for client-side navigation
+    router.push(href);
   };
 
   // Get children as array to render based on activeTab
   const childrenArray = React.Children.toArray(children);
-  const activeContent = childrenArray[activeTab];
+  // Sử dụng activeContent chỉ khi activeTab hợp lệ
+  const activeContent = activeTab !== -1 ? childrenArray[activeTab] : null;
 
   // Handle click outside dropdowns
   useEffect(() => {
@@ -90,21 +97,27 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
     href: string,
     e: React.MouseEvent<HTMLAnchorElement>
   ) => {
-    // Handle navigation
     e.preventDefault();
-    window.location.href = href;
+    router.push(href);
   };
 
   const languages = [{ code: "vi" }, { code: "en" }];
 
-  // const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
-
-  const navItems = [
+  const navItems = React.useMemo(() => [
     { label: t.home, href: "/", active: true },
     { label: t.contests, href: "/contests" },
     { label: t.gallery, href: "/gallery" },
     { label: t.prizes, href: "/prizes" },
-  ];
+  ], [t]);
+
+  // Update active tab based on current route
+  // 💡 SỬA ĐỔI CHỦ YẾU Ở ĐÂY: Luôn gọi setActiveTab với currentIndex.
+  // Nếu currentIndex là -1 (không khớp), không có tab nào được active.
+  useEffect(() => {
+    const currentIndex = navItems.findIndex(item => item.href === pathname);
+    setActiveTab(currentIndex);
+  }, [pathname, navItems]);
+  
   // Trong ứng dụng thực tế, bạn sẽ lấy giá trị này từ state hoặc context.
   const styles = `
     .nav-wrap {
@@ -178,12 +191,15 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
       transform-origin: 0 0 0;
       z-index: 1;
       transition: transform 0.5s cubic-bezier(0.33, 0.83, 0.99, 0.98);
+      /* 💡 THÊM: Ẩn slidebar nếu không có radio nào được chọn */
+      opacity: 0;
     }
 
-    .rd-1:checked ~ .slidebar { transform: translateX(calc(0 * var(--w-label))); }
-    .rd-2:checked ~ .slidebar { transform: translateX(calc(1 * var(--w-label))); }
-    .rd-3:checked ~ .slidebar { transform: translateX(calc(2 * var(--w-label))); }
-    .rd-4:checked ~ .slidebar { transform: translateX(calc(3 * var(--w-label))); }
+    /* 💡 SỬA ĐỔI: Chỉ hiện slidebar khi có radio button được checked */
+    .rd-1:checked ~ .slidebar { transform: translateX(calc(0 * var(--w-label))); opacity: 1; }
+    .rd-2:checked ~ .slidebar { transform: translateX(calc(1 * var(--w-label))); opacity: 1; }
+    .rd-3:checked ~ .slidebar { transform: translateX(calc(2 * var(--w-label))); opacity: 1; }
+    .rd-4:checked ~ .slidebar { transform: translateX(calc(3 * var(--w-label))); opacity: 1; }
   `;
 
   return (
@@ -211,21 +227,18 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
                 <React.Fragment key={item.label}>
                   <input
                     checked={activeTab === index}
-                    onChange={() => handleTabChange(index)}
+                    onChange={() => handleTabChange(index, item.href)}
                     type="radio"
                     id={`rd-${index + 1}`}
                     name="radio"
                     className={`rd-${index + 1}`}
                     hidden
                   />
-                  <a href="#" onClick={(e) => {
-                    e.preventDefault();
-                    handleTabChange(index);
-                  }}>
-                    <label htmlFor={`rd-${index + 1}`} className="nav-label">
+                  <Link href={item.href} onClick={(e) => handleNavClick(item.href, e)}>
+                    <label htmlFor={`rd-${index + 1}`} className="nav-label cursor-pointer">
                       <span>{item.label}</span>
                     </label>
-                  </a>
+                  </Link>
                 </React.Fragment>
               ))}
               <div className="slidebar" />
@@ -419,4 +432,4 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
   );
 };
 
-export default ArtistNavigation;
+export default Header;

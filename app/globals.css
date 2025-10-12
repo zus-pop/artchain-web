@@ -29,12 +29,16 @@
   --accent: hsl(0 75% 95%); /* Một màu hồng/đỏ rất nhạt làm nền */
   --accent-foreground: hsl(2 68% 58%); /* Chữ màu đỏ cam trên nền accent */
 
+  /* Màu Destructive (cảnh báo, xóa) */
+  --destructive: hsl(2 68% 58%); /* Dùng luôn màu primary cho mục đích này */
+  --destructive-foreground: hsl(0 0% 100%);
+
   /* Viền và Input */
   --border: hsl(0 0% 90%); /* Viền xám nhạt */
   --input: hsl(0 0% 95%); /* Nền ô input */
   --ring: hsl(2 68% 58%); /* Màu viền khi focus */
 
-  /* Fonts */
+  /* Fonts & Radius */
   --font-sans: "Lato", "Open Sans", sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --sidebar: hsl(0 0% 98%);
@@ -45,6 +49,7 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --radius: 0.5rem;
 }
 
 /* Artist Theme Styles */

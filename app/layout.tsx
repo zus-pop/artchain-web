@@ -1,10 +1,11 @@
-import Iridescence from "@/components/Iridescence";
-import Header2 from "@/components/mvpblocks/header-2";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import ReactQueryProvider from "@/components/react-query-provider";
+import { AuthInitializer } from "@/components/AuthInitializer";
 import "./globals.css";
+import ArtistNavigation from "@/components/sections/ArtistNavigation";
+import { HeaderWrapper } from "@/components/sections/HeaderWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,13 +55,15 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ReactQueryProvider>
-          <Toaster richColors />
-          <div className="fixed inset-0 -z-10">
-          </div>
-          {/* <Header2 /> */}
-          <main className="relative z-10">
-            {children}
-          </main>
+          <AuthInitializer>
+            <Toaster richColors />
+            <div className="fixed inset-0 -z-10">
+            </div>
+                  <HeaderWrapper />
+            <main className="relative z-10">
+              {children}
+            </main>
+          </AuthInitializer>
         </ReactQueryProvider>
       </body>
     </html>
