@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Trophy, Filter, Clock } from "lucide-react";
 import { useGetContests, ContestStatus } from "@/apis/contests";
 import Link from "next/link";
+import Image from "next/image";
 
 const statusColors = {
   UPCOMING: "bg-blue-500",
@@ -21,6 +22,8 @@ const statusLabels = {
   ENDED: "Đã kết thúc",
   COMPLETED: "Hoàn thành",
 };
+
+const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=No+Banner';
 
 export default function ContestsPage() {
   const [selectedStatus, setSelectedStatus] = useState<ContestStatus | undefined>();
@@ -166,7 +169,7 @@ export default function ContestsPage() {
                   <Link href={`/contests/${contest.contestId}`}>
                     <div className="group m-5 flex flex-col justify-between gap-4 min-h-[320px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md">
                       {/* Khối trang trí ở góc */}
-                      <div className="absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
+                      <Image src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL} alt={contest.title} width={200} height={100} className="absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
 
                       {/* Status Badge */}
                       <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${statusColors[contest.status]}`}>

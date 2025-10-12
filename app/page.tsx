@@ -21,19 +21,19 @@ export default function Home() {
       <div className="flex-1 bg-gray-100">
         <ArtistNavigation defaultTab={0}>
           {/* Home Tab */}
-          <TabPanel className="container px-4 py-8">
+          <TabPanel className="container px-8 py-8">
             <ContestShowcase />
             <ArtistGallery />
           </TabPanel>
 
           {/* Contests Tab */}
-          <TabPanel className="container px-4 py-8">
+          <TabPanel className="container px-8 py-8">
             <ContestShowcase />
             <ContestShowcase />
           </TabPanel>
 
           {/* Gallery Tab */}
-          <TabPanel className="container px-4 py-8">
+          <TabPanel className="container px-8 py-8">
             <ArtistGallery />
             <ArtistGallery />
             <ArtistGallery />
