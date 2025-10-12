@@ -4,39 +4,47 @@
 /* Artist Theme Variables */
 :root {
   /* Nền và chữ chính (Light Mode) */
-  --background: hsl(0 0% 97%);         /* Màu nền xám nhạt #f7f7f7 */
-  --foreground: hsl(0 0% 12%);         /* Màu chữ chính gần đen #1f1f1f */
+  --background: hsl(0 0% 97%); /* Màu nền xám nhạt #f7f7f7 */
+  --foreground: hsl(0 0% 12%); /* Màu chữ chính gần đen #1f1f1f */
 
   /* Thẻ, Popover (Nền trắng) */
-  --card: hsl(0 0% 100%);              /* Nền thẻ sản phẩm trắng */
-  --card-foreground: hsl(0 0% 12%);    /* Chữ trên thẻ */
+  --card: hsl(0 0% 100%); /* Nền thẻ sản phẩm trắng */
+  --card-foreground: hsl(0 0% 12%); /* Chữ trên thẻ */
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(0 0% 12%);
 
   /* Màu chủ đạo (Primary) */
-  --primary: hsl(2 68% 58%);           /* Màu đỏ cam nút bấm #d9534f */
-  --primary-foreground: hsl(0 0% 100%);  /* Chữ trắng trên nút */
+  --primary: hsl(2 68% 58%); /* Màu đỏ cam nút bấm #d9534f */
+  --primary-foreground: hsl(0 0% 100%); /* Chữ trắng trên nút */
 
   /* Màu phụ (Secondary) */
-  --secondary: hsl(0 0% 20%);          /* Màu xám đậm của tiêu đề #333333 */
+  --secondary: hsl(0 0% 20%); /* Màu xám đậm của tiêu đề #333333 */
   --secondary-foreground: hsl(0 0% 100%); /* Chữ trắng trên nền phụ */
 
   /* Màu Muted (văn bản mờ hơn) */
-  --muted: hsl(0 0% 90%);              /* Nền xám nhạt hơn */
-  --muted-foreground: hsl(0 0% 47%);   /* Chữ xám của giá tiền #777777 */
+  --muted: hsl(0 0% 90%); /* Nền xám nhạt hơn */
+  --muted-foreground: hsl(0 0% 47%); /* Chữ xám của giá tiền #777777 */
 
   /* Màu Accent (điểm nhấn phụ) */
-  --accent: hsl(0 75% 95%);            /* Một màu hồng/đỏ rất nhạt làm nền */
+  --accent: hsl(0 75% 95%); /* Một màu hồng/đỏ rất nhạt làm nền */
   --accent-foreground: hsl(2 68% 58%); /* Chữ màu đỏ cam trên nền accent */
 
   /* Viền và Input */
-  --border: hsl(0 0% 90%);             /* Viền xám nhạt */
-  --input: hsl(0 0% 95%);              /* Nền ô input */
-  --ring: hsl(2 68% 58%);              /* Màu viền khi focus */
+  --border: hsl(0 0% 90%); /* Viền xám nhạt */
+  --input: hsl(0 0% 95%); /* Nền ô input */
+  --ring: hsl(2 68% 58%); /* Màu viền khi focus */
 
   /* Fonts */
-  --font-sans: 'Lato', 'Open Sans', sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: "Lato", "Open Sans", sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
 }
 
 /* Artist Theme Styles */
@@ -55,7 +63,7 @@
 }
 
 .artist-hero::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -171,8 +179,8 @@
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-accent: oklch(27.274% 0.00003 271.152);
+  --sidebar-accent-foreground: oklch(87.302% 0.0001 271.152);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 }
@@ -275,4 +283,3 @@
     background-position: 200px;
   }
 }
-
