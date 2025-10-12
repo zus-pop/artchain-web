@@ -7,7 +7,7 @@ interface TabPanelProps {
 
 export const TabPanel: React.FC<TabPanelProps> = ({ children, className = "" }) => {
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full max-w-full ${className}`}>
       {children}
     </div>
   );
