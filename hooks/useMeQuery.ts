@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 import { getMeApi } from "@/apis/auth";
 import { useAuthStore } from "@/store/auth-store";
-import { User } from "@/types";
+import { WhoAmI } from "@/types";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 /**
  * Custom hook to fetch current user information
@@ -20,7 +20,7 @@ export function useMeQuery() {
     setIsClient(true);
   }, []);
 
-  const query = useQuery<User, Error>({
+  const query = useQuery<WhoAmI, Error>({
     queryKey: ["user-me", accessToken], // Include token for cache invalidation
     queryFn: getMeApi,
     enabled: isClient && !!accessToken, // Only fetch when authenticated

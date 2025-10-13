@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import Link from "next/link";
 
 const ArtistHeroSection = () => {
   return (
@@ -42,17 +42,20 @@ const ArtistHeroSection = () => {
               <br />
               <span className="text-yellow-300">Painting</span>
             </h1>
-            
+
             <p className="text-lg md:text-xl mb-3 font-light tracking-wide">
               INNOVATION, PERFECTION AND CREATIVITY
             </p>
-            <p className="text-base md:text-lg mb-6 font-light">
-              AT ITS BEST
-            </p>
+            <p className="text-base md:text-lg mb-6 font-light">AT ITS BEST</p>
 
-            <a href="/gallery" className="btn-primary inline-block text-base">
+            <Link
+              href={{
+                pathname: "gallery",
+              }}
+              className="btn-primary inline-block text-base"
+            >
               Explore Now
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -61,4 +64,3 @@ const ArtistHeroSection = () => {
 };
 
 export default ArtistHeroSection;
-

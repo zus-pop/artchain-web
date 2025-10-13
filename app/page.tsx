@@ -17,7 +17,7 @@ export default function Home() {
       >
         <ArtistHeroSection />
       </div>
-      
+
       <div className="flex-1 bg-gray-100">
         <ArtistNavigation defaultTab={0}>
           {/* Home Tab */}

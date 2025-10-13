@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/auth-store";
-import { User } from "@/types/auth";
+import { WhoAmI } from "@/types/auth";
 
 interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
+  user: WhoAmI | null;
   accessToken: string | null;
   isGuardian: boolean;
   isCompetitor: boolean;
   setAccessToken: (token: string | null) => void;
-  setUser: (user: User | null) => void;
+  setUser: (user: WhoAmI | null) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -32,11 +32,11 @@ export function useClientAuth(): AuthState {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    
+
     // Initialize store from localStorage
     const store = useAuthStore.getState();
     store.initialize();
-    
+
     // Subscribe to store changes
     const unsubscribe = useAuthStore.subscribe((state) => {
       setAuthState({

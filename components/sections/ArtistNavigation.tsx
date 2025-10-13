@@ -22,9 +22,9 @@ interface ArtistNavigationProps {
   defaultTab?: number;
 }
 
-const ArtistNavigation: React.FC<ArtistNavigationProps> = ({ 
+const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
   children,
-  defaultTab = 0
+  defaultTab = 0,
 }) => {
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -74,7 +74,7 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
 
   // Helper functions for user display
   const getDisplayName = () => {
-    return displayUser?.fullName || displayUser?.username || "User";
+    return displayUser?.fullName || "User";
   };
 
   const getAvatarInitial = () => {
@@ -218,10 +218,13 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
                     className={`rd-${index + 1}`}
                     hidden
                   />
-                  <a href="#" onClick={(e) => {
-                    e.preventDefault();
-                    handleTabChange(index);
-                  }}>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleTabChange(index);
+                    }}
+                  >
                     <label htmlFor={`rd-${index + 1}`} className="nav-label">
                       <span>{item.label}</span>
                     </label>
@@ -408,13 +411,9 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
           </div>
         </div>
       </nav>
-      
+
       {/* Content area for active tab */}
-      {activeContent && (
-        <div className="w-full">
-          {activeContent}
-        </div>
-      )}
+      {activeContent && <div className="w-full">{activeContent}</div>}
     </>
   );
 };

@@ -30,8 +30,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
             /* View Transitions API for smooth navigation */
             @view-transition {
               navigation: auto;
@@ -47,8 +48,9 @@ export default function RootLayout({
             a:hover {
               cursor: pointer;
             }
-          `
-        }} />
+          `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -57,12 +59,9 @@ export default function RootLayout({
         <ReactQueryProvider>
           <AuthInitializer>
             <Toaster richColors />
-            <div className="fixed inset-0 -z-10">
-            </div>
-                  <HeaderWrapper />
-            <main className="relative z-10">
-              {children}
-            </main>
+            <div className="fixed inset-0 -z-10"></div>
+            <HeaderWrapper />
+            <main className="relative z-10">{children}</main>
           </AuthInitializer>
         </ReactQueryProvider>
       </body>
