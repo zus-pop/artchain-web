@@ -50,6 +50,7 @@ export const translations = {
     
     // Profile Page
     galleryTab: 'Thư Viện',
+    mySubmissions: 'Đã Nộp',
     collections: 'Bộ Sưu Tập', 
     aboutTab: 'Giới Thiệu',
     friends: 'Bạn Bè',
@@ -179,6 +180,7 @@ export const translations = {
     
     // Profile Page
     galleryTab: 'Gallery',
+    mySubmissions: 'My Submissions',
     collections: 'Collections',
     aboutTab: 'About',
     friends: 'Friends',

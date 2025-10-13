@@ -1,19 +1,7 @@
 import myAxios from "@/lib/custom-axios";
 import { useQuery } from "@tanstack/react-query";
+import { Contest, ContestStatus } from "@/types";
 
-export type ContestStatus = "UPCOMING" | "DRAFT" | "ENDED" | "COMPLETED" | "ACTIVE";
-
-export interface Contest {
-  contestId: number;
-  title: string;
-  description: string;
-  bannerUrl: string | null;
-  numOfAward: number;
-  startDate: string;
-  endDate: string;
-  status: ContestStatus;
-  createdBy: string;
-}
 
 // Get all contests with optional status filter
 export function useGetContests(status?: ContestStatus) {

@@ -6,6 +6,7 @@ import { mockArtPosts } from "@/store/mock/posts";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
 import UserProfileCards from "@/components/UserProfileCards";
+import MySubmission from "@/components/tab/profile/MySubmission";
 
 // Định nghĩa kiểu dữ liệu cho người dùng (tùy chọn nhưng nên làm)
 interface AuthUser {
@@ -190,10 +191,10 @@ const UserProfilePage = () => {
               <Tabs defaultValue="gallery" className="w-full">
                 <TabsList className="mb-4">
                   <TabsTrigger value="gallery">{t.galleryTab}</TabsTrigger>
-                  <TabsTrigger value="collections">{t.collections}</TabsTrigger>
                   <TabsTrigger value="competitions">
                     {t.competitions}
                   </TabsTrigger>
+                  <TabsTrigger value="mySubmissions">{t.mySubmissions}</TabsTrigger>
                   <TabsTrigger value="about">{t.aboutTab}</TabsTrigger>
                 </TabsList>
 
@@ -227,12 +228,11 @@ const UserProfilePage = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="collections">
-                  <p>{t.collectionsPlaceholder}</p>
-                </TabsContent>
-
                 <TabsContent value="competitions">
                   <p>{t.competitionsPlaceholder}</p>
+                </TabsContent>
+                <TabsContent value="mySubmissions">
+                  <MySubmission/>
                 </TabsContent>
 
                 <TabsContent value="about">
