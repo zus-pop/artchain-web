@@ -178,9 +178,14 @@ export default function ContestDetailPage() {
 
             <div className="flex space-x-4">
               {contest.status === "ACTIVE" && (
-                <button className="flex-1 bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-sm">
-                  Tham gia cuộc thi
-                </button>
+                <Link
+                  href={`/painting-upload?contestId=${contest.contestId}`}
+                  className="flex-1"
+                >
+                  <button className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-sm">
+                    Tham gia cuộc thi
+                  </button>
+                </Link>
               )}
               <button className="flex-1 bg-[#f6f3ee] text-gray-800 py-3 px-6 font-medium hover:bg-[#efe9e0] transition-all duration-200 border border-[#e6e2da]">
                 Xem tác phẩm tham dự

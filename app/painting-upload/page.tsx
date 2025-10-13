@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useUploadPainting } from "@/hooks/use-upload-painting";
-import { useUserById } from "@/hooks/use-user-by-id";
+import { useMeQuery } from "@/hooks/useMeQuery";
 import { useAuthStore } from "@/store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IconTrash, IconUpload } from "@tabler/icons-react";
+import { IconTrash, IconUpload, IconChevronLeft } from "@tabler/icons-react"; 
 import { School } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -68,11 +68,9 @@ export function PaintingUpload() {
   const router = useRouter();
   const params = useSearchParams();
   const contestId = params.get("contestId");
-  const competitorId = params.get("competitorId");
   const roundId = params.get("roundId");
 
   console.log("contestId:", contestId);
-  console.log("competitorId:", competitorId);
   console.log("roundId:", roundId);
 
   const { control, handleSubmit, formState, setValue, watch } =
@@ -85,7 +83,7 @@ export function PaintingUpload() {
     });
 
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { data: currentUser, isLoading } = useUserById(competitorId);
+  const { data: currentUser, isLoading } = useMeQuery();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { mutate, isPending } = useUploadPainting();
@@ -117,13 +115,23 @@ export function PaintingUpload() {
       return;
     }
 
+    if (!contestId) {
+      toast.error("Thiếu thông tin cuộc thi");
+      return;
+    }
+
+    if (!currentUser?.userId) {
+      toast.error("Không tìm thấy thông tin người dùng");
+      return;
+    }
+
     mutate({
       title: data.title,
       description: data.description,
       file: data.image,
-      contestId: "12",
-      roundId: "12",
-      competitorId: "12",
+      contestId: contestId,
+      roundId: roundId || "1", // Use roundId from params or default to "1"
+      competitorId: currentUser.userId.toString(),
     });
   };
 
@@ -150,7 +158,7 @@ export function PaintingUpload() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
           <p className="text-muted-foreground">Đang tải thông tin...</p>
         </div>
       </div>
@@ -158,82 +166,58 @@ export function PaintingUpload() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-muted/30 py-8 px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#fdfcf9] py-8 px-6 relative overflow-hidden">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-[0.02]">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-red-500 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container max-w-6xl mx-auto relative z-10">
-        {/* Elegant Header Section */}
-        <div className="text-center mb-8 relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 bg-primary/5 rounded-full blur-xl"></div>
-          </div>
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary via-primary/80 to-secondary rounded-lg shadow-2xl shadow-primary/25 mb-6 transform hover:scale-105 transition-all duration-500">
-            <IconUpload className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground via-foreground/90 to-foreground/80 bg-clip-text text-transparent mb-3 tracking-tight">
-            Nộp Bài Thi
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6 leading-relaxed font-medium">
-            Chia sẻ tác phẩm nghệ thuật của bạn với cộng đồng
-          </p>
+        
+        {/* === START MODIFIED HEADER SECTION: Back Button | Title/Icon === */}
+        <div className="mb-10 flex items-center justify-between relative border-b border-[#e6e2da] pb-4">
+          
+          {/* 1. Back Button (Left) - ĐÃ CẬP NHẬT STYLE */}
+          <Button
+            type="button"
+            variant="ghost" 
+            onClick={() => contestId ? router.push(`/contests/${contestId}`) : router.back()}
+            className="h-10 px-0 text-gray-700 hover:text-red-600 transition-all duration-200 cursor-pointer 
+                       flex items-center gap-1 font-semibold hover:underline bg-transparent hover:bg-transparent"
+          >
+            <IconChevronLeft className="h-5 w-5" />
+            <span>
+              Quay lại
+            </span>
+          </Button>
 
-          {/* Elegant User Info Card */}
-          <div className="inline-flex items-center gap-6 px-6 py-4 bg-card/80 backdrop-blur-xl border border-border/50 rounded-lg shadow-xl shadow-foreground/5">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-lg">
-                <span className="text-primary-foreground font-bold text-sm">
-                  {currentUser?.fullName?.charAt(0)?.toUpperCase()}
-                </span>
-              </div>
-              <div className="text-left">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  Thí sinh
-                </p>
-                <p className="text-sm font-bold text-foreground">
-                  {currentUser?.fullName}
-                </p>
-              </div>
-            </div>
-            <div className="w-px h-8 bg-gradient-to-b from-transparent via-border to-transparent"></div>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-secondary to-secondary/80 rounded-lg flex items-center justify-center shadow-lg">
-                <School className="h-6 w-6 text-secondary-foreground" />
-              </div>
-              <div className="text-left">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  Trường học
-                </p>
-                <p className="text-sm font-bold text-foreground">
-                  {currentUser?.schoolName}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Lớp {currentUser?.grade}
-                </p>
-              </div>
-            </div>
+          {/* 2. Title and Icon (Right) */}
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight hidden sm:block">
+              Nộp Bài Thi
+            </h1>
           </div>
         </div>
+        {/* === END MODIFIED HEADER SECTION === */}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+            
             {/* Left Side - Text Content */}
             <div className="flex flex-col h-full">
               {/* Title Input */}
-              <Card className="border-0 shadow-2xl shadow-foreground/5 bg-card/90 backdrop-blur-xl rounded-lg overflow-hidden flex-1">
+              <Card className="border border-[#e6e2da] shadow-md bg-[#fffdf9] rounded-none overflow-hidden flex-1">
                 <CardContent className="p-6">
                   <div className="space-y-3">
                     <Label
                       htmlFor="title"
-                      className="text-base font-bold flex items-center gap-3 text-foreground"
+                      className="text-base font-bold flex items-center gap-3 text-gray-900"
                     >
-                      <div className="w-2 h-2 bg-gradient-to-r from-primary to-primary/80 rounded-full shadow-sm"></div>
+                      <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm"></div>
                       Tiêu đề tác phẩm
-                      <span className="text-destructive">*</span>
+                      <span className="text-red-600">*</span>
                     </Label>
                     <Controller
                       control={control}
@@ -243,14 +227,14 @@ export function PaintingUpload() {
                           id="title"
                           placeholder="Ví dụ: 'Bức tranh về ước mơ tuổi thơ'..."
                           maxLength={100}
-                          className="text-base h-12 border-2 border-border focus:border-primary bg-background rounded-lg shadow-sm transition-all duration-300 focus:shadow-lg focus:shadow-primary/25"
+                          className="text-base h-12 border border-[#e6e2da] focus:border-red-500 bg-white rounded-none shadow-sm transition-all duration-300"
                           {...field}
                         />
                       )}
                     />
                     {formState.errors.title && (
-                      <div className="text-sm text-destructive flex items-center gap-2 mt-2">
-                        <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>
+                      <div className="text-sm text-red-600 flex items-center gap-2 mt-2">
+                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
                         {formState.errors.title.message}
                       </div>
                     )}
@@ -259,16 +243,16 @@ export function PaintingUpload() {
               </Card>
 
               {/* Description Input */}
-              <Card className="border-0 shadow-2xl shadow-foreground/5 bg-card/90 backdrop-blur-xl rounded-lg overflow-hidden flex-1 mt-6">
+              <Card className="border border-[#e6e2da] shadow-md bg-[#fffdf9] rounded-none overflow-hidden flex-1 mt-6">
                 <CardContent className="p-6">
                   <div className="space-y-3">
                     <Label
                       htmlFor="description"
-                      className="text-base font-bold flex items-center gap-3 text-foreground"
+                      className="text-base font-bold flex items-center gap-3 text-gray-900"
                     >
-                      <div className="w-2 h-2 bg-gradient-to-r from-secondary to-secondary/80 rounded-full shadow-sm"></div>
+                      <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm"></div>
                       Mô tả tác phẩm
-                      <span className="text-muted-foreground text-sm font-normal">
+                      <span className="text-gray-500 text-sm font-normal">
                         (tùy chọn)
                       </span>
                     </Label>
@@ -281,14 +265,14 @@ export function PaintingUpload() {
                           placeholder="Kể về cảm hứng sáng tạo..."
                           maxLength={500}
                           rows={6}
-                          className="text-base border-2 border-border focus:border-secondary bg-background rounded-lg shadow-sm transition-all duration-300 focus:shadow-lg focus:shadow-secondary/25 resize-none"
+                          className="text-base border border-[#e6e2da] focus:border-red-500 bg-white rounded-none shadow-sm transition-all duration-300 resize-none"
                           {...field}
                         />
                       )}
                     />
                     {formState.errors.description && (
-                      <p className="text-sm text-destructive flex items-center gap-2 mt-2">
-                        <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>
+                      <p className="text-sm text-red-600 flex items-center gap-2 mt-2">
+                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
                         {formState.errors.description.message}
                       </p>
                     )}
@@ -301,11 +285,11 @@ export function PaintingUpload() {
                 <Button
                   type="submit"
                   disabled={isPending || !formState.isValid || !watchedImage}
-                  className="w-full h-14 text-lg font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 hover:from-primary/90 hover:via-primary hover:to-primary shadow-2xl shadow-primary/25 hover:shadow-primary/40 rounded-lg transition-all duration-500 transform hover:scale-[1.02] hover:-translate-y-1"
+                  className="w-full h-14 text-lg font-bold bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white shadow-sm rounded-none transition-all duration-200"
                 >
                   {isPending ? (
                     <div className="flex items-center gap-3">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       Đang gửi bài thi...
                     </div>
                   ) : (
@@ -317,16 +301,16 @@ export function PaintingUpload() {
                 </Button>
 
                 {/* Elegant Info Note */}
-                <div className="bg-accent/50 border-2 border-accent/30 rounded-lg p-4 shadow-lg backdrop-blur-sm">
+                <div className="bg-red-50 border border-red-200 rounded-none p-4 shadow-sm">
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-gradient-to-r from-accent-foreground to-accent-foreground/80 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-accent text-sm font-bold">!</span>
+                    <div className="w-6 h-6 bg-red-500 rounded-none flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-sm font-bold">!</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-accent-foreground mb-1 text-sm">
+                      <h4 className="font-bold text-red-700 mb-1 text-sm">
                         Lưu ý quan trọng
                       </h4>
-                      <p className="text-accent-foreground/80 leading-relaxed text-sm">
+                      <p className="text-red-600 leading-relaxed text-sm">
                         Sau khi gửi bài thi, bạn không thể chỉnh sửa hoặc thay
                         đổi. Vui lòng kiểm tra kỹ tất cả thông tin trước khi
                         gửi.
@@ -339,28 +323,74 @@ export function PaintingUpload() {
 
             {/* Right Side - Artistic Image Section */}
             <div className="flex flex-col h-full">
+              
+              {/* === Elegant User Info Card === */}
+              <Card className="border border-[#e6e2da] shadow-md bg-[#fffdf9] rounded-none overflow-hidden mb-6">
+                <CardContent className="p-4">
+                  <h4 className="font-bold text-gray-900 mb-2 border-b pb-2 border-[#f0eee9]">Thông tin thí sinh</h4>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-transparent rounded-lg w-full"> 
+                    
+                    {/* Thẻ Thí sinh */}
+                    <div className="flex items-center gap-2 flex-grow"> 
+                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-red-600 font-bold text-sm">
+                          {currentUser?.fullName?.charAt(0)?.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider">
+                          Thí sinh
+                        </p>
+                        <p className="text-sm font-bold text-gray-900">
+                          {currentUser?.fullName}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Đường phân cách chỉ hiện trên desktop */}
+                    <div className="hidden sm:block w-px h-10 bg-gray-200 flex-shrink-0"></div> 
+                    
+                    {/* Thẻ Trường học */}
+                    <div className="flex items-center gap-2 flex-grow"> 
+                      <School className="h-5 w-5 text-red-500 flex-shrink-0" />
+                      <div className="text-left">
+                        <p className="text-xs text-gray-500 uppercase tracking-wider">
+                          Lớp / Trường
+                        </p>
+                        <p className="text-sm font-bold text-gray-900">
+                          {currentUser?.schoolName}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          Lớp {currentUser?.grade}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Image Upload Section */}
-              <Card className="border-0 shadow-2xl shadow-foreground/5 bg-card/90 backdrop-blur-xl rounded-lg overflow-hidden flex-1">
+              <Card className="border border-[#e6e2da] shadow-md bg-[#fffdf9] rounded-none overflow-hidden flex-1">
                 <CardContent className="p-6 h-full">
                   <div className="space-y-4 h-full flex flex-col">
-                    <Label className="text-base font-bold flex items-center gap-3 text-foreground">
-                      <div className="w-2 h-2 bg-gradient-to-r from-accent to-accent/80 rounded-full shadow-sm"></div>
+                    <Label className="text-base font-bold flex items-center gap-3 text-gray-900">
+                      <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm"></div>
                       Ảnh tác phẩm
-                      <span className="text-destructive">*</span>
+                      <span className="text-red-600">*</span>
                     </Label>
 
                     {!imagePreview ? (
                       <div className="relative group flex-1">
-                        <div className="border-3 border-dashed border-border rounded-lg p-8 text-center bg-gradient-to-br from-muted/30 to-muted/50 hover:from-primary/5 hover:to-primary/10 transition-all duration-500 cursor-pointer backdrop-blur-sm h-full flex flex-col justify-center">
+                        <div className="border-2 border-dashed border-[#e6e2da] rounded-none p-8 text-center bg-[#f8f6f0] hover:bg-[#f6f3ee] transition-all duration-500 cursor-pointer h-full flex flex-col justify-center">
                           <div className="flex flex-col items-center space-y-4">
-                            <div className="w-16 h-16 bg-gradient-to-br from-primary via-primary/80 to-secondary rounded-lg flex items-center justify-center shadow-2xl shadow-primary/25 group-hover:scale-110 transition-all duration-500">
-                              <IconUpload className="h-8 w-8 text-primary-foreground" />
+                            <div className="w-16 h-16 bg-red-500 rounded-none flex items-center justify-center shadow-sm group-hover:scale-110 transition-all duration-500">
+                              <IconUpload className="h-8 w-8 text-white" />
                             </div>
                             <div>
-                              <h3 className="text-xl font-bold text-foreground mb-2">
+                              <h3 className="text-xl font-bold text-gray-900 mb-2">
                                 Tải ảnh tranh vẽ lên
                               </h3>
-                              <p className="text-muted-foreground leading-relaxed">
+                              <p className="text-gray-600 leading-relaxed">
                                 Chọn ảnh từ máy tính • JPEG, PNG, WebP • Tối đa
                                 10MB
                               </p>
@@ -395,7 +425,7 @@ export function PaintingUpload() {
                               type="button"
                               variant="outline"
                               size="lg"
-                              className="pointer-events-none border-2 border-border hover:border-primary hover:bg-primary/5 rounded-lg shadow-lg backdrop-blur-sm px-6 py-3"
+                              className="pointer-events-none border border-[#e6e2da] hover:border-red-500 hover:bg-red-50 rounded-none shadow-sm px-6 py-3"
                             >
                               Chọn ảnh
                             </Button>
@@ -404,7 +434,7 @@ export function PaintingUpload() {
                       </div>
                     ) : (
                       <div className="relative group flex-1">
-                        <div className="relative overflow-hidden rounded-lg shadow-2xl shadow-foreground/10 ring-1 ring-border/20 h-full">
+                        <div className="relative overflow-hidden rounded-none shadow-md border border-[#e6e2da] h-full">
                           <div className="w-full h-full relative">
                             <Image
                               src={imagePreview}
@@ -415,7 +445,7 @@ export function PaintingUpload() {
                           </div>
                           {/* Elegant Overlay */}
                           <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 via-transparent to-foreground/10"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-red-900/5"></div>
 
                           {/* Artistic Corner Accents */}
                           <div className="absolute top-4 left-4 w-8 h-8 border-l-3 border-t-3 border-background/60 rounded-tl"></div>
@@ -430,7 +460,7 @@ export function PaintingUpload() {
                               size="sm"
                               variant="destructive"
                               onClick={removeImage}
-                              className="bg-destructive/90 hover:bg-destructive shadow-2xl backdrop-blur-sm h-10 w-10 p-0 rounded-lg border-2 border-background/20"
+                              className="bg-red-500 hover:bg-red-600 shadow-sm h-10 w-10 p-0 rounded-none border border-[#e6e2da]"
                             >
                               <IconTrash className="h-4 w-4" />
                             </Button>
@@ -440,9 +470,9 @@ export function PaintingUpload() {
                     )}
 
                     {formState.errors.image && (
-                      <div className="bg-destructive/10 border-2 border-destructive/30 rounded-lg p-4 shadow-lg">
-                        <p className="text-sm text-destructive flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-destructive rounded-full"></div>
+                      <div className="bg-red-50 border border-red-200 rounded-none p-4 shadow-sm">
+                        <p className="text-sm text-red-600 flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
                           {formState.errors.image.message}
                         </p>
                       </div>
