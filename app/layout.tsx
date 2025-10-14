@@ -1,11 +1,9 @@
+import { AuthInitializer } from "@/components/AuthInitializer";
+import ReactQueryProvider from "@/components/react-query-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import ReactQueryProvider from "@/components/react-query-provider";
-import { AuthInitializer } from "@/components/AuthInitializer";
 import "./globals.css";
-import ArtistNavigation from "@/components/sections/ArtistNavigation";
-import { HeaderWrapper } from "@/components/sections/HeaderWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,7 +58,7 @@ export default function RootLayout({
           <AuthInitializer>
             <Toaster richColors />
             <div className="fixed inset-0 -z-10"></div>
-            <HeaderWrapper />
+            {/* <HeaderWrapper /> */}
             <main className="relative z-10">{children}</main>
           </AuthInitializer>
         </ReactQueryProvider>

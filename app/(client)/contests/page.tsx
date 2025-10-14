@@ -14,6 +14,7 @@ const statusColors = {
   DRAFT: "bg-gray-500",
   ENDED: "bg-orange-500",
   COMPLETED: "bg-purple-500",
+  ALL: "bg-gray-500",
 };
 
 const statusLabels = {
@@ -22,6 +23,7 @@ const statusLabels = {
   DRAFT: "Bản nháp", 
   ENDED: "Đã kết thúc",
   COMPLETED: "Hoàn thành",
+  ALL: "Tất cả",
 };
 
 const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=No+Banner';

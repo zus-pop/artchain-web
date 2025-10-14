@@ -16,6 +16,7 @@ export interface Contest {
   endDate: string;
   status: ContestStatus;
   createdBy: string;
+  roundId: string;
 }
 
 export interface ContestFilter {

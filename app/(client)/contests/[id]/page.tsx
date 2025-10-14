@@ -1,11 +1,11 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Calendar, Trophy, Clock, ArrowLeft, Users, Star } from "lucide-react";
 import { useGetContestById } from "@/apis/contests";
-import { useParams } from "next/navigation";
-import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowLeft, Calendar, Clock, Star, Trophy, Users } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 const statusColors = {
   UPCOMING: "bg-red-400",
@@ -13,6 +13,7 @@ const statusColors = {
   DRAFT: "bg-neutral-400",
   ENDED: "bg-orange-500",
   COMPLETED: "bg-purple-600",
+  ALL: "bg-gray-500",
 };
 
 const statusLabels = {
@@ -21,6 +22,7 @@ const statusLabels = {
   DRAFT: "Bản nháp",
   ENDED: "Đã kết thúc",
   COMPLETED: "Hoàn thành",
+  ALL: "Tất cả",
 };
 
 export default function ContestDetailPage() {
@@ -179,7 +181,7 @@ export default function ContestDetailPage() {
             <div className="flex space-x-4">
               {contest.status === "ACTIVE" && (
                 <Link
-                  href={`/painting-upload?contestId=${contest.contestId}`}
+                  href={`/painting-upload?contestId=${contest.contestId}&roundId=${contest.roundId}`}
                   className="flex-1"
                 >
                   <button className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-sm">

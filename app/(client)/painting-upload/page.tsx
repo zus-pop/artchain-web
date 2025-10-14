@@ -130,7 +130,7 @@ export function PaintingUpload() {
       description: data.description,
       file: data.image,
       contestId: contestId,
-      roundId: roundId || "1", // Use roundId from params or default to "1"
+      roundId: roundId!,
       competitorId: currentUser.userId.toString(),
     });
   };
