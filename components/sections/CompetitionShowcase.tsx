@@ -4,6 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { useGetContests } from "@/apis/contests";
 import { Trophy } from "lucide-react";
+import Image from "next/image";
+
+
+const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=No+Banner';
 
 const ContestShowcase = () => {
   // Get active contests from API
@@ -75,9 +79,7 @@ const ContestShowcase = () => {
                 key={contest.contestId}
                 className={`group m-5 flex flex-col justify-between gap-4 min-h-[240px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md`}
               >
-                <div
-                  className={`absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]`}
-                />
+                <Image src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL} alt={contest.title} width={200} height={100} className="absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
 
                 <div className="z-10">
                   <h3 className="text-2xl font-bold mb-2 text-white">

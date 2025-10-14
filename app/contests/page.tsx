@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Trophy, Filter, Clock } from "lucide-react";
-import { useGetContests, ContestStatus } from "@/apis/contests";
+import { useGetContests } from "@/apis/contests";
+import { ContestStatus } from "@/types/contest";
 import Link from "next/link";
 import Image from "next/image";
 

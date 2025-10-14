@@ -383,7 +383,7 @@ export function PaintingUpload() {
                       <div className="relative group flex-1">
                         <div className="border-2 border-dashed border-[#e6e2da] rounded-none p-8 text-center bg-[#f8f6f0] hover:bg-[#f6f3ee] transition-all duration-500 cursor-pointer h-full flex flex-col justify-center">
                           <div className="flex flex-col items-center space-y-4">
-                            <div className="w-16 h-16 bg-red-500 rounded-none flex items-center justify-center shadow-sm group-hover:scale-110 transition-all duration-500">
+                            <div className="w-16 h-16 bg-red-500 rounded-none flex items-center justify-center shadow-sm">
                               <IconUpload className="h-8 w-8 text-white" />
                             </div>
                             <div>
@@ -440,7 +440,7 @@ export function PaintingUpload() {
                               src={imagePreview}
                               alt="Painting preview"
                               fill
-                              className="object-cover transition-transform duration-700 group-hover:scale-105"
+                              className="object-contain transition-transform duration-700"
                             />
                           </div>
                           {/* Elegant Overlay */}

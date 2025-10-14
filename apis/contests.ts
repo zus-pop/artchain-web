@@ -1,6 +1,6 @@
 import myAxios from "@/lib/custom-axios";
 import { useQuery } from "@tanstack/react-query";
-import { Contest, ContestStatus } from "@/types";
+import { Contest, ContestStatus } from "@/types/contest";
 
 
 // Get all contests with optional status filter
