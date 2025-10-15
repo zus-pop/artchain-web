@@ -9,22 +9,27 @@ export interface RegisterRequest {
   email: string;
   fullName: string;
   role: "GUARDIAN" | "COMPETITOR";
-  // Optional fields for COMPETITOR
   birthday?: string;
   schoolName?: string;
   ward?: string;
   grade?: string;
 }
 
-export interface User {
-  id: string;
-  username: string;
+export interface WhoAmI {
+  userId: string;
   fullName: string;
   email: string;
-  role: "GUARDIAN" | "COMPETITOR";
+  role: UserRole;
+  phone?: string;
+  birthday?: string;
+  schoolName?: string;
+  ward?: string;
+  grade?: string;
 }
 
 export interface AuthResponse {
   access_token: string;
-  user?: User;
+  user?: WhoAmI;
 }
+
+export type UserRole = "COMPETITOR" | "GUARDIAN" | "ADMIN" | "STAFF";

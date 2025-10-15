@@ -1,0 +1,46 @@
+import myAxios from "@/lib/custom-axios";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+interface UploadPaintingData {
+  title: string;
+  description?: string;
+  file: File;
+  contestId: string;
+  roundId: string;
+  competitorId: string;
+}
+
+export function useUploadPainting() {
+  const router = useRouter();
+  return useMutation({
+    mutationFn: async (data: UploadPaintingData) => {
+      const formData = new FormData();
+      formData.append("title", data.title);
+      if (data.description) {
+        formData.append("description", data.description);
+      }
+      formData.append("file", data.file);
+      formData.append("contestId", data.contestId);
+      formData.append("roundId", data.roundId);
+      formData.append("competitorId", data.competitorId);
+
+      const response = await myAxios.post("/paintings/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Bài thi của bạn đã được gửi thành công!");
+      router.push("/me");
+    },
+    onError: (error) => {
+      toast.error("Có lỗi xảy ra khi gửi bài thi. Vui lòng thử lại.");
+      console.error("Upload error:", error);
+    },
+  });
+}

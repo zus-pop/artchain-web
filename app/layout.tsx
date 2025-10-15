@@ -1,9 +1,8 @@
-import Iridescence from "@/components/Iridescence";
-import Header2 from "@/components/mvpblocks/header-2";
+import { AuthInitializer } from "@/components/AuthInitializer";
+import ReactQueryProvider from "@/components/react-query-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import ReactQueryProvider from "@/components/react-query-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,8 +28,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
             /* View Transitions API for smooth navigation */
             @view-transition {
               navigation: auto;
@@ -46,27 +46,21 @@ export default function RootLayout({
             a:hover {
               cursor: pointer;
             }
-          `
-        }} />
+          `,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <ReactQueryProvider>
-          <Toaster richColors />
-          <div className="fixed inset-0 -z-10">
-            <Iridescence
-              color={[0.118, 0.533, 0.898]}
-              mouseReact={false}
-              amplitude={0.1}
-              speed={0.5}
-            />
-          </div>
-          <Header2 />
-          <main className="relative z-10">
-            {children}
-          </main>
+          <AuthInitializer>
+            <Toaster richColors />
+            <div className="fixed inset-0 -z-10"></div>
+            {/* <HeaderWrapper /> */}
+            <main className="relative z-10">{children}</main>
+          </AuthInitializer>
         </ReactQueryProvider>
       </body>
     </html>

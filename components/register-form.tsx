@@ -7,7 +7,7 @@ import { FloatingSelect } from "@/components/ui/floating-select";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRegisterMutation } from "../apis/auth";
+import { useRegisterMutation } from "@/hooks/useRegisterMutation";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { useWards } from "@/hooks/useWards";
@@ -508,7 +508,7 @@ export function RegisterForm({
             <button
               type="submit"
               disabled={!competitorIsValid || isPending}
-              className="cursor-pointer relative after:content-[attr(data-label)] after:text-white after:absolute after:text-nowrap after:scale-0 hover:after:scale-100 after:duration-200 w-12 h-12 rounded-full border-3 border-blue-200 bg-black flex items-center justify-center duration-300 hover:rounded-[40px] hover:w-36 group/button overflow-hidden active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer relative after:content-[attr(data-label)] after:text-white after:absolute after:text-nowrap after:scale-0 hover:after:scale-100 after:duration-200 w-12 h-12 rounded-full border-3 border-red-200 bg-black flex items-center justify-center duration-300 hover:rounded-[40px] hover:w-36 group/button overflow-hidden active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
               data-label={isPending ? translations.processing : translations.register}
             >
               <svg
