@@ -74,13 +74,13 @@ Ready to join the revolution? Create your free account today and start exploring
   const getStatusBadgeColor = (status: PostStatus) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "staff-badge-active";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800";
+        return "staff-badge-pending";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
     }
   };
 
@@ -119,7 +119,7 @@ Ready to join the revolution? Create your free account today and start exploring
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading post...</p>
+              <p className="mt-4 staff-text-secondary">Loading post...</p>
             </div>
           </div>
         </SidebarInset>
@@ -140,7 +140,7 @@ Ready to join the revolution? Create your free account today and start exploring
       <SidebarInset>
         <SiteHeader title="View Post" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 { label: "Posts", href: "/dashboard/staff/posts" },
@@ -155,33 +155,33 @@ Ready to join the revolution? Create your free account today and start exploring
               <div className="flex items-center gap-4">
                 <Link
                   href="/dashboard/staff/posts"
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  className="flex items-center gap-2 staff-text-secondary hover:staff-text-primary transition-colors"
                 >
                   <IconArrowLeft className="h-5 w-5" />
                   Back to Posts
                 </Link>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold staff-text-primary">
                   Post Details
                 </h2>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleShare}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className=" border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   <IconShare className="h-4 w-4" />
                   Share
                 </button>
                 <button
                   onClick={handleEdit}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className=" border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   <IconEdit className="h-4 w-4" />
                   Edit
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors flex items-center gap-2"
+                  className=" border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors flex items-center gap-2"
                 >
                   <IconTrash className="h-4 w-4" />
                   Delete
@@ -192,30 +192,30 @@ Ready to join the revolution? Create your free account today and start exploring
             {/* Post Content */}
             <div className="max-w-4xl mx-auto">
               {/* Post Header */}
-              <div className="bg-white rounded-lg border border-gray-200 p-8 mb-6">
+              <div className="bg-white  border border-[#e6e2da] p-8 mb-6">
                 <div className="mb-6">
                   <div className="flex items-center gap-3 mb-4">
                     <span
-                      className={`inline-flex rounded-lg px-3 py-1 text-sm font-semibold ${getStatusBadgeColor(
+                      className={`inline-flex  px-3 py-1 text-sm font-semibold ${getStatusBadgeColor(
                         post.status
                       )}`}
                     >
                       {post.status}
                     </span>
-                    <span className="inline-flex rounded-lg px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800">
+                    <span className="inline-flex  px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800">
                       {post.category}
                     </span>
                   </div>
 
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                  <h1 className="text-3xl font-bold staff-text-primary mb-4">
                     {post.title}
                   </h1>
 
                   {post.excerpt && (
-                    <p className="text-lg text-gray-600 mb-6">{post.excerpt}</p>
+                    <p className="text-lg staff-text-secondary mb-6">{post.excerpt}</p>
                   )}
 
-                  <div className="flex items-center gap-6 text-sm text-gray-500">
+                  <div className="flex items-center gap-6 text-sm staff-text-secondary">
                     <div className="flex items-center gap-2">
                       <IconUser className="h-4 w-4" />
                       <span>By {post.author}</span>
@@ -238,7 +238,7 @@ Ready to join the revolution? Create your free account today and start exploring
 
                   {post.tags && post.tags.length > 0 && (
                     <div className="flex items-center gap-2 mt-4">
-                      <span className="text-sm text-gray-500">Tags:</span>
+                      <span className="text-sm staff-text-secondary">Tags:</span>
                       <div className="flex gap-2">
                         {post.tags.map((tag) => (
                           <span
@@ -255,7 +255,7 @@ Ready to join the revolution? Create your free account today and start exploring
               </div>
 
               {/* Post Content */}
-              <div className="bg-white rounded-lg border border-gray-200 p-8">
+              <div className="bg-white  border border-[#e6e2da] p-8">
                 <div className="prose max-w-none">
                   {/* Simple markdown-like rendering */}
                   {post.content.split("\n").map((line, index) => {
@@ -263,7 +263,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       return (
                         <h1
                           key={index}
-                          className="text-2xl font-bold text-gray-900 mb-4 mt-8 first:mt-0"
+                          className="text-2xl font-bold staff-text-primary mb-4 mt-8 first:mt-0"
                         >
                           {line.substring(2)}
                         </h1>
@@ -272,7 +272,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       return (
                         <h2
                           key={index}
-                          className="text-xl font-semibold text-gray-900 mb-3 mt-6"
+                          className="text-xl font-semibold staff-text-primary mb-3 mt-6"
                         >
                           {line.substring(3)}
                         </h2>
@@ -281,7 +281,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       return (
                         <h3
                           key={index}
-                          className="text-lg font-medium text-gray-900 mb-2 mt-4"
+                          className="text-lg font-medium staff-text-primary mb-2 mt-4"
                         >
                           {line.substring(4)}
                         </h3>
@@ -294,7 +294,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       );
                     } else if (line.startsWith("*")) {
                       return (
-                        <p key={index} className="italic text-gray-600 my-2">
+                        <p key={index} className="italic staff-text-secondary my-2">
                           {line}
                         </p>
                       );
@@ -316,36 +316,36 @@ Ready to join the revolution? Create your free account today and start exploring
 
               {/* Post Statistics */}
               <div className="max-w-4xl mx-auto mt-6">
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <div className="bg-white  border border-[#e6e2da] p-6">
+                  <h3 className="text-lg font-semibold staff-text-primary mb-4">
                     Post Statistics
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold staff-text-primary">
                         {post.views.toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-500">Total Views</div>
+                      <div className="text-sm staff-text-secondary">Total Views</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold staff-text-primary">
                         {Math.floor(post.views * 0.15)}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm staff-text-secondary">
                         Unique Visitors
                       </div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold staff-text-primary">
                         {Math.floor(post.views * 0.08)}
                       </div>
-                      <div className="text-sm text-gray-500">Engagements</div>
+                      <div className="text-sm staff-text-secondary">Engagements</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-900">
+                      <div className="text-2xl font-bold staff-text-primary">
                         {(((post.views * 0.02) / post.views) * 100).toFixed(1)}%
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm staff-text-secondary">
                         Conversion Rate
                       </div>
                     </div>

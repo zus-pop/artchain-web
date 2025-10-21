@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Contest, ContestStatus } from "@/types/dashboard";
+import { StatsCards } from "@/components/staff/StatsCards";
 import {
   IconCircleCheck,
   IconCircleX,
@@ -136,10 +137,10 @@ export default function ContestsManagementPage() {
 
   const getStatusBadgeColor = (status: ContestStatus) => {
     const colors = {
-      DRAFT: "bg-gray-100 text-gray-800",
-      ACTIVE: "bg-green-100 text-green-800",
-      COMPLETED: "bg-blue-100 text-blue-800",
-      CANCELLED: "bg-red-100 text-red-800",
+      DRAFT: "staff-badge-neutral",
+      ACTIVE: "staff-badge-active",
+      COMPLETED: "staff-badge-active",
+      CANCELLED: "staff-badge-rejected",
     };
     return colors[status];
   };
@@ -178,7 +179,7 @@ export default function ContestsManagementPage() {
       <SidebarInset>
         <SiteHeader title="Contest Management" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[{ label: "Contest Management" }]}
               homeHref="/dashboard/staff"
@@ -189,16 +190,16 @@ export default function ContestsManagementPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     All Contests ({filteredContests.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     Manage art competitions and contests
                   </p>
                 </div>
                 <Link
                   href="/dashboard/staff/contests/create"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                  className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
                   Create Contest
@@ -206,128 +207,89 @@ export default function ContestsManagementPage() {
               </div>
 
               {/* Statistics Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-2">
-                      <IconTrophy className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Contests
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {totalContests}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <IconCircleCheck className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Active Contests
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {activeContests}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2">
-                      <IconUsers className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Participants
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {totalParticipants}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-yellow-100 p-2">
-                      <IconTrophy className="h-5 w-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Prize Pool
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        ${totalPrizePool.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StatsCards
+                stats={[
+                  {
+                    title: "Total Contests",
+                    value: totalContests,
+                    subtitle: "All competitions",
+                    icon: <IconTrophy className="h-6 w-6" />,
+                    variant: "info",
+                  },
+                  {
+                    title: "Active Contests",
+                    value: activeContests,
+                    subtitle: "Currently running",
+                    icon: <IconCircleCheck className="h-6 w-6" />,
+                    variant: "warning",
+                  },
+                  {
+                    title: "Total Participants",
+                    value: totalParticipants,
+                    subtitle: "Registered artists",
+                    icon: <IconUsers className="h-6 w-6" />,
+                    variant: "success",
+                  },
+                  {
+                    title: "Total Prize Pool",
+                    value: `$${totalPrizePool.toLocaleString()}`,
+                    subtitle: "Across all contests",
+                    icon: <IconTrophy className="h-6 w-6" />,
+                    variant: "primary",
+                  },
+                ]}
+              />
 
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/staff/contests/active"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-3 group-hover:bg-green-200 transition-colors">
-                      <IconCircleCheck className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        Active Contests
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        View currently running competitions
-                      </p>
-                    </div>
+                  <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconCircleCheck className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary">
+                      Active Contests
+                    </p>
+                    <p className="text-xs staff-text-secondary">
+                      Currently running
+                    </p>
                   </div>
                 </Link>
 
                 <Link
                   href="/dashboard/staff/contests/examiners"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-3 group-hover:bg-blue-200 transition-colors">
-                      <IconUsers className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        Manage Examiners
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Invite and manage contest judges
-                      </p>
-                    </div>
+                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconUsers className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary">
+                      Manage Examiners
+                    </p>
+                    <p className="text-xs staff-text-secondary">
+                      Invite judges
+                    </p>
                   </div>
                 </Link>
 
                 <Link
                   href="/dashboard/staff/contests/awards"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-yellow-100 p-3 group-hover:bg-yellow-200 transition-colors">
-                      <IconTrophy className="h-6 w-6 text-yellow-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        Awards & Results
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Manage prizes and announce winners
-                      </p>
-                    </div>
+                  <div className=" bg-gradient-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconTrophy className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary">
+                      Awards & Results
+                    </p>
+                    <p className="text-xs staff-text-secondary">
+                      Manage prizes
+                    </p>
                   </div>
                 </Link>
               </div>
@@ -341,7 +303,7 @@ export default function ContestsManagementPage() {
                     placeholder="Search contests by title, description, or category..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -351,7 +313,7 @@ export default function ContestsManagementPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as ContestStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -364,7 +326,7 @@ export default function ContestsManagementPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categoryOptions.map((category) => (
                       <option key={category} value={category}>
@@ -376,30 +338,30 @@ export default function ContestsManagementPage() {
               </div>
 
               {/* Contests Table */}
-              <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+              <div className="staff-card overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Contest
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Participants
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Submissions
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Prize Pool
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Dates
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -409,7 +371,7 @@ export default function ContestsManagementPage() {
                         <tr>
                           <td
                             colSpan={7}
-                            className="px-6 py-12 text-center text-gray-500"
+                            className="px-6 py-12 text-center staff-text-secondary"
                           >
                             No contests found matching your criteria
                           </td>
@@ -421,10 +383,10 @@ export default function ContestsManagementPage() {
                             <tr key={contest.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div>
-                                  <div className="text-sm font-medium text-gray-900">
+                                  <div className="text-sm font-medium staff-text-primary">
                                     {contest.title}
                                   </div>
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-sm staff-text-secondary">
                                     {contest.category}
                                   </div>
                                   <div className="text-xs text-gray-400 mt-1">
@@ -434,7 +396,7 @@ export default function ContestsManagementPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
-                                  className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
+                                  className={`inline-flex items-center gap-1  px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
                                     contest.status
                                   )}`}
                                 >
@@ -442,9 +404,9 @@ export default function ContestsManagementPage() {
                                   {contest.status}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                 <div>
-                                  <div className="font-medium text-gray-900">
+                                  <div className="font-medium staff-text-primary">
                                     {contest.currentParticipants}/
                                     {contest.maxParticipants}
                                   </div>
@@ -458,9 +420,9 @@ export default function ContestsManagementPage() {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                 <div>
-                                  <div className="font-medium text-gray-900">
+                                  <div className="font-medium staff-text-primary">
                                     {contest.submissionsCount}
                                   </div>
                                   <div className="text-xs">
@@ -468,10 +430,10 @@ export default function ContestsManagementPage() {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium staff-text-primary">
                                 {contest.prizePool}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                 <div>
                                   <div>Start: {contest.startDate}</div>
                                   <div>End: {contest.endDate}</div>
@@ -485,7 +447,7 @@ export default function ContestsManagementPage() {
                                   <IconEye className="h-4 w-4" />
                                 </button>
                                 <button
-                                  className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 transition-colors mr-2"
+                                  className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors mr-2"
                                   title="Edit Contest"
                                 >
                                   <IconEdit className="h-4 w-4" />

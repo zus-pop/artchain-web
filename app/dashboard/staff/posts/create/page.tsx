@@ -165,7 +165,7 @@ Ready to join the revolution? Create your free account today and start exploring
       <SidebarInset>
         <SiteHeader title={isEditing ? "Edit Post" : "Create Post"} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 { label: "Posts Management", href: "/dashboard/staff/posts" },
@@ -181,15 +181,15 @@ Ready to join the revolution? Create your free account today and start exploring
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/posts"
-                    className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50 transition-colors"
+                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
                   >
-                    <IconArrowLeft className="h-5 w-5 text-gray-600" />
+                    <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold staff-text-primary">
                       {isEditing ? "Edit Post" : "Create New Post"}
                     </h2>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm staff-text-secondary mt-1">
                       {isEditing
                         ? "Update and modify your existing post content"
                         : "Write and publish announcements, news, and content for the ArtChain community"}
@@ -200,7 +200,7 @@ Ready to join the revolution? Create your free account today and start exploring
                   <button
                     onClick={() => setPreviewMode(!previewMode)}
                     disabled={loading}
-                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+                    className=" border border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     <IconEye className="h-4 w-4" />
                     {previewMode ? "Edit" : "Preview"}
@@ -212,7 +212,7 @@ Ready to join the revolution? Create your free account today and start exploring
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading post data...</p>
+                    <p className="mt-4 staff-text-secondary">Loading post data...</p>
                   </div>
                 </div>
               ) : (
@@ -221,7 +221,7 @@ Ready to join the revolution? Create your free account today and start exploring
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-6">
                       {/* Title */}
-                      <div className="rounded-lg border border-gray-200 bg-white p-6">
+                      <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Post Title *
                         </label>
@@ -231,20 +231,20 @@ Ready to join the revolution? Create your free account today and start exploring
                           onChange={(e) =>
                             handleInputChange("title", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-medium"
+                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-medium"
                           placeholder="Enter an engaging title for your post"
                           required
                         />
                       </div>
 
                       {/* Content */}
-                      <div className="rounded-lg border border-gray-200 bg-white p-6">
+                      <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Content *
                         </label>
                         {previewMode ? (
                           <div className="prose max-w-none">
-                            <div className="min-h-[400px] p-4 border border-gray-200 rounded-lg bg-gray-50 whitespace-pre-wrap">
+                            <div className="min-h-[400px] p-4 border border-[#e6e2da]  bg-gray-50 whitespace-pre-wrap">
                               {formData.content ||
                                 "Your content will appear here..."}
                             </div>
@@ -256,12 +256,12 @@ Ready to join the revolution? Create your free account today and start exploring
                               handleInputChange("content", e.target.value)
                             }
                             rows={15}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
                             placeholder="Write your post content here... You can use basic formatting."
                             required
                           />
                         )}
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className="text-xs staff-text-secondary mt-2">
                           Supports basic text formatting. HTML tags are not
                           allowed.
                         </p>
@@ -271,9 +271,9 @@ Ready to join the revolution? Create your free account today and start exploring
                     {/* Sidebar */}
                     <div className="space-y-6">
                       {/* Publishing Settings */}
-                      <div className="rounded-lg border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <IconSend className="h-5 w-5 text-blue-600" />
+                      <div className="staff-card p-6">
+                        <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                          <IconSend className="h-5 w-5 " />
                           Publishing
                         </h3>
 
@@ -290,7 +290,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                   e.target.value as PostStatus
                                 )
                               }
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="DRAFT">Draft</option>
                               <option value="PUBLISHED">Published</option>
@@ -307,9 +307,9 @@ Ready to join the revolution? Create your free account today and start exploring
                               onChange={(e) =>
                                 handleInputChange("publishedAt", e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs staff-text-secondary mt-1">
                               Leave empty to publish immediately
                             </p>
                           </div>
@@ -317,9 +317,9 @@ Ready to join the revolution? Create your free account today and start exploring
                       </div>
 
                       {/* Category */}
-                      <div className="rounded-lg border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <IconTag className="h-5 w-5 text-green-600" />
+                      <div className="staff-card p-6">
+                        <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                          <IconTag className="h-5 w-5 " />
                           Category
                         </h3>
 
@@ -332,7 +332,7 @@ Ready to join the revolution? Create your free account today and start exploring
                             onChange={(e) =>
                               handleInputChange("category", e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                           >
                             <option value="">Choose a category</option>
@@ -346,15 +346,15 @@ Ready to join the revolution? Create your free account today and start exploring
                       </div>
 
                       {/* Post Stats Preview */}
-                      <div className="rounded-lg border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <IconEye className="h-5 w-5 text-purple-600" />
+                      <div className="staff-card p-6">
+                        <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                          <IconEye className="h-5 w-5 " />
                           Preview Stats
                         </h3>
 
                         <div className="space-y-3 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Word Count:</span>
+                            <span className="staff-text-secondary">Word Count:</span>
                             <span className="font-medium">
                               {
                                 formData.content
@@ -365,7 +365,7 @@ Ready to join the revolution? Create your free account today and start exploring
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">
+                            <span className="staff-text-secondary">
                               Character Count:
                             </span>
                             <span className="font-medium">
@@ -373,7 +373,7 @@ Ready to join the revolution? Create your free account today and start exploring
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-gray-600">Reading Time:</span>
+                            <span className="staff-text-secondary">Reading Time:</span>
                             <span className="font-medium">
                               ~
                               {Math.ceil(
@@ -392,10 +392,10 @@ Ready to join the revolution? Create your free account today and start exploring
                   </div>
 
                   {/* Form Actions */}
-                  <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                  <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
                     <Link
                       href="/dashboard/staff/posts"
-                      className="px-6 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </Link>
@@ -403,7 +403,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       type="button"
                       onClick={handleSaveDraft}
                       disabled={isSubmitting}
-                      className="px-6 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <IconDeviceFloppy className="h-4 w-4" />
                       Save Draft
@@ -417,7 +417,7 @@ Ready to join the revolution? Create your free account today and start exploring
                         !formData.content.trim() ||
                         !formData.category
                       }
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isSubmitting ? (
                         <>

@@ -5,6 +5,7 @@ import { StaffSidebar } from "@/components/staff-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { StatsCards } from "@/components/staff/StatsCards";
 import {
   IconMoneybag,
   IconPlus,
@@ -108,13 +109,13 @@ export default function SponsorsPage() {
   const getStatusBadgeColor = (status: SponsorStatus) => {
     switch (status) {
       case "ACTIVE":
-        return "bg-green-100 text-green-800";
+        return "staff-badge-active";
       case "INACTIVE":
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
       case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
+        return "staff-badge-pending";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
     }
   };
 
@@ -141,7 +142,7 @@ export default function SponsorsPage() {
       <SidebarInset>
         <SiteHeader title="Sponsors Management" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[{ label: "Sponsors Management" }]}
               homeHref="/dashboard/staff"
@@ -152,17 +153,17 @@ export default function SponsorsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     All Sponsors ({filteredSponsors.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     Manage sponsorship relationships and track contributions to
                     ArtChain
                   </p>
                 </div>
                 <a
                   href="/dashboard/staff/sponsors/campaigns/create"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                  className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
                   Create Campaign
@@ -170,133 +171,93 @@ export default function SponsorsPage() {
               </div>
 
               {/* Statistics Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <IconMoneybag className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Sponsored
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        ${totalSponsored.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-2">
-                      <IconBuilding className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Active Sponsors
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {activeSponsors}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2">
-                      <IconTrendingUp className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Active Campaigns
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {totalCampaigns}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-yellow-100 p-2">
-                      <IconCalendar className="h-5 w-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Avg. per Sponsor
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        $
-                        {activeSponsors > 0
-                          ? Math.round(
-                              totalSponsored / activeSponsors
-                            ).toLocaleString()
-                          : 0}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StatsCards
+                stats={[
+                  {
+                    title: "Total Sponsored",
+                    value: `$${totalSponsored.toLocaleString()}`,
+                    subtitle: "All contributions",
+                    icon: <IconMoneybag className="h-6 w-6" />,
+                    variant: "info",
+                  },
+                  {
+                    title: "Active Sponsors",
+                    value: activeSponsors,
+                    subtitle: "Currently supporting",
+                    icon: <IconBuilding className="h-6 w-6" />,
+                    variant: "warning",
+                  },
+                  {
+                    title: "Active Campaigns",
+                    value: totalCampaigns,
+                    subtitle: "Running programs",
+                    icon: <IconTrendingUp className="h-6 w-6" />,
+                    variant: "success",
+                  },
+                  {
+                    title: "Avg. per Sponsor",
+                    value: `$${
+                      activeSponsors > 0
+                        ? Math.round(totalSponsored / activeSponsors).toLocaleString()
+                        : 0
+                    }`,
+                    subtitle: "Average contribution",
+                    icon: <IconCalendar className="h-6 w-6" />,
+                    variant: "primary",
+                  },
+                ]}
+              />
 
               {/* Quick Actions */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <a
                   href="/dashboard/staff/sponsors"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-3 group-hover:bg-blue-200 transition-colors">
-                      <IconBuilding className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        All Sponsors
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        View and manage all sponsors
-                      </p>
-                    </div>
+                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconBuilding className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary">
+                      All Sponsors
+                    </p>
+                    <p className="text-xs staff-text-secondary">
+                      View and manage
+                    </p>
                   </div>
                 </a>
 
                 <a
                   href="/dashboard/staff/sponsors/campaigns"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-3 group-hover:bg-green-200 transition-colors">
-                      <IconTrendingUp className="h-6 w-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        Sponsorship Campaigns
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Manage active sponsorship campaigns
-                      </p>
-                    </div>
+                  <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconTrendingUp className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary">
+                      Campaigns
+                    </p>
+                    <p className="text-xs staff-text-secondary">
+                      Manage active
+                    </p>
                   </div>
                 </a>
 
                 <a
                   href="/dashboard/staff/sponsors/campaigns/create"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-3 group-hover:bg-purple-200 transition-colors">
-                      <IconPlus className="h-6 w-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        Create Campaign
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Start a new sponsorship campaign
-                      </p>
-                    </div>
+                  <div className=" bg-gradient-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconPlus className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary">
+                      Create Campaign
+                    </p>
+                    <p className="text-xs staff-text-secondary">
+                      Start new
+                    </p>
                   </div>
                 </a>
               </div>
@@ -310,7 +271,7 @@ export default function SponsorsPage() {
                     placeholder="Search by name, company, or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -320,7 +281,7 @@ export default function SponsorsPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as SponsorStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -332,30 +293,30 @@ export default function SponsorsPage() {
               </div>
 
               {/* Sponsors Table */}
-              <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+              <div className="staff-card overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Sponsor
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Contact
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Sponsored
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Campaigns
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Last Activity
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -365,7 +326,7 @@ export default function SponsorsPage() {
                         <tr>
                           <td
                             colSpan={7}
-                            className="px-6 py-12 text-center text-gray-500"
+                            className="px-6 py-12 text-center staff-text-secondary"
                           >
                             No sponsors found matching your criteria
                           </td>
@@ -383,39 +344,39 @@ export default function SponsorsPage() {
                                     .slice(0, 2)}
                                 </div>
                                 <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
+                                  <div className="text-sm font-medium staff-text-primary">
                                     {sponsor.name}
                                   </div>
-                                  <div className="text-sm text-gray-500">
+                                  <div className="text-sm staff-text-secondary">
                                     {sponsor.company}
                                   </div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
+                              <div className="text-sm staff-text-primary">
                                 {sponsor.email}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm staff-text-secondary">
                                 {sponsor.phone}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex rounded-lg px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
+                                className={`inline-flex  px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
                                   sponsor.status
                                 )}`}
                               >
                                 {sponsor.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               ${sponsor.totalSponsored.toLocaleString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               {sponsor.activeCampaigns}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               {sponsor.lastActivity}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -427,7 +388,7 @@ export default function SponsorsPage() {
                                   <IconEye className="h-4 w-4" />
                                 </button>
                                 <button
-                                  className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 transition-colors"
+                                  className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
                                   title="Edit"
                                 >
                                   <IconEdit className="h-4 w-4" />

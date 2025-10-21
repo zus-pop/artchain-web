@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Post, PostStatus } from "@/types/dashboard";
+import { StatsCards } from "@/components/staff/StatsCards";
 import {
   IconEdit,
   IconEye,
@@ -112,13 +113,13 @@ export default function PostsPage() {
   const getStatusBadgeColor = (status: PostStatus) => {
     switch (status) {
       case "PUBLISHED":
-        return "bg-green-100 text-green-800";
+        return "staff-badge-active";
       case "DRAFT":
-        return "bg-yellow-100 text-yellow-800";
+        return "staff-badge-pending";
       case "ARCHIVED":
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
     }
   };
 
@@ -147,7 +148,7 @@ export default function PostsPage() {
       <SidebarInset>
         <SiteHeader title="Posts Management" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[{ label: "Posts Management" }]}
               homeHref="/dashboard/staff"
@@ -158,21 +159,21 @@ export default function PostsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     All Posts ({filteredPosts.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     Manage announcements, news, and content for the ArtChain
                     platform
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs staff-text-secondary mt-1">
                     💡 <strong>Archive</strong> keeps old content accessible but
                     hidden from main listings for better organization
                   </p>
                 </div>
                 <Link
                   href="/dashboard/staff/posts/create"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                  className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
                   Create New Post
@@ -180,73 +181,40 @@ export default function PostsPage() {
               </div>
 
               {/* Statistics Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-2">
-                      <IconFileText className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Posts
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {posts.length}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <IconFileText className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Published
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {posts.filter((p) => p.status === "PUBLISHED").length}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-yellow-100 p-2">
-                      <IconFileText className="h-5 w-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Drafts
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {posts.filter((p) => p.status === "DRAFT").length}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2">
-                      <IconEye className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Views
-                      </p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {posts
-                          .reduce((sum, post) => sum + post.views, 0)
-                          .toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StatsCards
+                stats={[
+                  {
+                    title: "Total Posts",
+                    value: posts.length,
+                    subtitle: "All content",
+                    icon: <IconFileText className="h-6 w-6" />,
+                    variant: "info",
+                  },
+                  {
+                    title: "Published",
+                    value: posts.filter((p) => p.status === "PUBLISHED").length,
+                    subtitle: "Live content",
+                    icon: <IconFileText className="h-6 w-6" />,
+                    variant: "warning",
+                  },
+                  {
+                    title: "Drafts",
+                    value: posts.filter((p) => p.status === "DRAFT").length,
+                    subtitle: "Work in progress",
+                    icon: <IconFileText className="h-6 w-6" />,
+                    variant: "success",
+                  },
+                  {
+                    title: "Total Views",
+                    value: posts
+                      .reduce((sum, post) => sum + post.views, 0)
+                      .toLocaleString(),
+                    subtitle: "All-time views",
+                    icon: <IconEye className="h-6 w-6" />,
+                    variant: "primary",
+                  },
+                ]}
+              />
 
               {/* Search and Filters */}
               <div className="flex flex-col sm:flex-row gap-4">
@@ -257,7 +225,7 @@ export default function PostsPage() {
                     placeholder="Search by title, content, or author..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -267,7 +235,7 @@ export default function PostsPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as PostStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -280,7 +248,7 @@ export default function PostsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -292,27 +260,27 @@ export default function PostsPage() {
               </div>
 
               {/* Posts Table */}
-              <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+              <div className="staff-card overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Post
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Category
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Views
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Created
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -322,7 +290,7 @@ export default function PostsPage() {
                         <tr>
                           <td
                             colSpan={6}
-                            className="px-6 py-12 text-center text-gray-500"
+                            className="px-6 py-12 text-center staff-text-secondary"
                           >
                             No posts found matching your criteria
                           </td>
@@ -333,10 +301,10 @@ export default function PostsPage() {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className="flex-1">
-                                  <div className="text-sm font-medium text-gray-900 line-clamp-1">
+                                  <div className="text-sm font-medium staff-text-primary line-clamp-1">
                                     {post.title}
                                   </div>
-                                  <div className="text-sm text-gray-500 flex items-center gap-2">
+                                  <div className="text-sm staff-text-secondary flex items-center gap-2">
                                     <IconUser className="h-3 w-3" />
                                     {post.author}
                                   </div>
@@ -344,23 +312,23 @@ export default function PostsPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex rounded-lg px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800">
+                              <span className="inline-flex  px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800">
                                 {post.category}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex rounded-lg px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
+                                className={`inline-flex  px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
                                   post.status
                                 )}`}
                               >
                                 {post.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               {post.views.toLocaleString()}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               <div>
                                 <div>{post.createdAt}</div>
                                 {post.publishedAt &&
@@ -382,7 +350,7 @@ export default function PostsPage() {
                                 </a>
                                 <a
                                   href={`/dashboard/staff/posts/create?id=${post.id}`}
-                                  className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 transition-colors"
+                                  className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
                                   title="Edit"
                                 >
                                   <IconEdit className="h-4 w-4" />

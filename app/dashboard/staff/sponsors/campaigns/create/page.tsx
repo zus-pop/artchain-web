@@ -122,7 +122,7 @@ export default function CreateCampaignPage() {
         <SidebarInset>
           <SiteHeader title="Create Sponsorship Campaign" />
           <div className="flex flex-1 flex-col">
-            <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+            <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
               <Breadcrumb
                 items={[
                   { label: "Sponsors", href: "/dashboard/staff/sponsors" },
@@ -141,26 +141,26 @@ export default function CreateCampaignPage() {
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setPreviewMode(false)}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    className="flex items-center gap-2 staff-text-secondary hover:staff-text-primary transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5" />
                     Back to Edit
                   </button>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     Campaign Preview
                   </h2>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleSaveDraft}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className=" border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     Save Draft
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={!isFormValid || isSubmitting}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     {isSubmitting ? "Creating..." : "Create Campaign"}
                   </button>
@@ -169,12 +169,12 @@ export default function CreateCampaignPage() {
 
               {/* Preview Content */}
               <div className="max-w-4xl mx-auto">
-                <div className="bg-white rounded-lg border border-gray-200 p-8">
+                <div className="bg-white  border border-[#e6e2da] p-8">
                   <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-3xl font-bold staff-text-primary mb-4">
                       {formData.title || "Campaign Title"}
                     </h1>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                    <div className="flex items-center gap-4 text-sm staff-text-secondary mb-4">
                       <span className="flex items-center gap-1">
                         <IconBuilding className="h-4 w-4" />
                         {sponsors.find((s) => s.id === formData.sponsorId)
@@ -192,45 +192,45 @@ export default function CreateCampaignPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-blue-50 rounded-lg p-4">
+                    <div className="bg-blue-50  p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <IconMoneybag className="h-5 w-5 text-blue-600" />
+                        <IconMoneybag className="h-5 w-5 " />
                         <span className="text-sm font-medium text-blue-600">
                           Goal Amount
                         </span>
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         ${formData.goalAmount.toLocaleString()}
                       </p>
                     </div>
 
-                    <div className="bg-green-50 rounded-lg p-4">
+                    <div className="bg-green-50  p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <IconUsers className="h-5 w-5 text-green-600" />
+                        <IconUsers className="h-5 w-5 " />
                         <span className="text-sm font-medium text-green-600">
                           Target Participants
                         </span>
                       </div>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         {formData.targetParticipants}
                       </p>
                     </div>
 
-                    <div className="bg-purple-50 rounded-lg p-4">
+                    <div className="bg-purple-50  p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <IconTrendingUp className="h-5 w-5 text-purple-600" />
+                        <IconTrendingUp className="h-5 w-5 " />
                         <span className="text-sm font-medium text-purple-600">
                           Status
                         </span>
                       </div>
-                      <p className="text-lg font-semibold text-gray-900">
+                      <p className="text-lg font-semibold staff-text-primary">
                         {formData.status}
                       </p>
                     </div>
                   </div>
 
                   <div className="prose max-w-none mb-8">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    <h3 className="text-xl font-semibold staff-text-primary mb-3">
                       Description
                     </h3>
                     <p className="text-gray-700 whitespace-pre-wrap">
@@ -242,7 +242,7 @@ export default function CreateCampaignPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {formData.requirements && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                          <h3 className="text-lg font-semibold staff-text-primary mb-3">
                             Requirements
                           </h3>
                           <p className="text-gray-700 whitespace-pre-wrap">
@@ -253,7 +253,7 @@ export default function CreateCampaignPage() {
 
                       {formData.benefits && (
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                          <h3 className="text-lg font-semibold staff-text-primary mb-3">
                             Benefits
                           </h3>
                           <p className="text-gray-700 whitespace-pre-wrap">
@@ -285,7 +285,7 @@ export default function CreateCampaignPage() {
       <SidebarInset>
         <SiteHeader title="Create Sponsorship Campaign" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 { label: "Sponsors", href: "/dashboard/staff/sponsors" },
@@ -302,10 +302,10 @@ export default function CreateCampaignPage() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-2xl font-bold staff-text-primary">
                   Create New Campaign
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm staff-text-secondary mt-1">
                   Set up a new sponsorship campaign to engage with the ArtChain
                   community
                 </p>
@@ -313,14 +313,14 @@ export default function CreateCampaignPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPreviewMode(true)}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className=" border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   <IconEye className="h-4 w-4" />
                   Preview
                 </button>
                 <button
                   onClick={handleSaveDraft}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className=" border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   <IconDeviceFloppy className="h-4 w-4" />
                   Save Draft
@@ -328,7 +328,7 @@ export default function CreateCampaignPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={!isFormValid || isSubmitting}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? "Creating..." : "Create Campaign"}
                 </button>
@@ -341,8 +341,8 @@ export default function CreateCampaignPage() {
               className="max-w-4xl mx-auto space-y-6"
             >
               {/* Basic Information */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white  border border-[#e6e2da] p-6">
+                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                   <IconFileText className="h-5 w-5" />
                   Basic Information
                 </h3>
@@ -359,7 +359,7 @@ export default function CreateCampaignPage() {
                         handleInputChange("title", e.target.value)
                       }
                       placeholder="Enter campaign title"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -373,7 +373,7 @@ export default function CreateCampaignPage() {
                       onChange={(e) =>
                         handleInputChange("category", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     >
                       <option value="">Select a category</option>
@@ -397,10 +397,10 @@ export default function CreateCampaignPage() {
                     }
                     placeholder="Describe the campaign goals, objectives, and impact..."
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
-                  <div className="flex justify-between text-sm text-gray-500 mt-1">
+                  <div className="flex justify-between text-sm staff-text-secondary mt-1">
                     <span>
                       {calculateWordCount(formData.description)} words
                     </span>
@@ -412,8 +412,8 @@ export default function CreateCampaignPage() {
               </div>
 
               {/* Sponsor & Financial Details */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white  border border-[#e6e2da] p-6">
+                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                   <IconBuilding className="h-5 w-5" />
                   Sponsor & Financial Details
                 </h3>
@@ -428,7 +428,7 @@ export default function CreateCampaignPage() {
                       onChange={(e) =>
                         handleInputChange("sponsorId", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     >
                       <option value="">Select a sponsor</option>
@@ -455,7 +455,7 @@ export default function CreateCampaignPage() {
                       }
                       placeholder="50000"
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -475,7 +475,7 @@ export default function CreateCampaignPage() {
                       }
                       placeholder="50"
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
@@ -491,7 +491,7 @@ export default function CreateCampaignPage() {
                           e.target.value as CampaignStatus
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="DRAFT">Draft</option>
                       <option value="ACTIVE">Active</option>
@@ -503,8 +503,8 @@ export default function CreateCampaignPage() {
               </div>
 
               {/* Dates */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white  border border-[#e6e2da] p-6">
+                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                   <IconCalendar className="h-5 w-5" />
                   Campaign Dates
                 </h3>
@@ -520,7 +520,7 @@ export default function CreateCampaignPage() {
                       onChange={(e) =>
                         handleInputChange("startDate", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -535,7 +535,7 @@ export default function CreateCampaignPage() {
                       onChange={(e) =>
                         handleInputChange("endDate", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -543,8 +543,8 @@ export default function CreateCampaignPage() {
               </div>
 
               {/* Additional Details */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white  border border-[#e6e2da] p-6">
+                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                   <IconTarget className="h-5 w-5" />
                   Additional Details
                 </h3>
@@ -561,7 +561,7 @@ export default function CreateCampaignPage() {
                       }
                       placeholder="List any specific requirements for participants..."
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
@@ -576,7 +576,7 @@ export default function CreateCampaignPage() {
                       }
                       placeholder="Describe the benefits for participants and sponsors..."
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>

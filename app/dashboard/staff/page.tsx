@@ -18,24 +18,24 @@ export default function StaffDashboardPage() {
       <SidebarInset>
         <SiteHeader title="Staff Dashboard" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb items={[]} homeHref="/dashboard/staff" />
           </div>
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
               {/* Staff Dashboard Content */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="staff-card staff-stat-info p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Total Competitors
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">1,234</p>
+                      <p className="text-3xl font-bold staff-text-primary">1,234</p>
                     </div>
-                    <div className="rounded-lg bg-blue-50 p-3">
+                    <div className="stat-icon">
                       <svg
-                        className="h-6 w-6 text-blue-600"
+                        className="h-6 w-6"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -49,22 +49,22 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm staff-text-secondary">
                     +8.2% from last month
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                <div className="staff-card staff-stat-secondary p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Pending Paintings
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">67</p>
+                      <p className="text-3xl font-bold staff-text-primary">67</p>
                     </div>
-                    <div className="rounded-lg bg-orange-50 p-3">
+                    <div className="stat-icon">
                       <svg
-                        className="h-6 w-6 text-orange-600"
+                        className="h-6 w-6"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -78,20 +78,20 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">Awaiting review</p>
+                  <p className="mt-2 text-sm staff-text-secondary">Awaiting review</p>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                <div className="staff-card staff-stat-success p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Active Contests
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">8</p>
+                      <p className="text-3xl font-bold staff-text-primary">8</p>
                     </div>
-                    <div className="rounded-lg bg-green-50 p-3">
+                    <div className="stat-icon">
                       <svg
-                        className="h-6 w-6 text-green-600"
+                        className="h-6 w-6"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -105,22 +105,22 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm staff-text-secondary">
                     Currently running
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                <div className="staff-card staff-stat-primary p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Active Sponsors
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">15</p>
+                      <p className="text-3xl font-bold staff-text-primary">15</p>
                     </div>
-                    <div className="rounded-lg bg-purple-50 p-3">
+                    <div className="stat-icon">
                       <svg
-                        className="h-6 w-6 text-purple-600"
+                        className="h-6 w-6"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -134,23 +134,23 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm text-gray-500">2 new this month</p>
+                  <p className="mt-2 text-sm staff-text-secondary">2 new this month</p>
                 </div>
               </div>
 
               {/* Quick Actions */}
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="staff-card p-6">
+                <h2 className="staff-heading mb-6">
                   Quick Actions
                 </h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <a
-                    href="/dashboard/staff/paintings/pending"
-                    className="flex items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors duration-200"
+                  <Link
+                    href="/dashboard/staff/competitors/paintings/pending"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
                   >
-                    <div className="rounded-lg bg-orange-50 p-2">
+                    <div className=" bg-gradient-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
-                        className="h-5 w-5 text-orange-600"
+                        className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -164,20 +164,20 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-bold staff-text-primary">
                         Review Paintings
                       </p>
-                      <p className="text-xs text-gray-500">67 pending</p>
+                      <p className="text-xs staff-text-secondary">67 pending</p>
                     </div>
-                  </a>
+                  </Link>
 
-                  <a
-                    href="/dashboard/staff/competitions/create"
-                    className="flex items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors duration-200"
+                  <Link
+                    href="/dashboard/staff/contests/create"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
                   >
-                    <div className="rounded-lg bg-blue-50 p-2">
+                    <div className=" bg-gradient-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
-                        className="h-5 w-5 text-blue-600"
+                        className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -191,20 +191,20 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-bold staff-text-primary">
                         Create Contest
                       </p>
-                      <p className="text-xs text-gray-500">Start new</p>
+                      <p className="text-xs staff-text-secondary">Start new</p>
                     </div>
-                  </a>
+                  </Link>
 
-                  <a
-                    href="/dashboard/staff/examiners/invite"
-                    className="flex items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors duration-200"
+                  <Link
+                    href="/dashboard/staff/contests/examiners/invite"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                   >
-                    <div className="rounded-lg bg-green-50 p-2">
+                    <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
-                        className="h-5 w-5 text-green-600"
+                        className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -218,20 +218,20 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-bold staff-text-primary">
                         Invite Examiner
                       </p>
-                      <p className="text-xs text-gray-500">Send invitation</p>
+                      <p className="text-xs staff-text-secondary">Send invitation</p>
                     </div>
-                  </a>
+                  </Link>
 
                   <Link
                     href="/dashboard/staff/posts/create"
-                    className="flex items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors duration-200"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                   >
-                    <div className="rounded-lg bg-purple-50 p-2">
+                    <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
-                        className="h-5 w-5 text-purple-600"
+                        className="h-5 w-5 text-white"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -245,24 +245,24 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-bold staff-text-primary">
                         Create Post
                       </p>
-                      <p className="text-xs text-gray-500">New announcement</p>
+                      <p className="text-xs staff-text-secondary">New announcement</p>
                     </div>
                   </Link>
                 </div>
               </div>
 
               {/* Recent Activity */}
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="staff-card p-6">
+                <h2 className="text-lg font-semibold staff-text-primary mb-4">
                   Recent Activity
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-green-50 p-2">
+                      <div className=" bg-green-50 p-2">
                         <svg
                           className="h-5 w-5 text-green-600"
                           fill="none"
@@ -278,20 +278,20 @@ export default function StaffDashboardPage() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium staff-text-primary">
                           Painting approved
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs staff-text-secondary">
                           &ldquo;Sunset Dreams&rdquo; by Alice Chen
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">10 min ago</span>
+                    <span className="text-xs staff-text-secondary">10 min ago</span>
                   </div>
 
                   <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                     <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-blue-50 p-2">
+                      <div className=" bg-blue-50 p-2">
                         <svg
                           className="h-5 w-5 text-blue-600"
                           fill="none"
@@ -307,20 +307,20 @@ export default function StaffDashboardPage() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium staff-text-primary">
                           New contest started
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs staff-text-secondary">
                           Spring Art Competition 2025
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">2 hours ago</span>
+                    <span className="text-xs staff-text-secondary">2 hours ago</span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-purple-50 p-2">
+                      <div className=" bg-purple-50 p-2">
                         <svg
                           className="h-5 w-5 text-purple-600"
                           fill="none"
@@ -336,15 +336,15 @@ export default function StaffDashboardPage() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">
+                        <p className="text-sm font-medium staff-text-primary">
                           New post published
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs staff-text-secondary">
                           Contest guidelines update
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">5 hours ago</span>
+                    <span className="text-xs staff-text-secondary">5 hours ago</span>
                   </div>
                 </div>
               </div>

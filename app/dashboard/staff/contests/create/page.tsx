@@ -73,7 +73,7 @@ export default function CreateContestPage() {
       <SidebarInset>
         <SiteHeader title="Create Contest" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
@@ -92,15 +92,15 @@ export default function CreateContestPage() {
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/contests"
-                    className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50 transition-colors"
+                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
                   >
-                    <IconArrowLeft className="h-5 w-5 text-gray-600" />
+                    <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold staff-text-primary">
                       Create New Contest
                     </h2>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm staff-text-secondary mt-1">
                       Set up a new art competition for young artists
                     </p>
                   </div>
@@ -112,9 +112,9 @@ export default function CreateContestPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Basic Information */}
                   <div className="space-y-6">
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <IconFileText className="h-5 w-5 text-blue-600" />
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconFileText className="h-5 w-5 " />
                         Basic Information
                       </h3>
 
@@ -129,7 +129,7 @@ export default function CreateContestPage() {
                             onChange={(e) =>
                               handleInputChange("title", e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Enter contest title"
                             required
                           />
@@ -144,7 +144,7 @@ export default function CreateContestPage() {
                             onChange={(e) =>
                               handleInputChange("category", e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                           >
                             {categories.map((category) => (
@@ -165,7 +165,7 @@ export default function CreateContestPage() {
                               handleInputChange("description", e.target.value)
                             }
                             rows={4}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Describe the contest theme and objectives"
                             required
                           />
@@ -174,9 +174,9 @@ export default function CreateContestPage() {
                     </div>
 
                     {/* Dates and Participants */}
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <IconCalendar className="h-5 w-5 text-green-600" />
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconCalendar className="h-5 w-5 " />
                         Schedule & Capacity
                       </h3>
 
@@ -192,7 +192,7 @@ export default function CreateContestPage() {
                               onChange={(e) =>
                                 handleInputChange("startDate", e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               required
                             />
                           </div>
@@ -206,7 +206,7 @@ export default function CreateContestPage() {
                               onChange={(e) =>
                                 handleInputChange("endDate", e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               required
                             />
                           </div>
@@ -225,7 +225,7 @@ export default function CreateContestPage() {
                                 e.target.value
                               )
                             }
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="100"
                             min="1"
                             required
@@ -238,8 +238,8 @@ export default function CreateContestPage() {
                   {/* Prizes and Rules */}
                   <div className="space-y-6">
                     {/* Prizes */}
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconTrophy className="h-5 w-5 text-yellow-600" />
                         Prizes & Awards
                       </h3>
@@ -257,11 +257,11 @@ export default function CreateContestPage() {
                               onChange={(e) =>
                                 handleInputChange("prizePool", e.target.value)
                               }
-                              className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full pl-10 pr-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               placeholder="2500"
                             />
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs staff-text-secondary mt-1">
                             Leave empty if no prizes
                           </p>
                         </div>
@@ -269,9 +269,9 @@ export default function CreateContestPage() {
                     </div>
 
                     {/* Rules and Requirements */}
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <IconTag className="h-5 w-5 text-purple-600" />
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconTag className="h-5 w-5 " />
                         Rules & Requirements
                       </h3>
 
@@ -286,7 +286,7 @@ export default function CreateContestPage() {
                               handleInputChange("rules", e.target.value)
                             }
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Enter contest rules and guidelines"
                           />
                         </div>
@@ -301,7 +301,7 @@ export default function CreateContestPage() {
                               handleInputChange("requirements", e.target.value)
                             }
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="File format, size limits, age restrictions, etc."
                           />
                         </div>
@@ -319,7 +319,7 @@ export default function CreateContestPage() {
                               )
                             }
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Creativity, technique, originality, presentation, etc."
                           />
                         </div>
@@ -329,16 +329,16 @@ export default function CreateContestPage() {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
                   <Link
                     href="/dashboard/staff/contests"
-                    className="px-6 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </Link>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
                     Create Contest

@@ -180,7 +180,7 @@ export default function AwardCollectionsPage() {
       <SidebarInset>
         <SiteHeader title="Award Collections" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
@@ -198,14 +198,14 @@ export default function AwardCollectionsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     Award Templates ({filteredTemplates.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     Manage award designs, certificates, and prize structures
                   </p>
                 </div>
-                <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors flex items-center gap-2">
+                <button className="staff-btn-primary transition-colors flex items-center gap-2">
                   <IconPlus className="h-4 w-4" />
                   Create Template
                 </button>
@@ -213,48 +213,48 @@ export default function AwardCollectionsPage() {
 
               {/* Statistics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-2">
-                      <IconAward className="h-5 w-5 text-blue-600" />
+                    <div className="stat-icon p-2">
+                      <IconAward className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Active Templates
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         {activeTemplates}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <IconTrophy className="h-5 w-5 text-green-600" />
+                    <div className="stat-icon p-2">
+                      <IconTrophy className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Total Awards Given
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         {totalUsage}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2">
-                      <IconPalette className="h-5 w-5 text-purple-600" />
+                    <div className="stat-icon p-2">
+                      <IconPalette className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Design Variations
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         {templates.length}
                       </p>
                     </div>
@@ -274,10 +274,10 @@ export default function AwardCollectionsPage() {
                       onClick={() =>
                         setSelectedType(type as AwardTemplateType | "ALL")
                       }
-                      className={`px-3 py-1 text-sm rounded-lg border transition-colors ${
+                      className={`px-3 py-1 text-sm  border transition-colors ${
                         selectedType === type
                           ? "bg-blue-100 border-blue-300 text-blue-800"
-                          : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                          : "bg-gray-50 border-[#e6e2da] text-gray-700 hover:bg-gray-100"
                       }`}
                     >
                       {type.replace("_", " ")}
@@ -293,13 +293,13 @@ export default function AwardCollectionsPage() {
                   return (
                     <div
                       key={template.id}
-                      className="rounded-lg border border-gray-200 bg-white p-6 hover:shadow-md transition-shadow duration-200"
+                      className="staff-card p-6 hover:shadow-md transition-shadow duration-200"
                     >
                       {/* Template Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`p-2 rounded-lg border ${
+                            className={`p-2  border ${
                               template.type === "GOLD"
                                 ? "bg-yellow-100 border-yellow-300"
                                 : template.type === "SILVER"
@@ -318,7 +318,7 @@ export default function AwardCollectionsPage() {
                                 template.type === "GOLD"
                                   ? "text-yellow-600"
                                   : template.type === "SILVER"
-                                  ? "text-gray-600"
+                                  ? "staff-text-secondary"
                                   : template.type === "BRONZE"
                                   ? "text-orange-600"
                                   : template.type === "HONORABLE_MENTION"
@@ -330,7 +330,7 @@ export default function AwardCollectionsPage() {
                             />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold staff-text-primary">
                               {template.name}
                             </h3>
                             <span
@@ -343,10 +343,10 @@ export default function AwardCollectionsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <button className="text-gray-400 hover:text-gray-600 p-1">
+                          <button className="text-gray-400 hover:staff-text-secondary p-1">
                             <IconEye className="h-4 w-4" />
                           </button>
-                          <button className="text-gray-400 hover:text-gray-600 p-1">
+                          <button className="text-gray-400 hover:staff-text-secondary p-1">
                             <IconEdit className="h-4 w-4" />
                           </button>
                           <button className="text-gray-400 hover:text-red-600 p-1">
@@ -357,19 +357,19 @@ export default function AwardCollectionsPage() {
 
                       {/* Template Details */}
                       <div className="space-y-3 mb-4">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm staff-text-secondary">
                           {template.description}
                         </p>
 
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <span className="text-gray-500">Prize:</span>
+                            <span className="staff-text-secondary">Prize:</span>
                             <span className="ml-1 font-medium text-green-600">
                               {template.prizeAmount}
                             </span>
                           </div>
                           <div>
-                            <span className="text-gray-500">Used:</span>
+                            <span className="staff-text-secondary">Used:</span>
                             <span className="ml-1 font-medium">
                               {template.usageCount} times
                             </span>
@@ -377,13 +377,13 @@ export default function AwardCollectionsPage() {
                         </div>
 
                         <div className="space-y-1">
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs staff-text-secondary">
                             Certificate:{" "}
                             <span className="font-medium">
                               {template.certificateDesign}
                             </span>
                           </div>
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs staff-text-secondary">
                             Badge:{" "}
                             <span className="font-medium">
                               {template.badgeDesign}
@@ -394,7 +394,7 @@ export default function AwardCollectionsPage() {
 
                       {/* Status and Dates */}
                       <div className="border-t border-gray-100 pt-3">
-                        <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center justify-between text-xs staff-text-secondary">
                           <span>Created: {template.createdDate}</span>
                           <span>Last used: {template.lastUsed}</span>
                         </div>
@@ -402,8 +402,8 @@ export default function AwardCollectionsPage() {
                           <span
                             className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
                               template.isActive
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
+                                ? "staff-badge-active"
+                                : "staff-badge-neutral"
                             }`}
                           >
                             {template.isActive ? "Active" : "Inactive"}
@@ -421,10 +421,10 @@ export default function AwardCollectionsPage() {
               {filteredTemplates.length === 0 && (
                 <div className="text-center py-12">
                   <IconAward className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  <h3 className="text-lg font-medium staff-text-primary mb-2">
                     No templates found
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="staff-text-secondary">
                     Try adjusting your filter criteria.
                   </p>
                 </div>

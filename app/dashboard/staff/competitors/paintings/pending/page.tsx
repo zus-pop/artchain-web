@@ -154,7 +154,7 @@ export default function PendingPaintingsPage() {
       <SidebarInset>
         <SiteHeader title="Pending Paintings Review" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
@@ -172,10 +172,10 @@ export default function PendingPaintingsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     Pending Paintings ({filteredPaintings.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     Review and approve or reject competitor paintings
                   </p>
                 </div>
@@ -190,7 +190,7 @@ export default function PendingPaintingsPage() {
                     placeholder="Search by title or competitor name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export default function PendingPaintingsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -211,9 +211,9 @@ export default function PendingPaintingsPage() {
 
               {/* Paintings Grid */}
               {filteredPaintings.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <div className="text-center py-12 bg-gray-50 ">
                   <IconPalette className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
+                  <p className="staff-text-secondary text-lg">
                     No pending paintings found
                   </p>
                 </div>
@@ -222,7 +222,7 @@ export default function PendingPaintingsPage() {
                   {filteredPaintings.map((painting) => (
                     <div
                       key={painting.id}
-                      className="rounded-lg border border-gray-200 bg-white overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                      className="staff-card overflow-hidden hover:shadow-lg transition-shadow duration-200"
                     >
                       {/* Painting Image */}
                       <div className="relative h-64 bg-gray-100">
@@ -230,7 +230,7 @@ export default function PendingPaintingsPage() {
                           <IconPalette className="h-24 w-24 text-gray-300" />
                         </div>
                         <div className="absolute top-2 right-2">
-                          <span className="inline-flex rounded-lg px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800">
+                          <span className="inline-flex  px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800">
                             PENDING
                           </span>
                         </div>
@@ -238,11 +238,11 @@ export default function PendingPaintingsPage() {
 
                       {/* Painting Info */}
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h3 className="text-lg font-semibold staff-text-primary mb-2">
                           {painting.title}
                         </h3>
 
-                        <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <div className="space-y-2 text-sm staff-text-secondary mb-4">
                           <div className="flex items-center gap-2">
                             <IconUser className="h-4 w-4" />
                             <span>
@@ -260,7 +260,7 @@ export default function PendingPaintingsPage() {
                           </div>
                         </div>
 
-                        <p className="text-sm text-gray-500 mb-4 line-clamp-2">
+                        <p className="text-sm staff-text-secondary mb-4 line-clamp-2">
                           {painting.description}
                         </p>
 
@@ -268,21 +268,21 @@ export default function PendingPaintingsPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => openViewModal(painting)}
-                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50  hover:bg-blue-100 transition-colors"
                           >
                             <IconEye className="h-4 w-4" />
                             View Details
                           </button>
                           <button
                             onClick={() => handleApprove(painting.id)}
-                            className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                            className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white staff-btn-secondary transition-colors"
                             title="Approve"
                           >
                             <IconCheck className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => openRejectModal(painting)}
-                            className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                            className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-red-600  hover:bg-red-700 transition-colors"
                             title="Reject"
                           >
                             <IconX className="h-4 w-4" />
@@ -301,15 +301,15 @@ export default function PendingPaintingsPage() {
       {/* View Details Modal */}
       {isViewModalOpen && selectedPainting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white  max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-2xl font-bold text-gray-900">
+                <h3 className="text-2xl font-bold staff-text-primary">
                   {selectedPainting.title}
                 </h3>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:staff-text-secondary"
                 >
                   <IconX className="h-6 w-6" />
                 </button>
@@ -317,55 +317,55 @@ export default function PendingPaintingsPage() {
 
               <div className="space-y-4">
                 {/* Image */}
-                <div className="relative h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="relative h-96 bg-gray-100  flex items-center justify-center">
                   <IconPalette className="h-32 w-32 text-gray-300" />
                 </div>
 
                 {/* Details */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Competitor
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.competitorName}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Age</p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-sm font-medium staff-text-secondary">Age</p>
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.competitorAge} years
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Category
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.category}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Submitted Date
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.submittedDate}
                     </p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Competition
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.competitionName}
                     </p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Description
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.description}
                     </p>
                   </div>
@@ -375,7 +375,7 @@ export default function PendingPaintingsPage() {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={() => handleApprove(selectedPainting.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white staff-btn-secondary transition-colors"
                   >
                     <IconCheck className="h-5 w-5" />
                     Approve Painting
@@ -385,7 +385,7 @@ export default function PendingPaintingsPage() {
                       setIsViewModalOpen(false);
                       openRejectModal(selectedPainting);
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600  hover:bg-red-700 transition-colors"
                   >
                     <IconX className="h-5 w-5" />
                     Reject Painting
@@ -400,10 +400,10 @@ export default function PendingPaintingsPage() {
       {/* Reject Modal */}
       {isRejectModalOpen && selectedPainting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4">
+          <div className="bg-white  max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold staff-text-primary">
                   Reject Painting
                 </h3>
                 <button
@@ -411,13 +411,13 @@ export default function PendingPaintingsPage() {
                     setIsRejectModalOpen(false);
                     setRejectionReason("");
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:staff-text-secondary"
                 >
                   <IconX className="h-6 w-6" />
                 </button>
               </div>
 
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm staff-text-secondary mb-4">
                 Are you sure you want to reject &ldquo;{selectedPainting.title}
                 &rdquo; by {selectedPainting.competitorName}?
               </p>
@@ -430,7 +430,7 @@ export default function PendingPaintingsPage() {
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Please provide a reason for rejection..."
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[100px]"
+                  className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[100px]"
                   required
                 />
               </div>
@@ -441,7 +441,7 @@ export default function PendingPaintingsPage() {
                     setIsRejectModalOpen(false);
                     setRejectionReason("");
                   }}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100  hover:bg-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
@@ -450,7 +450,7 @@ export default function PendingPaintingsPage() {
                     handleReject(selectedPainting.id, rejectionReason)
                   }
                   disabled={!rejectionReason.trim()}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600  hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Confirm Rejection
                 </button>
