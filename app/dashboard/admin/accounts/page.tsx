@@ -2,93 +2,78 @@
 
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { CreateUserDialog } from "@/components/admin/create-user-dialog";
-import { DeleteUserDialog } from "@/components/admin/delete-user-dialog";
-import { EditUserDialog } from "@/components/admin/edit-user-dialog";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { User, UserRole, UserStatus } from "@/types";
+import { getAllUsers, AdminUser, banUser, activateUser } from "@/apis/admin";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
-  IconPencil,
   IconPlus,
   IconSearch,
-  IconTrash,
-  IconUserCheck,
-  IconUserPause,
 } from "@tabler/icons-react";
 import { useState } from "react";
 
-export default function AccountsManagementPage() {
-  // State for users list
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      username: "johndoe",
-      fullName: "John Doe",
-      email: "john.doe@example.com",
-      role: "COMPETITOR",
-      status: "ACTIVE",
-      createdAt: "2025-01-15",
-    },
-    {
-      id: "2",
-      username: "janesmith",
-      fullName: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "GUARDIAN",
-      status: "ACTIVE",
-      createdAt: "2025-02-20",
-    },
-    {
-      id: "3",
-      username: "bobstaff",
-      fullName: "Bob Johnson",
-      email: "bob.johnson@example.com",
-      role: "STAFF",
-      status: "ACTIVE",
-      createdAt: "2025-03-10",
-    },
-    {
-      id: "4",
-      username: "aliceadmin",
-      fullName: "Alice Williams",
-      email: "alice.williams@example.com",
-      role: "ADMIN",
-      status: "ACTIVE",
-      createdAt: "2024-12-01",
-    },
-    {
-      id: "5",
-      username: "charliecomp",
-      fullName: "Charlie Brown",
-      email: "charlie.brown@example.com",
-      role: "COMPETITOR",
-      status: "SUSPENDED",
-      createdAt: "2025-04-05",
-    },
-  ]);
+// Helper function to convert AdminUser to User type
+const convertAdminUserToUser = (adminUser: AdminUser): User => {
+  return {
+    id: adminUser.userId,
+    username: adminUser.username,
+    fullName: adminUser.fullName,
+    email: adminUser.email,
+    role: adminUser.role as UserRole,
+    status: adminUser.status === 1 ? "ACTIVE" : "SUSPENDED",
+    createdAt: new Date(adminUser.createdAt).toISOString().split("T")[0],
+  };
+};
 
+export default function AccountsManagementPage() {
   // State for filters and search
   const [selectedRole, setSelectedRole] = useState<UserRole | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageLimit] = useState(10);
+
+  // Fetch users from API
+  const { data: usersResponse, isLoading, error, refetch } = useQuery({
+    queryKey: ["admin-users", currentPage, pageLimit, selectedRole, searchQuery],
+    queryFn: () =>
+      getAllUsers({
+        page: currentPage,
+        limit: pageLimit,
+        role: selectedRole !== "ALL" ? selectedRole : undefined,
+        search: searchQuery || undefined,
+      }),
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+
+  // Convert API users to local User type
+  const users = usersResponse?.data.map(convertAdminUserToUser) || [];
+  const meta = usersResponse?.meta;
 
   // State for dialogs
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Filter users
-  const filteredUsers = users.filter((user) => {
-    const matchesRole = selectedRole === "ALL" || user.role === selectedRole;
-    const matchesSearch =
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.username.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesRole && matchesSearch;
+  // Filter users (now done by API, but keep for local display)
+  const filteredUsers = users;
+
+  // Ban/Activate user mutations
+  const banUserMutation = useMutation({
+    mutationFn: banUser,
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const activateUserMutation = useMutation({
+    mutationFn: activateUser,
+    onSuccess: () => {
+      refetch();
+    },
   });
 
   // CRUD Operations
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleCreateUser = (data: {
     username: string;
     fullName: string;
@@ -96,93 +81,29 @@ export default function AccountsManagementPage() {
     role: UserRole;
     status: UserStatus;
   }) => {
-    const newUser: User = {
-      id: Date.now().toString(),
-      username: data.username,
-      fullName: data.fullName,
-      email: data.email,
-      role: data.role,
-      status: data.status,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-    setUsers([...users, newUser]);
+    // TODO: Call API to create user
+    // For now, just close dialog and refetch
     setIsCreateDialogOpen(false);
+    refetch();
   };
 
-  const handleEditUser = (
-    userId: string,
-    data: {
-      username: string;
-      fullName: string;
-      email: string;
-      role: UserRole;
-      status: UserStatus;
+  const handleToggleStatus = async (user: User) => {
+    if (user.status === "ACTIVE") {
+      await banUserMutation.mutateAsync(user.id);
+    } else {
+      await activateUserMutation.mutateAsync(user.id);
     }
-  ) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId
-          ? {
-              ...user,
-              username: data.username,
-              fullName: data.fullName,
-              email: data.email,
-              role: data.role,
-              status: data.status,
-            }
-          : user
-      )
-    );
-    setIsEditDialogOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId));
-    setIsDeleteDialogOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleToggleStatus = (user: User) => {
-    setUsers(
-      users.map((u) =>
-        u.id === user.id
-          ? {
-              ...u,
-              status: u.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE",
-            }
-          : u
-      )
-    );
-  };
-
-  const openEditDialog = (user: User) => {
-    setSelectedUser(user);
-    setIsEditDialogOpen(true);
-  };
-
-  const openDeleteDialog = (user: User) => {
-    setSelectedUser(user);
-    setIsDeleteDialogOpen(true);
   };
 
   const getRoleBadgeColor = (role: UserRole) => {
-    const colors = {
+    const colors: Record<UserRole, string> = {
       COMPETITOR: "bg-blue-100 text-blue-800",
       GUARDIAN: "bg-green-100 text-green-800",
       STAFF: "bg-purple-100 text-purple-800",
       ADMIN: "bg-red-100 text-red-800",
+      EXAMINER: "bg-orange-100 text-orange-800",
     };
     return colors[role];
-  };
-
-  const getStatusBadgeColor = (status: UserStatus) => {
-    const colors = {
-      ACTIVE: "bg-green-100 text-green-800",
-      SUSPENDED: "bg-red-100 text-red-800",
-      PENDING: "bg-yellow-100 text-yellow-800",
-    };
-    return colors[status];
   };
 
   const getInitials = (name: string) => {
@@ -219,7 +140,7 @@ export default function AccountsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
-                    All Users ({filteredUsers.length})
+                    All Users ({meta?.total || 0})
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
                     Manage all user accounts in the system
@@ -241,7 +162,15 @@ export default function AccountsManagementPage() {
                   type="text"
                   placeholder="Search by name, email, or username..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1); // Reset to first page on search
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      refetch();
+                    }
+                  }}
                   className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -249,7 +178,10 @@ export default function AccountsManagementPage() {
               {/* Filters */}
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => setSelectedRole("ALL")}
+                  onClick={() => {
+                    setSelectedRole("ALL");
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "ALL"
                       ? "bg-blue-600 text-white"
@@ -259,7 +191,10 @@ export default function AccountsManagementPage() {
                   All Users
                 </button>
                 <button
-                  onClick={() => setSelectedRole("COMPETITOR")}
+                  onClick={() => {
+                    setSelectedRole("COMPETITOR");
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "COMPETITOR"
                       ? "bg-blue-600 text-white"
@@ -269,7 +204,10 @@ export default function AccountsManagementPage() {
                   Competitors
                 </button>
                 <button
-                  onClick={() => setSelectedRole("GUARDIAN")}
+                  onClick={() => {
+                    setSelectedRole("GUARDIAN");
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "GUARDIAN"
                       ? "bg-blue-600 text-white"
@@ -279,7 +217,10 @@ export default function AccountsManagementPage() {
                   Guardians
                 </button>
                 <button
-                  onClick={() => setSelectedRole("STAFF")}
+                  onClick={() => {
+                    setSelectedRole("STAFF");
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "STAFF"
                       ? "bg-blue-600 text-white"
@@ -289,7 +230,10 @@ export default function AccountsManagementPage() {
                   Staff
                 </button>
                 <button
-                  onClick={() => setSelectedRole("ADMIN")}
+                  onClick={() => {
+                    setSelectedRole("ADMIN");
+                    setCurrentPage(1);
+                  }}
                   className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "ADMIN"
                       ? "bg-blue-600 text-white"
@@ -297,6 +241,19 @@ export default function AccountsManagementPage() {
                   }`}
                 >
                   Admins
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedRole("EXAMINER");
+                    setCurrentPage(1);
+                  }}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                    selectedRole === "EXAMINER"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Examiners
                 </button>
               </div>
 
@@ -316,21 +273,36 @@ export default function AccountsManagementPage() {
                           Role
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Created
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Active
                         </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredUsers.length === 0 ? (
+                      {isLoading ? (
                         <tr>
                           <td
-                            colSpan={6}
+                            colSpan={5}
+                            className="px-6 py-12 text-center text-gray-500"
+                          >
+                            Loading users...
+                          </td>
+                        </tr>
+                      ) : error ? (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            className="px-6 py-12 text-center text-red-500"
+                          >
+                            Error loading users. Please try again.
+                          </td>
+                        </tr>
+                      ) : filteredUsers.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={5}
                             className="px-6 py-12 text-center text-gray-500"
                           >
                             No users found matching your criteria
@@ -368,54 +340,29 @@ export default function AccountsManagementPage() {
                                 {user.role}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex rounded-sm px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
-                                  user.status
-                                )}`}
-                              >
-                                {user.status}
-                              </span>
-                            </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {user.createdAt}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex items-center justify-end gap-2">
-                                <button
-                                  onClick={() => openEditDialog(user)}
-                                  className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                                  title="Edit"
-                                >
-                                  <IconPencil className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleToggleStatus(user)}
-                                  className={`p-1 rounded transition-colors ${
-                                    user.status === "ACTIVE"
-                                      ? "text-orange-600 hover:text-orange-900 hover:bg-orange-50"
-                                      : "text-green-600 hover:text-green-900 hover:bg-green-50"
-                                  }`}
-                                  title={
-                                    user.status === "ACTIVE"
-                                      ? "Suspend"
-                                      : "Activate"
-                                  }
-                                >
-                                  {user.status === "ACTIVE" ? (
-                                    <IconUserPause className="h-4 w-4" />
-                                  ) : (
-                                    <IconUserCheck className="h-4 w-4" />
-                                  )}
-                                </button>
-                                <button
-                                  onClick={() => openDeleteDialog(user)}
-                                  className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                                  title="Delete"
-                                >
-                                  <IconTrash className="h-4 w-4" />
-                                </button>
-                              </div>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                  type="checkbox" 
+                                  checked={user.status === "ACTIVE"}
+                                  onChange={() => handleToggleStatus(user)}
+                                  disabled={banUserMutation.isPending || activateUserMutation.isPending}
+                                  className="sr-only peer" 
+                                />
+                                <div className="group peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-24 h-12 shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-10 after:w-10 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-12 peer-hover:after:scale-95 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed">
+                                  <svg className="absolute top-1 left-12 stroke-gray-900 w-10 h-10" height={100} preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 100" width={100} x={0} xmlns="http://www.w3.org/2000/svg" y={0}>
+                                    <path d="M30,46V38a20,20,0,0,1,40,0v8a8,8,0,0,1,8,8V74a8,8,0,0,1-8,8H30a8,8,0,0,1-8-8V54A8,8,0,0,1,30,46Zm32-8v8H38V38a12,12,0,0,1,24,0Z" fillRule="evenodd">
+                                    </path>
+                                  </svg>
+                                  <svg className="absolute top-1 left-1 stroke-gray-900 w-10 h-10" height={100} preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 100" width={100} x={0} xmlns="http://www.w3.org/2000/svg" y={0}>
+                                    <path className="svg-fill-primary" d="M50,18A19.9,19.9,0,0,0,30,38v8a8,8,0,0,0-8,8V74a8,8,0,0,0,8,8H70a8,8,0,0,0,8-8V54a8,8,0,0,0-8-8H38V38a12,12,0,0,1,23.6-3,4,4,0,1,0,7.8-2A20.1,20.1,0,0,0,50,18Z">
+                                    </path>
+                                  </svg>
+                                </div>
+                              </label>
                             </td>
                           </tr>
                         ))
@@ -424,6 +371,73 @@ export default function AccountsManagementPage() {
                   </table>
                 </div>
               </div>
+
+              {/* Pagination */}
+              {meta && meta.totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-lg">
+                  <div className="flex flex-1 justify-between sm:hidden">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={!meta.hasPreviousPage}
+                      className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                      disabled={!meta.hasNextPage}
+                      className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                  <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        Showing page <span className="font-medium">{meta.page}</span> of{" "}
+                        <span className="font-medium">{meta.totalPages}</span> (
+                        <span className="font-medium">{meta.total}</span> total users)
+                      </p>
+                    </div>
+                    <div>
+                      <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <button
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          disabled={!meta.hasPreviousPage}
+                          className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Previous</span>
+                          ‹
+                        </button>
+                        {Array.from({ length: Math.min(5, meta.totalPages) }, (_, i) => {
+                          const pageNum = i + 1;
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => setCurrentPage(pageNum)}
+                              className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                                currentPage === pageNum
+                                  ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                  : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                        <button
+                          onClick={() => setCurrentPage((p) => p + 1)}
+                          disabled={!meta.hasNextPage}
+                          className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Next</span>
+                          ›
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -434,22 +448,6 @@ export default function AccountsManagementPage() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreateUser}
-      />
-
-      {/* Edit User Dialog */}
-      <EditUserDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        user={selectedUser}
-        onSubmit={handleEditUser}
-      />
-
-      {/* Delete Confirmation Dialog */}
-      <DeleteUserDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        user={selectedUser}
-        onConfirm={handleDeleteUser}
       />
     </SidebarProvider>
   );

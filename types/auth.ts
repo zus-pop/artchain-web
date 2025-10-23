@@ -32,4 +32,4 @@ export interface AuthResponse {
   user?: WhoAmI;
 }
 
-export type UserRole = "COMPETITOR" | "GUARDIAN" | "ADMIN" | "STAFF";
+export type UserRole = "COMPETITOR" | "GUARDIAN" | "ADMIN" | "STAFF" | "EXAMINER";

@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store";
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://rflz4357-3000.asse.devtunnels.ms/api";
+const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://rflz4357-3001.asse.devtunnels.ms/api";
 
 if (process.env.NODE_ENV === "development") {
   console.log("🔧 myAxios baseURL:", baseURL);
