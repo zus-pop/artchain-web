@@ -4,101 +4,97 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { IconArrowLeft, IconDeviceFloppy } from "@tabler/icons-react";
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  createStaffContest,
-  getStaffContestById,
-  updateStaffContest,
-} from "@/apis/staff";
-import { ContestStatus } from "@/types/contest";
+  IconArrowLeft,
+  IconEdit,
+  IconCalendar,
+  IconTrophy,
+  IconUsers,
+  IconClock,
+} from "@tabler/icons-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { getStaffContestById } from "@/apis/staff";
 import Image from "next/image";
 
+interface Round {
+  roundId: number;
+  contestId: number;
+  table: string | null;
+  name: string;
+  startDate: string | null;
+  endDate: string | null;
+  submissionDeadline: string | null;
+  resultAnnounceDate: string | null;
+  sendOriginalDeadline: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function ContestDetailPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
-  const queryClient = useQueryClient();
 
-  const isEditMode = !!contestId;
-
-  // Fetch contest details if editing
+  // Fetch contest details
   const { data: contestData, isLoading } = useQuery({
     queryKey: ["contest-detail", contestId],
     queryFn: () => getStaffContestById(Number(contestId)),
-    enabled: isEditMode,
+    enabled: !!contestId,
     staleTime: 1 * 60 * 1000,
   });
 
   const contest = contestData?.data;
 
-  // Form state
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    bannerUrl: "",
-    numOfAward: 1,
-    startDate: "",
-    endDate: "",
-    status: "DRAFT" as ContestStatus,
-  });
-
-  // Update form when contest data loads
-  useState(() => {
-    if (contest) {
-      setFormData({
-        title: contest.title,
-        description: contest.description,
-        bannerUrl: contest.bannerUrl || "",
-        numOfAward: contest.numOfAward,
-        startDate: contest.startDate.slice(0, 16),
-        endDate: contest.endDate.slice(0, 16),
-        status: contest.status,
-      });
-    }
-  });
-
-  // Create mutation
-  const createMutation = useMutation({
-    mutationFn: createStaffContest,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["staff-contests"] });
-      router.push("/dashboard/staff/contests");
-    },
-  });
-
-  // Update mutation
-  const updateMutation = useMutation({
-    mutationFn: (data: typeof formData) =>
-      updateStaffContest(Number(contestId), data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["staff-contests"] });
-      queryClient.invalidateQueries({ queryKey: ["contest-detail", contestId] });
-      router.push("/dashboard/staff/contests");
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Convert datetime-local to ISO string
-    const submitData = {
-      ...formData,
-      startDate: new Date(formData.startDate).toISOString(),
-      endDate: new Date(formData.endDate).toISOString(),
-    };
-
-    if (isEditMode) {
-      updateMutation.mutate(submitData);
-    } else {
-      createMutation.mutate(submitData);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "staff-badge-active";
+      case "COMPLETED":
+      case "CLOSED": // Thêm trường hợp CLOSED nếu có
+        return "staff-badge-neutral";
+      case "DRAFT":
+        return "staff-badge-pending";
+      case "CANCELLED":
+        return "staff-badge-rejected";
+      default:
+        return "staff-badge-neutral";
     }
   };
 
-  if (isEditMode && isLoading) {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  if (!contestId) {
+    return (
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <StaffSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader title="Contest Detail" />
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-gray-500">Contest ID is required</div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  if (isLoading) {
     return (
       <SidebarProvider
         style={
@@ -119,6 +115,27 @@ export default function ContestDetailPage() {
     );
   }
 
+  if (!contest) {
+    return (
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <StaffSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader title="Contest Detail" />
+          <div className="flex flex-1 items-center justify-center">
+            <div className="text-gray-500">Contest not found</div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider
       style={
@@ -130,7 +147,7 @@ export default function ContestDetailPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title={isEditMode ? "Edit Contest" : "Create Contest"} />
+        <SiteHeader title="Contest Detail" />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
@@ -139,7 +156,7 @@ export default function ContestDetailPage() {
                   label: "Contest Management",
                   href: "/dashboard/staff/contests",
                 },
-                { label: isEditMode ? "Edit Contest" : "Create Contest" },
+                { label: contest.title },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -149,199 +166,260 @@ export default function ContestDetailPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
+                  {/* Thay đổi: Bỏ rounded-full, dùng */}
                   <Link
                     href="/dashboard/staff/contests"
-                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
-                      {isEditMode ? "Edit Contest" : "Create New Contest"}
-                    </h2>
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-2xl font-bold staff-text-primary">
+                        {contest.title}
+                      </h2>
+                      <span className={getStatusColor(contest.status)}>
+                        {contest.status}
+                      </span>
+                    </div>
                     <p className="text-sm staff-text-secondary mt-1">
-                      {isEditMode
-                        ? "Update contest information"
-                        : "Set up a new art competition for young artists"}
+                      Contest ID: {contest.id}
                     </p>
+                  </div>
+                </div>
+                {/* Thay đổi: Bỏ rounded-full, dùng */}
+                <Link
+                  href={`/dashboard/staff/contests/edit?id=${contest.id}`}
+                  className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                >
+                  <IconEdit className="h-4 w-4" />
+                  Edit Contest
+                </Link>
+              </div>
+
+              {/* Banner Image */}
+              {contest.bannerUrl && (
+                <div className="staff-card p-0 overflow-hidden">
+                  <Image
+                    src={contest.bannerUrl}
+                    alt={contest.title}
+                    width={1200}
+                    height={400}
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Stats Cards */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="staff-card staff-stat-info p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="stat-icon">
+                      <IconTrophy className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium staff-text-secondary">
+                        Awards
+                      </p>
+                      <p className="text-2xl font-bold staff-text-primary">
+                        {contest.numOfAward}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="staff-card staff-stat-success p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="stat-icon">
+                      <IconUsers className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium staff-text-secondary">
+                        Participants
+                      </p>
+                      <p className="text-2xl font-bold staff-text-primary">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="staff-card staff-stat-secondary p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="stat-icon">
+                      <IconCalendar className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium staff-text-secondary">
+                        Created
+                      </p>
+                      <p className="text-sm font-bold staff-text-primary">
+                        {new Date(contest.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="staff-card staff-stat-primary p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="stat-icon">
+                      <IconClock className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium staff-text-secondary">
+                        Status
+                      </p>
+                      <p className="text-sm font-bold staff-text-primary">
+                        {contest.status}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="max-w-3xl space-y-6">
-                <div className="staff-card p-6 space-y-6">
-                  {/* Banner URL */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Banner Image URL
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.bannerUrl}
-                      onChange={(e) =>
-                        setFormData({ ...formData, bannerUrl: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://example.com/banner.jpg"
-                    />
-                    {formData.bannerUrl && (
-                      <div className="mt-3">
-                        <Image
-                          src={formData.bannerUrl}
-                          alt="Banner preview"
-                          width={600}
-                          height={300}
-                          className="rounded object-cover w-full"
-                        />
+              {/* Contest Details */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Description */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    Description
+                  </h3>
+                  <p className="staff-text-secondary whitespace-pre-wrap">
+                    {contest.description}
+                  </p>
+                </div>
+
+                {/* Contest Information */}
+                <div className="staff-card p-6 space-y-4">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    Contest Information
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          Start Date
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {formatDate(contest.startDate)}
+                        </p>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Title */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Contest Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter contest title"
-                      required
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description *
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                      }
-                      rows={4}
-                      className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Describe the contest theme and objectives"
-                      required
-                    />
-                  </div>
-
-                  {/* Number of Awards */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Number of Awards *
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.numOfAward}
-                      onChange={(e) =>
-                        setFormData({ ...formData, numOfAward: Number(e.target.value) })
-                      }
-                      className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="5"
-                      min="1"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Number of prizes/awards for this contest
-                    </p>
-                  </div>
-
-                  {/* Dates */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Date *
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={formData.startDate}
-                        onChange={(e) =>
-                          setFormData({ ...formData, startDate: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required
-                      />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date *
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={formData.endDate}
-                        onChange={(e) =>
-                          setFormData({ ...formData, endDate: e.target.value })
-                        }
-                        className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required
-                      />
+
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          End Date
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {formatDate(contest.endDate)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconTrophy className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          Number of Awards
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {contest.numOfAward} prizes
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <IconClock className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          Current Status
+                        </p>
+                        <span className={`${getStatusColor(contest.status)} mt-1`}>
+                          {contest.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Status */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Status *
-                    </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          status: e.target.value as ContestStatus,
-                        })
-                      }
-                      className="w-full px-3 py-2 border border-[#e6e2da] rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                    >
-                      <option value="DRAFT">DRAFT</option>
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="COMPLETED">COMPLETED</option>
-                      <option value="CANCELLED">CANCELLED</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      DRAFT: Not visible to users | ACTIVE: Live and accepting submissions
-                    </p>
+              {/* Contest Rounds */}
+              {contest.rounds && contest.rounds.length > 0 && (
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    Contest Rounds
+                  </h3>
+                  <div className="space-y-4">
+                    {contest.rounds.map((round: Round) => (
+                      <div
+                        key={round.roundId}
+                        className="border border-[#e6e2da] p-4 rounded-md"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <h4 className="font-bold staff-text-primary">
+                              {round.name}
+                              {round.table && (
+                                <span className="ml-2 text-sm font-normal staff-text-secondary">
+                                  (Table {round.table})
+                                </span>
+                              )}
+                            </h4>
+                            <span className={getStatusColor(round.status)}>
+                              {round.status}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          {round.startDate && (
+                            <div>
+                              <p className="staff-text-secondary">Start Date</p>
+                              <p className="staff-text-primary font-semibold">
+                                {formatDate(round.startDate)}
+                              </p>
+                            </div>
+                          )}
+                          {round.endDate && (
+                            <div>
+                              <p className="staff-text-secondary">End Date</p>
+                              <p className="staff-text-primary font-semibold">
+                                {formatDate(round.endDate)}
+                              </p>
+                            </div>
+                          )}
+                          {round.submissionDeadline && (
+                            <div>
+                              <p className="staff-text-secondary">Submission Deadline</p>
+                              <p className="staff-text-primary font-semibold">
+                                {formatDate(round.submissionDeadline)}
+                              </p>
+                            </div>
+                          )}
+                          {round.resultAnnounceDate && (
+                            <div>
+                              <p className="staff-text-secondary">Result Announce</p>
+                              <p className="staff-text-primary font-semibold">
+                                {formatDate(round.resultAnnounceDate)}
+                              </p>
+                            </div>
+                          )}
+                          {round.sendOriginalDeadline && (
+                            <div>
+                              <p className="staff-text-secondary">Original Deadline</p>
+                              <p className="staff-text-primary font-semibold">
+                                {formatDate(round.sendOriginalDeadline)}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-
-                {/* Form Actions */}
-                <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
-                  <Link
-                    href="/dashboard/staff/contests"
-                    className="px-6 py-2 border border-[#e6e2da] rounded text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </Link>
-                  <button
-                    type="submit"
-                    disabled={createMutation.isPending || updateMutation.isPending}
-                    className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2 disabled:opacity-50"
-                  >
-                    <IconDeviceFloppy className="h-4 w-4" />
-                    {createMutation.isPending || updateMutation.isPending
-                      ? "Saving..."
-                      : isEditMode
-                      ? "Update Contest"
-                      : "Create Contest"}
-                  </button>
-                </div>
-
-                {/* Error Messages */}
-                {(createMutation.isError || updateMutation.isError) && (
-                  <div className="text-red-600 text-sm p-3 bg-red-50 rounded border border-red-200">
-                    Failed to {isEditMode ? "update" : "create"} contest. Please try
-                    again.
-                  </div>
-                )}
-              </form>
+              )}
             </div>
           </div>
         </div>

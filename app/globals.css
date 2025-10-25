@@ -243,7 +243,7 @@
 
   /* Staff Dashboard Artist Theme Colors */
   .staff-card {
-    @apply border-2 border-[#e6e2da] bg-white shadow-md hover:shadow-xl transition-all duration-300;
+    @apply border-2 border-[#e6e2da] bg-white shadow-md;
   }
 
   .staff-stat-primary {
