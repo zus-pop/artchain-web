@@ -79,12 +79,14 @@ export const publishStaffContest = async (id: number) => {
 export const createStaffRound = async (
   contestId: number,
   data: {
-    roundNumber: number;
-    title: string;
-    description?: string;
+    name: string;
+    table?: string | null;
     startDate: string;
     endDate: string;
-    maxSubmissions?: number;
+    submissionDeadline?: string;
+    resultAnnounceDate?: string;
+    sendOriginalDeadline?: string;
+    status?: string;
   }
 ) => {
   const response = await myAxios.post(`/staff/contests/${contestId}/rounds`, data);

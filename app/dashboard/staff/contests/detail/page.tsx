@@ -12,14 +12,17 @@ import {
   IconUsers,
   IconClock,
   IconEye,
+  IconPlus,
+  IconTrash,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { getStaffContestById } from "@/apis/staff";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getStaffContestById, deleteStaffRound } from "@/apis/staff";
 import Image from "next/image";
 import { Suspense, useState } from "react";
 import { RoundDetailDialog } from "@/components/staff/RoundDetailDialog";
+import { CreateRoundDialog } from "@/components/staff/CreateRoundDialog";
 
 interface Round {
   roundId: number;
@@ -39,10 +42,14 @@ interface Round {
 function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
+  const queryClient = useQueryClient();
+  
   const [selectedRound, setSelectedRound] = useState<{
     contestId: number;
     roundId: number;
   } | null>(null);
+  
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Fetch contest details
   const { data: contestData, isLoading } = useQuery({
@@ -53,6 +60,30 @@ function ContestDetailContent() {
   });
 
   const contest = contestData?.data;
+
+  // Delete round mutation
+  const deleteMutation = useMutation({
+    mutationFn: ({ contestId, roundId }: { contestId: number; roundId: string }) =>
+      deleteStaffRound(contestId, roundId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", contestId],
+      });
+    },
+  });
+
+  const handleDeleteRound = (roundId: number) => {
+    if (
+      confirm(
+        "Are you sure you want to delete this round? This action cannot be undone."
+      )
+    ) {
+      deleteMutation.mutate({
+        contestId: Number(contestId),
+        roundId: String(roundId),
+      });
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -353,11 +384,21 @@ function ContestDetailContent() {
               </div>
 
               {/* Contest Rounds */}
-              {contest.rounds && contest.rounds.length > 0 && (
-                <div className="staff-card p-6">
-                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+              <div className="staff-card p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold staff-text-primary">
                     Contest Rounds
                   </h3>
+                  <button
+                    onClick={() => setIsCreateDialogOpen(true)}
+                    className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                  >
+                    <IconPlus className="h-4 w-4" />
+                    Create Round
+                  </button>
+                </div>
+
+                {contest.rounds && contest.rounds.length > 0 ? (
                   <div className="space-y-4">
                     {contest.rounds.map((round: Round) => (
                       <div
@@ -378,18 +419,28 @@ function ContestDetailContent() {
                               {round.status}
                             </span>
                           </div>
-                          <button
-                            onClick={() =>
-                              setSelectedRound({
-                                contestId: contest.contestId,
-                                roundId: round.roundId,
-                              })
-                            }
-                            className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
-                            title="View round details"
-                          >
-                            <IconEye className="h-4 w-4 staff-text-secondary" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() =>
+                                setSelectedRound({
+                                  contestId: contest.contestId,
+                                  roundId: round.roundId,
+                                })
+                              }
+                              className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
+                              title="View round details"
+                            >
+                              <IconEye className="h-4 w-4 staff-text-secondary" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteRound(round.roundId)}
+                              className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+                              title="Delete round"
+                              disabled={deleteMutation.isPending}
+                            >
+                              <IconTrash className="h-4 w-4" />
+                            </button>
+                          </div>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -437,8 +488,12 @@ function ContestDetailContent() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="text-center py-8 staff-text-secondary">
+                    No rounds created yet. Click &quot;Create Round&quot; to add one.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -453,6 +508,13 @@ function ContestDetailContent() {
           roundId={selectedRound.roundId}
         />
       )}
+
+      {/* Create Round Dialog */}
+      <CreateRoundDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        contestId={Number(contestId)}
+      />
     </SidebarProvider>
   );
 }
