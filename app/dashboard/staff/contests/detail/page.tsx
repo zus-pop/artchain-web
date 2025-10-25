@@ -17,6 +17,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getStaffContestById } from "@/apis/staff";
 import Image from "next/image";
+import { Suspense } from "react";
 
 interface Round {
   roundId: number;
@@ -33,7 +34,7 @@ interface Round {
   updatedAt: string;
 }
 
-export default function ContestDetailPage() {
+function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
 
@@ -425,5 +426,17 @@ export default function ContestDetailPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+export default function ContestDetailPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+      </div>
+    }>
+      <ContestDetailContent />
+    </Suspense>
   );
 }

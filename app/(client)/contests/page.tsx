@@ -14,6 +14,7 @@ const statusColors = {
   DRAFT: "bg-gray-500",
   ENDED: "bg-orange-500",
   COMPLETED: "bg-purple-500",
+  CANCELLED: "bg-gray-600",
   ALL: "bg-gray-500",
 };
 
@@ -23,6 +24,7 @@ const statusLabels = {
   DRAFT: "Bản nháp", 
   ENDED: "Đã kết thúc",
   COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
   ALL: "Tất cả",
 };
 
