@@ -3,8 +3,7 @@ import React from 'react'
 
 const page = () => {
   return (
-    <div>
-      <h1>Exhibition Page</h1>
+    <div className='w-screen h-screen overflow-hidden'>
       <ImageSlider />
     </div>
   )

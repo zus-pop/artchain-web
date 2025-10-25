@@ -146,6 +146,22 @@ export interface Contest {
   submissionsCount: number;
   createdAt: string;
   createdBy: string;
+  bannerUrl?: string;
+  numOfAward?: number;
+  rounds?: Array<{
+    roundId: number;
+    contestId: number;
+    table: string | null;
+    name: string;
+    startDate: string | null;
+    endDate: string | null;
+    submissionDeadline: string | null;
+    resultAnnounceDate: string | null;
+    sendOriginalDeadline: string | null;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
 }
 
 export interface ActiveContest {

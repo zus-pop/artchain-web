@@ -4,6 +4,8 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { getAllStaffContests } from "@/apis/staff";
+import { useQuery } from "@tanstack/react-query";
 import {
   IconAward,
   IconCurrencyDollar,
@@ -38,83 +40,49 @@ interface Award {
 }
 
 export default function AwardsManagementPage() {
-  const [awards] = useState<Award[]>([
-    {
-      id: "1",
-      contestId: "1",
-      contestTitle: "Young Artists Spring Showcase",
-      winnerName: "Alice Johnson",
-      winnerEmail: "alice.johnson@email.com",
-      winnerAge: 12,
-      awardType: "GOLD",
-      prizeAmount: "$500",
-      description: "Outstanding creativity and technical skill in mixed media",
-      awardedDate: "2025-10-15",
-      status: "ANNOUNCED",
-      artworkTitle: "Urban Dreams",
-      category: "Mixed Media",
-    },
-    {
-      id: "2",
-      contestId: "1",
-      contestTitle: "Young Artists Spring Showcase",
-      winnerName: "Bob Smith",
-      winnerEmail: "bob.smith@email.com",
-      winnerAge: 15,
-      awardType: "SILVER",
-      prizeAmount: "$300",
-      description: "Exceptional digital art composition and color theory",
-      awardedDate: "2025-10-15",
-      status: "ANNOUNCED",
-      artworkTitle: "Digital Horizons",
-      category: "Digital Art",
-    },
-    {
-      id: "3",
-      contestId: "1",
-      contestTitle: "Young Artists Spring Showcase",
-      winnerName: "Charlie Brown",
-      winnerEmail: "charlie.brown@email.com",
-      winnerAge: 10,
-      awardType: "BRONZE",
-      prizeAmount: "$200",
-      description: "Promising young talent in traditional painting",
-      awardedDate: "2025-10-15",
-      status: "ANNOUNCED",
-      artworkTitle: "Nature's Whisper",
-      category: "Traditional",
-    },
-    {
-      id: "4",
-      contestId: "2",
-      contestTitle: "Digital Art Competition 2025",
-      winnerName: "Diana Lee",
-      winnerEmail: "diana.lee@email.com",
-      winnerAge: 14,
-      awardType: "GOLD",
-      prizeAmount: "$750",
-      description: "Innovative use of digital tools and artistic vision",
-      awardedDate: "2025-10-20",
-      status: "PENDING_ANNOUNCEMENT",
-      artworkTitle: "Cyber Symphony",
-      category: "Digital Art",
-    },
-    {
-      id: "5",
-      contestId: "3",
-      contestTitle: "Traditional Painting Masters",
-      winnerName: "Eva Martinez",
-      winnerEmail: "eva.martinez@email.com",
-      winnerAge: 16,
-      awardType: "SPECIAL",
-      prizeAmount: "$250",
-      description: "Special recognition for artistic excellence",
-      awardedDate: "2025-09-25",
-      status: "ANNOUNCED",
-      artworkTitle: "Canvas Dreams",
-      category: "Traditional",
-    },
-  ]);
+  // Fetch contests from API
+  const { data: contestsResponse, isLoading } = useQuery({
+    queryKey: ["staff-contests-for-awards"],
+    queryFn: () => getAllStaffContests({}),
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Generate awards from contests data
+  const generateAwardsFromContests = (): Award[] => {
+    if (!contestsResponse?.data) return [];
+    
+    const awards: Award[] = [];
+    
+    contestsResponse.data.forEach((contest) => {
+      // Generate awards based on numOfAward
+      const numOfAwards = Math.min(contest.numOfAward, 3); // Max 3 awards per contest for display
+      
+      const awardTypes: AwardType[] = ["GOLD", "SILVER", "BRONZE"];
+      const prizeAmounts = ["$500", "$300", "$200"];
+      
+      for (let i = 0; i < numOfAwards; i++) {
+        awards.push({
+          id: `${contest.contestId}-${i + 1}`,
+          contestId: contest.contestId.toString(),
+          contestTitle: contest.title,
+          winnerName: `Winner ${i + 1}`,
+          winnerEmail: `winner${i + 1}@example.com`,
+          winnerAge: 12 + i,
+          awardType: awardTypes[i] || "SPECIAL",
+          prizeAmount: prizeAmounts[i] || "$100",
+          description: contest.description,
+          awardedDate: contest.endDate,
+          status: contest.status === "COMPLETED" ? "ANNOUNCED" : "PENDING_ANNOUNCEMENT",
+          artworkTitle: `Artwork ${i + 1}`,
+          category: "General",
+        });
+      }
+    });
+    
+    return awards;
+  };
+
+  const awards = generateAwardsFromContests();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedContest, setSelectedContest] = useState<string>("ALL");
@@ -426,7 +394,16 @@ export default function AwardsManagementPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredAwards.length === 0 ? (
+                      {isLoading ? (
+                        <tr>
+                          <td
+                            colSpan={7}
+                            className="px-6 py-12 text-center staff-text-secondary"
+                          >
+                            Loading awards...
+                          </td>
+                        </tr>
+                      ) : filteredAwards.length === 0 ? (
                         <tr>
                           <td
                             colSpan={7}

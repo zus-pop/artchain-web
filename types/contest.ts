@@ -4,6 +4,7 @@ export type ContestStatus =
   | "ENDED"
   | "COMPLETED"
   | "DRAFT"
+  | "CANCELLED"
   | "ALL";
 
 export interface Contest {

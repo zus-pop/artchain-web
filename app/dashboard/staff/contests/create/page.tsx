@@ -56,7 +56,6 @@ export default function CreateContestPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
     console.log("Creating contest:", formData);
   };
 
@@ -87,7 +86,6 @@ export default function CreateContestPage() {
           </div>
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Link
@@ -107,10 +105,8 @@ export default function CreateContestPage() {
                 </div>
               </div>
 
-              {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Basic Information */}
                   <div className="space-y-6">
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
@@ -173,7 +169,6 @@ export default function CreateContestPage() {
                       </div>
                     </div>
 
-                    {/* Dates and Participants */}
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconCalendar className="h-5 w-5 " />
@@ -235,9 +230,7 @@ export default function CreateContestPage() {
                     </div>
                   </div>
 
-                  {/* Prizes and Rules */}
                   <div className="space-y-6">
-                    {/* Prizes */}
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconTrophy className="h-5 w-5 text-yellow-600" />
@@ -268,7 +261,6 @@ export default function CreateContestPage() {
                       </div>
                     </div>
 
-                    {/* Rules and Requirements */}
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconTag className="h-5 w-5 " />
@@ -328,7 +320,6 @@ export default function CreateContestPage() {
                   </div>
                 </div>
 
-                {/* Form Actions */}
                 <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
                   <Link
                     href="/dashboard/staff/contests"

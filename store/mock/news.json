@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "category": "Thông Báo Quan Trọng",
+    "title_vi": "ArtChain Chính Thức Khởi Động Cuộc Thi Vẽ Tranh 2024: 'Vòng Xoáy Sáng Tạo'",
+    "title_en": "ArtChain Officially Launches Painting Competition 2024: 'The Creative Vortex'",
+    "slug": "artchain-chinh-thuc-khoi-dong-cuoc-thi-vong-xoay-sang-tao-2024",
+    "summary": "Ban tổ chức ArtChain vui mừng thông báo mở cổng đăng ký cho cuộc thi nghệ thuật thường niên với chủ đề xoay quanh mối liên kết giữa Nghệ Thuật và Công nghệ Blockchain.",
+    "content_preview": "Cuộc thi năm nay hứa hẹn mang đến một sân chơi đột phá, nơi các nghệ sĩ có cơ hội thể hiện tài năng và khám phá tiềm năng của NFT trong việc bảo vệ bản quyền tác phẩm...",
+    "thumbnail_url": "/assets/images/news/news-001-launch.jpg",
+    "author": "Đội Ngũ ArtChain",
+    "published_date": "2024-10-20",
+    "views": 4567,
+    "is_featured": true
+  },
+  {
+    "id": 2,
+    "category": "Sự Kiện",
+    "title_vi": "Hội Thảo Trực Tuyến: 'NFT và Tương Lai Của Nghệ Thuật Số' - Đăng ký ngay!",
+    "title_en": "Online Workshop: 'NFTs and the Future of Digital Art' - Register Now!",
+    "slug": "hoi-thao-truc-tuyen-nft-va-tuong-lai-nghe-thuat-so",
+    "summary": "ArtChain tổ chức buổi hội thảo đặc biệt với sự tham gia của họa sĩ nổi tiếng Bùi Thanh Tùng và chuyên gia Blockchain Nguyễn Minh Khôi.",
+    "content_preview": "Sự kiện sẽ diễn ra vào lúc 19:00 ngày 25/10/2024, thảo luận về cách các nghệ sĩ có thể số hóa tác phẩm và bảo vệ quyền sở hữu bằng Blockchain...",
+    "thumbnail_url": "/assets/images/news/news-002-workshop.jpg",
+    "author": "Nguyễn Linh Chi",
+    "published_date": "2024-10-18",
+    "views": 2100,
+    "is_featured": false
+  },
+  {
+    "id": 3,
+    "category": "Góc Nghệ Sĩ",
+    "title_vi": "Phỏng Vấn: Trần Thu Hằng - Người Chiến Thắng Mùa Giải Trước Chia Sẻ Kinh Nghiệm",
+    "title_en": "Interview: Tran Thu Hang - Last Season's Winner Shares Her Experience",
+    "slug": "phong-van-tran-thu-hang-chia-se-kinh-nghiem-cuoc-thi-artchain",
+    "summary": "Chúng tôi đã có cuộc trò chuyện với Trần Thu Hằng về tác phẩm 'Mắt Xích' đã đoạt giải Nhất năm ngoái và cảm hứng đằng sau bức vẽ.",
+    "content_preview": "Hằng chia sẻ: 'ArtChain không chỉ là một cuộc thi, đó là nơi tôi học được cách kết hợp triết lý nghệ thuật truyền thống với công nghệ hiện đại. Bí quyết của tôi là...' ",
+    "thumbnail_url": "/assets/images/news/news-003-interview.jpg",
+    "author": "Biên Tập Viên",
+    "published_date": "2024-10-15",
+    "views": 3890,
+    "is_featured": true
+  }
+]
