@@ -108,11 +108,14 @@ export const updateStaffRound = async (
   contestId: number,
   roundId: string,
   data: {
-    title?: string;
-    description?: string;
+    name?: string;
+    table?: string | null;
     startDate?: string;
     endDate?: string;
-    maxSubmissions?: number;
+    submissionDeadline?: string;
+    resultAnnounceDate?: string;
+    sendOriginalDeadline?: string;
+    status?: string;
   }
 ) => {
   const response = await myAxios.patch(`/staff/contests/${contestId}/rounds/${roundId}`, data);

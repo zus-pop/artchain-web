@@ -420,12 +420,12 @@ export default function ContestsManagementPage() {
                                 >
                                   <IconEdit className="h-4 w-4" />
                                 </Link>
-                                <button
-                                  className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                                {/* <button
+                                  className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors mr-2 inline-block"
                                   title="Delete Contest"
                                 >
                                   <IconTrash className="h-4 w-4" />
-                                </button>
+                                </button> */}
                               </td>
                             </tr>
                           );

@@ -11,13 +11,15 @@ import {
   IconTrophy,
   IconUsers,
   IconClock,
+  IconEye,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getStaffContestById } from "@/apis/staff";
 import Image from "next/image";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
+import { RoundDetailDialog } from "@/components/staff/RoundDetailDialog";
 
 interface Round {
   roundId: number;
@@ -37,6 +39,10 @@ interface Round {
 function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
+  const [selectedRound, setSelectedRound] = useState<{
+    contestId: number;
+    roundId: number;
+  } | null>(null);
 
   // Fetch contest details
   const { data: contestData, isLoading } = useQuery({
@@ -372,6 +378,18 @@ function ContestDetailContent() {
                               {round.status}
                             </span>
                           </div>
+                          <button
+                            onClick={() =>
+                              setSelectedRound({
+                                contestId: contest.contestId,
+                                roundId: round.roundId,
+                              })
+                            }
+                            className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
+                            title="View round details"
+                          >
+                            <IconEye className="h-4 w-4 staff-text-secondary" />
+                          </button>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -425,6 +443,16 @@ function ContestDetailContent() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Round Detail Dialog */}
+      {selectedRound && (
+        <RoundDetailDialog
+          isOpen={!!selectedRound}
+          onClose={() => setSelectedRound(null)}
+          contestId={selectedRound.contestId}
+          roundId={selectedRound.roundId}
+        />
+      )}
     </SidebarProvider>
   );
 }
