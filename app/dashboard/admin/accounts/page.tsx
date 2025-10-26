@@ -8,10 +8,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { User, UserRole, UserStatus } from "@/types";
 import { getAllUsers, AdminUser, banUser, activateUser } from "@/apis/admin";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import {
-  IconPlus,
-  IconSearch,
-} from "@tabler/icons-react";
+import { IconPlus, IconSearch } from "@tabler/icons-react";
 import { useState } from "react";
 
 // Helper function to convert AdminUser to User type
@@ -35,8 +32,19 @@ export default function AccountsManagementPage() {
   const [pageLimit] = useState(10);
 
   // Fetch users from API
-  const { data: usersResponse, isLoading, error, refetch } = useQuery({
-    queryKey: ["admin-users", currentPage, pageLimit, selectedRole, searchQuery],
+  const {
+    data: usersResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      "admin-users",
+      currentPage,
+      pageLimit,
+      selectedRole,
+      searchQuery,
+    ],
     queryFn: () =>
       getAllUsers({
         page: currentPage,
@@ -345,21 +353,46 @@ export default function AccountsManagementPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <label className="relative inline-flex items-center cursor-pointer">
-                                <input 
-                                  type="checkbox" 
+                                <input
+                                  type="checkbox"
                                   checked={user.status === "ACTIVE"}
                                   onChange={() => handleToggleStatus(user)}
-                                  disabled={banUserMutation.isPending || activateUserMutation.isPending}
-                                  className="sr-only peer" 
+                                  disabled={
+                                    banUserMutation.isPending ||
+                                    activateUserMutation.isPending
+                                  }
+                                  className="sr-only peer"
                                 />
                                 <div className="group peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-24 h-12 shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-10 after:w-10 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-12 peer-hover:after:scale-95 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed">
-                                  <svg className="absolute top-1 left-12 stroke-gray-900 w-10 h-10" height={100} preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 100" width={100} x={0} xmlns="http://www.w3.org/2000/svg" y={0}>
-                                    <path d="M30,46V38a20,20,0,0,1,40,0v8a8,8,0,0,1,8,8V74a8,8,0,0,1-8,8H30a8,8,0,0,1-8-8V54A8,8,0,0,1,30,46Zm32-8v8H38V38a12,12,0,0,1,24,0Z" fillRule="evenodd">
-                                    </path>
+                                  <svg
+                                    className="absolute top-1 left-12 stroke-gray-900 w-10 h-10"
+                                    height={100}
+                                    preserveAspectRatio="xMidYMid meet"
+                                    viewBox="0 0 100 100"
+                                    width={100}
+                                    x={0}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    y={0}
+                                  >
+                                    <path
+                                      d="M30,46V38a20,20,0,0,1,40,0v8a8,8,0,0,1,8,8V74a8,8,0,0,1-8,8H30a8,8,0,0,1-8-8V54A8,8,0,0,1,30,46Zm32-8v8H38V38a12,12,0,0,1,24,0Z"
+                                      fillRule="evenodd"
+                                    ></path>
                                   </svg>
-                                  <svg className="absolute top-1 left-1 stroke-gray-900 w-10 h-10" height={100} preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 100" width={100} x={0} xmlns="http://www.w3.org/2000/svg" y={0}>
-                                    <path className="svg-fill-primary" d="M50,18A19.9,19.9,0,0,0,30,38v8a8,8,0,0,0-8,8V74a8,8,0,0,0,8,8H70a8,8,0,0,0,8-8V54a8,8,0,0,0-8-8H38V38a12,12,0,0,1,23.6-3,4,4,0,1,0,7.8-2A20.1,20.1,0,0,0,50,18Z">
-                                    </path>
+                                  <svg
+                                    className="absolute top-1 left-1 stroke-gray-900 w-10 h-10"
+                                    height={100}
+                                    preserveAspectRatio="xMidYMid meet"
+                                    viewBox="0 0 100 100"
+                                    width={100}
+                                    x={0}
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    y={0}
+                                  >
+                                    <path
+                                      className="svg-fill-primary"
+                                      d="M50,18A19.9,19.9,0,0,0,30,38v8a8,8,0,0,0-8,8V74a8,8,0,0,0,8,8H70a8,8,0,0,0,8-8V54a8,8,0,0,0-8-8H38V38a12,12,0,0,1,23.6-3,4,4,0,1,0,7.8-2A20.1,20.1,0,0,0,50,18Z"
+                                    ></path>
                                   </svg>
                                 </div>
                               </label>
@@ -394,44 +427,52 @@ export default function AccountsManagementPage() {
                   <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm text-gray-700">
-                        Showing page <span className="font-medium">{meta.page}</span> of{" "}
+                        Showing page{" "}
+                        <span className="font-medium">{meta.page}</span> of{" "}
                         <span className="font-medium">{meta.totalPages}</span> (
-                        <span className="font-medium">{meta.total}</span> total users)
+                        <span className="font-medium">{meta.total}</span> total
+                        users)
                       </p>
                     </div>
                     <div>
-                      <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                      <nav
+                        className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                        aria-label="Pagination"
+                      >
                         <button
-                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                          }
                           disabled={!meta.hasPreviousPage}
                           className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span className="sr-only">Previous</span>
-                          ‹
+                          <span className="sr-only">Previous</span>‹
                         </button>
-                        {Array.from({ length: Math.min(5, meta.totalPages) }, (_, i) => {
-                          const pageNum = i + 1;
-                          return (
-                            <button
-                              key={pageNum}
-                              onClick={() => setCurrentPage(pageNum)}
-                              className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                                currentPage === pageNum
-                                  ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                  : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                              }`}
-                            >
-                              {pageNum}
-                            </button>
-                          );
-                        })}
+                        {Array.from(
+                          { length: Math.min(5, meta.totalPages) },
+                          (_, i) => {
+                            const pageNum = i + 1;
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setCurrentPage(pageNum)}
+                                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                                  currentPage === pageNum
+                                    ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                                    : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          }
+                        )}
                         <button
                           onClick={() => setCurrentPage((p) => p + 1)}
                           disabled={!meta.hasNextPage}
                           className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <span className="sr-only">Next</span>
-                          ›
+                          <span className="sr-only">Next</span>›
                         </button>
                       </nav>
                     </div>

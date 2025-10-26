@@ -1,5 +1,6 @@
 import myAxios from "@/lib/custom-axios";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -39,8 +40,11 @@ export function useUploadPainting() {
       router.push("/me");
     },
     onError: (error) => {
-      toast.error("Có lỗi xảy ra khi gửi bài thi. Vui lòng thử lại.");
-      console.error("Upload error:", error);
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
     },
   });
 }

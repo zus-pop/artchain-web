@@ -1,11 +1,5 @@
 import myAxios from "@/lib/custom-axios";
-import {
-  AuthResponse,
-  LoginRequest,
-  RegisterRequest,
-  User,
-  WhoAmI,
-} from "@/types";
+import { AuthResponse, LoginRequest, RegisterRequest, WhoAmI } from "@/types";
 
 export const loginApi = async (
   loginRequest: LoginRequest

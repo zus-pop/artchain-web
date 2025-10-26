@@ -121,10 +121,10 @@ export function AdminSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <Link href="/">
-                <IconShield className="!size-5 text-blue-600" />
+                <IconShield className="size-5! text-blue-600" />
                 <span className="text-base font-semibold">ArtChain Admin</span>
               </Link>
             </SidebarMenuButton>

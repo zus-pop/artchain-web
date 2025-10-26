@@ -157,10 +157,10 @@ export function StaffSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <Link href="/">
-                <IconBriefcase className="!size-5 text-blue-600" />
+                <IconBriefcase className="size-5! text-blue-600" />
                 <span className="text-base font-semibold">ArtChain Staff</span>
               </Link>
             </SidebarMenuButton>
