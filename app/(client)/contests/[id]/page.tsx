@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Clock, Star, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useAuth } from "@/hooks";
 
 const statusColors = {
   UPCOMING: "bg-red-400",
@@ -28,6 +29,7 @@ const statusLabels = {
 };
 
 export default function ContestDetailPage() {
+  const { user } = useAuth();
   const params = useParams();
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
@@ -74,7 +76,9 @@ export default function ContestDetailPage() {
     return (
       <div className="min-h-screen bg-[#faf7f2] pt-20 px-4 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 text-lg font-medium">Không tìm thấy cuộc thi</p>
+          <p className="text-red-500 text-lg font-medium">
+            Không tìm thấy cuộc thi
+          </p>
           <p className="text-gray-500 mt-2">
             Cuộc thi không tồn tại hoặc đã bị xóa
           </p>
@@ -110,7 +114,7 @@ export default function ContestDetailPage() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-red-200 to-red-100 flex items-center justify-center">
+                <div className="w-full h-full bg-linear-to-br from-red-200 to-red-100 flex items-center justify-center">
                   <Trophy className="h-24 w-24 text-red-400" />
                 </div>
               )}
@@ -126,7 +130,9 @@ export default function ContestDetailPage() {
 
               {/* Badge */}
               <div
-                className={`absolute top-4 right-4 px-4 py-2 rounded-full text-sm font-medium text-white ${statusColors[contest.status]}`}
+                className={`absolute top-4 right-4 px-4 py-2 rounded-full text-sm font-medium text-white ${
+                  statusColors[contest.status]
+                }`}
               >
                 {statusLabels[contest.status]}
               </div>
@@ -183,12 +189,27 @@ export default function ContestDetailPage() {
             <div className="flex space-x-4">
               {contest.status === "ACTIVE" && (
                 <Link
-                  href={`/painting-upload?contestId=${contest.contestId}&roundId=${contest.roundId}`}
-                  className="flex-1"
+                  href={
+                    user?.role === "COMPETITOR"
+                      ? {
+                          pathname: "/painting-upload",
+                          query: {
+                            contestId: contest.contestId,
+                            roundId: contest.roundId,
+                            competitorId: user.userId,
+                          },
+                        }
+                      : {
+                          pathname: "/children-participation",
+                          query: {
+                            contestId: contest.contestId,
+                            roundId: contest.roundId,
+                          },
+                        }
+                  }
+                  className="flex-1 w-full bg-linear-to-r from-red-600 to-red-500 text-white text-center py-3 px-6 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-sm"
                 >
-                  <button className="w-full bg-gradient-to-r from-red-600 to-red-500 text-white py-3 px-6 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-sm">
-                    Tham gia cuộc thi
-                  </button>
+                  Tham gia cuộc thi
                 </Link>
               )}
               <button className="flex-1 bg-[#f6f3ee] text-gray-800 py-3 px-6 font-medium hover:bg-[#efe9e0] transition-all duration-200 border border-[#e6e2da]">
@@ -255,7 +276,7 @@ export default function ContestDetailPage() {
             "Ban tổ chức có quyền sử dụng tác phẩm cho mục đích trưng bày và quảng bá",
           ].map((rule, i) => (
             <div key={i} className="flex items-start space-x-3">
-              <Star className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+              <Star className="h-5 w-5 text-red-500 mt-0.5 shrink-0" />
               <p>{rule}</p>
             </div>
           ))}

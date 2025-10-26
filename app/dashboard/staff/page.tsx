@@ -31,7 +31,9 @@ export default function StaffDashboardPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Total Competitors
                       </p>
-                      <p className="text-3xl font-bold staff-text-primary">1,234</p>
+                      <p className="text-3xl font-bold staff-text-primary">
+                        1,234
+                      </p>
                     </div>
                     <div className="stat-icon">
                       <svg
@@ -60,7 +62,9 @@ export default function StaffDashboardPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Pending Paintings
                       </p>
-                      <p className="text-3xl font-bold staff-text-primary">67</p>
+                      <p className="text-3xl font-bold staff-text-primary">
+                        67
+                      </p>
                     </div>
                     <div className="stat-icon">
                       <svg
@@ -78,7 +82,9 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm staff-text-secondary">Awaiting review</p>
+                  <p className="mt-2 text-sm staff-text-secondary">
+                    Awaiting review
+                  </p>
                 </div>
 
                 <div className="staff-card staff-stat-success p-6">
@@ -116,7 +122,9 @@ export default function StaffDashboardPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Active Sponsors
                       </p>
-                      <p className="text-3xl font-bold staff-text-primary">15</p>
+                      <p className="text-3xl font-bold staff-text-primary">
+                        15
+                      </p>
                     </div>
                     <div className="stat-icon">
                       <svg
@@ -134,21 +142,21 @@ export default function StaffDashboardPage() {
                       </svg>
                     </div>
                   </div>
-                  <p className="mt-2 text-sm staff-text-secondary">2 new this month</p>
+                  <p className="mt-2 text-sm staff-text-secondary">
+                    2 new this month
+                  </p>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="staff-card p-6">
-                <h2 className="staff-heading mb-6">
-                  Quick Actions
-                </h2>
+                <h2 className="staff-heading mb-6">Quick Actions</h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <Link
                     href="/dashboard/staff/competitors/paintings/pending"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
                   >
-                    <div className=" bg-gradient-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -173,9 +181,9 @@ export default function StaffDashboardPage() {
 
                   <Link
                     href="/dashboard/staff/contests/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
                   >
-                    <div className=" bg-gradient-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className=" bg-linear-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -200,9 +208,9 @@ export default function StaffDashboardPage() {
 
                   <Link
                     href="/dashboard/staff/contests/examiners/invite"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                   >
-                    <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -221,15 +229,17 @@ export default function StaffDashboardPage() {
                       <p className="text-sm font-bold staff-text-primary">
                         Invite Examiner
                       </p>
-                      <p className="text-xs staff-text-secondary">Send invitation</p>
+                      <p className="text-xs staff-text-secondary">
+                        Send invitation
+                      </p>
                     </div>
                   </Link>
 
                   <Link
                     href="/dashboard/staff/posts/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                   >
-                    <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -248,7 +258,9 @@ export default function StaffDashboardPage() {
                       <p className="text-sm font-bold staff-text-primary">
                         Create Post
                       </p>
-                      <p className="text-xs staff-text-secondary">New announcement</p>
+                      <p className="text-xs staff-text-secondary">
+                        New announcement
+                      </p>
                     </div>
                   </Link>
                 </div>
@@ -286,7 +298,9 @@ export default function StaffDashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs staff-text-secondary">10 min ago</span>
+                    <span className="text-xs staff-text-secondary">
+                      10 min ago
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between border-b border-gray-100 pb-4">
@@ -315,7 +329,9 @@ export default function StaffDashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs staff-text-secondary">2 hours ago</span>
+                    <span className="text-xs staff-text-secondary">
+                      2 hours ago
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -344,7 +360,9 @@ export default function StaffDashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="text-xs staff-text-secondary">5 hours ago</span>
+                    <span className="text-xs staff-text-secondary">
+                      5 hours ago
+                    </span>
                   </div>
                 </div>
               </div>

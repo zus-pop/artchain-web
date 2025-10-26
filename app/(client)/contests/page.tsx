@@ -10,7 +10,7 @@ import Image from "next/image";
 
 const statusColors = {
   UPCOMING: "bg-blue-500",
-  ACTIVE: "bg-green-500", 
+  ACTIVE: "bg-green-500",
   DRAFT: "bg-gray-500",
   ENDED: "bg-orange-500",
   COMPLETED: "bg-purple-500",
@@ -21,17 +21,20 @@ const statusColors = {
 const statusLabels = {
   UPCOMING: "Sắp diễn ra",
   ACTIVE: "Đang diễn ra",
-  DRAFT: "Bản nháp", 
+  DRAFT: "Bản nháp",
   ENDED: "Đã kết thúc",
   COMPLETED: "Hoàn thành",
   CANCELLED: "Đã hủy",
   ALL: "Tất cả",
 };
 
-const PLACEHOLDER_IMAGE_URL = 'https://via.placeholder.com/300x150?text=No+Banner';
+const PLACEHOLDER_IMAGE_URL =
+  "https://via.placeholder.com/300x150?text=No+Banner";
 
 export default function ContestsPage() {
-  const [selectedStatus, setSelectedStatus] = useState<ContestStatus | undefined>();
+  const [selectedStatus, setSelectedStatus] = useState<
+    ContestStatus | undefined
+  >();
   const { data: contests, isLoading, error } = useGetContests(selectedStatus);
 
   const filterOptions: { label: string; value: ContestStatus | undefined }[] = [
@@ -45,7 +48,7 @@ export default function ContestsPage() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
       day: "2-digit",
-      month: "2-digit", 
+      month: "2-digit",
       year: "numeric",
     });
   };
@@ -53,12 +56,12 @@ export default function ContestsPage() {
     const now = new Date();
     const end = new Date(endDate);
     const diff = end.getTime() - now.getTime();
-    
+
     if (diff <= 0) return "Đã kết thúc";
-    
+
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
+
     if (days > 0) return `Còn ${days} ngày`;
     return `Còn ${hours} giờ`;
   };
@@ -77,7 +80,7 @@ export default function ContestsPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="group m-5 flex flex-col justify-between gap-4 min-h-[240px] duration-500 relative rounded-lg p-5 bg-[hsl(2,68%,58%)] shadow-md animate-pulse"
+                className="group m-5 flex flex-col justify-between gap-4 min-h-60 duration-500 relative rounded-lg p-5 bg-[hsl(2,68%,58%)] shadow-md animate-pulse"
               >
                 <div className="absolute duration-700 shadow-md -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
                 <div className="z-10">
@@ -126,7 +129,7 @@ export default function ContestsPage() {
         </motion.div> */}
 
         {/* Filter Bar */}
-        <motion.div 
+        <motion.div
           className="mb-12 ml-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,7 +137,9 @@ export default function ContestsPage() {
         >
           <div className="flex items-center space-x-4 mb-4">
             <Filter className="h-5 w-5 text-gray-600" />
-            <span className="text-gray-700 font-medium">Lọc theo trạng thái:</span>
+            <span className="text-gray-700 font-medium">
+              Lọc theo trạng thái:
+            </span>
           </div>
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((option) => (
@@ -156,7 +161,7 @@ export default function ContestsPage() {
         {/* Contests Grid */}
         <AnimatePresence mode="wait">
           {contests && contests.length > 0 ? (
-            <motion.div 
+            <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -172,12 +177,22 @@ export default function ContestsPage() {
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
                   <Link href={`/contests/${contest.contestId}`}>
-                    <div className="group m-5 flex flex-col justify-between gap-4 min-h-[320px] duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md">
+                    <div className="group m-5 flex flex-col justify-between gap-4 min-h-80 duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md">
                       {/* Khối trang trí ở góc */}
-                      <Image src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL} alt={contest.title} width={200} height={100} className="absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
+                      <Image
+                        src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
+                        alt={contest.title}
+                        width={200}
+                        height={100}
+                        className="absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]"
+                      />
 
                       {/* Status Badge */}
-                      <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${statusColors[contest.status]}`}>
+                      <div
+                        className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${
+                          statusColors[contest.status]
+                        }`}
+                      >
                         {statusLabels[contest.status]}
                       </div>
 
@@ -194,9 +209,12 @@ export default function ContestsPage() {
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center text-white/90">
                             <Calendar className="h-4 w-4 mr-2" />
-                            <span>{formatDate(contest.startDate)} - {formatDate(contest.endDate)}</span>
+                            <span>
+                              {formatDate(contest.startDate)} -{" "}
+                              {formatDate(contest.endDate)}
+                            </span>
                           </div>
-                          
+
                           <div className="flex items-center text-white/90">
                             <Trophy className="h-4 w-4 mr-2" />
                             <span>{contest.numOfAward} giải thưởng</span>
@@ -221,7 +239,7 @@ export default function ContestsPage() {
               ))}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               className="text-center py-16"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -232,10 +250,12 @@ export default function ContestsPage() {
                 Không có cuộc thi nào
               </h3>
               <p className="text-gray-600">
-                {selectedStatus 
-                  ? `Không có cuộc thi nào với trạng thái "${filterOptions.find(f => f.value === selectedStatus)?.label}"`
-                  : "Hiện tại chưa có cuộc thi nào được tổ chức"
-                }
+                {selectedStatus
+                  ? `Không có cuộc thi nào với trạng thái "${
+                      filterOptions.find((f) => f.value === selectedStatus)
+                        ?.label
+                    }"`
+                  : "Hiện tại chưa có cuộc thi nào được tổ chức"}
               </p>
             </motion.div>
           )}

@@ -1,4 +1,5 @@
 import { AuthInitializer } from "@/components/AuthInitializer";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import ReactQueryProvider from "@/components/react-query-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -56,6 +57,7 @@ export default function RootLayout({
       >
         <ReactQueryProvider>
           <AuthInitializer>
+            <ScrollToTop />
             <Toaster richColors />
             <div className="fixed inset-0 -z-10"></div>
             {/* <HeaderWrapper /> */}

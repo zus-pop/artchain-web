@@ -1,16 +1,17 @@
 "use client";
 
+import { getAllStaffContests } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Contest, ContestStatus as DashboardContestStatus } from "@/types/dashboard";
-import { ContestStatus } from "@/types/contest";
-import { ContestDTO } from "@/types/staff/contest-dto";
-import { getAllStaffContests } from "@/apis/staff";
-import { useQuery } from "@tanstack/react-query";
 import { StatsCards } from "@/components/staff/StatsCards";
-import Image from "next/image";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ContestStatus } from "@/types/contest";
+import {
+  Contest,
+  ContestStatus as DashboardContestStatus,
+} from "@/types/dashboard";
+import { ContestDTO } from "@/types/staff/contest-dto";
 import {
   IconCircleCheck,
   IconCircleX,
@@ -19,10 +20,11 @@ import {
   IconFilter,
   IconPlus,
   IconSearch,
-  IconTrash,
   IconTrophy,
   IconUsers,
 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -57,11 +59,18 @@ export default function ContestsManagementPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
   // Fetch contests from API
-  const { data: contestsResponse, isLoading, error } = useQuery({
+  const {
+    data: contestsResponse,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["staff-contests", selectedStatus, searchQuery],
     queryFn: () =>
       getAllStaffContests({
-        status: selectedStatus !== "ALL" ? (selectedStatus as ContestStatus) : undefined,
+        status:
+          selectedStatus !== "ALL"
+            ? (selectedStatus as ContestStatus)
+            : undefined,
         search: searchQuery || undefined,
       }),
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -194,9 +203,9 @@ export default function ContestsManagementPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/staff/contests/active"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconCircleCheck className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -211,9 +220,9 @@ export default function ContestsManagementPage() {
 
                 <Link
                   href="/dashboard/staff/contests/examiners"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconUsers className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -228,9 +237,9 @@ export default function ContestsManagementPage() {
 
                 <Link
                   href="/dashboard/staff/contests/awards"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconTrophy className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -344,9 +353,12 @@ export default function ContestsManagementPage() {
                       ) : (
                         filteredContests.map((contest) => {
                           const StatusIcon = getStatusIcon(contest.status);
-                          const activeRounds = contest.rounds?.filter((r: { status: string }) => r.status === "ACTIVE").length || 0;
+                          const activeRounds =
+                            contest.rounds?.filter(
+                              (r: { status: string }) => r.status === "ACTIVE"
+                            ).length || 0;
                           const totalRoundCount = contest.rounds?.length || 0;
-                          
+
                           return (
                             <tr key={contest.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4">
@@ -401,8 +413,12 @@ export default function ContestsManagementPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                 <div>
-                                  <div className="text-xs">Start: {contest.startDate}</div>
-                                  <div className="text-xs">End: {contest.endDate}</div>
+                                  <div className="text-xs">
+                                    Start: {contest.startDate}
+                                  </div>
+                                  <div className="text-xs">
+                                    End: {contest.endDate}
+                                  </div>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
