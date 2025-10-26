@@ -9,20 +9,38 @@ import {
   IconArrowLeft,
   IconDeviceFloppy,
   IconEye,
+  IconPlus,
+  IconSearch,
   IconSend,
   IconTag,
+  IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
+import { getStaffTags, createStaffTag, createStaffPost, updateStaffPost } from "@/apis/staff";
+import dynamic from "next/dynamic";
+
+const MDXEditorWrapper = dynamic(
+  () => import("@/components/staff/MDXEditorWrapper").then((mod) => mod.MDXEditorWrapper),
+  { ssr: false, loading: () => <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" /> }
+);
 
 interface PostFormData {
   title: string;
   content: string;
-  category: string;
   status: PostStatus;
   publishedAt: string;
   tags: string[];
+  image_url: string;
+  tag_ids: number[];
+}
+
+interface Tag {
+  tag_id: number;
+  tag_name: string;
+  created_at?: string;
 }
 
 export default function CreatePostSuspense() {
@@ -41,25 +59,110 @@ export function CreatePostPage() {
   const [formData, setFormData] = useState<PostFormData>({
     title: "",
     content: "",
-    category: "",
     status: "DRAFT" as PostStatus,
     publishedAt: "",
     tags: [] as string[],
+    image_url: "",
+    tag_ids: [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [loading, setLoading] = useState(isEditing);
+  
+  // Tags state
+  const [tagSearch, setTagSearch] = useState("");
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
-  const categories = [
-    "Announcement",
-    "News",
-    "Guidelines",
-    "Results",
-    "Community",
-    "Tips",
-    "Events",
-  ];
+  // Fetch tags based on search query
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (tagSearch.length >= 0) {
+        setIsLoadingTags(true);
+        try {
+          const response = await getStaffTags({ search: tagSearch });
+          // Handle response structure: { success: true, data: [...] }
+          const tags = response.data || response;
+          setAvailableTags(Array.isArray(tags) ? tags : []);
+        } catch (error) {
+          console.error("Error fetching tags:", error);
+          setAvailableTags([]);
+        } finally {
+          setIsLoadingTags(false);
+        }
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchTags, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [tagSearch]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tagInputRef.current &&
+        !tagInputRef.current.parentElement?.parentElement?.contains(
+          event.target as Node
+        )
+      ) {
+        setShowTagDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle tag selection
+  const handleSelectTag = (tag: Tag) => {
+    if (!selectedTags.find((t) => t.tag_id === tag.tag_id)) {
+      const newSelectedTags = [...selectedTags, tag];
+      setSelectedTags(newSelectedTags);
+      setFormData((prev) => ({
+        ...prev,
+        tag_ids: newSelectedTags.map((t) => t.tag_id),
+      }));
+    }
+    setTagSearch("");
+    setShowTagDropdown(false);
+  };
+
+  // Handle tag removal
+  const handleRemoveTag = (tagId: number) => {
+    const newSelectedTags = selectedTags.filter((t) => t.tag_id !== tagId);
+    setSelectedTags(newSelectedTags);
+    setFormData((prev) => ({
+      ...prev,
+      tag_ids: newSelectedTags.map((t) => t.tag_id),
+    }));
+  };
+
+  // Handle creating a new tag
+  const handleCreateTag = async () => {
+    if (!tagSearch.trim()) return;
+    
+    setIsCreatingTag(true);
+    try {
+      const response = await createStaffTag({ tag_name: tagSearch.trim() });
+      // Handle response structure: { success: true, data: { tag_id, tag_name, ... } }
+      const newTag = response.data || response;
+      
+      // Add the new tag to available tags and select it
+      setAvailableTags((prev) => [...prev, newTag]);
+      handleSelectTag(newTag);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      alert("Failed to create tag. Please try again.");
+    } finally {
+      setIsCreatingTag(false);
+    }
+  };
 
   // Load existing post data if editing
   useEffect(() => {
@@ -104,10 +207,11 @@ Ready to join the revolution? Create your free account today and start exploring
         setFormData({
           title: existingPost.title,
           content: existingPost.content,
-          category: existingPost.category,
           status: existingPost.status,
           publishedAt: existingPost.publishedAt || "",
           tags: [],
+          image_url: "",
+          tag_ids: [],
         });
 
         setLoading(false);
@@ -128,14 +232,33 @@ Ready to join the revolution? Create your free account today and start exploring
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const postData = {
+        title: formData.title,
+        content: formData.content,
+        image_url: formData.image_url || undefined,
+        status: formData.status,
+        tag_ids: formData.tag_ids,
+      };
 
-    console.log(`${isEditing ? "Updating" : "Creating"} post:`, formData);
-    // Here you would typically make an API call to create/update the post
+      if (isEditing && postId) {
+        // Update existing post
+        await updateStaffPost(postId, postData);
+        alert("Post updated successfully!");
+      } else {
+        // Create new post
+        await createStaffPost(postData);
+        alert("Post created successfully!");
+      }
 
-    setIsSubmitting(false);
-    // Redirect to posts list or show success message
+      // Redirect to posts list
+      window.location.href = "/dashboard/staff/posts";
+    } catch (error) {
+      console.error("Error saving post:", error);
+      alert("Failed to save post. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePublish = async () => {
@@ -237,6 +360,38 @@ Ready to join the revolution? Create your free account today and start exploring
                         />
                       </div>
 
+                      {/* Image URL */}
+                      <div className="staff-card p-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Featured Image URL
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.image_url}
+                          onChange={(e) =>
+                            handleInputChange("image_url", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        {formData.image_url && (
+                          <div className="mt-3 relative w-full h-48">
+                            <Image
+                              src={formData.image_url}
+                              alt="Preview"
+                              fill
+                              className="object-cover  border border-[#e6e2da]"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        )}
+                        <p className="text-xs staff-text-secondary mt-2">
+                          Enter the URL of an image to display with your post
+                        </p>
+                      </div>
+
                       {/* Content */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -244,26 +399,22 @@ Ready to join the revolution? Create your free account today and start exploring
                         </label>
                         {previewMode ? (
                           <div className="prose max-w-none">
-                            <div className="min-h-[400px] p-4 border border-[#e6e2da]  bg-gray-50 whitespace-pre-wrap">
-                              {formData.content ||
-                                "Your content will appear here..."}
-                            </div>
+                            <div 
+                              className="min-h-[400px] p-4 border border-[#e6e2da] bg-gray-50"
+                              dangerouslySetInnerHTML={{
+                                __html: formData.content || "Your content will appear here..."
+                              }}
+                            />
                           </div>
                         ) : (
-                          <textarea
-                            value={formData.content}
-                            onChange={(e) =>
-                              handleInputChange("content", e.target.value)
-                            }
-                            rows={15}
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                            placeholder="Write your post content here... You can use basic formatting."
-                            required
+                          <MDXEditorWrapper
+                            markdown={formData.content}
+                            onChange={(value) => handleInputChange("content", value)}
+                            placeholder="Write your post content here using Markdown..."
                           />
                         )}
                         <p className="text-xs staff-text-secondary mt-2">
-                          Supports basic text formatting. HTML tags are not
-                          allowed.
+                          Use the toolbar to format your content with Markdown
                         </p>
                       </div>
                     </div>
@@ -274,14 +425,11 @@ Ready to join the revolution? Create your free account today and start exploring
                       <div className="staff-card p-6">
                         <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                           <IconSend className="h-5 w-5 " />
-                          Publishing
+                          Status
                         </h3>
 
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Status
-                            </label>
                             <select
                               value={formData.status}
                               onChange={(e) =>
@@ -296,52 +444,120 @@ Ready to join the revolution? Create your free account today and start exploring
                               <option value="PUBLISHED">Published</option>
                             </select>
                           </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Publish Date
-                            </label>
-                            <input
-                              type="datetime-local"
-                              value={formData.publishedAt}
-                              onChange={(e) =>
-                                handleInputChange("publishedAt", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <p className="text-xs staff-text-secondary mt-1">
-                              Leave empty to publish immediately
-                            </p>
-                          </div>
                         </div>
                       </div>
 
-                      {/* Category */}
+                      {/* Tags */}
                       <div className="staff-card p-6">
                         <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                           <IconTag className="h-5 w-5 " />
-                          Category
+                          Tags
                         </h3>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Select Category *
-                          </label>
-                          <select
-                            value={formData.category}
-                            onChange={(e) =>
-                              handleInputChange("category", e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                          >
-                            <option value="">Choose a category</option>
-                            {categories.map((category) => (
-                              <option key={category} value={category}>
-                                {category}
-                              </option>
-                            ))}
-                          </select>
+                        <div className="space-y-3">
+                          {/* Selected Tags */}
+                          {selectedTags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {selectedTags.map((tag) => (
+                                <span
+                                  key={tag.tag_id}
+                                  className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium  border border-blue-200"
+                                >
+                                  {tag.tag_name}
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveTag(tag.tag_id)}
+                                    className="hover:text-blue-900"
+                                  >
+                                    <IconX className="h-3 w-3" />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Tag Search Input */}
+                          <div className="relative">
+                            <div className="relative">
+                              <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              <input
+                                ref={tagInputRef}
+                                type="text"
+                                value={tagSearch}
+                                onChange={(e) => {
+                                  setTagSearch(e.target.value);
+                                  setShowTagDropdown(true);
+                                }}
+                                onFocus={() => setShowTagDropdown(true)}
+                                placeholder="Search or create tags..."
+                                className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                              />
+                            </div>
+
+                            {/* Tag Dropdown */}
+                            {showTagDropdown && (
+                              <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da]  shadow-lg max-h-60 overflow-y-auto">
+                                {isLoadingTags ? (
+                                  <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                                    Loading tags...
+                                  </div>
+                                ) : (
+                                  <>
+                                    {/* Existing Tags */}
+                                    {availableTags.length > 0 ? (
+                                      availableTags
+                                        .filter(
+                                          (tag) =>
+                                            !selectedTags.find((t) => t.tag_id === tag.tag_id)
+                                        )
+                                        .map((tag) => (
+                                          <button
+                                            key={tag.tag_id}
+                                            type="button"
+                                            onClick={() => handleSelectTag(tag)}
+                                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between"
+                                          >
+                                            <span>{tag.tag_name}</span>
+                                          </button>
+                                        ))
+                                    ) : tagSearch.trim() ? (
+                                      <div className="px-4 py-2 text-sm text-gray-500">
+                                        No tags found
+                                      </div>
+                                    ) : (
+                                      <div className="px-4 py-2 text-sm text-gray-500">
+                                        Start typing to search tags
+                                      </div>
+                                    )}
+
+                                    {/* Create New Tag Button */}
+                                    {tagSearch.trim() &&
+                                      !availableTags.find(
+                                        (tag) =>
+                                          tag.tag_name.toLowerCase() ===
+                                          tagSearch.toLowerCase()
+                                      ) && (
+                                        <button
+                                          type="button"
+                                          onClick={handleCreateTag}
+                                          disabled={isCreatingTag}
+                                          className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
+                                        >
+                                          <IconPlus className="h-4 w-4" />
+                                          {isCreatingTag
+                                            ? "Creating..."
+                                            : `Create "${tagSearch}"`}
+                                        </button>
+                                      )}
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="text-xs staff-text-secondary">
+                            Search for existing tags or create new ones
+                          </p>
                         </div>
                       </div>
 
@@ -414,8 +630,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       disabled={
                         isSubmitting ||
                         !formData.title.trim() ||
-                        !formData.content.trim() ||
-                        !formData.category
+                        !formData.content.trim()
                       }
                       className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >

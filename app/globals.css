@@ -394,3 +394,24 @@
     background-position: 200px;
   }
 }
+
+/* MDX Editor Custom Styles */
+.mdx-editor-wrapper {
+  @apply rounded-md overflow-hidden;
+}
+
+.mdx-editor-wrapper [role="toolbar"] {
+  @apply bg-gray-50 border-b border-[#e6e2da] p-2;
+}
+
+.mdx-editor-wrapper [contenteditable] {
+  @apply min-h-[400px] p-4 focus:outline-none;
+}
+
+.mdx-editor-wrapper button[aria-pressed] {
+  @apply bg-blue-100;
+}
+
+.mdx-editor-wrapper .mdxeditor {
+  @apply font-mono text-sm;
+}

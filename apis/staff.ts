@@ -1,6 +1,6 @@
 import myAxios from "@/lib/custom-axios";
 import { ContestStatus } from "@/types/contest";
-import { ContestResponseDTO } from "@/types/contest-dto";
+import { ContestResponseDTO } from "@/types/staff/contest-dto";
 
 /**
  * Staff Contest Management APIs
@@ -185,5 +185,94 @@ export const rejectStaffSubmission = async (
   }
 ) => {
   const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/reject`, data);
+  return response.data;
+};
+
+/**
+ * Staff Posts Management APIs
+ */
+
+// GET /api/staff/posts - Get all posts
+export const getStaffPosts = async (params?: {
+  page?: number;
+  limit?: number;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  category?: string;
+  search?: string;
+}) => {
+  const response = await myAxios.get("/staff/posts", { params });
+  return response.data;
+};
+
+// POST /api/staff/posts - Create a new post
+export const createStaffPost = async (data: {
+  title: string;
+  content: string;
+  image_url?: string;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  tag_ids: number[];
+}) => {
+  const response = await myAxios.post("/staff/posts", data);
+  return response.data;
+};
+
+// GET /api/staff/posts/{id} - Get post by ID
+export const getStaffPostById = async (id: string) => {
+  const response = await myAxios.get(`/staff/posts/${id}`);
+  return response.data;
+};
+
+// PUT /api/staff/posts/{id} - Update a post
+export const updateStaffPost = async (
+  id: string,
+  data: {
+    title?: string;
+    content?: string;
+    image_url?: string;
+    status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+    tag_ids?: number[];
+  }
+) => {
+  const response = await myAxios.put(`/staff/posts/${id}`, data);
+  return response.data;
+};
+
+// DELETE /api/staff/posts/{id} - Delete a post
+export const deleteStaffPost = async (id: string) => {
+  const response = await myAxios.delete(`/staff/posts/${id}`);
+  return response.data;
+};
+
+// POST /api/staff/posts/{id}/publish - Publish a post
+export const publishStaffPost = async (id: string) => {
+  const response = await myAxios.post(`/staff/posts/${id}/publish`);
+  return response.data;
+};
+
+// POST /api/staff/posts/{id}/restore - Restore an archived post
+export const restoreStaffPost = async (id: string) => {
+  const response = await myAxios.post(`/staff/posts/${id}/restore`);
+  return response.data;
+};
+
+/**
+ * Staff Tags Management APIs
+ */
+
+// GET /api/staff/tags - Get all tags (with search support)
+export const getStaffTags = async (params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const response = await myAxios.get("/staff/tags", { params });
+  return response.data;
+};
+
+// POST /api/staff/tags - Create a new tag
+export const createStaffTag = async (data: {
+  tag_name: string;
+}) => {
+  const response = await myAxios.post("/staff/tags", data);
   return response.data;
 };
