@@ -125,9 +125,9 @@ export default function InviteExaminerPage() {
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
                 {/* Success Message */}
                 <div className="max-w-2xl mx-auto">
-                  <div className="rounded-lg border border-green-200 bg-green-50 p-8 text-center">
+                  <div className=" border border-green-200 bg-green-50 p-8 text-center">
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                      <IconCheck className="h-6 w-6 text-green-600" />
+                      <IconCheck className="h-6 w-6 " />
                     </div>
                     <h3 className="text-lg font-medium text-green-900 mb-2">
                       Invitation Sent Successfully!
@@ -141,13 +141,13 @@ export default function InviteExaminerPage() {
                     <div className="flex gap-4 justify-center">
                       <Link
                         href="/dashboard/staff/contests/examiners"
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                        className="staff-btn-secondary transition-colors"
                       >
                         View All Examiners
                       </Link>
                       <button
                         onClick={resetForm}
-                        className="border border-green-300 text-green-700 px-4 py-2 rounded-lg hover:bg-green-50 transition-colors"
+                        className="border border-green-300 text-green-700 px-4 py-2  hover:bg-green-50 transition-colors"
                       >
                         Send Another Invite
                       </button>
@@ -175,7 +175,7 @@ export default function InviteExaminerPage() {
       <SidebarInset>
         <SiteHeader title="Invite Examiner" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
@@ -198,15 +198,15 @@ export default function InviteExaminerPage() {
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/contests/examiners"
-                    className="rounded-lg border border-gray-200 p-2 hover:bg-gray-50 transition-colors"
+                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
                   >
-                    <IconArrowLeft className="h-5 w-5 text-gray-600" />
+                    <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900">
+                    <h2 className="text-2xl font-bold staff-text-primary">
                       Invite New Examiner
                     </h2>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm staff-text-secondary mt-1">
                       Send an invitation to a qualified art professional to join
                       as a contest judge
                     </p>
@@ -218,9 +218,9 @@ export default function InviteExaminerPage() {
               <div className="max-w-2xl mx-auto">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Basic Information */}
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <IconUsers className="h-5 w-5 text-blue-600" />
+                  <div className="staff-card p-6">
+                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <IconUsers className="h-5 w-5 " />
                       Basic Information
                     </h3>
 
@@ -235,7 +235,7 @@ export default function InviteExaminerPage() {
                           onChange={(e) =>
                             handleInputChange("fullName", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="Enter full name"
                           required
                         />
@@ -253,7 +253,7 @@ export default function InviteExaminerPage() {
                             onChange={(e) =>
                               handleInputChange("email", e.target.value)
                             }
-                            className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-10 pr-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="examiner@example.com"
                             required
                           />
@@ -263,9 +263,9 @@ export default function InviteExaminerPage() {
                   </div>
 
                   {/* Professional Information */}
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <IconBriefcase className="h-5 w-5 text-green-600" />
+                  <div className="staff-card p-6">
+                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <IconBriefcase className="h-5 w-5 " />
                       Professional Information
                     </h3>
 
@@ -280,10 +280,10 @@ export default function InviteExaminerPage() {
                               key={spec}
                               type="button"
                               onClick={() => toggleSpecialization(spec)}
-                              className={`px-3 py-2 text-sm rounded-lg border transition-colors ${
+                              className={`px-3 py-2 text-sm  border transition-colors ${
                                 formData.specialization.includes(spec)
                                   ? "bg-blue-100 border-blue-300 text-blue-800"
-                                  : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                                  : "bg-gray-50 border-[#e6e2da] text-gray-700 hover:bg-gray-100"
                               }`}
                             >
                               {spec}
@@ -306,7 +306,7 @@ export default function InviteExaminerPage() {
                           onChange={(e) =>
                             handleInputChange("experience", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         >
                           <option value="">Select experience level</option>
@@ -321,9 +321,9 @@ export default function InviteExaminerPage() {
                   </div>
 
                   {/* Personal Message */}
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <IconMail className="h-5 w-5 text-purple-600" />
+                  <div className="staff-card p-6">
+                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <IconMail className="h-5 w-5 " />
                       Personal Message
                     </h3>
 
@@ -337,20 +337,20 @@ export default function InviteExaminerPage() {
                           handleInputChange("message", e.target.value)
                         }
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Add a personal message to accompany the invitation..."
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs staff-text-secondary mt-1">
                         This message will be included in the invitation email
                       </p>
                     </div>
                   </div>
 
                   {/* Form Actions */}
-                  <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                  <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
                     <Link
                       href="/dashboard/staff/contests/examiners"
-                      className="px-6 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </Link>
@@ -359,7 +359,7 @@ export default function InviteExaminerPage() {
                       disabled={
                         isSubmitting || formData.specialization.length === 0
                       }
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isSubmitting ? (
                         <>

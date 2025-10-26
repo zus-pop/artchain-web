@@ -137,15 +137,15 @@ export default function CampaignsPage() {
   const getStatusBadgeColor = (status: CampaignStatus) => {
     switch (status) {
       case "ACTIVE":
-        return "bg-green-100 text-green-800";
+        return "staff-badge-active";
       case "COMPLETED":
-        return "bg-blue-100 text-blue-800";
+        return "staff-badge-active";
       case "PAUSED":
-        return "bg-yellow-100 text-yellow-800";
+        return "staff-badge-pending";
       case "DRAFT":
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "staff-badge-neutral";
     }
   };
 
@@ -182,7 +182,7 @@ export default function CampaignsPage() {
       <SidebarInset>
         <SiteHeader title="Sponsorship Campaigns" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 { label: "Sponsors", href: "/dashboard/staff/sponsors" },
@@ -196,17 +196,17 @@ export default function CampaignsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     Sponsorship Campaigns ({filteredCampaigns.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     Manage and track all sponsorship campaigns and their
                     progress
                   </p>
                 </div>
                 <a
                   href="/dashboard/staff/sponsors/campaigns/create"
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                  className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
                   Create Campaign
@@ -215,64 +215,64 @@ export default function CampaignsPage() {
 
               {/* Statistics Cards */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <IconMoneybag className="h-5 w-5 text-green-600" />
+                    <div className="stat-icon p-2">
+                      <IconMoneybag className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Total Raised
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         ${totalRaised.toLocaleString()}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-2">
-                      <IconTarget className="h-5 w-5 text-blue-600" />
+                    <div className="stat-icon p-2">
+                      <IconTarget className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Campaign Goal
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         ${totalGoal.toLocaleString()}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-2">
-                      <IconTrendingUp className="h-5 w-5 text-purple-600" />
+                    <div className="stat-icon p-2">
+                      <IconTrendingUp className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Active Campaigns
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         {activeCampaigns}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                <div className="staff-card p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-2">
-                      <IconUsers className="h-5 w-5 text-green-600" />
+                    <div className="stat-icon p-2">
+                      <IconUsers className="h-5 w-5 " />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium staff-text-secondary">
                         Total Participants
                       </p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold staff-text-primary">
                         {campaigns.reduce((sum, c) => sum + c.participants, 0)}
                       </p>
                     </div>
@@ -284,17 +284,17 @@ export default function CampaignsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <a
                   href="/dashboard/staff/sponsors"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="staff-card p-4 hover:shadow-md transition-shadow duration-200 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-100 p-3 group-hover:bg-blue-200 transition-colors">
-                      <IconMoneybag className="h-6 w-6 text-blue-600" />
+                    <div className="stat-icon p-3 group-hover:bg-blue-200 transition-colors">
+                      <IconMoneybag className="h-6 w-6 " />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold staff-text-primary">
                         All Sponsors
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm staff-text-secondary">
                         View and manage all sponsors
                       </p>
                     </div>
@@ -303,17 +303,17 @@ export default function CampaignsPage() {
 
                 <a
                   href="/dashboard/staff/sponsors/campaigns"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="staff-card p-4 hover:shadow-md transition-shadow duration-200 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-100 p-3 group-hover:bg-green-200 transition-colors">
-                      <IconTrendingUp className="h-6 w-6 text-green-600" />
+                    <div className="stat-icon p-3 group-hover:bg-green-200 transition-colors">
+                      <IconTrendingUp className="h-6 w-6 " />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold staff-text-primary">
                         Sponsorship Campaigns
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm staff-text-secondary">
                         Manage active sponsorship campaigns
                       </p>
                     </div>
@@ -322,17 +322,17 @@ export default function CampaignsPage() {
 
                 <a
                   href="/dashboard/staff/sponsors/campaigns/create"
-                  className="rounded-lg border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow duration-200 group"
+                  className="staff-card p-4 hover:shadow-md transition-shadow duration-200 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-100 p-3 group-hover:bg-purple-200 transition-colors">
-                      <IconPlus className="h-6 w-6 text-purple-600" />
+                    <div className="stat-icon p-3 group-hover:bg-purple-200 transition-colors">
+                      <IconPlus className="h-6 w-6 " />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">
+                      <h3 className="font-semibold staff-text-primary">
                         Create Campaign
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm staff-text-secondary">
                         Start a new sponsorship campaign
                       </p>
                     </div>
@@ -349,7 +349,7 @@ export default function CampaignsPage() {
                     placeholder="Search by title, description, or sponsor..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -361,7 +361,7 @@ export default function CampaignsPage() {
                         e.target.value as CampaignStatus | "ALL"
                       )
                     }
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -375,7 +375,7 @@ export default function CampaignsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categoryOptions.map((category) => (
                       <option key={category} value={category}>
@@ -387,30 +387,30 @@ export default function CampaignsPage() {
               </div>
 
               {/* Campaigns Table */}
-              <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+              <div className="staff-card overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Campaign
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Sponsor
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Progress
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Participants
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Dates
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -420,7 +420,7 @@ export default function CampaignsPage() {
                         <tr>
                           <td
                             colSpan={7}
-                            className="px-6 py-12 text-center text-gray-500"
+                            className="px-6 py-12 text-center staff-text-secondary"
                           >
                             No campaigns found matching your criteria
                           </td>
@@ -430,10 +430,10 @@ export default function CampaignsPage() {
                           <tr key={campaign.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4">
                               <div>
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-medium staff-text-primary">
                                   {campaign.title}
                                 </div>
-                                <div className="text-sm text-gray-500 line-clamp-2">
+                                <div className="text-sm staff-text-secondary line-clamp-2">
                                   {campaign.description}
                                 </div>
                                 <div className="text-xs text-gray-400 mt-1">
@@ -442,10 +442,10 @@ export default function CampaignsPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium staff-text-primary">
                                 {campaign.sponsor}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm staff-text-secondary">
                                 {campaign.sponsorCompany}
                               </div>
                             </td>
@@ -453,11 +453,11 @@ export default function CampaignsPage() {
                               <div className="flex items-center gap-3">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between text-sm mb-1">
-                                    <span className="text-gray-600">
+                                    <span className="staff-text-secondary">
                                       ${campaign.raisedAmount.toLocaleString()}{" "}
                                       / ${campaign.goalAmount.toLocaleString()}
                                     </span>
-                                    <span className="text-gray-900 font-medium">
+                                    <span className="staff-text-primary font-medium">
                                       {campaign.progress}%
                                     </span>
                                   </div>
@@ -474,17 +474,17 @@ export default function CampaignsPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex rounded-lg px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
+                                className={`inline-flex  px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
                                   campaign.status
                                 )}`}
                               >
                                 {campaign.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               {campaign.participants}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               <div>
                                 <div>Start: {campaign.startDate}</div>
                                 <div>End: {campaign.endDate}</div>
@@ -499,7 +499,7 @@ export default function CampaignsPage() {
                                   <IconEye className="h-4 w-4" />
                                 </button>
                                 <button
-                                  className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 transition-colors"
+                                  className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
                                   title="Edit"
                                 >
                                   <IconEdit className="h-4 w-4" />

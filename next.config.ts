@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
       {
+        protocol: 'https',
+        hostname: 'example.com', // Thay thế bằng tên miền thực của bạn
+        port: '',
+        pathname: '/**',
+      },
+      {
         protocol: "https",
         hostname: "as2.ftcdn.net",
         port: "",

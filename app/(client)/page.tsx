@@ -5,6 +5,7 @@ import ArtistNavigation from "@/components/sections/ArtistNavigation";
 import ArtistGallery from "@/components/sections/ArtistGallery";
 import ContestShowcase from "@/components/sections/CompetitionShowcase";
 import TabPanel from "@/components/sections/TabPanel";
+import News from "@/components/sections/News";
 
 export default function Home() {
   return (
@@ -23,7 +24,12 @@ export default function Home() {
           {/* Home Tab */}
           <TabPanel className="container px-8 py-8">
             <ContestShowcase />
-            <ArtistGallery />
+            {/* <News />
+            <News />
+            <News />
+            <News />
+            <News /> */}
+
           </TabPanel>
 
           {/* Contests Tab */}

@@ -124,7 +124,7 @@ export default function RejectedPaintingsPage() {
       <SidebarInset>
         <SiteHeader title="Paintings - Rejected" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
@@ -142,10 +142,10 @@ export default function RejectedPaintingsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className="text-2xl font-bold staff-text-primary">
                     Rejected Paintings ({filteredPaintings.length})
                   </h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm staff-text-secondary mt-1">
                     View all rejected competitor paintings
                   </p>
                 </div>
@@ -160,7 +160,7 @@ export default function RejectedPaintingsPage() {
                     placeholder="Search by title or competitor name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export default function RejectedPaintingsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -181,9 +181,9 @@ export default function RejectedPaintingsPage() {
 
               {/* Paintings Grid */}
               {filteredPaintings.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <div className="text-center py-12 bg-gray-50 ">
                   <IconPalette className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
+                  <p className="staff-text-secondary text-lg">
                     No rejected paintings found
                   </p>
                 </div>
@@ -192,7 +192,7 @@ export default function RejectedPaintingsPage() {
                   {filteredPaintings.map((painting) => (
                     <div
                       key={painting.id}
-                      className="rounded-lg border border-gray-200 bg-white overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                      className="staff-card overflow-hidden hover:shadow-lg transition-shadow duration-200"
                     >
                       {/* Painting Image */}
                       <div className="relative h-64 bg-gray-100">
@@ -200,7 +200,7 @@ export default function RejectedPaintingsPage() {
                           <IconPalette className="h-24 w-24 text-gray-300" />
                         </div>
                         <div className="absolute top-2 right-2">
-                          <span className="inline-flex rounded-lg px-3 py-1 text-xs font-semibold bg-red-100 text-red-800">
+                          <span className="inline-flex  px-3 py-1 text-xs font-semibold bg-red-100 text-red-800">
                             <IconX className="h-3 w-3 mr-1" />
                             REJECTED
                           </span>
@@ -209,11 +209,11 @@ export default function RejectedPaintingsPage() {
 
                       {/* Painting Info */}
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        <h3 className="text-lg font-semibold staff-text-primary mb-2">
                           {painting.title}
                         </h3>
 
-                        <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <div className="space-y-2 text-sm staff-text-secondary mb-4">
                           <div className="flex items-center gap-2">
                             <IconUser className="h-4 w-4" />
                             <span>
@@ -231,7 +231,7 @@ export default function RejectedPaintingsPage() {
                           </div>
                         </div>
 
-                        <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-4">
+                        <div className="bg-red-50 border border-red-100  p-3 mb-4">
                           <div className="flex items-start gap-2">
                             <IconAlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
                             <p className="text-xs text-red-800 line-clamp-2">
@@ -243,7 +243,7 @@ export default function RejectedPaintingsPage() {
                         {/* Action Buttons */}
                         <button
                           onClick={() => openViewModal(painting)}
-                          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50  hover:bg-blue-100 transition-colors"
                         >
                           <IconEye className="h-4 w-4" />
                           View Details
@@ -261,21 +261,21 @@ export default function RejectedPaintingsPage() {
       {/* View Details Modal */}
       {isViewModalOpen && selectedPainting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white  max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-gray-900">
+                  <h3 className="text-2xl font-bold staff-text-primary">
                     {selectedPainting.title}
                   </h3>
-                  <span className="inline-flex rounded-lg px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 mt-2">
+                  <span className="inline-flex  px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 mt-2">
                     <IconX className="h-3 w-3 mr-1" />
                     REJECTED
                   </span>
                 </div>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:staff-text-secondary"
                 >
                   <IconX className="h-6 w-6" />
                 </button>
@@ -283,12 +283,12 @@ export default function RejectedPaintingsPage() {
 
               <div className="space-y-4">
                 {/* Image */}
-                <div className="relative h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="relative h-96 bg-gray-100  flex items-center justify-center">
                   <IconPalette className="h-32 w-32 text-gray-300" />
                 </div>
 
                 {/* Rejection Reason Alert */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-red-50 border border-red-200  p-4">
                   <div className="flex items-start gap-3">
                     <IconAlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                     <div>
@@ -305,64 +305,64 @@ export default function RejectedPaintingsPage() {
                 {/* Details */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Competitor
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.competitorName}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Age</p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-sm font-medium staff-text-secondary">Age</p>
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.competitorAge} years
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Category
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.category}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Submitted Date
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.submittedDate}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Rejected Date
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.rejectedDate}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Rejected By
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.rejectedBy}
                     </p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Competition
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.competitionName}
                     </p>
                   </div>
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">
+                    <p className="text-sm font-medium staff-text-secondary">
                       Description
                     </p>
-                    <p className="text-base text-gray-900">
+                    <p className="text-base staff-text-primary">
                       {selectedPainting.description}
                     </p>
                   </div>

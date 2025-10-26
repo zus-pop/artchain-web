@@ -23,11 +23,11 @@ const AuthContainer = () => {
           <div className="hidden lg:flex w-1/2 items-center justify-center p-12 bg-gray-50">
             <Image
               // Đường dẫn bắt đầu bằng dấu "/" để trỏ vào thư mục public
-              src="/images/Mu.png" 
+              src="/images/ArtChainLogo.png" 
               alt="Company Logo"
               width={400}
               height={400}
-              className="object-contain"
+              className="object-none"
             />
           </div>
 
