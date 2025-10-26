@@ -4,7 +4,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Post, PostStatus } from "@/types/dashboard";
+import { PostStatus } from "@/types/dashboard";
 import { StatsCards } from "@/components/staff/StatsCards";
 import {
   IconEdit,
@@ -14,82 +14,20 @@ import {
   IconPlus,
   IconSearch,
   IconTrash,
-  IconUser,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { useState } from "react";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { getStaffPosts, deleteStaffPost, updateStaffPost } from "@/apis/staff";
+import { Post } from "@/types/staff/post-dto";
+
 
 export default function PostsPage() {
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: "1",
-      title: "Welcome to ArtChain 2025",
-      content: "We're excited to announce the launch of ArtChain 2025...",
-      author: "Staff User",
-      status: "PUBLISHED",
-      createdAt: "2025-09-15",
-      publishedAt: "2025-09-15",
-      views: 1250,
-      category: "Announcement",
-    },
-    {
-      id: "2",
-      title: "Contest Guidelines Update",
-      content: "Important updates to our contest submission guidelines...",
-      author: "Staff User",
-      status: "PUBLISHED",
-      createdAt: "2025-09-20",
-      publishedAt: "2025-09-20",
-      views: 890,
-      category: "Guidelines",
-    },
-    {
-      id: "3",
-      title: "New Art Categories for 2025",
-      content:
-        "Introducing exciting new art categories for this year's competitions...",
-      author: "Staff User",
-      status: "DRAFT",
-      createdAt: "2025-10-01",
-      views: 0,
-      category: "News",
-    },
-    {
-      id: "4",
-      title: "Winner Announcement - Summer Art Festival",
-      content:
-        "Congratulations to all the winners of our Summer Art Festival...",
-      author: "Staff User",
-      status: "PUBLISHED",
-      createdAt: "2025-08-30",
-      publishedAt: "2025-08-30",
-      views: 2100,
-      category: "Results",
-    },
-    {
-      id: "5",
-      title: "ArtChain Community Spotlight",
-      content:
-        "Featuring amazing artworks from our talented community members...",
-      author: "Staff User",
-      status: "ARCHIVED",
-      createdAt: "2025-07-15",
-      publishedAt: "2025-07-15",
-      views: 750,
-      category: "Community",
-    },
-  ]);
-
+  const [posts, setPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<PostStatus | "ALL">(
-    "ALL"
-  );
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-
-  const categories = [
-    "ALL",
-    ...Array.from(new Set(posts.map((post) => post.category))),
-  ];
+  const [selectedStatus, setSelectedStatus] = useState<PostStatus | "ALL">("ALL");
+  const [loading, setLoading] = useState(true);
+  const [page] = useState(1);
 
   const statusOptions: (PostStatus | "ALL")[] = [
     "ALL",
@@ -98,17 +36,44 @@ export default function PostsPage() {
     "ARCHIVED",
   ];
 
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.author.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      selectedStatus === "ALL" || post.status === selectedStatus;
-    const matchesCategory =
-      selectedCategory === "ALL" || post.category === selectedCategory;
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
+  // Fetch posts from API
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const params: {
+          page: number;
+          limit: number;
+          status?: PostStatus;
+          search?: string;
+        } = {
+          page,
+          limit: 10,
+        };
+        
+        if (selectedStatus !== "ALL") {
+          params.status = selectedStatus;
+        }
+        
+        if (searchQuery.trim()) {
+          params.search = searchQuery;
+        }
+
+        const response = await getStaffPosts(params);
+        setPosts(response.data || []);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchPosts, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [page, selectedStatus, searchQuery]);
+
+  const filteredPosts = posts;
 
   const getStatusBadgeColor = (status: PostStatus) => {
     switch (status) {
@@ -123,16 +88,32 @@ export default function PostsPage() {
     }
   };
 
-  const handleDeletePost = (postId: string) => {
-    setPosts(posts.filter((post) => post.id !== postId));
+  const handleDeletePost = async (postId: number) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    
+    try {
+      await deleteStaffPost(String(postId));
+      setPosts(posts.filter((post) => post.post_id !== postId));
+      alert("Post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
   };
 
-  const handleToggleStatus = (postId: string, newStatus: PostStatus) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId ? { ...post, status: newStatus } : post
-      )
-    );
+  const handleToggleStatus = async (postId: number, newStatus: PostStatus) => {
+    try {
+      await updateStaffPost(String(postId), { status: newStatus });
+      setPosts(
+        posts.map((post) =>
+          post.post_id === postId ? { ...post, status: newStatus } : post
+        )
+      );
+      alert(`Post ${newStatus.toLowerCase()} successfully!`);
+    } catch (error) {
+      console.error("Error updating post status:", error);
+      alert("Failed to update post status. Please try again.");
+    }
   };
 
   return (
@@ -205,11 +186,13 @@ export default function PostsPage() {
                     variant: "success",
                   },
                   {
-                    title: "Total Views",
-                    value: posts
-                      .reduce((sum, post) => sum + post.views, 0)
-                      .toLocaleString(),
-                    subtitle: "All-time views",
+                    title: "Total Tags",
+                    value: Array.from(
+                      new Set(
+                        posts.flatMap((p) => p.postTags.map((t) => t.tag_id))
+                      )
+                    ).length,
+                    subtitle: "Unique tags",
                     icon: <IconEye className="h-6 w-6" />,
                     variant: "primary",
                   },
@@ -222,7 +205,7 @@ export default function PostsPage() {
                   <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by title, content, or author..."
+                    placeholder="Search by title or content..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -244,24 +227,19 @@ export default function PostsPage() {
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
               </div>
 
               {/* Posts Table */}
               <div className="staff-card overflow-hidden">
-                <div className="overflow-x-auto">
+                {loading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="mt-4 staff-text-secondary">Loading posts...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -269,13 +247,10 @@ export default function PostsPage() {
                           Post
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Category
+                          Tags
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Views
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Created
@@ -289,7 +264,7 @@ export default function PostsPage() {
                       {filteredPosts.length === 0 ? (
                         <tr>
                           <td
-                            colSpan={6}
+                            colSpan={5}
                             className="px-6 py-12 text-center staff-text-secondary"
                           >
                             No posts found matching your criteria
@@ -297,28 +272,48 @@ export default function PostsPage() {
                         </tr>
                       ) : (
                         filteredPosts.map((post) => (
-                          <tr key={post.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="flex-1">
+                          <tr key={post.post_id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                {post.image_url && (
+                                  <div className="relative w-12 h-12">
+                                    <Image
+                                      src={post.image_url}
+                                      alt={post.title}
+                                      fill
+                                      className="object-cover rounded"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
                                   <div className="text-sm font-medium staff-text-primary line-clamp-1">
                                     {post.title}
                                   </div>
-                                  <div className="text-sm staff-text-secondary flex items-center gap-2">
-                                    <IconUser className="h-3 w-3" />
-                                    {post.author}
+                                  <div className="text-xs staff-text-secondary">
+                                    by {post.creator.fullName}
                                   </div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex  px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800">
-                                {post.category}
-                              </span>
+                            <td className="px-6 py-4">
+                              <div className="flex flex-wrap gap-1">
+                                {post.postTags.length > 0 ? (
+                                  post.postTags.map((postTag) => (
+                                    <span
+                                      key={postTag.tag_id}
+                                      className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded"
+                                    >
+                                      {postTag.tag.tag_name}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-xs staff-text-secondary">No tags</span>
+                                )}
+                              </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex  px-2 py-1 text-xs font-semibold ${getStatusBadgeColor(
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded ${getStatusBadgeColor(
                                   post.status
                                 )}`}
                               >
@@ -326,39 +321,36 @@ export default function PostsPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
-                              {post.views.toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               <div>
-                                <div>{post.createdAt}</div>
-                                {post.publishedAt &&
+                                <div>{new Date(post.created_at).toLocaleDateString()}</div>
+                                {post.published_at &&
                                   post.status === "PUBLISHED" && (
                                     <div className="text-xs text-green-600">
-                                      Published: {post.publishedAt}
+                                      Published: {new Date(post.published_at).toLocaleDateString()}
                                     </div>
                                   )}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <div className="flex items-center justify-end gap-2">
-                                <a
-                                  href={`/dashboard/staff/posts/${post.id}`}
+                                <Link
+                                  href={`/dashboard/staff/posts/${post.post_id}`}
                                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                                   title="View Details"
                                 >
                                   <IconEye className="h-4 w-4" />
-                                </a>
-                                <a
-                                  href={`/dashboard/staff/posts/create?id=${post.id}`}
+                                </Link>
+                                <Link
+                                  href={`/dashboard/staff/posts/create?id=${post.post_id}`}
                                   className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
                                   title="Edit"
                                 >
                                   <IconEdit className="h-4 w-4" />
-                                </a>
+                                </Link>
                                 {post.status === "DRAFT" && (
                                   <button
                                     onClick={() =>
-                                      handleToggleStatus(post.id, "PUBLISHED")
+                                      handleToggleStatus(post.post_id, "PUBLISHED")
                                     }
                                     className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
                                     title="Publish"
@@ -369,7 +361,7 @@ export default function PostsPage() {
                                 {post.status === "PUBLISHED" && (
                                   <button
                                     onClick={() =>
-                                      handleToggleStatus(post.id, "ARCHIVED")
+                                      handleToggleStatus(post.post_id, "ARCHIVED")
                                     }
                                     className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
                                     title="Archive"
@@ -378,7 +370,7 @@ export default function PostsPage() {
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => handleDeletePost(post.id)}
+                                  onClick={() => handleDeletePost(post.post_id)}
                                   className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                                   title="Delete"
                                 >
@@ -392,6 +384,7 @@ export default function PostsPage() {
                     </tbody>
                   </table>
                 </div>
+                )}
               </div>
             </div>
           </div>

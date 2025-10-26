@@ -6,7 +6,7 @@ import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Contest, ContestStatus as DashboardContestStatus } from "@/types/dashboard";
 import { ContestStatus } from "@/types/contest";
-import { ContestDTO } from "@/types/contest-dto";
+import { ContestDTO } from "@/types/staff/contest-dto";
 import { getAllStaffContests } from "@/apis/staff";
 import { useQuery } from "@tanstack/react-query";
 import { StatsCards } from "@/components/staff/StatsCards";
