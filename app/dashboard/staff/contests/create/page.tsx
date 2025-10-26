@@ -7,45 +7,67 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   IconArrowLeft,
   IconCalendar,
-  IconCurrencyDollar,
   IconDeviceFloppy,
   IconFileText,
-  IconTag,
   IconTrophy,
+  IconPlus,
+  IconTrash,
+  IconPhoto,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createStaffContest } from "@/apis/staff";
+import { useRouter } from "next/navigation";
 
-type ContestCategory =
-  | "Mixed Media"
-  | "Digital Art"
-  | "Traditional"
-  | "Sculpture"
-  | "Photography"
-  | "Other";
+type RoundFormData = {
+  name: string;
+  table: string;
+  startDate: string;
+  endDate: string;
+  submissionDeadline: string;
+  status: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
+};
 
 export default function CreateContestPage() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "Mixed Media" as ContestCategory,
+    bannerUrl: "",
+    numOfAward: "",
     startDate: "",
     endDate: "",
-    maxParticipants: "",
-    prizePool: "",
-    rules: "",
-    requirements: "",
-    judgingCriteria: "",
+    status: "DRAFT" as "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED",
   });
 
-  const categories: ContestCategory[] = [
-    "Mixed Media",
-    "Digital Art",
-    "Traditional",
-    "Sculpture",
-    "Photography",
-    "Other",
-  ];
+  const [rounds, setRounds] = useState<RoundFormData[]>([]);
+
+  const createMutation = useMutation({
+    mutationFn: createStaffContest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staff-contests"] });
+      router.push("/dashboard/staff/contests");
+    },
+    onError: (error: unknown) => {
+      console.error("Failed to create contest:", error);
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response &&
+        error.response.data &&
+        typeof error.response.data === "object" &&
+        "message" in error.response.data
+          ? String(error.response.data.message)
+          : "Failed to create contest";
+      alert(errorMessage);
+    },
+  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({
@@ -54,9 +76,92 @@ export default function CreateContestPage() {
     }));
   };
 
+  const addRound = () => {
+    setRounds((prev) => [
+      ...prev,
+      {
+        name: "",
+        table: "paintings",
+        startDate: "",
+        endDate: "",
+        submissionDeadline: "",
+        status: "DRAFT",
+      },
+    ]);
+  };
+
+  const removeRound = (index: number) => {
+    setRounds((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateRound = (index: number, field: string, value: string) => {
+    setRounds((prev) =>
+      prev.map((round, i) =>
+        i === index ? { ...round, [field]: value } : round
+      )
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating contest:", formData);
+
+    // Validation
+    if (!formData.title || !formData.description) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    if (!formData.startDate || !formData.endDate) {
+      alert("Please select start and end dates");
+      return;
+    }
+
+    if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+      alert("End date must be after start date");
+      return;
+    }
+
+    const numOfAward = parseInt(formData.numOfAward);
+    if (isNaN(numOfAward) || numOfAward < 0) {
+      alert("Please enter a valid number of awards");
+      return;
+    }
+
+    // Validate rounds if any
+    for (let i = 0; i < rounds.length; i++) {
+      const round = rounds[i];
+      if (!round.name || !round.startDate || !round.endDate) {
+        alert(`Round ${i + 1}: Please fill in all required fields`);
+        return;
+      }
+      if (new Date(round.endDate) <= new Date(round.startDate)) {
+        alert(`Round ${i + 1}: End date must be after start date`);
+        return;
+      }
+    }
+
+    // Prepare data
+    const contestData = {
+      title: formData.title,
+      description: formData.description,
+      bannerUrl: formData.bannerUrl || undefined,
+      numOfAward,
+      startDate: new Date(formData.startDate).toISOString(),
+      endDate: new Date(formData.endDate).toISOString(),
+      status: formData.status,
+      rounds: rounds.length > 0 ? rounds.map((round) => ({
+        name: round.name,
+        table: round.table,
+        startDate: new Date(round.startDate).toISOString(),
+        endDate: new Date(round.endDate).toISOString(),
+        submissionDeadline: round.submissionDeadline
+          ? new Date(round.submissionDeadline).toISOString()
+          : undefined,
+        status: round.status,
+      })) : undefined,
+    };
+
+    createMutation.mutate(contestData);
   };
 
   return (
@@ -133,26 +238,6 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Category *
-                          </label>
-                          <select
-                            value={formData.category}
-                            onChange={(e) =>
-                              handleInputChange("category", e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                          >
-                            {categories.map((category) => (
-                              <option key={category} value={category}>
-                                {category}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
                             Description *
                           </label>
                           <textarea
@@ -166,13 +251,31 @@ export default function CreateContestPage() {
                             required
                           />
                         </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Banner URL
+                          </label>
+                          <div className="relative">
+                            <IconPhoto className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                            <input
+                              type="url"
+                              value={formData.bannerUrl}
+                              onChange={(e) =>
+                                handleInputChange("bannerUrl", e.target.value)
+                              }
+                              className="w-full pl-10 pr-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="https://example.com/banner.jpg"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
 
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconCalendar className="h-5 w-5 " />
-                        Schedule & Capacity
+                        Schedule & Awards
                       </h3>
 
                       <div className="space-y-4">
@@ -209,22 +312,38 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Maximum Participants *
+                            Number of Awards *
                           </label>
                           <input
                             type="number"
-                            value={formData.maxParticipants}
+                            value={formData.numOfAward}
                             onChange={(e) =>
-                              handleInputChange(
-                                "maxParticipants",
-                                e.target.value
-                              )
+                              handleInputChange("numOfAward", e.target.value)
                             }
                             className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="100"
-                            min="1"
+                            placeholder="3"
+                            min="0"
                             required
                           />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Status *
+                          </label>
+                          <select
+                            value={formData.status}
+                            onChange={(e) =>
+                              handleInputChange("status", e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required
+                          >
+                            <option value="DRAFT">Draft</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -232,89 +351,171 @@ export default function CreateContestPage() {
 
                   <div className="space-y-6">
                     <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                        <IconTrophy className="h-5 w-5 text-yellow-600" />
-                        Prizes & Awards
-                      </h3>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Total Prize Pool
-                          </label>
-                          <div className="relative">
-                            <IconCurrencyDollar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <input
-                              type="text"
-                              value={formData.prizePool}
-                              onChange={(e) =>
-                                handleInputChange("prizePool", e.target.value)
-                              }
-                              className="w-full pl-10 pr-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="2500"
-                            />
-                          </div>
-                          <p className="text-xs staff-text-secondary mt-1">
-                            Leave empty if no prizes
-                          </p>
-                        </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold staff-text-primary flex items-center gap-2">
+                          <IconTrophy className="h-5 w-5 text-yellow-600" />
+                          Rounds
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={addRound}
+                          className="flex items-center gap-2 px-3 py-1.5 text-sm staff-btn-primary transition-colors"
+                        >
+                          <IconPlus className="h-4 w-4" />
+                          Add Round
+                        </button>
                       </div>
-                    </div>
-
-                    <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                        <IconTag className="h-5 w-5 " />
-                        Rules & Requirements
-                      </h3>
 
                       <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Contest Rules
-                          </label>
-                          <textarea
-                            value={formData.rules}
-                            onChange={(e) =>
-                              handleInputChange("rules", e.target.value)
-                            }
-                            rows={3}
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter contest rules and guidelines"
-                          />
-                        </div>
+                        {rounds.length === 0 ? (
+                          <p className="text-sm staff-text-secondary text-center py-8">
+                            No rounds added yet. Click &quot;Add Round&quot; to
+                            create one.
+                          </p>
+                        ) : (
+                          rounds.map((round, index) => (
+                            <div
+                              key={index}
+                              className="border border-[#e6e2da] p-4 space-y-3"
+                            >
+                              <div className="flex items-center justify-between">
+                                <h4 className="font-medium text-gray-900">
+                                  Round {index + 1}
+                                </h4>
+                                <button
+                                  type="button"
+                                  onClick={() => removeRound(index)}
+                                  className="text-red-600 hover:text-red-700 p-1"
+                                  title="Remove round"
+                                >
+                                  <IconTrash className="h-4 w-4" />
+                                </button>
+                              </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Submission Requirements
-                          </label>
-                          <textarea
-                            value={formData.requirements}
-                            onChange={(e) =>
-                              handleInputChange("requirements", e.target.value)
-                            }
-                            rows={3}
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="File format, size limits, age restrictions, etc."
-                          />
-                        </div>
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    Round Name *
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={round.name}
+                                    onChange={(e) =>
+                                      updateRound(index, "name", e.target.value)
+                                    }
+                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="ROUND1"
+                                    required
+                                  />
+                                </div>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Judging Criteria
-                          </label>
-                          <textarea
-                            value={formData.judgingCriteria}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "judgingCriteria",
-                                e.target.value
-                              )
-                            }
-                            rows={3}
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Creativity, technique, originality, presentation, etc."
-                          />
-                        </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    Table *
+                                  </label>
+                                  <select
+                                    value={round.table}
+                                    onChange={(e) =>
+                                      updateRound(
+                                        index,
+                                        "table",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                  >
+                                    <option value="paintings">Paintings</option>
+                                    <option value="sculptures">
+                                      Sculptures
+                                    </option>
+                                    <option value="photos">Photos</option>
+                                  </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      Start Date *
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={round.startDate}
+                                      onChange={(e) =>
+                                        updateRound(
+                                          index,
+                                          "startDate",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      required
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                                      End Date *
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={round.endDate}
+                                      onChange={(e) =>
+                                        updateRound(
+                                          index,
+                                          "endDate",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                      required
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    Submission Deadline
+                                  </label>
+                                  <input
+                                    type="date"
+                                    value={round.submissionDeadline}
+                                    onChange={(e) =>
+                                      updateRound(
+                                        index,
+                                        "submissionDeadline",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                                    Status *
+                                  </label>
+                                  <select
+                                    value={round.status}
+                                    onChange={(e) =>
+                                      updateRound(
+                                        index,
+                                        "status",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                  >
+                                    <option value="DRAFT">Draft</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>
@@ -329,10 +530,11 @@ export default function CreateContestPage() {
                   </Link>
                   <button
                     type="submit"
-                    className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2"
+                    disabled={createMutation.isPending}
+                    className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
-                    Create Contest
+                    {createMutation.isPending ? "Creating..." : "Create Contest"}
                   </button>
                 </div>
               </form>

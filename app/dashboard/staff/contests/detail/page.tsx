@@ -21,7 +21,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStaffContestById, deleteStaffRound } from "@/apis/staff";
 import Image from "next/image";
 import { Suspense, useState } from "react";
-import { RoundDetailDialog } from "@/components/staff/RoundDetailDialog";
 import { CreateRoundDialog } from "@/components/staff/CreateRoundDialog";
 
 interface Round {
@@ -43,11 +42,6 @@ function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
   const queryClient = useQueryClient();
-  
-  const [selectedRound, setSelectedRound] = useState<{
-    contestId: number;
-    roundId: number;
-  } | null>(null);
   
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -420,18 +414,13 @@ function ContestDetailContent() {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() =>
-                                setSelectedRound({
-                                  contestId: contest.contestId,
-                                  roundId: round.roundId,
-                                })
-                              }
+                            <Link
+                              href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
                               className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
                               title="View round details"
                             >
                               <IconEye className="h-4 w-4 staff-text-secondary" />
-                            </button>
+                            </Link>
                             <button
                               onClick={() => handleDeleteRound(round.roundId)}
                               className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
@@ -498,16 +487,6 @@ function ContestDetailContent() {
           </div>
         </div>
       </SidebarInset>
-
-      {/* Round Detail Dialog */}
-      {selectedRound && (
-        <RoundDetailDialog
-          isOpen={!!selectedRound}
-          onClose={() => setSelectedRound(null)}
-          contestId={selectedRound.contestId}
-          roundId={selectedRound.roundId}
-        />
-      )}
 
       {/* Create Round Dialog */}
       <CreateRoundDialog

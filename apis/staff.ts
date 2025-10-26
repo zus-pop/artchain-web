@@ -26,6 +26,14 @@ export const createStaffContest = async (data: {
   startDate: string;
   endDate: string;
   status?: ContestStatus;
+  rounds?: Array<{
+    name: string;
+    table: string;
+    startDate: string;
+    endDate: string;
+    submissionDeadline?: string;
+    status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
+  }>;
 }) => {
   const response = await myAxios.post("/staff/contests", data);
   return response.data;
@@ -127,5 +135,55 @@ export const updateStaffRound = async (
 // DELETE /api/staff/contests/{contestId}/rounds/{roundId} - Delete a round
 export const deleteStaffRound = async (contestId: number, roundId: string) => {
   const response = await myAxios.delete(`/staff/contests/${contestId}/rounds/${roundId}`);
+  return response.data;
+};
+
+/**
+ * Staff Submissions Management APIs
+ */
+
+// GET /api/staff/contests/submissions - Get all submissions
+export const getStaffSubmissions = async (params?: {
+  page?: number;
+  limit?: number;
+  contestId?: number;
+  roundId?: number;
+  status?: "PENDING" | "ACCEPTED" | "REJECTED";
+}) => {
+  const response = await myAxios.get("/staff/contests/submissions", { params });
+  return response.data;
+};
+
+// GET /api/staff/contests/submissions/pending - Get pending submissions
+export const getStaffPendingSubmissions = async (params?: {
+  page?: number;
+  limit?: number;
+  contestId?: number;
+  roundId?: number;
+}) => {
+  const response = await myAxios.get("/staff/contests/submissions/pending", { params });
+  return response.data;
+};
+
+// GET /api/staff/contests/submissions/{paintingId} - Get submission by ID
+export const getStaffSubmissionById = async (paintingId: string) => {
+  const response = await myAxios.get(`/staff/contests/submissions/${paintingId}`);
+  return response.data;
+};
+
+// PATCH /api/staff/contests/submissions/{paintingId}/accept - Accept a submission
+export const acceptStaffSubmission = async (paintingId: string) => {
+  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/accept`);
+  return response.data;
+};
+
+// PATCH /api/staff/contests/submissions/{paintingId}/reject - Reject a submission
+export const rejectStaffSubmission = async (
+  paintingId: string,
+  data?: {
+    reason?: string;
+  }
+) => {
+  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/reject`, data);
   return response.data;
 };
