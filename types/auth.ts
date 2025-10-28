@@ -8,7 +8,7 @@ export interface RegisterRequest {
   password: string;
   email: string;
   fullName: string;
-  role: "GUARDIAN" | "COMPETITOR";
+  role: UserRole;
   birthday?: string;
   schoolName?: string;
   ward?: string;
@@ -32,4 +32,9 @@ export interface AuthResponse {
   user?: WhoAmI;
 }
 
-export type UserRole = "COMPETITOR" | "GUARDIAN" | "ADMIN" | "STAFF" | "EXAMINER";
+export type UserRole =
+  | "COMPETITOR"
+  | "GUARDIAN"
+  | "ADMIN"
+  | "STAFF"
+  | "EXAMINER";

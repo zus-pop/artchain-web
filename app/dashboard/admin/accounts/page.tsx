@@ -5,7 +5,7 @@ import { CreateUserDialog } from "@/components/admin/create-user-dialog";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { User, UserRole, UserStatus } from "@/types";
+import { User, UserRole } from "@/types";
 import { getAllUsers, AdminUser, banUser, activateUser } from "@/apis/admin";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { IconPlus, IconSearch } from "@tabler/icons-react";
@@ -81,19 +81,6 @@ export default function AccountsManagementPage() {
   });
 
   // CRUD Operations
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleCreateUser = (data: {
-    username: string;
-    fullName: string;
-    email: string;
-    role: UserRole;
-    status: UserStatus;
-  }) => {
-    // TODO: Call API to create user
-    // For now, just close dialog and refetch
-    setIsCreateDialogOpen(false);
-    refetch();
-  };
 
   const handleToggleStatus = async (user: User) => {
     if (user.status === "ACTIVE") {
@@ -488,7 +475,6 @@ export default function AccountsManagementPage() {
       <CreateUserDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        onSubmit={handleCreateUser}
       />
     </SidebarProvider>
   );
