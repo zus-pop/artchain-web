@@ -291,10 +291,10 @@ export interface User {
 
 export interface CreateUserFormData {
   username: string;
+  password: string;
   fullName: string;
   email: string;
   role: UserRole;
-  status: UserStatus;
 }
 
 export interface EditUserFormData {
