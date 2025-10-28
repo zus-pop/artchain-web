@@ -82,11 +82,12 @@ const MySubmission = () => {
                 Chưa có bài thi nào
               </h3>
               <p className="text-gray-600 mb-6">
-                Bạn chưa nộp bài thi nào. Hãy tham gia cuộc thi để thể hiện tài năng của bạn!
+                Bạn chưa nộp bài thi nào. Hãy tham gia cuộc thi để thể hiện tài
+                năng của bạn!
               </p>
               <Link
                 href="/contests"
-                className="inline-block bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-2 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200"
+                className="inline-block bg-linear-to-r from-red-600 to-red-500 text-white px-6 py-2 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200"
               >
                 Xem cuộc thi
               </Link>
@@ -126,12 +127,14 @@ const MySubmission = () => {
                 <div className="absolute top-3 right-3">
                   <Badge
                     className={`${
-                      statusColors[submission.status as keyof typeof statusColors] ||
-                      statusColors.PENDING
+                      statusColors[
+                        submission.status as keyof typeof statusColors
+                      ] || statusColors.PENDING
                     } border`}
                   >
-                    {statusLabels[submission.status as keyof typeof statusLabels] ||
-                      submission.status}
+                    {statusLabels[
+                      submission.status as keyof typeof statusLabels
+                    ] || submission.status}
                   </Badge>
                 </div>
                 {/* Award Badge if exists */}

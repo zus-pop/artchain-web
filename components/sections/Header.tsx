@@ -1,22 +1,22 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { useMeQuery } from "@/hooks/useMeQuery";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
   ChevronDown,
   Globe,
-  User,
-  Settings,
   LogOut,
-  ArrowRight,
+  Settings,
+  User,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
-import { useLogoutMutation } from "@/hooks/useLogoutMutation";
-import { useMeQuery } from "@/hooks/useMeQuery";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { useAuthStore } from "@/store";
 
 interface ArtistNavigationProps {
   children?: React.ReactNode;
@@ -41,7 +41,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
   // Auth hooks
   const { isAuthenticated, user } = useAuth();
   const { data: userData } = useMeQuery();
-  const { mutate: logout } = useLogoutMutation();
+  const logout = useAuthStore((state) => state.logout);
 
   // Use userData from API if available, fallback to store user
   const displayUser = userData || user;
@@ -91,6 +91,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
 
   const handleLogout = () => {
     logout();
+    router.push("/auth");
   };
 
   const handleNavClick = (

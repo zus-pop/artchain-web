@@ -1,26 +1,30 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks";
+import { useEffect } from "react";
+
 export default function DashboardPage() {
-  //   const router = useRouter();
-  //   const { isAuthenticated, user } = useAuth()
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
 
-  //   useEffect(() => {
-  //     if (!isAuthenticated) {
-  //       // Redirect to auth page if not authenticated
-  //       router.push("/auth")
-  //       return
-  //     }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Redirect to auth page if not authenticated
+      router.push("/auth");
+      return;
+    }
 
-  //     // Redirect based on user role
-  //     if (user?.role === "ADMIN") {
-  //       router.push("/dashboard/admin")
-  //     } else if (user?.role === "STAFF") {
-  //       router.push("/dashboard/staff")
-  //     } else {
-  //       // For COMPETITOR and GUARDIAN, redirect to home or show access denied
-  //       router.push("/")
-  //     }
-  //   }, [isAuthenticated, user, router])
+    // Redirect based on user role
+    if (user?.role === "ADMIN") {
+      router.push("/dashboard/admin");
+    } else if (user?.role === "STAFF") {
+      router.push("/dashboard/staff");
+    } else {
+      // For COMPETITOR and GUARDIAN, redirect to home or show access denied
+      router.push("/");
+    }
+  }, [isAuthenticated, user, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">

@@ -2,9 +2,8 @@
 
 "use client";
 
-import { usePathname } from 'next/navigation';
-import ArtistNavigation from "@/components/sections/ArtistNavigation";
-import Header from './Header';
+import { usePathname } from "next/navigation";
+import Header from "./Header";
 
 // Định nghĩa các đường dẫn bạn muốn ẩn header
 const HIDDEN_PATHS = ["/"]; // Trang chủ

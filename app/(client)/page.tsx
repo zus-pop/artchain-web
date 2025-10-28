@@ -1,13 +1,29 @@
 "use client";
 
+import ArtistGallery from "@/components/sections/ArtistGallery";
 import ArtistHeroSection from "@/components/sections/ArtistHeroSection";
 import ArtistNavigation from "@/components/sections/ArtistNavigation";
-import ArtistGallery from "@/components/sections/ArtistGallery";
 import ContestShowcase from "@/components/sections/CompetitionShowcase";
 import TabPanel from "@/components/sections/TabPanel";
-import News from "@/components/sections/News";
+import { useAuth } from "@/hooks";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    // Redirect based on user role
+    if (user?.role === "ADMIN" || user?.role === "STAFF") {
+      router.replace("/dashboard");
+      return;
+    }
+  }, [isAuthenticated, user, router]);
   return (
     <div className="min-h-screen flex flex-col">
       <div
@@ -29,7 +45,6 @@ export default function Home() {
             <News />
             <News />
             <News /> */}
-
           </TabPanel>
 
           {/* Contests Tab */}

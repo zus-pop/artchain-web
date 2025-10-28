@@ -284,26 +284,24 @@ export default function CompetitorsManagementPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/staff/competitors/paintings/pending"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconClock className="h-5 w-5 text-white" />
                   </div>
                   <div>
                     <p className="text-sm font-bold staff-text-primary">
                       Review Paintings
                     </p>
-                    <p className="text-xs staff-text-secondary">
-                      67 pending
-                    </p>
+                    <p className="text-xs staff-text-secondary">67 pending</p>
                   </div>
                 </Link>
 
                 <Link
                   href="/dashboard/staff/competitors/paintings/approved"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconAward className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -318,9 +316,9 @@ export default function CompetitorsManagementPage() {
 
                 <Link
                   href="/dashboard/staff/competitors/search"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconSearch className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -531,7 +529,9 @@ export default function CompetitorsManagementPage() {
                     <div className="flex items-center gap-3">
                       <IconUser className="h-5 w-5 text-gray-400" />
                       <div>
-                        <p className="text-sm font-medium staff-text-secondary">Age</p>
+                        <p className="text-sm font-medium staff-text-secondary">
+                          Age
+                        </p>
                         <p className="text-base staff-text-primary">
                           {selectedCompetitor.age} years old
                         </p>
@@ -608,19 +608,25 @@ export default function CompetitorsManagementPage() {
                       <div className="text-2xl font-bold text-green-600">
                         {selectedCompetitor.approvedPaintings}
                       </div>
-                      <div className="text-sm staff-text-secondary">Approved</div>
+                      <div className="text-sm staff-text-secondary">
+                        Approved
+                      </div>
                     </div>
                     <div className=" border border-[#e6e2da] p-4">
                       <div className="text-2xl font-bold text-yellow-600">
                         {selectedCompetitor.pendingPaintings}
                       </div>
-                      <div className="text-sm staff-text-secondary">Pending</div>
+                      <div className="text-sm staff-text-secondary">
+                        Pending
+                      </div>
                     </div>
                     <div className=" border border-[#e6e2da] p-4">
                       <div className="text-2xl font-bold text-red-600">
                         {selectedCompetitor.rejectedPaintings}
                       </div>
-                      <div className="text-sm staff-text-secondary">Rejected</div>
+                      <div className="text-sm staff-text-secondary">
+                        Rejected
+                      </div>
                     </div>
                   </div>
 
@@ -634,7 +640,9 @@ export default function CompetitorsManagementPage() {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm staff-text-secondary">Awards Won</span>
+                      <span className="text-sm staff-text-secondary">
+                        Awards Won
+                      </span>
                       <span className="font-semibold">
                         {selectedCompetitor.awardsWon}
                       </span>

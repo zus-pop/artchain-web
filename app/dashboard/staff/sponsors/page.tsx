@@ -198,7 +198,9 @@ export default function SponsorsPage() {
                     title: "Avg. per Sponsor",
                     value: `$${
                       activeSponsors > 0
-                        ? Math.round(totalSponsored / activeSponsors).toLocaleString()
+                        ? Math.round(
+                            totalSponsored / activeSponsors
+                          ).toLocaleString()
                         : 0
                     }`,
                     subtitle: "Average contribution",
@@ -212,9 +214,9 @@ export default function SponsorsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <a
                   href="/dashboard/staff/sponsors"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconBuilding className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -229,9 +231,9 @@ export default function SponsorsPage() {
 
                 <a
                   href="/dashboard/staff/sponsors/campaigns"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconTrendingUp className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -246,18 +248,16 @@ export default function SponsorsPage() {
 
                 <a
                   href="/dashboard/staff/sponsors/campaigns/create"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
                 >
-                  <div className=" bg-gradient-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconPlus className="h-5 w-5 text-white" />
                   </div>
                   <div>
                     <p className="text-sm font-bold staff-text-primary">
                       Create Campaign
                     </p>
-                    <p className="text-xs staff-text-secondary">
-                      Start new
-                    </p>
+                    <p className="text-xs staff-text-secondary">Start new</p>
                   </div>
                 </a>
               </div>
