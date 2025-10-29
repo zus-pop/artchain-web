@@ -111,7 +111,7 @@ export function LoginForm({
                 type="checkbox"
               />
               {/* Thay đổi: Dùng màu secondary cho viền checkbox */}
-              <span className="absolute left-1/2 top-1/2 h-[1em] w-[1em] -translate-x-1/2 -translate-y-1/2 rounded-[0.25em] border-[1px] border-black"></span>
+              <span className="absolute left-1/2 top-1/2 h-[1em] w-[1em] -translate-x-1/2 -translate-y-1/2 rounded-[0.25em] border border-black"></span>
               <svg
                 // Thay đổi: Stroke mặc định là secondary, khi check là primary
                 className="absolute left-1/2 top-1/2 h-[2em] w-[2em] -translate-x-1/2 -translate-y-1/2 stroke-black duration-500 ease-out [stroke-dasharray:100] [stroke-dashoffset:100] peer-checked:stroke-black peer-checked:[stroke-dashoffset:0]"

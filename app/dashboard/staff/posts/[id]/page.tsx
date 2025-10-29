@@ -23,12 +23,21 @@ import { useParams } from "next/navigation";
 import { useState, useEffect, Suspense, useRef } from "react";
 import { getStaffPostById, updateStaffPost, deleteStaffPost, getStaffTags, createStaffTag } from "@/apis/staff";
 import { toast } from "sonner";
+
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
 const MDXEditorWrapper = dynamic(
-  () => import("@/components/staff/MDXEditorWrapper").then((mod) => mod.MDXEditorWrapper),
-  { ssr: false, loading: () => <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" /> }
+  () =>
+    import("@/components/staff/MDXEditorWrapper").then(
+      (mod) => mod.MDXEditorWrapper
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" />
+    ),
+  }
 );
 
 interface Tag {
@@ -66,12 +75,12 @@ interface Post {
 function ViewPostContent() {
   const params = useParams();
   const postId = params.id as string;
-  
+
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Edit form state
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
@@ -79,7 +88,7 @@ function ViewPostContent() {
   const [editedStatus, setEditedStatus] = useState<PostStatus>("DRAFT");
   const [editedTagIds, setEditedTagIds] = useState<number[]>([]);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-  
+
   // Tag search state
   const [tagSearch, setTagSearch] = useState("");
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
@@ -96,7 +105,7 @@ function ViewPostContent() {
         const response = await getStaffPostById(postId);
         const postData = response.data;
         setPost(postData);
-        
+
         // Initialize edit form
         setEditedTitle(postData.title);
         setEditedContent(postData.content);
@@ -156,12 +165,12 @@ function ViewPostContent() {
 
   const handleCreateTag = async () => {
     if (!tagSearch.trim()) return;
-    
+
     setIsCreatingTag(true);
     try {
       const response = await createStaffTag({ tag_name: tagSearch.trim() });
       const newTag = response.data || response;
-      
+
       setAvailableTags((prev) => [...prev, newTag]);
       handleSelectTag(newTag);
     } catch (error) {
@@ -182,7 +191,7 @@ function ViewPostContent() {
         status: editedStatus,
         tag_ids: editedTagIds,
       });
-      
+
       // Refresh post data
       const response = await getStaffPostById(postId);
       setPost(response.data);
@@ -353,7 +362,7 @@ function ViewPostContent() {
                       </button>
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
                       >
                         <IconEdit className="h-4 w-4" />
                         Edit Post
@@ -379,7 +388,7 @@ function ViewPostContent() {
                       <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
+                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
                       >
                         <IconDeviceFloppy className="h-4 w-4" />
                         {isSaving ? "Saving..." : "Save Changes"}
@@ -465,7 +474,7 @@ function ViewPostContent() {
                         <h3 className="text-lg font-bold staff-text-primary mb-4">
                           Content
                         </h3>
-                        <div 
+                        <div
                           className="prose max-w-none"
                           dangerouslySetInnerHTML={{ __html: post.content }}
                         />
@@ -490,7 +499,9 @@ function ViewPostContent() {
                           </label>
                           <select
                             value={editedStatus}
-                            onChange={(e) => setEditedStatus(e.target.value as PostStatus)}
+                            onChange={(e) =>
+                              setEditedStatus(e.target.value as PostStatus)
+                            }
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="DRAFT">Draft</option>
@@ -544,7 +555,11 @@ function ViewPostContent() {
                             <p className="text-sm font-medium staff-text-secondary mb-2">
                               Status
                             </p>
-                            <span className={`${getStatusBadgeColor(post.status)} mt-1`}>
+                            <span
+                              className={`${getStatusBadgeColor(
+                                post.status
+                              )} mt-1`}
+                            >
                               {post.status}
                             </span>
                           </div>
@@ -609,7 +624,12 @@ function ViewPostContent() {
                                 <>
                                   {availableTags.length > 0 ? (
                                     availableTags
-                                      .filter((tag) => !selectedTags.find((t) => t.tag_id === tag.tag_id))
+                                      .filter(
+                                        (tag) =>
+                                          !selectedTags.find(
+                                            (t) => t.tag_id === tag.tag_id
+                                          )
+                                      )
                                       .map((tag) => (
                                         <button
                                           key={tag.tag_id}
@@ -632,7 +652,9 @@ function ViewPostContent() {
 
                                   {tagSearch.trim() &&
                                     !availableTags.find(
-                                      (tag) => tag.tag_name.toLowerCase() === tagSearch.toLowerCase()
+                                      (tag) =>
+                                        tag.tag_name.toLowerCase() ===
+                                        tagSearch.toLowerCase()
                                     ) && (
                                       <button
                                         type="button"
@@ -641,7 +663,9 @@ function ViewPostContent() {
                                         className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
                                       >
                                         <IconPlus className="h-4 w-4" />
-                                        {isCreatingTag ? "Creating..." : `Create "${tagSearch}"`}
+                                        {isCreatingTag
+                                          ? "Creating..."
+                                          : `Create "${tagSearch}"`}
                                       </button>
                                     )}
                                 </>
@@ -662,7 +686,9 @@ function ViewPostContent() {
                             </span>
                           ))
                         ) : (
-                          <span className="text-sm staff-text-secondary">No tags</span>
+                          <span className="text-sm staff-text-secondary">
+                            No tags
+                          </span>
                         )}
                       </div>
                     )}
@@ -679,11 +705,13 @@ function ViewPostContent() {
 
 export default function ViewPostPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+        </div>
+      }
+    >
       <ViewPostContent />
     </Suspense>
   );

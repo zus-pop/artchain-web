@@ -233,7 +233,7 @@ export default function RejectedPaintingsPage() {
 
                         <div className="bg-red-50 border border-red-100  p-3 mb-4">
                           <div className="flex items-start gap-2">
-                            <IconAlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                            <IconAlertCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
                             <p className="text-xs text-red-800 line-clamp-2">
                               {painting.rejectionReason}
                             </p>
@@ -290,7 +290,7 @@ export default function RejectedPaintingsPage() {
                 {/* Rejection Reason Alert */}
                 <div className="bg-red-50 border border-red-200  p-4">
                   <div className="flex items-start gap-3">
-                    <IconAlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <IconAlertCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
                     <div>
                       <h4 className="font-semibold text-red-900 mb-1">
                         Rejection Reason
@@ -313,7 +313,9 @@ export default function RejectedPaintingsPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium staff-text-secondary">Age</p>
+                    <p className="text-sm font-medium staff-text-secondary">
+                      Age
+                    </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.competitorAge} years
                     </p>

@@ -298,7 +298,7 @@ export default function AnnounceResultsPage() {
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex items-start gap-4">
-                              <div className="flex-shrink-0">
+                              <div className="shrink-0">
                                 <div
                                   className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
                                     winner.awardType === "GOLD"

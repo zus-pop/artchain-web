@@ -6,17 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useUploadPainting } from "@/hooks/use-upload-painting";
-import { useMeQuery } from "@/hooks/useMeQuery";
-import { useAuthStore } from "@/store";
+import { useUserById } from "@/hooks/use-user-by-id";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IconTrash, IconUpload, IconChevronLeft } from "@tabler/icons-react"; 
+import { IconChevronLeft, IconTrash, IconUpload } from "@tabler/icons-react";
 import { School } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useAuth } from "../../../hooks";
 
 const SIZE = 10;
 //                     B      KB    MB
@@ -69,9 +69,7 @@ export function PaintingUpload() {
   const params = useSearchParams();
   const contestId = params.get("contestId");
   const roundId = params.get("roundId");
-
-  console.log("contestId:", contestId);
-  console.log("roundId:", roundId);
+  const competitorId = params.get("competitorId");
 
   const { control, handleSubmit, formState, setValue, watch } =
     useForm<PaintingUploadForm>({
@@ -81,9 +79,8 @@ export function PaintingUpload() {
         title: "",
       },
     });
-
-  const accessToken = useAuthStore((state) => state.accessToken);
-  const { data: currentUser, isLoading } = useMeQuery();
+  const { isAuthenticated } = useAuth();
+  const { data: currentUser, isLoading, isError } = useUserById(competitorId);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { mutate, isPending } = useUploadPainting();
@@ -92,7 +89,7 @@ export function PaintingUpload() {
   const watchedImage = watch("image");
 
   // Update preview when image changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (watchedImage && watchedImage instanceof File) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -135,17 +132,36 @@ export function PaintingUpload() {
     });
   };
 
-  if (!accessToken) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
+          <CardContent className="p-6">
             <div className="text-center">
               <p className="text-muted-foreground mb-4">
                 Bạn cần đăng nhập trước khi có thể tham dự cuộc thi
               </p>
               <Button onClick={() => router.push("/auth")} className="w-full">
                 Đăng nhập
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Không thể tải thông tin người dùng. Vui lòng thử lại.
+              </p>
+              <Button onClick={() => router.refresh()} className="w-full">
+                Thử lại
               </Button>
             </div>
           </CardContent>
@@ -175,22 +191,18 @@ export function PaintingUpload() {
       </div>
 
       <div className="container max-w-6xl mx-auto relative z-10">
-        
         {/* === START MODIFIED HEADER SECTION: Back Button | Title/Icon === */}
         <div className="mb-10 flex items-center justify-between relative border-b border-[#e6e2da] pb-4">
-          
           {/* 1. Back Button (Left) - ĐÃ CẬP NHẬT STYLE */}
           <Button
             type="button"
-            variant="ghost" 
-            onClick={() => contestId ? router.push(`/contests/${contestId}`) : router.back()}
+            variant="ghost"
+            onClick={() => router.back()}
             className="h-10 px-0 text-gray-700 hover:text-red-600 transition-all duration-200 cursor-pointer 
                        flex items-center gap-1 font-semibold hover:underline bg-transparent hover:bg-transparent"
           >
             <IconChevronLeft className="h-5 w-5" />
-            <span>
-              Quay lại
-            </span>
+            <span>Quay lại</span>
           </Button>
 
           {/* 2. Title and Icon (Right) */}
@@ -204,7 +216,6 @@ export function PaintingUpload() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-            
             {/* Left Side - Text Content */}
             <div className="flex flex-col h-full">
               {/* Title Input */}
@@ -285,7 +296,7 @@ export function PaintingUpload() {
                 <Button
                   type="submit"
                   disabled={isPending || !formState.isValid || !watchedImage}
-                  className="w-full h-14 text-lg font-bold bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white shadow-sm rounded-none transition-all duration-200"
+                  className="w-full h-14 text-lg font-bold bg-linear-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white shadow-sm rounded-none transition-all duration-200"
                 >
                   {isPending ? (
                     <div className="flex items-center gap-3">
@@ -303,7 +314,7 @@ export function PaintingUpload() {
                 {/* Elegant Info Note */}
                 <div className="bg-red-50 border border-red-200 rounded-none p-4 shadow-sm">
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-red-500 rounded-none flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 bg-red-500 rounded-none flex items-center justify-center shrink-0">
                       <span className="text-white text-sm font-bold">!</span>
                     </div>
                     <div>
@@ -323,16 +334,16 @@ export function PaintingUpload() {
 
             {/* Right Side - Artistic Image Section */}
             <div className="flex flex-col h-full">
-              
               {/* === Elegant User Info Card === */}
               <Card className="border border-[#e6e2da] shadow-md bg-[#fffdf9] rounded-none overflow-hidden mb-6">
                 <CardContent className="p-4">
-                  <h4 className="font-bold text-gray-900 mb-2 border-b pb-2 border-[#f0eee9]">Thông tin thí sinh</h4>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-transparent rounded-lg w-full"> 
-                    
+                  <h4 className="font-bold text-gray-900 mb-2 border-b pb-2 border-[#f0eee9]">
+                    Thông tin thí sinh
+                  </h4>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-transparent rounded-lg w-full">
                     {/* Thẻ Thí sinh */}
-                    <div className="flex items-center gap-2 flex-grow"> 
-                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="flex items-center gap-2 grow">
+                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
                         <span className="text-red-600 font-bold text-sm">
                           {currentUser?.fullName?.charAt(0)?.toUpperCase()}
                         </span>
@@ -346,13 +357,13 @@ export function PaintingUpload() {
                         </p>
                       </div>
                     </div>
-                    
+
                     {/* Đường phân cách chỉ hiện trên desktop */}
-                    <div className="hidden sm:block w-px h-10 bg-gray-200 flex-shrink-0"></div> 
-                    
+                    <div className="hidden sm:block w-px h-10 bg-gray-200 shrink-0"></div>
+
                     {/* Thẻ Trường học */}
-                    <div className="flex items-center gap-2 flex-grow"> 
-                      <School className="h-5 w-5 text-red-500 flex-shrink-0" />
+                    <div className="flex items-center gap-2 grow">
+                      <School className="h-5 w-5 text-red-500 shrink-0" />
                       <div className="text-left">
                         <p className="text-xs text-gray-500 uppercase tracking-wider">
                           Lớp / Trường
@@ -444,8 +455,8 @@ export function PaintingUpload() {
                             />
                           </div>
                           {/* Elegant Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 via-transparent to-foreground/10"></div>
-                          <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-red-900/5"></div>
+                          <div className="absolute inset-0 bg-linear-to-t from-foreground/10 via-transparent to-foreground/10"></div>
+                          <div className="absolute inset-0 bg-linear-to-r from-red-500/5 via-transparent to-red-900/5"></div>
 
                           {/* Artistic Corner Accents */}
                           <div className="absolute top-4 left-4 w-8 h-8 border-l-3 border-t-3 border-background/60 rounded-tl"></div>

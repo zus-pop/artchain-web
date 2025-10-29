@@ -3,6 +3,13 @@
 
 /* Artist Theme Variables */
 :root {
+  /* App specific colors */
+  --app-background: #fdfcf9;
+  --app-card: #fffdf9;
+  --app-border: #e6e2da;
+  --app-border-light: #ebe7e0;
+  --app-secondary: #f8f6f0;
+  --app-secondary-light: #f9f5ef;
   /* Nền và chữ chính (Light Mode) */
   --background: hsl(0 0% 97%); /* Màu nền xám nhạt #f7f7f7 */
   --foreground: hsl(0 0% 12%); /* Màu chữ chính gần đen #1f1f1f */
@@ -163,18 +170,18 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: oklch(0.68 0.18 15);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --accent-foreground: oklch(0.68 0.18 15);
+  --destructive: oklch(0.68 0.18 15);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.68 0.18 15);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -182,12 +189,12 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary: oklch(0.68 0.18 15);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(27.274% 0.00003 271.152);
   --sidebar-accent-foreground: oklch(87.302% 0.0001 271.152);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.58 0.15 15);
 }
 
 .dark {
@@ -197,18 +204,18 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: oklch(0.82 0.2 15);
+  --primary-foreground: oklch(0.145 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --accent-foreground: oklch(0.82 0.2 15);
+  --destructive: oklch(0.82 0.2 15);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --ring: oklch(0.82 0.2 15);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -216,12 +223,12 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary: oklch(0.82 0.2 15);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(0.75 0.18 15);
 }
 
 @layer base {
@@ -236,6 +243,7 @@
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -247,43 +255,43 @@
   }
 
   .staff-stat-primary {
-    @apply bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-100;
+    @apply bg-linear-to-br from-red-50 to-orange-50 border-2 border-red-100;
   }
 
   .staff-stat-primary .stat-icon {
-    @apply bg-gradient-to-br from-[#d9534f] to-[#e67e73] text-white p-3 shadow-md;
+    @apply bg-linear-to-br from-[#d9534f] to-[#e67e73] text-white p-3 shadow-md;
   }
 
   .staff-stat-secondary {
-    @apply bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-100;
+    @apply bg-linear-to-br from-orange-50 to-amber-50 border-2 border-orange-100;
   }
 
   .staff-stat-secondary .stat-icon {
-    @apply bg-gradient-to-br from-orange-500 to-amber-500 text-white p-3 shadow-md;
+    @apply bg-linear-to-br from-orange-500 to-amber-500 text-white p-3 shadow-md;
   }
 
   .staff-stat-success {
-    @apply bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-100;
+    @apply bg-linear-to-br from-green-50 to-emerald-50 border-2 border-green-100;
   }
 
   .staff-stat-success .stat-icon {
-    @apply bg-gradient-to-br from-green-500 to-emerald-500 text-white p-3 shadow-md;
+    @apply bg-linear-to-br from-green-500 to-emerald-500 text-white p-3 shadow-md;
   }
 
   .staff-stat-info {
-    @apply bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-100;
+    @apply bg-linear-to-br from-blue-50 to-indigo-50 border-2 border-blue-100;
   }
 
   .staff-stat-info .stat-icon {
-    @apply bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-3 shadow-md;
+    @apply bg-linear-to-br from-blue-500 to-indigo-500 text-white p-3 shadow-md;
   }
 
   .staff-btn-primary {
-    @apply bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-6 py-3 font-bold hover:from-[#c9443f] hover:to-[#d96d63] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
+    @apply bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-6 py-3 font-bold hover:from-[#c9443f] hover:to-[#d96d63] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
   }
 
   .staff-btn-secondary {
-    @apply bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-3 font-bold hover:from-orange-600 hover:to-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
+    @apply bg-linear-to-r from-orange-500 to-amber-500 text-white px-6 py-3 font-bold hover:from-orange-600 hover:to-amber-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
   }
 
   .staff-btn-outline {
@@ -291,23 +299,23 @@
   }
 
   .staff-badge-pending {
-    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-sm;
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-linear-to-r from-orange-400 to-amber-500 text-white shadow-sm;
   }
 
   .staff-badge-active {
-    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-sm;
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-sm;
   }
 
   .staff-badge-approved {
-    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-sm;
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-linear-to-r from-emerald-400 to-green-500 text-white shadow-sm;
   }
 
   .staff-badge-rejected {
-    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-gradient-to-r from-red-400 to-rose-500 text-white shadow-sm;
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-linear-to-r from-red-400 to-rose-500 text-white shadow-sm;
   }
 
   .staff-badge-neutral {
-    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-sm;
+    @apply inline-flex items-center px-3 py-1 text-xs font-bold bg-linear-to-r from-gray-400 to-gray-500 text-white shadow-sm;
   }
 
   .staff-input {
@@ -315,7 +323,7 @@
   }
 
   .staff-heading {
-    @apply text-2xl font-bold bg-gradient-to-r from-[#d9534f] to-orange-500 bg-clip-text text-transparent;
+    @apply text-2xl font-bold bg-linear-to-r from-[#d9534f] to-orange-500 bg-clip-text text-transparent;
   }
 
   .staff-text-primary {
@@ -331,7 +339,7 @@
   }
 
   .staff-progress-bar {
-    @apply h-2 rounded-full bg-gradient-to-r from-[#d9534f] to-orange-500 transition-all duration-300;
+    @apply h-2 rounded-full bg-linear-to-r from-[#d9534f] to-orange-500 transition-all duration-300;
   }
 
   .staff-divider {
@@ -344,7 +352,7 @@
 
   .staff-section-header::before {
     content: "";
-    @apply absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#d9534f] to-orange-500 rounded-full;
+    @apply absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-8 bg-linear-to-b from-[#d9534f] to-orange-500 rounded-full;
   }
 }
 

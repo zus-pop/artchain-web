@@ -9,6 +9,5 @@ export function useUserById(userId: string | null) {
       const response = await myAxios.get<WhoAmI>(`/users/${userId}`);
       return response.data;
     },
-    enabled: !!userId,
   });
 }
