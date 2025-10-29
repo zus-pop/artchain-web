@@ -19,6 +19,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { getStaffPosts, deleteStaffPost, updateStaffPost } from "@/apis/staff";
+import { toast } from "sonner";
 import { Post } from "@/types/staff/post-dto";
 
 
@@ -94,10 +95,10 @@ export default function PostsPage() {
     try {
       await deleteStaffPost(String(postId));
       setPosts(posts.filter((post) => post.post_id !== postId));
-      alert("Post deleted successfully!");
+      toast.success("Post deleted successfully!");
     } catch (error) {
       console.error("Error deleting post:", error);
-      alert("Failed to delete post. Please try again.");
+      toast.error("Failed to delete post. Please try again.");
     }
   };
 
@@ -109,10 +110,10 @@ export default function PostsPage() {
           post.post_id === postId ? { ...post, status: newStatus } : post
         )
       );
-      alert(`Post ${newStatus.toLowerCase()} successfully!`);
+      toast.success(`Post ${newStatus.toLowerCase()} successfully!`);
     } catch (error) {
       console.error("Error updating post status:", error);
-      alert("Failed to update post status. Please try again.");
+      toast.error("Failed to update post status. Please try again.");
     }
   };
 

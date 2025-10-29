@@ -14,6 +14,7 @@ import {
   IconEye,
   IconPlus,
   IconTrash,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -22,6 +23,7 @@ import { getStaffContestById, deleteStaffRound } from "@/apis/staff";
 import Image from "next/image";
 import { Suspense, useState } from "react";
 import { CreateRoundDialog } from "@/components/staff/CreateRoundDialog";
+import { ExaminersDialog } from "@/components/staff/ExaminersDialog";
 
 interface Round {
   roundId: number;
@@ -42,8 +44,9 @@ function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
   const queryClient = useQueryClient();
-  
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isExaminersDialogOpen, setIsExaminersDialogOpen] = useState(false);
 
   // Fetch contest details
   const { data: contestData, isLoading } = useQuery({
@@ -57,8 +60,13 @@ function ContestDetailContent() {
 
   // Delete round mutation
   const deleteMutation = useMutation({
-    mutationFn: ({ contestId, roundId }: { contestId: number; roundId: string }) =>
-      deleteStaffRound(contestId, roundId),
+    mutationFn: ({
+      contestId,
+      roundId,
+    }: {
+      contestId: number;
+      roundId: string;
+    }) => deleteStaffRound(contestId, roundId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contest-detail", contestId],
@@ -263,7 +271,7 @@ function ContestDetailContent() {
                 <div className="staff-card staff-stat-success p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
-                      <IconUsers className="h-5 w-5 text-white" />
+                      <IconUsersGroup className="h-5 w-5 text-white" />
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
@@ -277,14 +285,14 @@ function ContestDetailContent() {
                 <div className="staff-card staff-stat-secondary p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
-                      <IconCalendar className="h-5 w-5 text-white" />
+                      <IconUsers className="h-5 w-5 text-white" />
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Created
+                        Examiners
                       </p>
-                      <p className="text-sm font-bold staff-text-primary">
-                        {new Date(contest.createdAt).toLocaleDateString()}
+                      <p className="text-2xl font-bold staff-text-primary">
+                        {contest.examiners?.length || 0}
                       </p>
                     </div>
                   </div>
@@ -305,6 +313,46 @@ function ContestDetailContent() {
                     </div>
                   </div>
                 </div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-4">
+                <button
+                  type="button"
+                  // onClick={() => setIsExaminersDialogOpen(true)} // Hàm mở dialog
+                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                >
+                  {/* Icon Section */}
+                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconUsers className="h-5 w-5 text-white" />
+                  </div>
+                  {/* Text Section */}
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary text-left">
+                      Manage Paticipant
+                    </p>
+                    <p className="text-xs staff-text-secondary text-left">
+                      Invite judges
+                    </p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsExaminersDialogOpen(true)}
+                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                >
+                  {/* Icon Section */}
+                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconUsers className="h-5 w-5 text-white" />
+                  </div>
+                  {/* Text Section */}
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary text-left">
+                      Manage Examiners ({contest.examiners?.length || 0})
+                    </p>
+                    <p className="text-xs staff-text-secondary text-left">
+                      Invite and manage judges
+                    </p>
+                  </div>
+                </button>
               </div>
 
               {/* Contest Details */}
@@ -368,7 +416,9 @@ function ContestDetailContent() {
                         <p className="text-sm font-medium staff-text-secondary">
                           Current Status
                         </p>
-                        <span className={`${getStatusColor(contest.status)} mt-1`}>
+                        <span
+                          className={`${getStatusColor(contest.status)} mt-1`}
+                        >
                           {contest.status}
                         </span>
                       </div>
@@ -431,7 +481,7 @@ function ContestDetailContent() {
                             </button>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           {round.startDate && (
                             <div>
@@ -451,7 +501,9 @@ function ContestDetailContent() {
                           )}
                           {round.submissionDeadline && (
                             <div>
-                              <p className="staff-text-secondary">Submission Deadline</p>
+                              <p className="staff-text-secondary">
+                                Submission Deadline
+                              </p>
                               <p className="staff-text-primary font-semibold">
                                 {formatDate(round.submissionDeadline)}
                               </p>
@@ -459,7 +511,9 @@ function ContestDetailContent() {
                           )}
                           {round.resultAnnounceDate && (
                             <div>
-                              <p className="staff-text-secondary">Result Announce</p>
+                              <p className="staff-text-secondary">
+                                Result Announce
+                              </p>
                               <p className="staff-text-primary font-semibold">
                                 {formatDate(round.resultAnnounceDate)}
                               </p>
@@ -467,7 +521,9 @@ function ContestDetailContent() {
                           )}
                           {round.sendOriginalDeadline && (
                             <div>
-                              <p className="staff-text-secondary">Original Deadline</p>
+                              <p className="staff-text-secondary">
+                                Original Deadline
+                              </p>
                               <p className="staff-text-primary font-semibold">
                                 {formatDate(round.sendOriginalDeadline)}
                               </p>
@@ -479,7 +535,8 @@ function ContestDetailContent() {
                   </div>
                 ) : (
                   <div className="text-center py-8 staff-text-secondary">
-                    No rounds created yet. Click &quot;Create Round&quot; to add one.
+                    No rounds created yet. Click &quot;Create Round&quot; to add
+                    one.
                   </div>
                 )}
               </div>
@@ -494,17 +551,26 @@ function ContestDetailContent() {
         onClose={() => setIsCreateDialogOpen(false)}
         contestId={Number(contestId)}
       />
+
+      {/* Examiners Dialog */}
+      <ExaminersDialog
+        isOpen={isExaminersDialogOpen}
+        onClose={() => setIsExaminersDialogOpen(false)}
+        contestId={Number(contestId)}
+      />
     </SidebarProvider>
   );
 }
 
 export default function ContestDetailPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+        </div>
+      }
+    >
       <ContestDetailContent />
     </Suspense>
   );
