@@ -20,6 +20,7 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, useRef } from "react";
 import { getStaffTags, createStaffTag, createStaffPost, updateStaffPost } from "@/apis/staff";
+import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 const MDXEditorWrapper = dynamic(
@@ -158,7 +159,7 @@ export function CreatePostPage() {
       handleSelectTag(newTag);
     } catch (error) {
       console.error("Error creating tag:", error);
-      alert("Failed to create tag. Please try again.");
+      toast.error("Failed to create tag. Please try again.");
     } finally {
       setIsCreatingTag(false);
     }
@@ -244,18 +245,18 @@ Ready to join the revolution? Create your free account today and start exploring
       if (isEditing && postId) {
         // Update existing post
         await updateStaffPost(postId, postData);
-        alert("Post updated successfully!");
+        toast.success("Post updated successfully!");
       } else {
         // Create new post
         await createStaffPost(postData);
-        alert("Post created successfully!");
+        toast.success("Post created successfully!");
       }
 
       // Redirect to posts list
       window.location.href = "/dashboard/staff/posts";
     } catch (error) {
       console.error("Error saving post:", error);
-      alert("Failed to save post. Please try again.");
+      toast.error("Failed to save post. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
