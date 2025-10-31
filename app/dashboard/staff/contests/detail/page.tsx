@@ -19,33 +19,16 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getStaffContestById, deleteStaffRound } from "@/apis/staff";
+import { getStaffContestById, deleteStaffRound, getStaffRounds, createStaffRound2 } from "@/apis/staff";
 import Image from "next/image";
 import { Suspense, useState } from "react";
-import { CreateRoundDialog } from "@/components/staff/CreateRoundDialog";
 import { ExaminersDialog } from "@/components/staff/ExaminersDialog";
-
-interface Round {
-  roundId: number;
-  contestId: number;
-  table: string | null;
-  name: string;
-  startDate: string | null;
-  endDate: string | null;
-  submissionDeadline: string | null;
-  resultAnnounceDate: string | null;
-  sendOriginalDeadline: string | null;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
   const queryClient = useQueryClient();
 
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isExaminersDialogOpen, setIsExaminersDialogOpen] = useState(false);
 
   // Fetch contest details
@@ -56,7 +39,16 @@ function ContestDetailContent() {
     staleTime: 1 * 60 * 1000,
   });
 
+  // Fetch rounds
+  const { data: roundsData } = useQuery({
+    queryKey: ["contest-rounds", contestId],
+    queryFn: () => getStaffRounds(Number(contestId)),
+    enabled: !!contestId,
+    staleTime: 1 * 60 * 1000,
+  });
+
   const contest = contestData?.data;
+  const rounds = roundsData?.data || [];
 
   // Delete round mutation
   const deleteMutation = useMutation({
@@ -70,6 +62,19 @@ function ContestDetailContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contest-detail", contestId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-rounds", contestId],
+      });
+    },
+  });
+
+  // Create round 2 mutation
+  const createRound2Mutation = useMutation({
+    mutationFn: (contestId: number) => createStaffRound2(contestId, { date: new Date().toISOString() }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contest-rounds", contestId],
       });
     },
   });
@@ -433,22 +438,22 @@ function ContestDetailContent() {
                   <h3 className="text-lg font-bold staff-text-primary">
                     Contest Rounds
                   </h3>
-                  <button
-                    onClick={() => setIsCreateDialogOpen(true)}
-                    className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
-                  >
-                    <IconPlus className="h-4 w-4" />
-                    Create Round
-                  </button>
+                  {!rounds.some(round => round.isRound2) && (
+                    <button
+                      onClick={() => createRound2Mutation.mutate(Number(contestId))}
+                      disabled={createRound2Mutation.isPending}
+                      className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
+                    >
+                      <IconPlus className="h-4 w-4" />
+                      Round 2
+                    </button>
+                  )}
                 </div>
 
-                {contest.rounds && contest.rounds.length > 0 ? (
+                {rounds && rounds.length > 0 ? (
                   <div className="space-y-4">
-                    {contest.rounds.map((round: Round) => (
-                      <div
-                        key={round.roundId}
-                        className="border border-[#e6e2da] p-4 rounded-md"
-                      >
+                    {rounds.map((round) => (
+                      <div key={round.name} className="border border-[#e6e2da] p-4 rounded-md">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <h4 className="font-bold staff-text-primary">
@@ -459,84 +464,144 @@ function ContestDetailContent() {
                                 </span>
                               )}
                             </h4>
-                            <span className={getStatusColor(round.status)}>
-                              {round.status}
+                            <span className={getStatusColor(round.status || "DRAFT")}>
+                              {round.status || "DRAFT"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Link
-                              href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
-                              className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
-                              title="View round details"
-                            >
-                              <IconEye className="h-4 w-4 staff-text-secondary" />
-                            </Link>
-                            <button
-                              onClick={() => handleDeleteRound(round.roundId)}
-                              className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
-                              title="Delete round"
-                              disabled={deleteMutation.isPending}
-                            >
-                              <IconTrash className="h-4 w-4" />
-                            </button>
-                          </div>
+                          {!round.isRound2 && round.roundId && (
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
+                                className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
+                                title="View round details"
+                              >
+                                <IconEye className="h-4 w-4 staff-text-secondary" />
+                              </Link>
+                              <button
+                                onClick={() => round.roundId && handleDeleteRound(round.roundId)}
+                                className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+                                title="Delete round"
+                                disabled={deleteMutation.isPending || !round.roundId}
+                              >
+                                <IconTrash className="h-4 w-4" />
+                              </button>
+                            </div>
+                          )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          {round.startDate && (
-                            <div>
-                              <p className="staff-text-secondary">Start Date</p>
-                              <p className="staff-text-primary font-semibold">
-                                {formatDate(round.startDate)}
-                              </p>
+                        {!round.isRound2 ? (
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            {round.startDate && (
+                              <div>
+                                <p className="staff-text-secondary">Start Date</p>
+                                <p className="staff-text-primary font-semibold">
+                                  {formatDate(round.startDate)}
+                                </p>
+                              </div>
+                            )}
+                            {round.endDate && (
+                              <div>
+                                <p className="staff-text-secondary">End Date</p>
+                                <p className="staff-text-primary font-semibold">
+                                  {formatDate(round.endDate)}
+                                </p>
+                              </div>
+                            )}
+                            {round.submissionDeadline && (
+                              <div>
+                                <p className="staff-text-secondary">
+                                  Submission Deadline
+                                </p>
+                                <p className="staff-text-primary font-semibold">
+                                  {formatDate(round.submissionDeadline)}
+                                </p>
+                              </div>
+                            )}
+                            {round.resultAnnounceDate && (
+                              <div>
+                                <p className="staff-text-secondary">
+                                  Result Announce
+                                </p>
+                                <p className="staff-text-primary font-semibold">
+                                  {formatDate(round.resultAnnounceDate)}
+                                </p>
+                              </div>
+                            )}
+                            {round.sendOriginalDeadline && (
+                              <div>
+                                <p className="staff-text-secondary">
+                                  Original Deadline
+                                </p>
+                                <p className="staff-text-primary font-semibold">
+                                  {formatDate(round.sendOriginalDeadline)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-sm staff-text-secondary mb-3">
+                              Total Tables: {round.totalTables}
+                            </p>
+                            <div className="space-y-2">
+                              {round.tables?.map((table) => (
+                                <div key={table.roundId} className="border border-[#e6e2da] p-3 rounded">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <h5 className="font-semibold staff-text-primary">
+                                        Table {table.table}
+                                      </h5>
+                                      <span className={getStatusColor(table.status)}>
+                                        {table.status}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Link
+                                        href={`/dashboard/staff/contests/rounds/${table.roundId}?contestId=${contest.contestId}`}
+                                        className="p-1 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
+                                        title="View table details"
+                                      >
+                                        <IconEye className="h-3 w-3 staff-text-secondary" />
+                                      </Link>
+                                      <button
+                                        onClick={() => handleDeleteRound(table.roundId)}
+                                        className="p-1 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
+                                        title="Delete table"
+                                        disabled={deleteMutation.isPending}
+                                      >
+                                        <IconTrash className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2 text-xs mt-2">
+                                    {table.startDate && (
+                                      <div>
+                                        <p className="staff-text-secondary">Start</p>
+                                        <p className="staff-text-primary font-semibold">
+                                          {formatDate(table.startDate)}
+                                        </p>
+                                      </div>
+                                    )}
+                                    {table.endDate && (
+                                      <div>
+                                        <p className="staff-text-secondary">End</p>
+                                        <p className="staff-text-primary font-semibold">
+                                          {formatDate(table.endDate)}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          )}
-                          {round.endDate && (
-                            <div>
-                              <p className="staff-text-secondary">End Date</p>
-                              <p className="staff-text-primary font-semibold">
-                                {formatDate(round.endDate)}
-                              </p>
-                            </div>
-                          )}
-                          {round.submissionDeadline && (
-                            <div>
-                              <p className="staff-text-secondary">
-                                Submission Deadline
-                              </p>
-                              <p className="staff-text-primary font-semibold">
-                                {formatDate(round.submissionDeadline)}
-                              </p>
-                            </div>
-                          )}
-                          {round.resultAnnounceDate && (
-                            <div>
-                              <p className="staff-text-secondary">
-                                Result Announce
-                              </p>
-                              <p className="staff-text-primary font-semibold">
-                                {formatDate(round.resultAnnounceDate)}
-                              </p>
-                            </div>
-                          )}
-                          {round.sendOriginalDeadline && (
-                            <div>
-                              <p className="staff-text-secondary">
-                                Original Deadline
-                              </p>
-                              <p className="staff-text-primary font-semibold">
-                                {formatDate(round.sendOriginalDeadline)}
-                              </p>
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-8 staff-text-secondary">
-                    No rounds created yet. Click &quot;Create Round&quot; to add
-                    one.
+                    No rounds created yet. Click &quot;+ Round 2&quot; to add one.
                   </div>
                 )}
               </div>
@@ -544,13 +609,6 @@ function ContestDetailContent() {
           </div>
         </div>
       </SidebarInset>
-
-      {/* Create Round Dialog */}
-      <CreateRoundDialog
-        isOpen={isCreateDialogOpen}
-        onClose={() => setIsCreateDialogOpen(false)}
-        contestId={Number(contestId)}
-      />
 
       {/* Examiners Dialog */}
       <ExaminersDialog
