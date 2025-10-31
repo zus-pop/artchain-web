@@ -21,7 +21,13 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect, Suspense, useRef } from "react";
-import { getStaffPostById, updateStaffPost, deleteStaffPost, getStaffTags, createStaffTag } from "@/apis/staff";
+import {
+  getStaffPostById,
+  updateStaffPost,
+  deleteStaffPost,
+  getStaffTags,
+  createStaffTag,
+} from "@/apis/staff";
 import { toast } from "sonner";
 
 import Image from "next/image";
@@ -84,7 +90,7 @@ function ViewPostContent() {
   // Edit form state
   const [editedTitle, setEditedTitle] = useState("");
   const [editedContent, setEditedContent] = useState("");
-  const [editedImageUrl, setEditedImageUrl] = useState("");
+  const [editedImageFile, setEditedImageFile] = useState<File | null>(null);
   const [editedStatus, setEditedStatus] = useState<PostStatus>("DRAFT");
   const [editedTagIds, setEditedTagIds] = useState<number[]>([]);
   const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
@@ -109,7 +115,7 @@ function ViewPostContent() {
         // Initialize edit form
         setEditedTitle(postData.title);
         setEditedContent(postData.content);
-        setEditedImageUrl(postData.image_url || "");
+        setEditedImageFile(null); // Reset file when loading existing post
         setEditedStatus(postData.status);
         setEditedTagIds(postData.postTags.map((pt: PostTag) => pt.tag_id));
         setSelectedTags(postData.postTags.map((pt: PostTag) => pt.tag));
@@ -184,13 +190,28 @@ function ViewPostContent() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await updateStaffPost(postId, {
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", editedTitle);
+      formDataToSend.append("content", editedContent);
+      formDataToSend.append("status", editedStatus);
+      formDataToSend.append("tag_ids", JSON.stringify(editedTagIds));
+
+      // Add image file if exists
+      if (editedImageFile) {
+        formDataToSend.append("file", editedImageFile);
+      }
+
+      // For update, we need to use a different approach since update API might not support FormData
+      // We'll use the regular object approach but keep the file handling for future API updates
+      const updateData = {
         title: editedTitle,
         content: editedContent,
-        image_url: editedImageUrl || undefined,
         status: editedStatus,
         tag_ids: editedTagIds,
-      });
+      };
+
+      await updateStaffPost(postId, updateData);
 
       // Refresh post data
       const response = await getStaffPostById(postId);
@@ -209,7 +230,7 @@ function ViewPostContent() {
     if (post) {
       setEditedTitle(post.title);
       setEditedContent(post.content);
-      setEditedImageUrl(post.image_url || "");
+      setEditedImageFile(null); // Reset file when canceling
       setEditedStatus(post.status);
       setEditedTagIds(post.postTags.map((pt) => pt.tag_id));
       setSelectedTags(post.postTags.map((pt) => pt.tag));
@@ -431,28 +452,151 @@ function ViewPostContent() {
                         />
                       </div>
 
-                      {/* Edit Image URL */}
+                      {/* Edit Image Upload */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Image URL
+                          Featured Image
                         </label>
-                        <input
-                          type="url"
-                          value={editedImageUrl}
-                          onChange={(e) => setEditedImageUrl(e.target.value)}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="https://example.com/image.jpg"
-                        />
-                        {editedImageUrl && (
-                          <div className="mt-3 relative w-full h-48">
-                            <Image
-                              src={editedImageUrl}
-                              alt="Preview"
-                              fill
-                              className="object-cover border border-[#e6e2da]"
-                            />
+
+                        {/* Upload Area */}
+                        <div className="space-y-4">
+                          <div
+                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
+                            onClick={() =>
+                              document
+                                .getElementById("edit-image-upload")
+                                ?.click()
+                            }
+                          >
+                            {editedImageFile ? (
+                              <div className="space-y-4">
+                                <div className="relative w-32 h-32 mx-auto">
+                                  <Image
+                                    src={URL.createObjectURL(editedImageFile)}
+                                    alt="Preview"
+                                    fill
+                                    className="object-cover rounded-lg border border-gray-200"
+                                    onError={(e) => {
+                                      (
+                                        e.target as HTMLImageElement
+                                      ).style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {editedImageFile.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {(
+                                      editedImageFile.size /
+                                      1024 /
+                                      1024
+                                    ).toFixed(2)}{" "}
+                                    MB
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditedImageFile(null);
+                                  }}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Remove image
+                                </button>
+                              </div>
+                            ) : post?.image_url ? (
+                              <div className="space-y-4">
+                                <div className="relative w-32 h-32 mx-auto">
+                                  <Image
+                                    src={post.image_url}
+                                    alt="Current image"
+                                    fill
+                                    className="object-cover rounded-lg border border-gray-200"
+                                    onError={(e) => {
+                                      (
+                                        e.target as HTMLImageElement
+                                      ).style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    Current image
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Click to change
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                                  {/* <IconPlus className="h-6 w-6 text-gray-400" /> */}
+                                  <svg
+                                    className="h-6 w-6 text-gray-400"
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                    strokeWidth="2"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    height="24"
+                                    width="24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                                    <path d="M7 9l5 -5l5 5"></path>
+                                    <path d="M12 4l0 12"></path>
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    Click to upload image
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    PNG, JPG, GIF up to 10MB
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
+
+                          {/* Hidden File Input */}
+                          <input
+                            id="edit-image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                // Validate file size (10MB limit)
+                                if (file.size > 10 * 1024 * 1024) {
+                                  toast.error(
+                                    "File size must be less than 10MB"
+                                  );
+                                  return;
+                                }
+                                // Validate file type
+                                if (!file.type.startsWith("image/")) {
+                                  toast.error(
+                                    "Please select a valid image file"
+                                  );
+                                  return;
+                                }
+                                setEditedImageFile(file);
+                              }
+                            }}
+                            className="hidden"
+                          />
+
+                          <p className="text-xs staff-text-secondary">
+                            Upload a new image to replace the current one
+                            (optional)
+                          </p>
+                        </div>
                       </div>
 
                       {/* Edit Content */}

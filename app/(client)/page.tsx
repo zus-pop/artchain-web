@@ -3,6 +3,7 @@
 import ArtistGallery from "@/components/sections/ArtistGallery";
 import ArtistHeroSection from "@/components/sections/ArtistHeroSection";
 import ArtistNavigation from "@/components/sections/ArtistNavigation";
+import Campaign from "@/components/sections/Campaign";
 import ContestShowcase from "@/components/sections/CompetitionShowcase";
 import News from "@/components/sections/News";
 import TabPanel from "@/components/sections/TabPanel";
@@ -42,11 +43,7 @@ export default function Home() {
           <TabPanel className="container px-8 py-8">
             <ContestShowcase />
            <News />
-            <News />
-            <News />
-            <News />
-            <News />
-            <News />
+          <Campaign />
           </TabPanel>
 
           {/* Contests Tab */}
@@ -64,20 +61,8 @@ export default function Home() {
 
           {/* Prizes Tab */}
           <TabPanel className="container px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold mb-2">First Prize</h3>
-                <p className="text-gray-600">$10,000 + Trophy</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold mb-2">Second Prize</h3>
-                <p className="text-gray-600">$5,000 + Certificate</p>
-              </div>
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-xl font-bold mb-2">Third Prize</h3>
-                <p className="text-gray-600">$2,500 + Certificate</p>
-              </div>
-            </div>
+            <News />
+            <Campaign />
           </TabPanel>
         </ArtistNavigation>
       </div>

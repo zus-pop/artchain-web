@@ -8,7 +8,7 @@ import { Post } from '@/types/post';
 
 const NewsCard = ({ news }: { news: Post }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-gray-100 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-gray-100 dark:border-gray-700">
 
       {/* Hình ảnh */}
       <div className="w-full mb-4 relative">
@@ -17,7 +17,7 @@ const NewsCard = ({ news }: { news: Post }) => {
             src={news.image_url || "https://placehold.co/600x400/6b7280/ffffff?text=No+Image"}
             alt={news.title}
             fill
-            className="object-cover rounded-lg"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>

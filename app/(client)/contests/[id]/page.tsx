@@ -195,7 +195,10 @@ export default function ContestDetailPage() {
                           pathname: "/painting-upload",
                           query: {
                             contestId: contest.contestId,
-                            roundId: contest.roundId,
+                            roundId: contest.rounds.find(
+                              (r) => r.name === "ROUND_1"
+                            )?.roundId,
+
                             competitorId: user.userId,
                           },
                         }
@@ -203,7 +206,9 @@ export default function ContestDetailPage() {
                           pathname: "/children-participation",
                           query: {
                             contestId: contest.contestId,
-                            roundId: contest.roundId,
+                            roundId: contest.rounds.find(
+                              (r) => r.name === "ROUND_1"
+                            )?.roundId,
                           },
                         }
                   }

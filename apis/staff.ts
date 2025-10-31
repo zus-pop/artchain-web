@@ -355,3 +355,42 @@ export const deleteStaffSchedule = async (scheduleId: number) => {
   const response = await myAxios.delete(`/staff/schedules/${scheduleId}`);
   return response.data;
 };
+
+/**
+ * Staff Campaigns Management APIs
+ */
+
+// POST /api/staff/campaign - Create a new campaign
+export const createStaffCampaign = async (data: {
+  title: string;
+  description: string;
+  goalAmount: number;
+  deadline: string;
+  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
+}) => {
+  const response = await myAxios.post("/staff/campaign", data);
+  return response.data;
+};
+
+// GET /api/campaigns - Get all campaigns with pagination and filtering
+export const getStaffCampaigns = async (params?: {
+  page?: number;
+  limit?: number;
+  status?: "ACTIVE" | "CLOSED" | "COMPLETED" | "DRAFT" | "CANCELLED";
+}) => {
+  const response = await myAxios.get("/campaigns", { params });
+  return response.data;
+};
+
+// GET /api/campaigns/{id}/sponsors - Get sponsors for a specific campaign
+export const getCampaignSponsors = async (
+  campaignId: number,
+  params?: {
+    page?: number;
+    limit?: number;
+    status?: "PENDING" | "PAID";
+  }
+) => {
+  const response = await myAxios.get(`/campaigns/${campaignId}/sponsors`, { params });
+  return response.data;
+};
