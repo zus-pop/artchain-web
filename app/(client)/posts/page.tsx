@@ -1,13 +1,14 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Calendar, Eye, Tag, ArrowRight, Loader2 } from 'lucide-react';
 import { getPosts } from '@/apis/post';
 import { Post } from '@/types/post';
 
 const NewsCard = ({ news }: { news: Post }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-gray-100 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-gray-100 dark:border-gray-700">
 
       {/* Hình ảnh */}
       <div className="w-full mb-4 relative">
@@ -16,7 +17,7 @@ const NewsCard = ({ news }: { news: Post }) => {
             src={news.image_url || "https://placehold.co/600x400/6b7280/ffffff?text=No+Image"}
             alt={news.title}
             fill
-            className="object-cover"
+            className="object-cover rounded-lg"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>
@@ -51,17 +52,17 @@ const NewsCard = ({ news }: { news: Post }) => {
       <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center border-t pt-3 border-gray-100 dark:border-gray-700 mt-auto">
         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <span className="flex items-center">
-            <Calendar className="w-4 h-4 mr-1 text-red-500" />
+            <Calendar className="w-4 h-4 mr-1 text-indigo-500" />
             {new Date(news.published_at).toLocaleDateString('vi-VN')}
           </span>
           <span className="flex items-center">
-            <Eye className="w-4 h-4 mr-1 text-red-500" />
+            <Eye className="w-4 h-4 mr-1 text-indigo-500" />
             {news.creator.fullName}
           </span>
         </div>
 
         {/* Read More Button */}
-        <button className="flex items-center text-red-600 dark:text-red-400 font-medium hover:text-red-800 dark:hover:text-red-300 transition-colors text-sm">
+        <button className="flex items-center text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors text-sm">
           Đọc Chi Tiết
           <ArrowRight className="w-4 h-4 ml-1" />
         </button>
@@ -70,7 +71,7 @@ const NewsCard = ({ news }: { news: Post }) => {
   );
 };
 
-const News = () => {
+export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +80,7 @@ const News = () => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        const response = await getPosts({ limit: 3 });
+        const response = await getPosts({ limit: 12 }); // Show more posts on the full page
         setPosts(response.data);
       } catch (err) {
         console.error('Error fetching posts:', err);
@@ -94,7 +95,7 @@ const News = () => {
 
   if (loading) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
@@ -105,17 +106,17 @@ const News = () => {
             </p>
           </div>
           <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
             <span className="ml-2 text-gray-600">Loading posts...</span>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
@@ -129,16 +130,16 @@ const News = () => {
             <p className="text-red-500">{error}</p>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800 dark:text-white mb-4">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
             Tin Tức <span className="text-red-500 dark:text-gray-300">&</span> Sự Kiện
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -147,26 +148,10 @@ const News = () => {
         </div>
 
         {posts.length > 0 && (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts.map(post => (
-                <NewsCard key={post.post_id} news={post} />
-              ))}
-            </div>
-
-            <div className="text-center mt-16">
-              <Link href="/posts">
-                <button className="overflow-hidden relative w-32 p-2 h-12 bg-gray-800 text-white border-none rounded-md text-xl font-bold cursor-pointer z-10 group">
-                  Explore!
-                  <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-200 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-right" />
-                  <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-400 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-right" />
-                  <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-600 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-1000 duration-500 origin-right" />
-                  <span className="absolute inset-0 z-10 flex items-center justify-center text-2xl text-[--secondary-foreground] opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    →
-                  </span>
-                </button>
-              </Link>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map(post => (
+              <NewsCard key={post.post_id} news={post} />
+            ))}
           </div>
         )}
 
@@ -179,8 +164,6 @@ const News = () => {
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
-};
-
-export default News;
+}
