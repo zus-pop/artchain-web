@@ -61,10 +61,12 @@ const NewsCard = ({ news }: { news: Post }) => {
         </div>
 
         {/* Read More Button */}
-        <button className="flex items-center text-red-600 dark:text-red-400 font-medium hover:text-red-800 dark:hover:text-red-300 transition-colors text-sm">
-          Đọc Chi Tiết
-          <ArrowRight className="w-4 h-4 ml-1" />
-        </button>
+        <Link href={`/posts/${news.post_id}`}>
+          <button className="flex items-center text-red-600 dark:text-red-400 font-medium hover:text-red-800 dark:hover:text-red-300 transition-colors text-sm">
+            Đọc Chi Tiết
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+        </Link>
       </div>
     </div>
   );
@@ -156,7 +158,7 @@ const News = () => {
 
             <div className="text-center mt-16">
               <Link href="/posts">
-                <button className="overflow-hidden relative w-32 p-2 h-12 bg-gray-800 text-white border-none rounded-md text-xl font-bold cursor-pointer z-10 group">
+                <button className="overflow-hidden relative w-32 p-2 h-12 bg-gray-800 text-white border-none rounded-mdnew text-xl font-bold cursor-pointer z-10 group">
                   Explore!
                   <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-200 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-500 duration-1000 origin-right" />
                   <span className="absolute w-36 h-32 -top-8 -left-2 bg-red-400 rotate-12 transform scale-x-0 group-hover:scale-x-100 transition-transform group-hover:duration-700 duration-700 origin-right" />

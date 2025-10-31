@@ -25,8 +25,16 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 const MDXEditorWrapper = dynamic(
-  () => import("@/components/staff/MDXEditorWrapper").then((mod) => mod.MDXEditorWrapper),
-  { ssr: false, loading: () => <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" /> }
+  () =>
+    import("@/components/staff/MDXEditorWrapper").then(
+      (mod) => mod.MDXEditorWrapper
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" />
+    ),
+  }
 );
 
 interface PostFormData {
@@ -71,7 +79,7 @@ export function CreatePostPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [loading, setLoading] = useState(isEditing);
-  
+
   // Tags state
   const [tagSearch, setTagSearch] = useState("");
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
@@ -148,13 +156,13 @@ export function CreatePostPage() {
   // Handle creating a new tag
   const handleCreateTag = async () => {
     if (!tagSearch.trim()) return;
-    
+
     setIsCreatingTag(true);
     try {
       const response = await createStaffTag({ tag_name: tagSearch.trim() });
       // Handle response structure: { success: true, data: { tag_id, tag_name, ... } }
       const newTag = response.data || response;
-      
+
       // Add the new tag to available tags and select it
       setAvailableTags((prev) => [...prev, newTag]);
       handleSelectTag(newTag);
@@ -237,14 +245,14 @@ Ready to join the revolution? Create your free account today and start exploring
     try {
       // Create FormData for file upload
       const formDataToSend = new FormData();
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('content', formData.content);
-      formDataToSend.append('status', formData.status);
-      formDataToSend.append('tag_ids', JSON.stringify(formData.tag_ids));
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("content", formData.content);
+      formDataToSend.append("status", formData.status);
+      formDataToSend.append("tag_ids", JSON.stringify(formData.tag_ids));
 
       // Add image file if exists
       if (formData.imageFile) {
-        formDataToSend.append('file', formData.imageFile);
+        formDataToSend.append("file", formData.imageFile);
       }
 
       if (isEditing && postId) {
@@ -261,7 +269,7 @@ Ready to join the revolution? Create your free account today and start exploring
         // Create new post with FormData
         await myAxios.post("/staff/posts", formDataToSend, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
         toast.success("Post created successfully!");
@@ -350,8 +358,10 @@ Ready to join the revolution? Create your free account today and start exploring
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 staff-text-secondary">Loading post data...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+                    <p className="mt-4 staff-text-secondary">
+                      Loading post data...
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -381,33 +391,128 @@ Ready to join the revolution? Create your free account today and start exploring
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Featured Image
                         </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              setFormData(prev => ({ ...prev, imageFile: file }));
+
+                        {/* Upload Area */}
+                        <div className="space-y-4">
+                          <div
+                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
+                            onClick={() =>
+                              document.getElementById("image-upload")?.click()
                             }
-                          }}
-                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        {formData.imageFile && (
-                          <div className="mt-3 relative w-full h-48">
-                            <Image
-                              src={URL.createObjectURL(formData.imageFile)}
-                              alt="Preview"
-                              fill
-                              className="object-cover  border border-[#e6e2da]"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
-                              }}
-                            />
+                          >
+                            {formData.imageFile ? (
+                              <div className="space-y-4">
+                                <div className="relative w-32 h-32 mx-auto">
+                                  <Image
+                                    src={URL.createObjectURL(
+                                      formData.imageFile
+                                    )}
+                                    alt="Preview"
+                                    fill
+                                    className="object-cover rounded-lg border border-gray-200"
+                                    onError={(e) => {
+                                      (
+                                        e.target as HTMLImageElement
+                                      ).style.display = "none";
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {formData.imageFile.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    {(
+                                      formData.imageFile.size /
+                                      1024 /
+                                      1024
+                                    ).toFixed(2)}{" "}
+                                    MB
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      imageFile: undefined,
+                                    }));
+                                  }}
+                                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                >
+                                  Remove image
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                                  {/* <IconPlus className="h-6 w-6 text-gray-400" /> */}
+                                  <svg
+                                    className="h-6 w-6 text-gray-400"
+                                    strokeLinejoin="round"
+                                    strokeLinecap="round"
+                                    strokeWidth="2"
+                                    stroke="currentColor"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    height="24"
+                                    width="24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                                    <path d="M7 9l5 -5l5 5"></path>
+                                    <path d="M12 4l0 12"></path>
+                                  </svg>
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    Click to upload image
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    PNG, JPG, GIF up to 10MB
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <p className="text-xs staff-text-secondary mt-2">
-                          Upload an image file to display with your post (optional)
-                        </p>
+
+                          {/* Hidden File Input */}
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                // Validate file size (10MB limit)
+                                if (file.size > 10 * 1024 * 1024) {
+                                  toast.error(
+                                    "File size must be less than 10MB"
+                                  );
+                                  return;
+                                }
+                                // Validate file type
+                                if (!file.type.startsWith("image/")) {
+                                  toast.error(
+                                    "Please select a valid image file"
+                                  );
+                                  return;
+                                }
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  imageFile: file,
+                                }));
+                              }
+                            }}
+                            className="hidden"
+                          />
+
+                          <p className="text-xs staff-text-secondary">
+                            Upload an image file to display with your post
+                            (optional)
+                          </p>
+                        </div>
                       </div>
 
                       {/* Content */}
@@ -417,17 +522,21 @@ Ready to join the revolution? Create your free account today and start exploring
                         </label>
                         {previewMode ? (
                           <div className="prose max-w-none">
-                            <div 
+                            <div
                               className="min-h-[400px] p-4 border border-[#e6e2da] bg-gray-50"
                               dangerouslySetInnerHTML={{
-                                __html: formData.content || "Your content will appear here..."
+                                __html:
+                                  formData.content ||
+                                  "Your content will appear here...",
                               }}
                             />
                           </div>
                         ) : (
                           <MDXEditorWrapper
                             markdown={formData.content}
-                            onChange={(value) => handleInputChange("content", value)}
+                            onChange={(value) =>
+                              handleInputChange("content", value)
+                            }
                             placeholder="Write your post content here using Markdown..."
                           />
                         )}
@@ -526,7 +635,9 @@ Ready to join the revolution? Create your free account today and start exploring
                                       availableTags
                                         .filter(
                                           (tag) =>
-                                            !selectedTags.find((t) => t.tag_id === tag.tag_id)
+                                            !selectedTags.find(
+                                              (t) => t.tag_id === tag.tag_id
+                                            )
                                         )
                                         .map((tag) => (
                                           <button
@@ -588,7 +699,9 @@ Ready to join the revolution? Create your free account today and start exploring
 
                         <div className="space-y-3 text-sm">
                           <div className="flex justify-between">
-                            <span className="staff-text-secondary">Word Count:</span>
+                            <span className="staff-text-secondary">
+                              Word Count:
+                            </span>
                             <span className="font-medium">
                               {
                                 formData.content
@@ -607,7 +720,9 @@ Ready to join the revolution? Create your free account today and start exploring
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="staff-text-secondary">Reading Time:</span>
+                            <span className="staff-text-secondary">
+                              Reading Time:
+                            </span>
                             <span className="font-medium">
                               ~
                               {Math.ceil(

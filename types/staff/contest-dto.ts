@@ -72,3 +72,53 @@ export interface ContestResponseDTO {
   data: ContestDTO[];
   meta: MetaDTO;
 }
+
+/**
+ * DTO cho table trong ROUND_2
+ */
+export interface RoundTableDTO {
+  roundId: number;
+  table: string;
+  startDate: string;
+  endDate: string;
+  submissionDeadline: string;
+  resultAnnounceDate: string;
+  sendOriginalDeadline: string;
+  status: string;
+}
+
+/**
+ * DTO cho item trong response của getStaffRounds
+ */
+export interface RoundResponseItem {
+  roundId?: number;
+  name: string;
+  isRound2: boolean;
+  startDate?: string;
+  endDate?: string;
+  submissionDeadline?: string;
+  resultAnnounceDate?: string;
+  sendOriginalDeadline?: string;
+  status?: string;
+  table?: string;
+  tables?: RoundTableDTO[];
+  totalTables?: number;
+}
+
+/**
+ * Meta cho response của getStaffRounds
+ */
+export interface RoundsMetaDTO {
+  contestId: number;
+  totalRounds: number;
+  roundTypes: string[];
+}
+
+/**
+ * Response DTO cho getStaffRounds
+ */
+export interface GetStaffRoundsResponse {
+  success: boolean;
+  data: RoundResponseItem[];
+  meta: RoundsMetaDTO;
+}

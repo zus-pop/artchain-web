@@ -8,16 +8,31 @@ export type ContestStatus =
   | "ALL";
 
 export interface Contest {
-  contestId: number;
+  contestId: string;
   title: string;
+  bannerUrl?: string;
   description: string;
-  bannerUrl: string | null;
   numOfAward: number;
   startDate: string;
   endDate: string;
   status: ContestStatus;
   createdBy: string;
+  rounds: Rounds[];
+}
+
+export interface Rounds {
   roundId: string;
+  contestId: string;
+  table: string | null;
+  name: "ROUND_1" | "ROUND_2";
+  startDate: string;
+  endDate: string;
+  submissionDeadline: string;
+  resultAnnounceDate: string;
+  sendOriginalDeadline: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ContestFilter {

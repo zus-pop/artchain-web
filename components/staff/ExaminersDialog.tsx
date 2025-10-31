@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { IconX, IconUser, IconMail, IconCalendar, IconTag, IconSearch, IconPlus, IconTrash } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { ExaminerDTO, AvailableExaminerDTO } from "@/types/staff/examiner-dto";
 import { ScheduleDTO } from "@/types/staff/schedule-dto";
-import { getStaffContestExaminers, getAllStaffExaminers, addStaffContestExaminer, deleteStaffContestExaminer, getStaffSchedulesByExaminer, createStaffSchedule, updateStaffSchedule, deleteStaffSchedule } from "@/apis/staff";
+import { getStaffContestExaminers, getAllStaffExaminers, addStaffContestExaminer, deleteStaffContestExaminer, getStaffSchedulesByExaminer, createStaffSchedule, updateStaffSchedule } from "@/apis/staff";
 
 interface ExaminersDialogProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
     enabled: isOpen,
   });
 
-  const contestExaminers = examinersData?.data || [];
+  const contestExaminers = useMemo(() => examinersData?.data || [], [examinersData?.data]);
   const availableExaminers = availableExaminersData?.data || [];
 
   // Add examiner mutation
@@ -97,16 +97,6 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
       });
     }
   }, [contestExaminers]);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const handleDeleteExaminer = (examinerId: string, examinerName: string) => {
     if (window.confirm(`Are you sure you want to remove ${examinerName} from this contest?`)) {
@@ -171,19 +161,6 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
     } catch (error) {
       console.error("Error updating schedule:", error);
       toast.error("Failed to update schedule. Please try again.");
-    }
-  };
-
-  const getStatusBadgeColor = (status: string | null) => {
-    switch (status) {
-      case "ACTIVE":
-        return "bg-green-100 text-green-800";
-      case "INACTIVE":
-        return "bg-red-100 text-red-800";
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
     }
   };
 
