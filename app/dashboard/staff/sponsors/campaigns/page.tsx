@@ -17,7 +17,7 @@ import {
   IconTrendingUp,
   IconUsers,
 } from "@tabler/icons-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getStaffCampaigns } from "@/apis/staff";
 import Link from "next/link";
 import { CampaignsAPIResponse } from "@/types/staff/campaign";
@@ -29,7 +29,7 @@ export default function CampaignsPage() {
     useState<CampaignsAPIResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage] = useState(1);
   const [pageSize] = useState(10);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,7 +54,7 @@ export default function CampaignsPage() {
     "Cultural Preservation",
   ];
 
-  const fetchCampaigns = async (page = 1, status?: string) => {
+  const fetchCampaigns = useCallback(async (page = 1, status?: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -89,11 +89,11 @@ export default function CampaignsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize]);
 
   useEffect(() => {
     fetchCampaigns(currentPage, selectedStatus);
-  }, [currentPage, selectedStatus]);
+  }, [currentPage, selectedStatus, fetchCampaigns]);
 
   // Transform API data to match component expectations
   const transformedCampaigns: Campaign[] =
@@ -166,9 +166,6 @@ export default function CampaignsPage() {
     (sum: number, campaign) => sum + campaign.goalAmount,
     0
   );
-  const activeCampaigns = transformedCampaigns.filter(
-    (c) => c.status === "ACTIVE"
-  ).length;
   //   const _completedCampaigns = campaigns.filter(
   //     (c) => c.status === "COMPLETED"
   //   ).length;

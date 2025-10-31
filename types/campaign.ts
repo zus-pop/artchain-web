@@ -20,3 +20,45 @@ export interface CampaignsAPIResponse {
     totalPages: number;
   };
 }
+
+// Sponsor types
+export interface SponsorData {
+  sponsorId: number;
+  name: string;
+  logoUrl?: string;
+  contactInfo: string;
+  sponsorshipAmount: string;
+  status: "PENDING" | "PAID" | "CANCELLED";
+  campaignId: string;
+}
+
+export interface OrderData {
+  id: string;
+  sponsorId: number;
+  orderCode: number;
+  amount: string;
+  description: string;
+  returnUrl: string;
+  cancelUrl: string;
+  transactionId: string;
+  status: "PENDING" | "PAID" | "CANCELLED";
+  createdAt: string;
+}
+
+export interface SponsorResponse {
+  error: boolean;
+  data: {
+    sponsor: SponsorData;
+    checkoutUrl: string;
+    qrCode: string;
+    order: OrderData;
+  };
+}
+
+export interface CreateSponsorRequest {
+  name: string;
+  contactInfo: string;
+  sponsorshipAmount: number;
+  campaignId: number;
+  file?: File; // Logo file (optional)
+}

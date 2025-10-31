@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, Target, ArrowRight, Loader2 } from 'lucide-react';
@@ -81,7 +83,7 @@ const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
   );
 };
 
-const Campaign = () => {
+const CampaignPage = () => {
   const [campaigns, setCampaigns] = useState<CampaignAPIResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +93,7 @@ const Campaign = () => {
       try {
         setLoading(true);
         const response = await getCampaigns({
-          limit: 6
+          limit: 12
         });
         setCampaigns(response.data);
       } catch (err) {
@@ -171,7 +173,7 @@ const Campaign = () => {
 
         {/* Campaigns Grid */}
         {campaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {campaigns.map((campaign) => (
               <CampaignCard key={campaign.campaignId} campaign={campaign} />
             ))}
@@ -188,8 +190,8 @@ const Campaign = () => {
           </div>
         )}
 
-        {/* View All Button */}
-        {campaigns.length > 0 && (
+        {/* View All Button - Hidden since this is the full campaigns page */}
+        {/* {campaigns.length > 0 && (
           <div className="text-center">
             <Link href="/campaigns">
               <button className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200">
@@ -198,10 +200,10 @@ const Campaign = () => {
               </button>
             </Link>
           </div>
-        )}
+        )} */}
       </div>
     </section>
   );
 };
 
-export default Campaign;
+export default CampaignPage;
