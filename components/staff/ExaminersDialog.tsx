@@ -388,7 +388,7 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                           >
                             <IconCalendar className="h-4 w-4" />
                             {examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)
-                              ? `Scheduled: ${new Date(examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)?.date!).toLocaleDateString()}`
+                              ? `Scheduled: ${new Date(examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)?.date || '').toLocaleDateString()}`
                               : "+ Schedule"
                             }
                           </button>
