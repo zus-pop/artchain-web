@@ -7,7 +7,7 @@ export const translations = {
     competitions: 'Cuộc Thi',
     contests: 'Cuộc Thi',
     gallery: 'Triển Lãm',
-    prizes: 'Giải Thưởng',
+    posts: 'Bài Viết',
     login: 'Đăng Nhập',
     join: 'Tham Gia',
     
@@ -137,7 +137,7 @@ export const translations = {
     competitions: 'Competitions',
     contests: 'Contests',
     gallery: 'Gallery',
-    prizes: 'Prizes',
+    posts: 'Posts',
     login: 'Login',
     join: 'Join Now',
     

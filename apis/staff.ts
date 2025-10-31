@@ -276,3 +276,82 @@ export const createStaffTag = async (data: {
   const response = await myAxios.post("/staff/tags", data);
   return response.data;
 };
+
+/**
+ * Staff Contest Examiners Management APIs
+ */
+
+// GET /api/staff/contests/{contestId}/examiners - Get examiners for a contest
+export const getStaffContestExaminers = async (contestId: number) => {
+  const response = await myAxios.get(`/staff/contests/${contestId}/examiners`);
+  return response.data;
+};
+
+// GET /api/staff/examiners - Get all available examiners
+export const getAllStaffExaminers = async (params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const response = await myAxios.get("/staff/examiners", { params });
+  return response.data;
+};
+
+// POST /api/staff/contests/{contestId}/examiners - Add examiner to contest
+export const addStaffContestExaminer = async (contestId: number, data: {
+  examinerId: string;
+  role: string;
+}) => {
+  const requestBody = {
+    examiner_id: data.examinerId,
+    role: data.role
+  };
+  const response = await myAxios.post(`/staff/contests/${contestId}/examiners`, requestBody);
+  return response.data;
+};
+
+// DELETE /api/staff/contests/{contestId}/examiners/{examinerId} - Remove examiner from contest
+export const deleteStaffContestExaminer = async (contestId: number, examinerId: string) => {
+  const response = await myAxios.delete(`/staff/contests/${contestId}/examiners/${examinerId}`);
+  return response.data;
+};
+
+/**
+ * Schedule Management APIs
+ */
+
+// POST /api/staff/schedules - Create a new schedule
+export const createStaffSchedule = async (data: {
+  contestId: number;
+  examinerId: string;
+  task: string;
+  date: string;
+  status: string;
+}) => {
+  const response = await myAxios.post("/staff/schedules", data);
+  return response.data;
+};
+
+// GET /api/staff/schedules/examiner/{examinerId} - Get schedules for an examiner
+export const getStaffSchedulesByExaminer = async (examinerId: string) => {
+  const response = await myAxios.get(`/staff/schedules/examiner/${examinerId}`);
+  return response.data;
+};
+
+// PUT /api/staff/schedules/{scheduleId} - Update a schedule
+export const updateStaffSchedule = async (scheduleId: number, data: {
+  contestId: number;
+  examinerId: string;
+  task: string;
+  date: string;
+  status: string;
+}) => {
+  const response = await myAxios.put(`/staff/schedules/${scheduleId}`, data);
+  return response.data;
+};
+
+// DELETE /api/staff/schedules/{scheduleId} - Delete a schedule
+export const deleteStaffSchedule = async (scheduleId: number) => {
+  const response = await myAxios.delete(`/staff/schedules/${scheduleId}`);
+  return response.data;
+};

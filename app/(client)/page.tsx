@@ -4,6 +4,7 @@ import ArtistGallery from "@/components/sections/ArtistGallery";
 import ArtistHeroSection from "@/components/sections/ArtistHeroSection";
 import ArtistNavigation from "@/components/sections/ArtistNavigation";
 import ContestShowcase from "@/components/sections/CompetitionShowcase";
+import News from "@/components/sections/News";
 import TabPanel from "@/components/sections/TabPanel";
 import { useAuth } from "@/hooks";
 import { useRouter } from "next/navigation";
@@ -40,11 +41,12 @@ export default function Home() {
           {/* Home Tab */}
           <TabPanel className="container px-8 py-8">
             <ContestShowcase />
-            {/* <News />
+           <News />
             <News />
             <News />
             <News />
-            <News /> */}
+            <News />
+            <News />
           </TabPanel>
 
           {/* Contests Tab */}

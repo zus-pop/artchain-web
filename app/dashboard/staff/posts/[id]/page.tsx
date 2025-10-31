@@ -21,13 +21,9 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect, Suspense, useRef } from "react";
-import {
-  getStaffPostById,
-  updateStaffPost,
-  deleteStaffPost,
-  getStaffTags,
-  createStaffTag,
-} from "@/apis/staff";
+import { getStaffPostById, updateStaffPost, deleteStaffPost, getStaffTags, createStaffTag } from "@/apis/staff";
+import { toast } from "sonner";
+
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
@@ -179,7 +175,7 @@ function ViewPostContent() {
       handleSelectTag(newTag);
     } catch (error) {
       console.error("Error creating tag:", error);
-      alert("Failed to create tag. Please try again.");
+      toast.error("Failed to create tag. Please try again.");
     } finally {
       setIsCreatingTag(false);
     }
@@ -200,10 +196,10 @@ function ViewPostContent() {
       const response = await getStaffPostById(postId);
       setPost(response.data);
       setIsEditing(false);
-      alert("Post updated successfully!");
+      toast.success("Post updated successfully!");
     } catch (error) {
       console.error("Error updating post:", error);
-      alert("Failed to update post. Please try again.");
+      toast.error("Failed to update post. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -225,18 +221,18 @@ function ViewPostContent() {
     if (confirm("Are you sure you want to delete this post?")) {
       try {
         await deleteStaffPost(postId);
-        alert("Post deleted successfully!");
+        toast.success("Post deleted successfully!");
         window.location.href = "/dashboard/staff/posts";
       } catch (error) {
         console.error("Error deleting post:", error);
-        alert("Failed to delete post. Please try again.");
+        toast.error("Failed to delete post. Please try again.");
       }
     }
   };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert("Post URL copied to clipboard!");
+    toast.success("Post URL copied to clipboard!");
   };
 
   const getStatusBadgeColor = (status: PostStatus) => {

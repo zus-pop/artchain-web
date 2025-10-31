@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createStaffContest } from "@/apis/staff";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 type RoundFormData = {
@@ -65,7 +66,7 @@ export default function CreateContestPage() {
         "message" in error.response.data
           ? String(error.response.data.message)
           : "Failed to create contest";
-      alert(errorMessage);
+      toast.error(errorMessage);
     },
   });
 
@@ -107,23 +108,23 @@ export default function CreateContestPage() {
 
     // Validation
     if (!formData.title || !formData.description) {
-      alert("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
     if (!formData.startDate || !formData.endDate) {
-      alert("Please select start and end dates");
+      toast.error("Please select start and end dates");
       return;
     }
 
     if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      alert("End date must be after start date");
+      toast.error("End date must be after start date");
       return;
     }
 
     const numOfAward = parseInt(formData.numOfAward);
     if (isNaN(numOfAward) || numOfAward < 0) {
-      alert("Please enter a valid number of awards");
+      toast.error("Please enter a valid number of awards");
       return;
     }
 
@@ -131,11 +132,11 @@ export default function CreateContestPage() {
     for (let i = 0; i < rounds.length; i++) {
       const round = rounds[i];
       if (!round.name || !round.startDate || !round.endDate) {
-        alert(`Round ${i + 1}: Please fill in all required fields`);
+        toast.error(`Round ${i + 1}: Please fill in all required fields`);
         return;
       }
       if (new Date(round.endDate) <= new Date(round.startDate)) {
-        alert(`Round ${i + 1}: End date must be after start date`);
+        toast.error(`Round ${i + 1}: End date must be after start date`);
         return;
       }
     }

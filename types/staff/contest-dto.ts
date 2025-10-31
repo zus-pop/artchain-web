@@ -19,6 +19,24 @@ export interface RoundDTO {
 }
 
 /**
+ * DTO cho examiner trong contest
+ */
+export interface ExaminerDTO {
+  contestId: number;
+  examinerId: string;
+  assignmentDate: string;
+  status: string | null;
+  role: string;
+  examiner: {
+    examinerId: string;
+    specialization: string | null;
+    assignedScheduleId: string | null;
+  };
+  examinerName: string;
+  examinerEmail: string;
+}
+
+/**
  * DTO cho một contest
  */
 export interface ContestDTO {
@@ -32,6 +50,7 @@ export interface ContestDTO {
   status: string;
   createdBy: string;
   rounds: RoundDTO[];
+  examiners: ExaminerDTO[];
 }
 
 /**

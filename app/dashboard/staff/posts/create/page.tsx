@@ -19,7 +19,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState, useRef } from "react";
-import { getStaffTags, createStaffTag, createStaffPost, updateStaffPost } from "@/apis/staff";
+import { getStaffTags, createStaffTag, updateStaffPost } from "@/apis/staff";
+import myAxios from "@/lib/custom-axios";
+import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 const MDXEditorWrapper = dynamic(
@@ -33,7 +35,7 @@ interface PostFormData {
   status: PostStatus;
   publishedAt: string;
   tags: string[];
-  image_url: string;
+  imageFile?: File;
   tag_ids: number[];
 }
 
@@ -62,7 +64,7 @@ export function CreatePostPage() {
     status: "DRAFT" as PostStatus,
     publishedAt: "",
     tags: [] as string[],
-    image_url: "",
+    imageFile: undefined,
     tag_ids: [],
   });
 
@@ -158,7 +160,7 @@ export function CreatePostPage() {
       handleSelectTag(newTag);
     } catch (error) {
       console.error("Error creating tag:", error);
-      alert("Failed to create tag. Please try again.");
+      toast.error("Failed to create tag. Please try again.");
     } finally {
       setIsCreatingTag(false);
     }
@@ -210,7 +212,7 @@ Ready to join the revolution? Create your free account today and start exploring
           status: existingPost.status,
           publishedAt: existingPost.publishedAt || "",
           tags: [],
-          image_url: "",
+          imageFile: undefined,
           tag_ids: [],
         });
 
@@ -233,29 +235,43 @@ Ready to join the revolution? Create your free account today and start exploring
     setIsSubmitting(true);
 
     try {
-      const postData = {
-        title: formData.title,
-        content: formData.content,
-        image_url: formData.image_url || undefined,
-        status: formData.status,
-        tag_ids: formData.tag_ids,
-      };
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('content', formData.content);
+      formDataToSend.append('status', formData.status);
+      formDataToSend.append('tag_ids', JSON.stringify(formData.tag_ids));
+
+      // Add image file if exists
+      if (formData.imageFile) {
+        formDataToSend.append('file', formData.imageFile);
+      }
 
       if (isEditing && postId) {
-        // Update existing post
-        await updateStaffPost(postId, postData);
-        alert("Post updated successfully!");
+        // For update, convert FormData to regular object since update API might not support FormData
+        const updateData = {
+          title: formData.title,
+          content: formData.content,
+          status: formData.status,
+          tag_ids: formData.tag_ids,
+        };
+        await updateStaffPost(postId, updateData);
+        toast.success("Post updated successfully!");
       } else {
-        // Create new post
-        await createStaffPost(postData);
-        alert("Post created successfully!");
+        // Create new post with FormData
+        await myAxios.post("/staff/posts", formDataToSend, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        toast.success("Post created successfully!");
       }
 
       // Redirect to posts list
       window.location.href = "/dashboard/staff/posts";
     } catch (error) {
       console.error("Error saving post:", error);
-      alert("Failed to save post. Please try again.");
+      toast.error("Failed to save post. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -360,24 +376,26 @@ Ready to join the revolution? Create your free account today and start exploring
                         />
                       </div>
 
-                      {/* Image URL */}
+                      {/* Image Upload */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Featured Image URL
+                          Featured Image
                         </label>
                         <input
-                          type="url"
-                          value={formData.image_url}
-                          onChange={(e) =>
-                            handleInputChange("image_url", e.target.value)
-                          }
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setFormData(prev => ({ ...prev, imageFile: file }));
+                            }
+                          }}
                           className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="https://example.com/image.jpg"
                         />
-                        {formData.image_url && (
+                        {formData.imageFile && (
                           <div className="mt-3 relative w-full h-48">
                             <Image
-                              src={formData.image_url}
+                              src={URL.createObjectURL(formData.imageFile)}
                               alt="Preview"
                               fill
                               className="object-cover  border border-[#e6e2da]"
@@ -388,7 +406,7 @@ Ready to join the revolution? Create your free account today and start exploring
                           </div>
                         )}
                         <p className="text-xs staff-text-secondary mt-2">
-                          Enter the URL of an image to display with your post
+                          Upload an image file to display with your post (optional)
                         </p>
                       </div>
 
