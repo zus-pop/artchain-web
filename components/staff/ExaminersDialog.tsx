@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { IconX, IconUser, IconMail, IconCalendar, IconTag, IconSearch, IconPlus, IconTrash } from "@tabler/icons-react";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
 import { ExaminerDTO, AvailableExaminerDTO } from "@/types/staff/examiner-dto";
 import { ScheduleDTO } from "@/types/staff/schedule-dto";
 import { getStaffContestExaminers, getAllStaffExaminers, addStaffContestExaminer, deleteStaffContestExaminer, getStaffSchedulesByExaminer, createStaffSchedule, updateStaffSchedule, deleteStaffSchedule } from "@/apis/staff";
@@ -84,6 +85,7 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
       setSelectedRole("ROUND_1");
       setExaminerSearch("");
       setShowExaminerDropdown(false);
+      setShowScheduleDropdown(null);
     }
   }, [isOpen]);
 
@@ -95,30 +97,6 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
       });
     }
   }, [contestExaminers]);
-
-  // Generate date options (next 30 days)
-  const generateDateOptions = () => {
-    const options = [];
-    const today = new Date();
-
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-
-      const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-      const displayText = date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
-
-      options.push({ value: dateString, label: displayText });
-    }
-
-    return options;
-  };
-
-  const dateOptions = generateDateOptions();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
@@ -240,7 +218,7 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
 
   return (
     <div className="fixed inset-0 bg-white/60 flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div className="bg-white shadow-xl max-w-4xl w-full mx-4 max-h-[120vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
@@ -372,7 +350,8 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                     key={examiner.examinerId}
                     className="border border-gray-200 p-4 hover:shadow-md transition-shadow"
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="grid grid-cols-3 gap-4 items-center">
+                      {/* Column 1: Name and Email */}
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="text-lg font-semibold text-gray-900">
@@ -383,8 +362,8 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
+                        <div className="text-sm text-gray-600">
+                          <div className="flex items-center gap-2 mb-1">
                             <IconMail className="h-4 w-4" />
                             <span>{examiner.examinerEmail}</span>
                           </div>
@@ -396,31 +375,68 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                             </div>
                           )}
                         </div>
+                      </div>
 
-                        {/* Schedule Management */}
-                        <div className="mt-4 flex items-center justify-center">
-                          <div className="relative">
-                            <select
-                              value={
-                                examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)?.date?.split('T')[0] || ""
-                              }
-                              onChange={(e) => handleScheduleDateChange(examiner, e.target.value)}
-                              className="px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white min-w-[200px] text-center"
-                            >
-                              <option value="">
-                                {examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId) ? "Change schedule" : "+ Schedule"}
-                              </option>
-                              {dateOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
+                      {/* Column 2: Schedule Management */}
+                      <div className="flex justify-center">
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowScheduleDropdown(
+                              showScheduleDropdown === examiner.examinerId ? null : examiner.examinerId
+                            )}
+                            className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 transition-colors text-sm font-medium flex items-center gap-2"
+                          >
+                            <IconCalendar className="h-4 w-4" />
+                            {examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)
+                              ? `Scheduled: ${new Date(examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)?.date!).toLocaleDateString()}`
+                              : "+ Schedule"
+                            }
+                          </button>
+
+                          {showScheduleDropdown === examiner.examinerId && (
+                            <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px]">
+                              <div className="p-2">
+                                <button
+                                  onClick={() => {
+                                    // Toggle calendar visibility
+                                    setShowScheduleDropdown(examiner.examinerId + '_calendar');
+                                  }}
+                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors rounded flex items-center gap-2"
+                                >
+                                  <IconCalendar className="h-4 w-4" />
+                                  Chọn ngày từ lịch
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {showScheduleDropdown === examiner.examinerId + '_calendar' && (
+                            <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+                              <Calendar
+                                mode="single"
+                                selected={
+                                  (() => {
+                                    const schedule = examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId);
+                                    return schedule?.date ? new Date(schedule.date) : undefined;
+                                  })()
+                                }
+                                onSelect={(date) => {
+                                  if (date) {
+                                    const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                                    handleScheduleDateChange(examiner, dateString);
+                                    setShowScheduleDropdown(null); // Close dropdown after selection
+                                  }
+                                }}
+                                disabled={(date) => date < new Date()}
+                                className="rounded-md border-0 shadow-none"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-center ml-4">
+                      {/* Column 3: Delete Icon */}
+                      <div className="flex justify-end">
                         <button
                           onClick={() => handleDeleteExaminer(examiner.examinerId, examiner.examinerName)}
                           disabled={deleteExaminerMutation.isPending}
