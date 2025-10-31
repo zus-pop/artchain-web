@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -161,13 +162,13 @@ export default function SponsorsPage() {
                     ArtChain
                   </p>
                 </div>
-                <a
+                <Link
                   href="/dashboard/staff/sponsors/campaigns/create"
                   className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
                   Create Campaign
-                </a>
+                </Link>
               </div>
 
               {/* Statistics Cards */}
@@ -229,7 +230,7 @@ export default function SponsorsPage() {
                   </div>
                 </a>
 
-                <a
+                <Link
                   href="/dashboard/staff/sponsors/campaigns"
                   className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
@@ -244,9 +245,9 @@ export default function SponsorsPage() {
                       Manage active
                     </p>
                   </div>
-                </a>
+                </Link>
 
-                <a
+                <Link
                   href="/dashboard/staff/sponsors/campaigns/create"
                   className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
                 >
@@ -259,7 +260,7 @@ export default function SponsorsPage() {
                     </p>
                     <p className="text-xs staff-text-secondary">Start new</p>
                   </div>
-                </a>
+                </Link>
               </div>
 
               {/* Search and Filters */}

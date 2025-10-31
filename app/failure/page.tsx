@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 export default function FailurePage() {
   return (
@@ -13,9 +14,9 @@ export default function FailurePage() {
         <p className="text-gray-600 mb-6">
           Rất tiếc, thanh toán của bạn không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ.
         </p>
-        <a href="/" className="inline-block bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-4">
+        <Link href="/" className="inline-block bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded mr-4">
           Thử lại
-        </a>
+        </Link>
         <a href="/contact" className="inline-block bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded">
           Liên hệ hỗ trợ
         </a>
