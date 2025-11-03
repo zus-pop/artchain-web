@@ -10,46 +10,128 @@ import {
   IconDeviceFloppy,
   IconFileText,
   IconTrophy,
-  IconPlus,
-  IconTrash,
+  IconUpload,
   IconPhoto,
 } from "@tabler/icons-react";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createStaffContest } from "@/apis/staff";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import Image from "next/image";
 
-type RoundFormData = {
-  name: string;
-  table: string;
-  startDate: string;
-  endDate: string;
-  submissionDeadline: string;
-  status: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-};
+// Zod validation schema
+const createContestSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(255, "Title is too long"),
+    description: z
+      .string()
+      .min(1, "Description is required")
+      .max(2000, "Description is too long"),
+    round2Quantity: z
+      .number()
+      .min(0, "Number of top competitors must be at least 0")
+      .max(100, "Number of top competitors is too high"),
+    startDate: z.string().min(1, "Start date is required"),
+    endDate: z.string().min(1, "End date is required"),
+    banner: z
+      .instanceof(File)
+      .refine(
+        (file) => file.size <= 5 * 1024 * 1024, // 5MB
+        "Banner image must be less than 5MB"
+      )
+      .refine(
+        (file) =>
+          ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
+            file.type
+          ),
+        "Banner must be a valid image file (JPEG, PNG, WebP)"
+      ),
+    rule: z
+      .instanceof(File)
+      .refine(
+        (file) => file.size <= 20 * 1024 * 1024, // 10MB
+        "Rules file must be less than 10MB"
+      )
+      .refine(
+        (file) => file.type === "application/pdf",
+        "Rules file must be a PDF"
+      ),
+    roundStartDate: z.string().min(1, "Round start date is required"),
+    roundEndDate: z.string().min(1, "Round end date is required"),
+    roundSubmissionDeadline: z
+      .string()
+      .min(1, "Submission deadline is required"),
+    roundResultAnnounceDate: z
+      .string()
+      .min(1, "Result announcement date is required"),
+    roundSendOriginalDeadline: z
+      .string()
+      .min(1, "Original deadline is required"),
+  })
+  .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
+    message: "End date must be after start date",
+    path: ["endDate"],
+  })
+  .refine(
+    (data) => new Date(data.roundEndDate) > new Date(data.roundStartDate),
+    {
+      message: "Round end date must be after round start date",
+      path: ["roundEndDate"],
+    }
+  )
+  .refine(
+    (data) =>
+      new Date(data.roundSubmissionDeadline) >= new Date(data.roundStartDate),
+    {
+      message: "Submission deadline must be on or after round start date",
+      path: ["roundSubmissionDeadline"],
+    }
+  );
+
+type CreateContestFormData = z.infer<typeof createContestSchema>;
 
 export default function CreateContestPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    bannerUrl: "",
-    numOfAward: "",
-    startDate: "",
-    endDate: "",
-    status: "DRAFT" as "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED",
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+    trigger,
+  } = useForm<CreateContestFormData>({
+    resolver: zodResolver(createContestSchema),
+    defaultValues: {
+      round2Quantity: 0,
+    },
   });
 
-  const [rounds, setRounds] = useState<RoundFormData[]>([]);
+  const watchedBanner = watch("banner");
+
+  // Update banner preview when file changes
+  React.useEffect(() => {
+    if (watchedBanner) {
+      const url = URL.createObjectURL(watchedBanner);
+      setBannerPreview(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setBannerPreview(null);
+    }
+  }, [watchedBanner]);
 
   const createMutation = useMutation({
     mutationFn: createStaffContest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-contests"] });
+      toast.success("Contest created successfully!");
       router.push("/dashboard/staff/contests");
     },
     onError: (error: unknown) => {
@@ -70,99 +152,19 @@ export default function CreateContestPage() {
     },
   });
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const onSubmit = (data: CreateContestFormData) => {
+    createMutation.mutate(data);
   };
 
-  const addRound = () => {
-    setRounds((prev) => [
-      ...prev,
-      {
-        name: "",
-        table: "paintings",
-        startDate: "",
-        endDate: "",
-        submissionDeadline: "",
-        status: "DRAFT",
-      },
-    ]);
-  };
-
-  const removeRound = (index: number) => {
-    setRounds((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const updateRound = (index: number, field: string, value: string) => {
-    setRounds((prev) =>
-      prev.map((round, i) =>
-        i === index ? { ...round, [field]: value } : round
-      )
-    );
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    if (!formData.title || !formData.description) {
-      toast.error("Please fill in all required fields");
-      return;
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    field: "banner" | "rule"
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setValue(field, file);
+      trigger(field);
     }
-
-    if (!formData.startDate || !formData.endDate) {
-      toast.error("Please select start and end dates");
-      return;
-    }
-
-    if (new Date(formData.endDate) <= new Date(formData.startDate)) {
-      toast.error("End date must be after start date");
-      return;
-    }
-
-    const numOfAward = parseInt(formData.numOfAward);
-    if (isNaN(numOfAward) || numOfAward < 0) {
-      toast.error("Please enter a valid number of awards");
-      return;
-    }
-
-    // Validate rounds if any
-    for (let i = 0; i < rounds.length; i++) {
-      const round = rounds[i];
-      if (!round.name || !round.startDate || !round.endDate) {
-        toast.error(`Round ${i + 1}: Please fill in all required fields`);
-        return;
-      }
-      if (new Date(round.endDate) <= new Date(round.startDate)) {
-        toast.error(`Round ${i + 1}: End date must be after start date`);
-        return;
-      }
-    }
-
-    // Prepare data
-    const contestData = {
-      title: formData.title,
-      description: formData.description,
-      bannerUrl: formData.bannerUrl || undefined,
-      numOfAward,
-      startDate: new Date(formData.startDate).toISOString(),
-      endDate: new Date(formData.endDate).toISOString(),
-      status: formData.status,
-      rounds: rounds.length > 0 ? rounds.map((round) => ({
-        name: round.name,
-        table: round.table,
-        startDate: new Date(round.startDate).toISOString(),
-        endDate: new Date(round.endDate).toISOString(),
-        submissionDeadline: round.submissionDeadline
-          ? new Date(round.submissionDeadline).toISOString()
-          : undefined,
-        status: round.status,
-      })) : undefined,
-    };
-
-    createMutation.mutate(contestData);
   };
 
   return (
@@ -211,7 +213,7 @@ export default function CreateContestPage() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="space-y-6">
                     <div className="staff-card p-6">
@@ -227,14 +229,15 @@ export default function CreateContestPage() {
                           </label>
                           <input
                             type="text"
-                            value={formData.title}
-                            onChange={(e) =>
-                              handleInputChange("title", e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            {...register("title")}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Enter contest title"
-                            required
                           />
+                          {errors.title && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.title.message}
+                            </p>
+                          )}
                         </div>
 
                         <div>
@@ -242,33 +245,16 @@ export default function CreateContestPage() {
                             Description *
                           </label>
                           <textarea
-                            value={formData.description}
-                            onChange={(e) =>
-                              handleInputChange("description", e.target.value)
-                            }
+                            {...register("description")}
                             rows={4}
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Describe the contest theme and objectives"
-                            required
                           />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Banner URL
-                          </label>
-                          <div className="relative">
-                            <IconPhoto className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                            <input
-                              type="url"
-                              value={formData.bannerUrl}
-                              onChange={(e) =>
-                                handleInputChange("bannerUrl", e.target.value)
-                              }
-                              className="w-full pl-10 pr-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="https://example.com/banner.jpg"
-                            />
-                          </div>
+                          {errors.description && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.description.message}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -276,7 +262,7 @@ export default function CreateContestPage() {
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconCalendar className="h-5 w-5 " />
-                        Schedule & Awards
+                        Contest Schedule & Round 2 Settings
                       </h3>
 
                       <div className="space-y-4">
@@ -287,13 +273,14 @@ export default function CreateContestPage() {
                             </label>
                             <input
                               type="date"
-                              value={formData.startDate}
-                              onChange={(e) =>
-                                handleInputChange("startDate", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              required
+                              {...register("startDate")}
+                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            {errors.startDate && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {errors.startDate.message}
+                              </p>
+                            )}
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -301,50 +288,37 @@ export default function CreateContestPage() {
                             </label>
                             <input
                               type="date"
-                              value={formData.endDate}
-                              onChange={(e) =>
-                                handleInputChange("endDate", e.target.value)
-                              }
-                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              required
+                              {...register("endDate")}
+                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
+                            {errors.endDate && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {errors.endDate.message}
+                              </p>
+                            )}
                           </div>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Number of Awards *
+                            Number of Top Competitors for Round 2 *
                           </label>
                           <input
                             type="number"
-                            value={formData.numOfAward}
-                            onChange={(e) =>
-                              handleInputChange("numOfAward", e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            {...register("round2Quantity", {
+                              valueAsNumber: true,
+                            })}
+                            minLength={16}
+                            step={4}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="3"
                             min="0"
-                            required
                           />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Status *
-                          </label>
-                          <select
-                            value={formData.status}
-                            onChange={(e) =>
-                              handleInputChange("status", e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            required
-                          >
-                            <option value="DRAFT">Draft</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="COMPLETED">Completed</option>
-                            <option value="CANCELLED">Cancelled</option>
-                          </select>
+                          {errors.round2Quantity && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.round2Quantity.message}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -352,171 +326,151 @@ export default function CreateContestPage() {
 
                   <div className="space-y-6">
                     <div className="staff-card p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold staff-text-primary flex items-center gap-2">
-                          <IconTrophy className="h-5 w-5 text-yellow-600" />
-                          Rounds
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={addRound}
-                          className="flex items-center gap-2 px-3 py-1.5 text-sm staff-btn-primary transition-colors"
-                        >
-                          <IconPlus className="h-4 w-4" />
-                          Add Round
-                        </button>
-                      </div>
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconTrophy className="h-5 w-5 text-yellow-600" />
+                        Round 1 Schedule
+                      </h3>
 
                       <div className="space-y-4">
-                        {rounds.length === 0 ? (
-                          <p className="text-sm staff-text-secondary text-center py-8">
-                            No rounds added yet. Click &quot;Add Round&quot; to
-                            create one.
-                          </p>
-                        ) : (
-                          rounds.map((round, index) => (
-                            <div
-                              key={index}
-                              className="border border-[#e6e2da] p-4 space-y-3"
-                            >
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-gray-900">
-                                  Round {index + 1}
-                                </h4>
-                                <button
-                                  type="button"
-                                  onClick={() => removeRound(index)}
-                                  className="text-red-600 hover:text-red-700 p-1"
-                                  title="Remove round"
-                                >
-                                  <IconTrash className="h-4 w-4" />
-                                </button>
-                              </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Round Start Date *
+                            </label>
+                            <input
+                              type="date"
+                              {...register("roundStartDate")}
+                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {errors.roundStartDate && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {errors.roundStartDate.message}
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Round End Date *
+                            </label>
+                            <input
+                              type="date"
+                              {...register("roundEndDate")}
+                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {errors.roundEndDate && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {errors.roundEndDate.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-                              <div className="space-y-3">
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Round Name *
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={round.name}
-                                    onChange={(e) =>
-                                      updateRound(index, "name", e.target.value)
-                                    }
-                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="ROUND1"
-                                    required
-                                  />
-                                </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Submission Deadline *
+                          </label>
+                          <input
+                            type="date"
+                            {...register("roundSubmissionDeadline")}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {errors.roundSubmissionDeadline && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.roundSubmissionDeadline.message}
+                            </p>
+                          )}
+                        </div>
 
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Table *
-                                  </label>
-                                  <select
-                                    value={round.table}
-                                    onChange={(e) =>
-                                      updateRound(
-                                        index,
-                                        "table",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                  >
-                                    <option value="paintings">Paintings</option>
-                                    <option value="sculptures">
-                                      Sculptures
-                                    </option>
-                                    <option value="photos">Photos</option>
-                                  </select>
-                                </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Result Announcement Date *
+                          </label>
+                          <input
+                            type="date"
+                            {...register("roundResultAnnounceDate")}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {errors.roundResultAnnounceDate && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.roundResultAnnounceDate.message}
+                            </p>
+                          )}
+                        </div>
 
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                                      Start Date *
-                                    </label>
-                                    <input
-                                      type="date"
-                                      value={round.startDate}
-                                      onChange={(e) =>
-                                        updateRound(
-                                          index,
-                                          "startDate",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      required
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                                      End Date *
-                                    </label>
-                                    <input
-                                      type="date"
-                                      value={round.endDate}
-                                      onChange={(e) =>
-                                        updateRound(
-                                          index,
-                                          "endDate",
-                                          e.target.value
-                                        )
-                                      }
-                                      className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                      required
-                                    />
-                                  </div>
-                                </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Send Original Deadline *
+                          </label>
+                          <input
+                            type="date"
+                            {...register("roundSendOriginalDeadline")}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {errors.roundSendOriginalDeadline && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.roundSendOriginalDeadline.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Submission Deadline
-                                  </label>
-                                  <input
-                                    type="date"
-                                    value={round.submissionDeadline}
-                                    onChange={(e) =>
-                                      updateRound(
-                                        index,
-                                        "submissionDeadline",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  />
-                                </div>
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconUpload className="h-5 w-5" />
+                        Files
+                      </h3>
 
-                                <div>
-                                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                                    Status *
-                                  </label>
-                                  <select
-                                    value={round.status}
-                                    onChange={(e) =>
-                                      updateRound(
-                                        index,
-                                        "status",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="w-full px-2 py-1.5 text-sm border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    required
-                                  >
-                                    <option value="DRAFT">Draft</option>
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="COMPLETED">Completed</option>
-                                    <option value="CANCELLED">Cancelled</option>
-                                  </select>
-                                </div>
-                              </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Banner Image *
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileChange(e, "banner")}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {errors.banner && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.banner.message}
+                            </p>
+                          )}
+                          {bannerPreview && (
+                            <div className="mt-2">
+                              <Image
+                                src={bannerPreview}
+                                alt="Banner preview"
+                                width={200}
+                                height={100}
+                                className="object-cover rounded border"
+                              />
                             </div>
-                          ))
-                        )}
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Rules File (PDF) *
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => handleFileChange(e, "rule")}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {errors.rule && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.rule.message}
+                            </p>
+                          )}
+                          {watch("rule") && (
+                            <p className="text-sm text-gray-600 mt-1">
+                              Selected: {watch("rule")?.name}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -525,17 +479,19 @@ export default function CreateContestPage() {
                 <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
                   <Link
                     href="/dashboard/staff/contests"
-                    className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2 border border-[#e6e2da] text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </Link>
                   <button
                     type="submit"
-                    disabled={createMutation.isPending}
+                    disabled={isSubmitting || createMutation.isPending}
                     className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
-                    {createMutation.isPending ? "Creating..." : "Create Contest"}
+                    {isSubmitting || createMutation.isPending
+                      ? "Creating..."
+                      : "Create Contest"}
                   </button>
                 </div>
               </form>

@@ -31,23 +31,18 @@ import { useState } from "react";
 // Helper function to convert ContestDTO to Contest
 const convertContestDTOToContest = (dto: ContestDTO): Contest => {
   return {
-    id: dto.contestId.toString(),
+    contestId: dto.contestId.toString(),
     title: dto.title,
     description: dto.description,
     status: dto.status as DashboardContestStatus,
     startDate: new Date(dto.startDate).toLocaleDateString(),
     endDate: new Date(dto.endDate).toLocaleDateString(),
-    maxParticipants: 0,
-    currentParticipants: 0,
-    category: "General",
-    prizePool: `$${dto.numOfAward * 100}`,
-    examinersCount: 0,
-    submissionsCount: 0,
     createdAt: dto.startDate,
     createdBy: dto.createdBy,
     bannerUrl: dto.bannerUrl,
     numOfAward: dto.numOfAward,
     rounds: dto.rounds,
+    round2Quantity: dto.round2Quantity,
   };
 };
 
@@ -90,13 +85,6 @@ export default function ContestsManagementPage() {
     "Photography",
   ];
 
-  // Client-side filter for category (since API doesn't support it)
-  const filteredContests = contests.filter((contest) => {
-    const matchesCategory =
-      selectedCategory === "ALL" || contest.category === selectedCategory;
-    return matchesCategory;
-  });
-
   const getStatusBadgeColor = (status: DashboardContestStatus) => {
     const colors = {
       DRAFT: "staff-badge-neutral",
@@ -120,7 +108,8 @@ export default function ContestsManagementPage() {
   const totalContests = totalFromAPI;
   const activeContests = contests.filter((c) => c.status === "ACTIVE").length;
   const totalRounds = contests.reduce(
-    (sum, c) => sum + (c.rounds?.length || 0),
+    (sum, c) =>
+      sum + (c.rounds ? new Set(c.rounds.map((r) => r.name)).size : 0),
     0
   );
   const totalAwards = contests.reduce((sum, c) => sum + (c.numOfAward || 0), 0);
@@ -150,7 +139,7 @@ export default function ContestsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Contests ({filteredContests.length})
+                    All Contests ({contests.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
                     Manage art competitions and contests
@@ -198,60 +187,6 @@ export default function ContestsManagementPage() {
                   },
                 ]}
               />
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link
-                  href="/dashboard/staff/contests/active"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
-                >
-                  <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                    <IconCircleCheck className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold staff-text-primary">
-                      Active Contests
-                    </p>
-                    <p className="text-xs staff-text-secondary">
-                      Currently running
-                    </p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/dashboard/staff/contests/examiners"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
-                >
-                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                    <IconUsers className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold staff-text-primary">
-                      Manage Examiners
-                    </p>
-                    <p className="text-xs staff-text-secondary">
-                      Invite judges
-                    </p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/dashboard/staff/contests/awards"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
-                >
-                  <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                    <IconTrophy className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold staff-text-primary">
-                      Awards & Results
-                    </p>
-                    <p className="text-xs staff-text-secondary">
-                      Manage prizes
-                    </p>
-                  </div>
-                </Link>
-              </div>
 
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
@@ -341,7 +276,7 @@ export default function ContestsManagementPage() {
                             Error loading contests. Please try again.
                           </td>
                         </tr>
-                      ) : filteredContests.length === 0 ? (
+                      ) : contests.length === 0 ? (
                         <tr>
                           <td
                             colSpan={6}
@@ -351,16 +286,21 @@ export default function ContestsManagementPage() {
                           </td>
                         </tr>
                       ) : (
-                        filteredContests.map((contest) => {
+                        contests.map((contest) => {
                           const StatusIcon = getStatusIcon(contest.status);
                           const activeRounds =
                             contest.rounds?.filter(
-                              (r: { status: string }) => r.status === "ACTIVE"
+                              (r: { status: string }) => r.status === "OPEN"
                             ).length || 0;
-                          const totalRoundCount = contest.rounds?.length || 0;
+                          const totalRoundCount = contest.rounds
+                            ? new Set(contest.rounds.map((r) => r.name)).size
+                            : 0;
 
                           return (
-                            <tr key={contest.id} className="hover:bg-gray-50">
+                            <tr
+                              key={contest.contestId}
+                              className="hover:bg-gray-50"
+                            >
                               <td className="px-6 py-4">
                                 <div className="flex items-start gap-3">
                                   {contest.bannerUrl && (
@@ -423,14 +363,14 @@ export default function ContestsManagementPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <Link
-                                  href={`/dashboard/staff/contests/detail?id=${contest.id}`}
+                                  href={`/dashboard/staff/contests/detail?id=${contest.contestId}`}
                                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors mr-2 inline-block"
                                   title="View Details"
                                 >
                                   <IconEye className="h-4 w-4" />
                                 </Link>
                                 <Link
-                                  href={`/dashboard/staff/contests/detail?id=${contest.id}`}
+                                  href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
                                   className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors mr-2 inline-block"
                                   title="Edit Contest"
                                 >

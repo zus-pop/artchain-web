@@ -11,6 +11,7 @@ import {
   IconEye,
   IconCheck,
   IconX,
+  IconPhoto,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -291,7 +292,7 @@ function RoundDetailContent() {
                 {round.startDate && (
                   <div className="staff-card p-4">
                     <div className="flex items-center gap-3">
-                      <div className="stat-icon bg-gradient-to-br from-blue-500 to-indigo-500">
+                      <div className="stat-icon bg-linear-to-br from-blue-500 to-indigo-500">
                         <IconCalendar className="h-5 w-5 text-white" />
                       </div>
                       <div>
@@ -309,7 +310,7 @@ function RoundDetailContent() {
                 {round.endDate && (
                   <div className="staff-card p-4">
                     <div className="flex items-center gap-3">
-                      <div className="stat-icon bg-gradient-to-br from-red-500 to-rose-500">
+                      <div className="stat-icon bg-linear-to-br from-red-500 to-rose-500">
                         <IconCalendar className="h-5 w-5 text-white" />
                       </div>
                       <div>
@@ -327,7 +328,7 @@ function RoundDetailContent() {
                 {round.submissionDeadline && (
                   <div className="staff-card p-4">
                     <div className="flex items-center gap-3">
-                      <div className="stat-icon bg-gradient-to-br from-orange-500 to-amber-500">
+                      <div className="stat-icon bg-linear-to-br from-orange-500 to-amber-500">
                         <IconClock className="h-5 w-5 text-white" />
                       </div>
                       <div>
@@ -335,7 +336,9 @@ function RoundDetailContent() {
                           Submission Deadline
                         </p>
                         <p className="text-sm font-bold staff-text-primary">
-                          {new Date(round.submissionDeadline).toLocaleDateString()}
+                          {new Date(
+                            round.submissionDeadline
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -345,7 +348,7 @@ function RoundDetailContent() {
                 {round.resultAnnounceDate && (
                   <div className="staff-card p-4">
                     <div className="flex items-center gap-3">
-                      <div className="stat-icon bg-gradient-to-br from-green-500 to-emerald-500">
+                      <div className="stat-icon bg-linear-to-br from-green-500 to-emerald-500">
                         <IconCalendar className="h-5 w-5 text-white" />
                       </div>
                       <div>
@@ -353,7 +356,9 @@ function RoundDetailContent() {
                           Result Announce
                         </p>
                         <p className="text-sm font-bold staff-text-primary">
-                          {new Date(round.resultAnnounceDate).toLocaleDateString()}
+                          {new Date(
+                            round.resultAnnounceDate
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -374,7 +379,7 @@ function RoundDetailContent() {
                       onClick={() => setSelectedStatus("ALL")}
                       className={`px-4 py-2 font-semibold transition-all ${
                         selectedStatus === "ALL"
-                          ? "bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white shadow-md"
+                          ? "bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white shadow-md"
                           : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                       }`}
                     >
@@ -384,7 +389,7 @@ function RoundDetailContent() {
                       onClick={() => setSelectedStatus("PENDING")}
                       className={`px-4 py-2 font-semibold transition-all ${
                         selectedStatus === "PENDING"
-                          ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md"
+                          ? "bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-md"
                           : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                       }`}
                     >
@@ -394,7 +399,7 @@ function RoundDetailContent() {
                       onClick={() => setSelectedStatus("ACCEPTED")}
                       className={`px-4 py-2 font-semibold transition-all ${
                         selectedStatus === "ACCEPTED"
-                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md"
+                          ? "bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-md"
                           : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                       }`}
                     >
@@ -404,7 +409,7 @@ function RoundDetailContent() {
                       onClick={() => setSelectedStatus("REJECTED")}
                       className={`px-4 py-2 font-semibold transition-all ${
                         selectedStatus === "REJECTED"
-                          ? "bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-md"
+                          ? "bg-linear-to-r from-red-500 to-rose-500 text-white shadow-md"
                           : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                       }`}
                     >
@@ -426,12 +431,21 @@ function RoundDetailContent() {
                       >
                         {/* Image */}
                         <div className="relative h-48 bg-gray-100">
-                          <Image
-                            src={submission.imageUrl}
-                            alt={submission.title}
-                            fill
-                            className="object-cover"
-                          />
+                          {submission.imageUrl ? (
+                            <Image
+                              src={submission.imageUrl}
+                              alt={submission.title}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-gray-400">
+                              <div className="text-center">
+                                <IconPhoto className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No image</p>
+                              </div>
+                            </div>
+                          )}
                           <div className="absolute top-2 right-2">
                             <span className={getStatusColor(submission.status)}>
                               {submission.status}
@@ -508,6 +522,7 @@ function RoundDetailContent() {
           isOpen={!!selectedPaintingId}
           onClose={() => setSelectedPaintingId(null)}
           paintingId={selectedPaintingId}
+          roundName={round.name}
         />
       )}
     </SidebarProvider>

@@ -1,28 +1,36 @@
 "use client";
 
+import {
+  createStaffRound2,
+  deleteStaffRound,
+  getStaffContestById,
+  getStaffRounds,
+} from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
+import { ExaminersDialog } from "@/components/staff/ExaminersDialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Contest } from "@/types/dashboard";
 import {
   IconArrowLeft,
-  IconEdit,
   IconCalendar,
-  IconTrophy,
-  IconUsers,
   IconClock,
+  IconEdit,
   IconEye,
   IconPlus,
   IconTrash,
+  IconTrophy,
+  IconUsers,
   IconUsersGroup,
 } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getStaffContestById, deleteStaffRound, getStaffRounds, createStaffRound2 } from "@/apis/staff";
-import Image from "next/image";
 import { Suspense, useState } from "react";
-import { ExaminersDialog } from "@/components/staff/ExaminersDialog";
+import { toast } from "sonner";
 
 function ContestDetailContent() {
   const searchParams = useSearchParams();
@@ -47,7 +55,7 @@ function ContestDetailContent() {
     staleTime: 1 * 60 * 1000,
   });
 
-  const contest = contestData?.data;
+  const contest = contestData?.data as Contest;
   const rounds = roundsData?.data || [];
 
   // Delete round mutation
@@ -71,11 +79,20 @@ function ContestDetailContent() {
 
   // Create round 2 mutation
   const createRound2Mutation = useMutation({
-    mutationFn: (contestId: number) => createStaffRound2(contestId, { date: new Date().toISOString() }),
+    mutationFn: (contestId: number) =>
+      createStaffRound2(contestId, { date: new Date().toISOString() }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contest-rounds", contestId],
       });
+      toast.success("Tạo vòng 2 thành công");
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
     },
   });
 
@@ -228,14 +245,13 @@ function ContestDetailContent() {
                       </span>
                     </div>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Contest ID: {contest.id}
+                      Contest ID: {contest.contestId}
                     </p>
                   </div>
                 </div>
-                {/* Thay đổi: Bỏ rounded-full, dùng */}
                 <Link
-                  href={`/dashboard/staff/contests/edit?id=${contest.id}`}
-                  className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                  href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
+                  className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
                 >
                   <IconEdit className="h-4 w-4" />
                   Edit Contest
@@ -323,10 +339,10 @@ function ContestDetailContent() {
                 <button
                   type="button"
                   // onClick={() => setIsExaminersDialogOpen(true)} // Hàm mở dialog
-                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
                   {/* Icon Section */}
-                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconUsers className="h-5 w-5 text-white" />
                   </div>
                   {/* Text Section */}
@@ -342,10 +358,10 @@ function ContestDetailContent() {
                 <button
                   type="button"
                   onClick={() => setIsExaminersDialogOpen(true)}
-                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
                   {/* Icon Section */}
-                  <div className=" bg-gradient-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconUsers className="h-5 w-5 text-white" />
                   </div>
                   {/* Text Section */}
@@ -358,6 +374,24 @@ function ContestDetailContent() {
                     </p>
                   </div>
                 </button>
+                <Link
+                  href={`/dashboard/staff/contests/awards?id=${contest.contestId}`}
+                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                >
+                  {/* Icon Section */}
+                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <IconTrophy className="h-5 w-5 text-white" />
+                  </div>
+                  {/* Text Section */}
+                  <div>
+                    <p className="text-sm font-bold staff-text-primary text-left">
+                      Manage Awards ({contest.numOfAward || 0})
+                    </p>
+                    <p className="text-xs staff-text-secondary text-left">
+                      Assign prizes to winners
+                    </p>
+                  </div>
+                </Link>
               </div>
 
               {/* Contest Details */}
@@ -438,11 +472,13 @@ function ContestDetailContent() {
                   <h3 className="text-lg font-bold staff-text-primary">
                     Contest Rounds
                   </h3>
-                  {!rounds.some(round => round.isRound2) && (
+                  {!rounds.some((round) => round.isRound2) && (
                     <button
-                      onClick={() => createRound2Mutation.mutate(Number(contestId))}
+                      onClick={() =>
+                        createRound2Mutation.mutate(Number(contestId))
+                      }
                       disabled={createRound2Mutation.isPending}
-                      className="bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
+                      className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
                     >
                       <IconPlus className="h-4 w-4" />
                       Round 2
@@ -453,7 +489,10 @@ function ContestDetailContent() {
                 {rounds && rounds.length > 0 ? (
                   <div className="space-y-4">
                     {rounds.map((round) => (
-                      <div key={round.name} className="border border-[#e6e2da] p-4 rounded-md">
+                      <div
+                        key={round.name}
+                        className="border border-[#e6e2da] p-4 rounded-md"
+                      >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <h4 className="font-bold staff-text-primary">
@@ -464,9 +503,11 @@ function ContestDetailContent() {
                                 </span>
                               )}
                             </h4>
-                            <span className={getStatusColor(round.status || "DRAFT")}>
-                              {round.status || "DRAFT"}
-                            </span>
+                            {round.status && (
+                              <span className={getStatusColor(round.status)}>
+                                {round.status}
+                              </span>
+                            )}
                           </div>
                           {!round.isRound2 && round.roundId && (
                             <div className="flex items-center gap-2">
@@ -478,10 +519,15 @@ function ContestDetailContent() {
                                 <IconEye className="h-4 w-4 staff-text-secondary" />
                               </Link>
                               <button
-                                onClick={() => round.roundId && handleDeleteRound(round.roundId)}
+                                onClick={() =>
+                                  round.roundId &&
+                                  handleDeleteRound(round.roundId)
+                                }
                                 className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
                                 title="Delete round"
-                                disabled={deleteMutation.isPending || !round.roundId}
+                                disabled={
+                                  deleteMutation.isPending || !round.roundId
+                                }
                               >
                                 <IconTrash className="h-4 w-4" />
                               </button>
@@ -493,7 +539,9 @@ function ContestDetailContent() {
                           <div className="grid grid-cols-2 gap-4 text-sm">
                             {round.startDate && (
                               <div>
-                                <p className="staff-text-secondary">Start Date</p>
+                                <p className="staff-text-secondary">
+                                  Start Date
+                                </p>
                                 <p className="staff-text-primary font-semibold">
                                   {formatDate(round.startDate)}
                                 </p>
@@ -545,13 +593,18 @@ function ContestDetailContent() {
                             </p>
                             <div className="space-y-2">
                               {round.tables?.map((table) => (
-                                <div key={table.roundId} className="border border-[#e6e2da] p-3 rounded">
+                                <div
+                                  key={table.roundId}
+                                  className="border border-[#e6e2da] p-3 rounded"
+                                >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                       <h5 className="font-semibold staff-text-primary">
                                         Table {table.table}
                                       </h5>
-                                      <span className={getStatusColor(table.status)}>
+                                      <span
+                                        className={getStatusColor(table.status)}
+                                      >
                                         {table.status}
                                       </span>
                                     </div>
@@ -564,7 +617,9 @@ function ContestDetailContent() {
                                         <IconEye className="h-3 w-3 staff-text-secondary" />
                                       </Link>
                                       <button
-                                        onClick={() => handleDeleteRound(table.roundId)}
+                                        onClick={() =>
+                                          handleDeleteRound(table.roundId)
+                                        }
                                         className="p-1 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
                                         title="Delete table"
                                         disabled={deleteMutation.isPending}
@@ -576,7 +631,9 @@ function ContestDetailContent() {
                                   <div className="grid grid-cols-2 gap-2 text-xs mt-2">
                                     {table.startDate && (
                                       <div>
-                                        <p className="staff-text-secondary">Start</p>
+                                        <p className="staff-text-secondary">
+                                          Start
+                                        </p>
                                         <p className="staff-text-primary font-semibold">
                                           {formatDate(table.startDate)}
                                         </p>
@@ -584,7 +641,9 @@ function ContestDetailContent() {
                                     )}
                                     {table.endDate && (
                                       <div>
-                                        <p className="staff-text-secondary">End</p>
+                                        <p className="staff-text-secondary">
+                                          End
+                                        </p>
                                         <p className="staff-text-primary font-semibold">
                                           {formatDate(table.endDate)}
                                         </p>
@@ -601,7 +660,8 @@ function ContestDetailContent() {
                   </div>
                 ) : (
                   <div className="text-center py-8 staff-text-secondary">
-                    No rounds created yet. Click &quot;+ Round 2&quot; to add one.
+                    No rounds created yet. Click &quot;+ Round 2&quot; to add
+                    one.
                   </div>
                 )}
               </div>
@@ -609,8 +669,6 @@ function ContestDetailContent() {
           </div>
         </div>
       </SidebarInset>
-
-      {/* Examiners Dialog */}
       <ExaminersDialog
         isOpen={isExaminersDialogOpen}
         onClose={() => setIsExaminersDialogOpen(false)}

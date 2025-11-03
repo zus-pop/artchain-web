@@ -132,22 +132,17 @@ export type ContestCategory =
   | "OTHER";
 
 export interface Contest {
-  id: string;
+  contestId: string;
   title: string;
   description: string;
-  category: string;
   status: ContestStatus;
   startDate: string;
   endDate: string;
-  maxParticipants: number;
-  currentParticipants: number;
-  prizePool: string;
-  examinersCount: number;
-  submissionsCount: number;
   createdAt: string;
   createdBy: string;
   bannerUrl?: string;
   numOfAward?: number;
+  round2Quantity: number;
   rounds?: Array<{
     roundId: number;
     contestId: number;
@@ -162,6 +157,7 @@ export interface Contest {
     createdAt: string;
     updatedAt: string;
   }>;
+  examiners?: [];
 }
 
 export interface ActiveContest {
@@ -225,20 +221,6 @@ export type AwardTemplateType =
   | "RIBBON"
   | "PLAQUE"
   | "OTHER";
-
-export interface Award {
-  id: string;
-  contestId: string;
-  contestTitle: string;
-  winnerId: string;
-  winnerName: string;
-  type: AwardType;
-  title: string;
-  description: string;
-  prize: number;
-  awardedAt: string;
-  certificateUrl?: string;
-}
 
 export interface AwardTemplate {
   id: string;
