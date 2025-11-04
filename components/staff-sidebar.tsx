@@ -5,6 +5,7 @@ import {
   IconDashboard,
   IconFileText,
   IconMoneybag,
+  IconPalette,
   IconSettings,
   IconTrophy,
   IconUsers,
@@ -118,22 +119,34 @@ const data = {
         },
       ],
     },
+
     {
-      title: "Sponsors Management",
-      url: "/dashboard/staff/sponsors",
+      title: "Campaign Management",
+      url: "/dashboard/staff/campaigns",
       icon: IconMoneybag,
       items: [
         {
-          title: "All Sponsors",
-          url: "/dashboard/staff/sponsors",
-        },
-        {
-          title: "Sponsorship Campaigns",
-          url: "/dashboard/staff/sponsors/campaigns",
+          title: "All Campaigns",
+          url: "/dashboard/staff/campaigns",
         },
         {
           title: "Create Campaign",
-          url: "/dashboard/staff/sponsors/campaigns/create",
+          url: "/dashboard/staff/campaigns/create",
+        },
+      ],
+    },
+    {
+      title: "Exhibition Management",
+      url: "/dashboard/staff/exhibitions",
+      icon: IconPalette,
+      items: [
+        {
+          title: "All Exhibitions",
+          url: "/dashboard/staff/exhibitions",
+        },
+        {
+          title: "Create Exhibition",
+          url: "/dashboard/staff/exhibitions/create",
         },
       ],
     },

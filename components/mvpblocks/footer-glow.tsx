@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export default function FooterGlow() {
   return (
@@ -30,7 +30,7 @@ export default function FooterGlow() {
       <div className="glass relative mx-auto flex flex-col items-center gap-8 rounded-2xl px-6 py-10 md:flex-row md:items-start md:justify-between md:gap-12">
         <div className="flex flex-col items-center md:items-start">
           <a href="#" className="mb-4 flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-rose-400 to-rose-700 text-2xl font-extrabold text-white shadow-md">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-rose-700 text-2xl font-extrabold text-white shadow-md">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -46,7 +46,7 @@ export default function FooterGlow() {
                 />
               </svg>
             </span>
-            <span className="bg-gradient-to-br from-rose-200 to-rose-500 bg-clip-text text-xl font-semibold tracking-tight text-transparent">
+            <span className="bg-linear-to-br from-rose-200 to-rose-500 bg-clip-text text-xl font-semibold tracking-tight text-transparent">
               Mvpblocks
             </span>
           </a>
