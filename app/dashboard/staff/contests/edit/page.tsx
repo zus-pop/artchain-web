@@ -54,7 +54,7 @@ function EditContestContent() {
     if (contest) {
       // Find round 1 data (round with ID 1 or name containing "round 1")
       const round1Data = contest.rounds?.find(
-        (round: any) =>
+        (round) =>
           round.roundId === 1 ||
           round.name?.toLowerCase().includes("round 1") ||
           round.name?.toLowerCase().includes("round_1")

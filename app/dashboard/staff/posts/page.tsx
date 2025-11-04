@@ -44,11 +44,7 @@ export default function PostsPage() {
   ];
 
   // Fetch posts using React Query
-  const {
-    data: postsResponse,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: postsResponse, isLoading } = useQuery({
     queryKey: [
       "staff-posts",
       currentPage,

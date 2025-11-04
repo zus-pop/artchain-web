@@ -1,9 +1,11 @@
 "use client";
 
+import { createStaffContest } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -11,18 +13,15 @@ import {
   IconFileText,
   IconTrophy,
   IconUpload,
-  IconPhoto,
 } from "@tabler/icons-react";
-import Link from "next/link";
-import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createStaffContest } from "@/apis/staff";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 // Zod validation schema
 const createContestSchema = z

@@ -60,26 +60,6 @@ interface PostTag {
   tag: Tag;
 }
 
-interface Post {
-  post_id: number;
-  account_id: string;
-  title: string;
-  content: string;
-  image_url: string | null;
-  status: PostStatus;
-  published_at: string;
-  created_at: string;
-  updated_at: string;
-  creator: {
-    userId: string;
-    username: string;
-    fullName: string;
-    email: string;
-    role: string;
-  };
-  postTags: PostTag[];
-}
-
 function ViewPostContent() {
   const params = useParams();
   const postId = params.id as string;

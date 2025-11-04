@@ -1,39 +1,35 @@
 "use client";
 
+import { useGetRound2TopByContestId } from "@/apis/paintings";
+import {
+  createStaffPost,
+  createStaffTag,
+  getStaffContestById,
+  getStaffTags,
+} from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  getStaffContestById,
-  getStaffTags,
-  createStaffTag,
-  createStaffPost,
-} from "@/apis/staff";
-import { useGetRound2TopByContestId } from "@/apis/paintings";
-import myAxios from "@/lib/custom-axios";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { TopPainting } from "@/types/painting";
 import {
   IconArrowLeft,
   IconCheck,
-  IconDeviceFloppy,
-  IconEye,
   IconFileText,
   IconPlus,
   IconSearch,
   IconSend,
   IconTag,
-  IconTrophy,
   IconUsers,
   IconX,
 } from "@tabler/icons-react";
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
-import Link from "next/link";
-import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const MDXEditorWrapper = dynamic(
   () =>
@@ -58,7 +54,15 @@ interface Tag {
   created_at?: string;
 }
 
-export default function AnnounceResultsPage() {
+export default function AnnounceResultSuspense() {
+  return (
+    <Suspense>
+      <AnnounceResultsPage />
+    </Suspense>
+  );
+}
+
+function AnnounceResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const contestId = searchParams.get("id") as string;
@@ -179,7 +183,7 @@ export default function AnnounceResultsPage() {
       setPostTitle(generatedTitle);
       setPostContent(generatedContent);
     }
-  }, [contest, paintings]);
+  }, [contest, paintings, generateAnnouncementContent]);
 
   // Fetch tags based on search query
   useEffect(() => {
@@ -688,7 +692,7 @@ export default function AnnounceResultsPage() {
                                     {painting.award?.name}
                                   </div>
                                   <div className="text-xs staff-text-secondary truncate">
-                                    "{painting.title}"
+                                    &ldquo;{painting.title}&rdquo;
                                   </div>
                                   <div className="text-xs text-green-600">
                                     {painting.competitorName}

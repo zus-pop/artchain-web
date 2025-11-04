@@ -43,11 +43,81 @@ export interface Sponsor {
 // Campaign Management Types
 export type CampaignStatus = "ACTIVE" | "COMPLETED" | "PAUSED" | "DRAFT";
 
+export interface Campaign {
+  id: string;
+  title: string;
+  description: string;
+  sponsor: string;
+  sponsorCompany: string;
+  goalAmount: number;
+  raisedAmount: number;
+  status: CampaignStatus;
+  startDate: string;
+  endDate: string;
+  participants: number;
+  category: string;
+  progress: number;
+}
+
+export interface CampaignFormData {
+  title: string;
+  description: string;
+  sponsorId: string;
+  goalAmount: number;
+  startDate: string;
+  endDate: string;
+  category: string;
+  status: CampaignStatus;
+  targetParticipants: number;
+  requirements: string;
+  benefits: string;
+}
+
 // Competitor Management Types
 export type CompetitorStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
 
+export interface Competitor {
+  id: string;
+  fullName: string;
+  username: string;
+  email: string;
+  phone?: string;
+  age: number;
+  school?: string;
+  location?: string;
+  status: CompetitorStatus;
+  joinedDate: string;
+  lastActive: string;
+  totalPaintings: number;
+  approvedPaintings: number;
+  pendingPaintings: number;
+  rejectedPaintings: number;
+  competitionsEntered: number;
+  awardsWon: number;
+  guardianName?: string;
+  guardianEmail?: string;
+}
+
 // Painting Management Types
 export type PaintingStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface Painting {
+  id: string;
+  title: string;
+  competitorName: string;
+  competitorAge: number;
+  submittedDate: string;
+  imageUrl: string;
+  competitionName: string;
+  category: string;
+  status: PaintingStatus;
+  description?: string;
+  approvedDate?: string;
+  approvedBy?: string;
+  rejectedDate?: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
+}
 
 // Contest Management Types
 export type ContestStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";

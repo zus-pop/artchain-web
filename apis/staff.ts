@@ -491,7 +491,13 @@ export const createStaffCampaign = async (data: {
 export const getStaffCampaigns = async (params?: {
   page?: number;
   limit?: number;
-  status?: "ACTIVE" | "CLOSED" | "COMPLETED" | "DRAFT" | "CANCELLED";
+  status?:
+    | "ACTIVE"
+    | "CLOSED"
+    | "COMPLETED"
+    | "DRAFT"
+    | "CANCELLED"
+    | undefined;
 }) => {
   const response = await myAxios.get("/campaigns", { params });
   return response.data;

@@ -22,14 +22,22 @@ import {
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString("vi-VN");
 };
 
-export default function AwardManagementPage() {
+export default function AwardManageSuspense() {
+  return (
+    <Suspense>
+      <AwardManagementPage />
+    </Suspense>
+  );
+}
+
+function AwardManagementPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const contestId = searchParams.get("id") as string;
@@ -115,7 +123,11 @@ export default function AwardManagementPage() {
     ]);
   };
 
-  const updateNewAward = (index: number, field: string, value: any) => {
+  const updateNewAward = (
+    index: number,
+    field: string,
+    value: string | number
+  ) => {
     const updated = [...newAwards];
     updated[index] = { ...updated[index], [field]: value };
     setNewAwards(updated);

@@ -1,35 +1,28 @@
 "use client";
 
-import { Breadcrumb } from "@/components/breadcrumb";
-import { SiteHeader } from "@/components/site-header";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getStaffContestById } from "@/apis/staff";
 import {
-  useGetAwardsByContestId,
   useAssignAward,
+  useGetAwardsByContestId,
   useRemoveAward,
 } from "@/apis/award";
 import { useGetRound2TopByContestId } from "@/apis/paintings";
-import { useQuery } from "@tanstack/react-query";
+import { getStaffContestById } from "@/apis/staff";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Award } from "@/types/award";
 import { TopPainting } from "@/types/painting";
 import {
-  IconTrophy,
-  IconX,
-  IconCheck,
   IconArrowLeft,
   IconSpeakerphone,
+  IconTrophy,
+  IconX,
 } from "@tabler/icons-react";
-import { useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString("vi-VN");
@@ -167,7 +160,15 @@ function PaintingAwardRow({
   );
 }
 
-export default function AwardsManagementPage() {
+export default function AwardsManagementSuspense() {
+  return (
+    <Suspense>
+      <AwardsManagementPage />
+    </Suspense>
+  );
+}
+
+function AwardsManagementPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const contestId = searchParams.get("id") as string;

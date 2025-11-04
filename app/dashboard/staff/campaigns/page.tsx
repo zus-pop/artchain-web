@@ -1,10 +1,13 @@
 "use client";
 
+import { getStaffCampaigns } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { formatCurrency } from "@/lib/utils";
 import { CampaignStatus } from "@/types/dashboard";
+import { CampaignAPIResponse } from "@/types/staff/campaign";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -19,15 +22,9 @@ import {
   IconTrash,
   IconTrendingUp,
 } from "@tabler/icons-react";
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getStaffCampaigns } from "@/apis/staff";
 import Link from "next/link";
-import {
-  CampaignAPIResponse,
-  CampaignsAPIResponse,
-} from "@/types/staff/campaign";
-import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
 
 // API Response Types
 
@@ -46,15 +43,6 @@ export default function CampaignsPage() {
     "DRAFT",
   ];
 
-  // Build query parameters
-  const queryParams = {
-    page: currentPage,
-    limit: pageSize,
-    ...(selectedStatus !== "ALL" && {
-      status: selectedStatus === "PAUSED" ? "CLOSED" : selectedStatus,
-    }),
-  };
-
   // Fetch campaigns using React Query
   const {
     data: campaignsResponse,
@@ -63,7 +51,14 @@ export default function CampaignsPage() {
     refetch,
   } = useQuery({
     queryKey: ["staff-campaigns", selectedStatus, currentPage, pageSize],
-    queryFn: () => getStaffCampaigns(queryParams as any),
+    queryFn: () =>
+      getStaffCampaigns({
+        page: currentPage,
+        limit: pageSize,
+        ...(selectedStatus !== "ALL" && {
+          status: selectedStatus === "PAUSED" ? "CLOSED" : selectedStatus,
+        }),
+      }),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
@@ -107,9 +102,6 @@ export default function CampaignsPage() {
   );
   const activeCampaigns = campaigns.filter(
     (campaign: CampaignAPIResponse) => campaign.status === "ACTIVE"
-  ).length;
-  const completedCampaigns = campaigns.filter(
-    (campaign: CampaignAPIResponse) => campaign.status === "COMPLETED"
   ).length;
 
   return (
