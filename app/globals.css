@@ -240,6 +240,17 @@
   }
 }
 
+:root {
+  /* Your default theme */
+  --background: white;
+  --foreground: black;
+}
+
+[data-theme='dark'] {
+  --background: white;
+  --foreground: black;
+}
+
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;
