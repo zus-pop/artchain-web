@@ -5,129 +5,265 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
+  getStaffContestById,
+  getStaffTags,
+  createStaffTag,
+  createStaffPost,
+} from "@/apis/staff";
+import { useGetRound2TopByContestId } from "@/apis/paintings";
+import myAxios from "@/lib/custom-axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { TopPainting } from "@/types/painting";
+import {
   IconArrowLeft,
   IconCheck,
+  IconDeviceFloppy,
   IconEye,
   IconFileText,
-  IconMail,
+  IconPlus,
+  IconSearch,
   IconSend,
+  IconTag,
   IconTrophy,
   IconUsers,
+  IconX,
 } from "@tabler/icons-react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Link from "next/link";
-import { useState } from "react";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 
-type AwardType = "GOLD" | "SILVER" | "BRONZE" | "HONORABLE_MENTION" | "SPECIAL";
+const MDXEditorWrapper = dynamic(
+  () =>
+    import("@/components/staff/MDXEditorWrapper").then(
+      (mod) => mod.MDXEditorWrapper
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" />
+    ),
+  }
+);
 
-interface Winner {
-  id: string;
-  name: string;
-  email: string;
-  age: number;
-  artworkTitle: string;
-  awardType: AwardType;
-  prizeAmount: string;
-  description: string;
-}
+const formatCurrency = (value: number) => {
+  return value.toLocaleString("vi-VN");
+};
 
-interface Contest {
-  id: string;
-  title: string;
-  endDate: string;
-  totalSubmissions: number;
-  winners: Winner[];
+interface Tag {
+  tag_id: number;
+  tag_name: string;
+  created_at?: string;
 }
 
 export default function AnnounceResultsPage() {
-  const [selectedContest, setSelectedContest] = useState<string>("");
-  const [announcementMessage, setAnnouncementMessage] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const contestId = searchParams.get("id") as string;
+
+  const [postTitle, setPostTitle] = useState("");
+  const [postContent, setPostContent] = useState(
+    "Loading announcement content..."
+  );
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
 
-  const [contests] = useState<Contest[]>([
-    {
-      id: "2",
-      title: "Digital Art Competition 2025",
-      endDate: "2025-12-15",
-      totalSubmissions: 38,
-      winners: [
-        {
-          id: "1",
-          name: "Diana Lee",
-          email: "diana.lee@email.com",
-          age: 14,
-          artworkTitle: "Cyber Symphony",
-          awardType: "GOLD",
-          prizeAmount: "$750",
-          description: "Innovative use of digital tools and artistic vision",
-        },
-        {
-          id: "2",
-          name: "Frank Wilson",
-          email: "frank.wilson@email.com",
-          age: 11,
-          artworkTitle: "Digital Dreams",
-          awardType: "SILVER",
-          prizeAmount: "$450",
-          description: "Exceptional digital composition and creativity",
-        },
-        {
-          id: "3",
-          name: "Grace Kim",
-          email: "grace.kim@email.com",
-          age: 13,
-          artworkTitle: "Pixel Poetry",
-          awardType: "BRONZE",
-          prizeAmount: "$250",
-          description: "Outstanding digital artwork with unique perspective",
-        },
-      ],
-    },
-    {
-      id: "4",
-      title: "Sculpture & 3D Art Challenge",
-      endDate: "2026-01-15",
-      totalSubmissions: 15,
-      winners: [
-        {
-          id: "4",
-          name: "Henry Brown",
-          email: "henry.brown@email.com",
-          age: 16,
-          artworkTitle: "Clay Dreams",
-          awardType: "GOLD",
-          prizeAmount: "$600",
-          description: "Masterful clay sculpture with emotional depth",
-        },
-      ],
-    },
-  ]);
+  // Tags state
+  const [tagSearch, setTagSearch] = useState("");
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+  const [isLoadingTags, setIsLoadingTags] = useState(false);
+  const [isCreatingTag, setIsCreatingTag] = useState(false);
+  const tagInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedContestData = contests.find((c) => c.id === selectedContest);
+  const { data: contestData } = useQuery({
+    queryKey: ["staff-contest", contestId],
+    queryFn: () => getStaffContestById(Number(contestId)),
+    enabled: !!contestId,
+  });
 
-  const getAwardTypeBadgeColor = (type: AwardType) => {
-    const colors = {
-      GOLD: "bg-yellow-100 text-yellow-800 border-yellow-300",
-      SILVER: "bg-gray-100 text-gray-800 border-gray-300",
-      BRONZE: "bg-orange-100 text-orange-800 border-orange-300",
-      HONORABLE_MENTION: "bg-blue-100 text-blue-800 border-blue-300",
-      SPECIAL: "bg-purple-100 text-purple-800 border-purple-300",
-    };
-    return colors[type];
+  const { data: paintingsData, isLoading: paintingsLoading } =
+    useGetRound2TopByContestId(contestId);
+
+  const contest = contestData?.data;
+  const paintings = (paintingsData?.data as TopPainting[]) || [];
+
+  // Create announcement post mutation
+  const createPostMutation = createStaffPost();
+
+  // Generate predefined content based on awarded paintings
+  const generateAnnouncementContent = () => {
+    if (!contest || paintings.length === 0) return "";
+
+    let content = `🎉 **Contest Results Announced!** 🎉\n\n`;
+    content += `We're thrilled to announce the winners of **${contest.title}**!\n\n`;
+    content += `## 🏆 Winners\n\n`;
+
+    // Sort by award rank
+    const sortedWinners = [...paintings].sort((a, b) => {
+      if (!a.award || !b.award) return 0;
+      return a.award.rank - b.award.rank;
+    });
+
+    sortedWinners.forEach((painting, index) => {
+      if (painting.award) {
+        content += `**${index + 1}. ${painting.award.name}**\n`;
+        content += `- **Artwork:** "${painting.title}"\n`;
+        content += `- **Artist:** ${painting.competitorName}\n`;
+        content += `- **Prize:** ${formatCurrency(
+          parseFloat(painting.award.prize)
+        )} ₫\n`;
+        content += `- **Score:** ${painting.avgScoreRound2.toFixed(2)}\n\n`;
+      }
+    });
+
+    content += `## 📊 Contest Summary\n`;
+    content += `- **Total Participants:** ${paintings.length}\n`;
+    content += `- **Winners Announced:** ${paintings.length}\n\n`;
+
+    content += `Congratulations to all the winners! Your talent and creativity have truly shone through. `;
+    content += `Thank you to everyone who participated in this amazing contest.\n\n`;
+    content += `#ContestResults #${contest.title.replace(
+      /\s+/g,
+      ""
+    )} #ArtCompetition`;
+
+    return content;
   };
+
+  // Handle tag selection
+  const handleSelectTag = (tag: Tag) => {
+    if (!selectedTags.find((t) => t.tag_id === tag.tag_id)) {
+      setSelectedTags([...selectedTags, tag]);
+    }
+    setTagSearch("");
+    setShowTagDropdown(false);
+  };
+
+  // Handle tag removal
+  const handleRemoveTag = (tagId: number) => {
+    setSelectedTags(selectedTags.filter((t) => t.tag_id !== tagId));
+  };
+
+  // Handle creating a new tag
+  const handleCreateTag = async () => {
+    if (!tagSearch.trim()) return;
+
+    setIsCreatingTag(true);
+    try {
+      const response = await createStaffTag({ tag_name: tagSearch.trim() });
+      // Handle response structure: { success: true, data: { tag_id, tag_name, ... } }
+      const newTag = response.data || response;
+
+      // Add the new tag to available tags and select it
+      setAvailableTags((prev) => [...prev, newTag]);
+      handleSelectTag(newTag);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      toast.error("Failed to create tag. Please try again.");
+    } finally {
+      setIsCreatingTag(false);
+    }
+  };
+
+  // Auto-generate content when contest and paintings data is loaded
+  useEffect(() => {
+    if (contest && paintings.length > 0) {
+      const generatedTitle = `${contest.title} - Results Announced!`;
+      const generatedContent = generateAnnouncementContent();
+
+      setPostTitle(generatedTitle);
+      setPostContent(generatedContent);
+    }
+  }, [contest, paintings]);
+
+  // Fetch tags based on search query
+  useEffect(() => {
+    const fetchTags = async () => {
+      if (tagSearch.length >= 0) {
+        setIsLoadingTags(true);
+        try {
+          const response = await getStaffTags({ search: tagSearch });
+          // Handle response structure: { success: true, data: [...] }
+          const tags = response.data || response;
+          setAvailableTags(Array.isArray(tags) ? tags : []);
+        } catch (error) {
+          console.error("Error fetching tags:", error);
+          setAvailableTags([]);
+        } finally {
+          setIsLoadingTags(false);
+        }
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchTags, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [tagSearch]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tagInputRef.current &&
+        !tagInputRef.current.parentElement?.parentElement?.contains(
+          event.target as Node
+        )
+      ) {
+        setShowTagDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handlePublish = async () => {
+    if (!postTitle.trim() || !postContent.trim()) {
+      toast.error("Please fill in both title and content");
+      return;
+    }
+
     setIsPublishing(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    setIsPublishing(false);
-    setIsPublished(true);
+    createPostMutation.mutate(
+      {
+        title: postTitle,
+        content: postContent,
+        file: selectedImage || undefined,
+        status: "PUBLISHED",
+        tag_ids: selectedTags.map((tag) => tag.tag_id),
+      },
+      {
+        onSuccess: (v) => {
+          toast.success("Thông báo kết quả cuộc thi thành công");
+          setIsPublishing(false);
+          router.push(`/dashboard/staff/posts/${v.data.post_id}`);
+        },
+      }
+    );
   };
 
-  const resetAnnouncement = () => {
-    setSelectedContest("");
-    setAnnouncementMessage("");
-    setIsPublished(false);
+  const handleSaveDraft = async () => {
+    if (!postTitle.trim() || !postContent.trim()) {
+      toast.error("Please fill in both title and content");
+      return;
+    }
+
+    createPostMutation.mutate(
+      {
+        title: postTitle,
+        content: postContent,
+        file: selectedImage || undefined,
+        status: "DRAFT",
+        tag_ids: selectedTags.map((tag) => tag.tag_id),
+      },
+      {
+        onSuccess: (v) => {},
+      }
+    );
   };
 
   if (isPublished) {
@@ -148,31 +284,36 @@ export default function AnnounceResultsPage() {
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
                 {/* Success Message */}
                 <div className="max-w-2xl mx-auto">
-                  <div className=" border border-green-200 bg-green-50 p-8 text-center">
+                  <div className="border border-green-200 bg-green-50 p-8 text-center">
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                      <IconCheck className="h-6 w-6 " />
+                      <IconCheck className="h-6 w-6 text-green-600" />
                     </div>
                     <h3 className="text-lg font-medium text-green-900 mb-2">
                       Results Announced Successfully!
                     </h3>
                     <p className="text-green-700 mb-6">
-                      The contest results for{" "}
-                      <strong>{selectedContestData?.title}</strong> have been
-                      published. All participants and winners have been notified
-                      via email.
+                      The contest results for <strong>{contest?.title}</strong>{" "}
+                      have been published as an announcement post. All
+                      participants will be notified.
                     </p>
                     <div className="flex gap-4 justify-center">
                       <Link
-                        href="/dashboard/staff/contests/awards"
+                        href="/dashboard/staff/posts"
                         className="staff-btn-secondary transition-colors"
                       >
-                        View All Awards
+                        View All Posts
                       </Link>
                       <button
-                        onClick={resetAnnouncement}
-                        className="border border-green-300 text-green-700 px-4 py-2  hover:bg-green-50 transition-colors"
+                        onClick={() => {
+                          setIsPublished(false);
+                          setPostTitle("");
+                          setPostContent("");
+                          setSelectedImage(null);
+                          setSelectedTags([]);
+                        }}
+                        className="border border-green-300 text-green-700 px-4 py-2 hover:bg-green-50 transition-colors"
                       >
-                        Announce More Results
+                        Create Another Announcement
                       </button>
                     </div>
                   </div>
@@ -205,7 +346,14 @@ export default function AnnounceResultsPage() {
                   label: "Contest Management",
                   href: "/dashboard/staff/contests",
                 },
-                { label: "Awards", href: "/dashboard/staff/contests/awards" },
+                {
+                  label: contest?.title || "Contest Detail",
+                  href: `/dashboard/staff/contests/detail?id=${contestId}`,
+                },
+                {
+                  label: "Awards",
+                  href: `/dashboard/staff/contests/awards?id=${contestId}`,
+                },
                 { label: "Announce Results" },
               ]}
               homeHref="/dashboard/staff"
@@ -217,234 +365,408 @@ export default function AnnounceResultsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Link
-                    href="/dashboard/staff/contests/awards"
-                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    href={`/dashboard/staff/contests/awards?id=${contestId}`}
+                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      Announce Contest Results
+                      Create Contest Results Announcement
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Publish winners and distribute prizes for completed
-                      contests
+                      Announce winners and create a public post about contest
+                      results
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="max-w-4xl mx-auto space-y-6">
-                {/* Contest Selection */}
-                <div className="staff-card p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                    <IconTrophy className="h-5 w-5 " />
-                    Select Contest
-                  </h3>
+              <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Content - Post Creation */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Image Upload - Moved to top */}
+                  <div className="staff-card p-6">
+                    <label className="block text-sm font-medium staff-text-primary mb-2">
+                      Featured Image (Optional)
+                    </label>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Choose contest to announce results for *
-                      </label>
-                      <select
-                        value={selectedContest}
-                        onChange={(e) => setSelectedContest(e.target.value)}
-                        className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
+                    {/* Upload Area */}
+                    <div className="space-y-4">
+                      <div
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
+                        onClick={() =>
+                          document.getElementById("image-upload")?.click()
+                        }
                       >
-                        <option value="">Select a contest...</option>
-                        {contests.map((contest) => (
-                          <option key={contest.id} value={contest.id}>
-                            {contest.title} ({contest.totalSubmissions}{" "}
-                            submissions)
-                          </option>
-                        ))}
-                      </select>
+                        {selectedImage ? (
+                          <div className="space-y-4">
+                            <div className="relative w-full h-48 mx-auto">
+                              <Image
+                                src={URL.createObjectURL(selectedImage)}
+                                alt="Preview"
+                                fill
+                                className="object-cover rounded-lg border border-gray-200"
+                                onError={() => {
+                                  // Handle error silently
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                {selectedImage.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {(selectedImage.size / 1024 / 1024).toFixed(2)}{" "}
+                                MB
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedImage(null);
+                              }}
+                              className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            >
+                              Remove image
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                              <svg
+                                className="h-6 w-6 text-gray-400"
+                                strokeLinejoin="round"
+                                strokeLinecap="round"
+                                strokeWidth="2"
+                                stroke="currentColor"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                height="24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                                <path d="M7 9l5 -5l5 5"></path>
+                                <path d="M12 4l0 12"></path>
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">
+                                Click to upload image
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                PNG, JPG, GIF up to 10MB
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Hidden File Input */}
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            // Validate file size (10MB limit)
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast.error("File size must be less than 10MB");
+                              return;
+                            }
+                            // Validate file type
+                            if (!file.type.startsWith("image/")) {
+                              toast.error("Please select a valid image file");
+                              return;
+                            }
+                            setSelectedImage(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+
+                      <p className="text-xs staff-text-secondary">
+                        Upload an image file to display with your announcement
+                        post (optional)
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Post Creation Form */}
+                  <div className="staff-card p-6">
+                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <IconFileText className="h-5 w-5" />
+                      Announcement Post
+                    </h3>
+
+                    <div className="space-y-4">
+                      {/* Title */}
+                      <div>
+                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                          Post Title *
+                        </label>
+                        <input
+                          type="text"
+                          value={postTitle}
+                          onChange={(e) => setPostTitle(e.target.value)}
+                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter announcement title..."
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div>
+                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                          Post Content *
+                        </label>
+                        <MDXEditorWrapper
+                          markdown={postContent}
+                          onChange={(value) => setPostContent(value)}
+                          placeholder="Announcement content will be auto-generated..."
+                        />
+                        <p className="text-xs staff-text-secondary mt-2">
+                          Use the toolbar to format your content with Markdown
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Winners Preview */}
-                {selectedContestData && (
+                {/* Sidebar - Tags and Winners Preview */}
+                <div className="space-y-6">
+                  {/* Tags - Moved to sidebar */}
                   <div className="staff-card p-6">
                     <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                      <IconUsers className="h-5 w-5 " />
-                      Winners Preview
+                      <IconTag className="h-5 w-5" />
+                      Tags
                     </h3>
 
-                    <div className="mb-4 p-4 bg-blue-50 ">
-                      <div className="flex items-center gap-2 text-blue-800">
-                        <IconFileText className="h-5 w-5" />
-                        <span className="font-medium">Contest Summary</span>
-                      </div>
-                      <div className="mt-2 text-sm text-blue-700">
-                        <p>
-                          <strong>{selectedContestData.title}</strong>
-                        </p>
-                        <p>
-                          Ended: {selectedContestData.endDate} • Total
-                          Submissions: {selectedContestData.totalSubmissions}
-                        </p>
-                        <p>Winners: {selectedContestData.winners.length}</p>
-                      </div>
-                    </div>
+                    <div className="space-y-3">
+                      {/* Selected Tags */}
+                      {selectedTags.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {selectedTags.map((tag) => (
+                            <span
+                              key={tag.tag_id}
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium border border-blue-200 rounded-full"
+                            >
+                              {tag.tag_name}
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveTag(tag.tag_id)}
+                                className="hover:text-blue-900"
+                              >
+                                <IconX className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
 
-                    <div className="space-y-4">
-                      {selectedContestData.winners.map((winner, index) => (
-                        <div
-                          key={winner.id}
-                          className="border border-[#e6e2da]  p-4"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-start gap-4">
-                              <div className="shrink-0">
-                                <div
-                                  className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
-                                    winner.awardType === "GOLD"
-                                      ? "bg-yellow-100 border-yellow-300"
-                                      : winner.awardType === "SILVER"
-                                      ? "bg-gray-100 border-gray-300"
-                                      : "bg-orange-100 border-orange-300"
-                                  }`}
-                                >
-                                  <span
-                                    className={`text-lg font-bold ${
-                                      winner.awardType === "GOLD"
-                                        ? "text-yellow-600"
-                                        : winner.awardType === "SILVER"
-                                        ? "staff-text-secondary"
-                                        : "text-orange-600"
-                                    }`}
-                                  >
-                                    {index + 1}
-                                  </span>
-                                </div>
+                      {/* Tag Search Input */}
+                      <div className="relative">
+                        <div className="relative">
+                          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <input
+                            ref={tagInputRef}
+                            type="text"
+                            value={tagSearch}
+                            onChange={(e) => {
+                              setTagSearch(e.target.value);
+                              setShowTagDropdown(true);
+                            }}
+                            onFocus={() => setShowTagDropdown(true)}
+                            placeholder="Search or create tags..."
+                            className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                          />
+                        </div>
+
+                        {/* Tag Dropdown */}
+                        {showTagDropdown && (
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da] shadow-lg max-h-60 overflow-y-auto rounded-lg">
+                            {isLoadingTags ? (
+                              <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                                Loading tags...
                               </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="text-lg font-semibold staff-text-primary">
-                                    {winner.name}
-                                  </h4>
-                                  <span
-                                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getAwardTypeBadgeColor(
-                                      winner.awardType
-                                    )}`}
-                                  >
-                                    {winner.awardType}
+                            ) : (
+                              <>
+                                {/* Existing Tags */}
+                                {availableTags.length > 0 ? (
+                                  availableTags
+                                    .filter(
+                                      (tag) =>
+                                        !selectedTags.find(
+                                          (t) => t.tag_id === tag.tag_id
+                                        )
+                                    )
+                                    .map((tag) => (
+                                      <button
+                                        key={tag.tag_id}
+                                        type="button"
+                                        onClick={() => handleSelectTag(tag)}
+                                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between"
+                                      >
+                                        <span>{tag.tag_name}</span>
+                                      </button>
+                                    ))
+                                ) : tagSearch.trim() ? (
+                                  <div className="px-4 py-2 text-sm text-gray-500">
+                                    No tags found
+                                  </div>
+                                ) : (
+                                  <div className="px-4 py-2 text-sm text-gray-500">
+                                    Start typing to search tags
+                                  </div>
+                                )}
+
+                                {/* Create New Tag Button */}
+                                {tagSearch.trim() &&
+                                  !availableTags.find(
+                                    (tag) =>
+                                      tag.tag_name.toLowerCase() ===
+                                      tagSearch.toLowerCase()
+                                  ) && (
+                                    <button
+                                      type="button"
+                                      onClick={handleCreateTag}
+                                      disabled={isCreatingTag}
+                                      className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
+                                    >
+                                      <IconPlus className="h-4 w-4" />
+                                      {isCreatingTag
+                                        ? "Creating..."
+                                        : `Create "${tagSearch}"`}
+                                    </button>
+                                  )}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <p className="text-xs staff-text-secondary">
+                        Search for existing tags or create new ones to
+                        categorize your announcement
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Winners List */}
+                  <div className="staff-card p-4">
+                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <IconUsers className="h-5 w-5" />
+                      Winners ({paintings.length})
+                    </h3>
+
+                    {paintingsLoading ? (
+                      <div className="text-center py-8 staff-text-secondary">
+                        Loading winners...
+                      </div>
+                    ) : paintings.length > 0 ? (
+                      <div className="space-y-3">
+                        {paintings
+                          .sort(
+                            (a, b) =>
+                              (a.award?.rank || 0) - (b.award?.rank || 0)
+                          )
+                          .map((painting, index) => (
+                            <div
+                              key={painting.paintingId}
+                              className="border border-[#e6e2da] rounded-lg p-3"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                  <span className="text-sm font-bold text-yellow-800">
+                                    #{index + 1}
                                   </span>
                                 </div>
-                                <p className="staff-text-secondary mb-2">
-                                  <strong>
-                                    &ldquo;{winner.artworkTitle}&rdquo;
-                                  </strong>{" "}
-                                  • Age {winner.age}
-                                </p>
-                                <p className="text-sm staff-text-secondary mb-2">
-                                  {winner.description}
-                                </p>
-                                <div className="flex items-center gap-4 text-sm staff-text-secondary">
-                                  <span className="flex items-center gap-1">
-                                    <IconMail className="h-4 w-4" />
-                                    {winner.email}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <IconTrophy className="h-4 w-4" />
-                                    Prize: {winner.prizeAmount}
-                                  </span>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium staff-text-primary text-sm">
+                                    {painting.award?.name}
+                                  </div>
+                                  <div className="text-xs staff-text-secondary truncate">
+                                    "{painting.title}"
+                                  </div>
+                                  <div className="text-xs text-green-600">
+                                    {painting.competitorName}
+                                  </div>
+                                  <div className="text-xs staff-text-secondary">
+                                    Prize:{" "}
+                                    {painting.award
+                                      ? formatCurrency(
+                                          parseFloat(painting.award.prize)
+                                        )
+                                      : 0}{" "}
+                                    ₫
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <button className="text-gray-400 hover:staff-text-secondary p-1">
-                              <IconEye className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Announcement Message */}
-                {selectedContestData && (
-                  <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                      <IconSend className="h-5 w-5 " />
-                      Announcement Message
-                    </h3>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Personal Message (Optional)
-                        </label>
-                        <textarea
-                          value={announcementMessage}
-                          onChange={(e) =>
-                            setAnnouncementMessage(e.target.value)
-                          }
-                          rows={4}
-                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="Add a congratulatory message to all participants..."
-                        />
+                          ))}
                       </div>
-
-                      <div className="bg-gray-50 p-4 ">
-                        <h4 className="text-sm font-medium staff-text-primary mb-2">
-                          What happens when you announce results:
-                        </h4>
-                        <ul className="text-sm staff-text-secondary space-y-1">
-                          <li>
-                            • Winners will receive congratulatory emails with
-                            their award details
-                          </li>
-                          <li>
-                            • All participants will be notified of the results
-                          </li>
-                          <li>
-                            • Awards will be marked as &ldquo;announced&rdquo;
-                            in the system
-                          </li>
-                          <li>
-                            • Results will be published on the contest page
-                          </li>
-                          <li>
-                            • Certificates will be generated for all winners
-                          </li>
-                        </ul>
+                    ) : (
+                      <div className="text-center py-8 staff-text-secondary">
+                        No winners yet
                       </div>
-                    </div>
+                    )}
                   </div>
-                )}
 
-                {/* Action Buttons */}
-                {selectedContestData && (
-                  <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
-                    <Link
-                      href="/dashboard/staff/contests/awards"
-                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </Link>
-                    <button
-                      onClick={handlePublish}
-                      disabled={isPublishing}
-                      className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {isPublishing ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Publishing Results...
-                        </>
-                      ) : (
-                        <>
-                          <IconSend className="h-4 w-4" />
-                          Announce Results
-                        </>
-                      )}
-                    </button>
+                  {/* Preview Info */}
+                  <div className="staff-card p-4">
+                    <h4 className="font-semibold staff-text-primary mb-3">
+                      What happens when you publish:
+                    </h4>
+                    <ul className="text-sm staff-text-secondary space-y-2">
+                      <li className="flex items-start gap-2">
+                        <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>Public announcement post is created</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>Winners are publicly celebrated</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>Contest results are officially announced</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                        <span>Community engagement increases</span>
+                      </li>
+                    </ul>
                   </div>
-                )}
+                </div>
+              </div>
+
+              {/* Action Buttons - Moved outside grid */}
+              <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
+                <button
+                  onClick={handleSaveDraft}
+                  disabled={createPostMutation.isPending}
+                  className="px-6 py-2 border border-[#e6e2da] staff-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Save as Draft
+                </button>
+                <button
+                  onClick={handlePublish}
+                  disabled={isPublishing || createPostMutation.isPending}
+                  className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isPublishing ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Publishing...
+                    </>
+                  ) : (
+                    <>
+                      <IconSend className="h-4 w-4" />
+                      Publish Announcement
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

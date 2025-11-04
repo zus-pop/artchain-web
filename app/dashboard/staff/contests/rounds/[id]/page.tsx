@@ -1,30 +1,31 @@
 "use client";
 
+import {
+  acceptStaffSubmission,
+  getStaffRoundById,
+  getStaffSubmissions,
+  rejectStaffSubmission,
+} from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
+import { SubmissionDetailDialog } from "@/components/staff/SubmissionDetailDialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   IconArrowLeft,
   IconCalendar,
+  IconCheck,
   IconClock,
   IconEye,
-  IconCheck,
-  IconX,
   IconPhoto,
+  IconX,
 } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getStaffRoundById,
-  getStaffSubmissions,
-  acceptStaffSubmission,
-  rejectStaffSubmission,
-} from "@/apis/staff";
-import Image from "next/image";
-import { Suspense, useState } from "react";
-import { SubmissionDetailDialog } from "@/components/staff/SubmissionDetailDialog";
+import { Suspense, useEffect, useState } from "react";
 
 interface Submission {
   paintingId: string;
@@ -50,7 +51,7 @@ function RoundDetailContent() {
 
   const [selectedStatus, setSelectedStatus] = useState<
     "ALL" | "PENDING" | "ACCEPTED" | "REJECTED"
-  >("ALL");
+  >("PENDING");
 
   const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(
     null
@@ -64,6 +65,17 @@ function RoundDetailContent() {
   });
 
   const round = roundData?.data;
+
+  // Set default status based on round name
+  useEffect(() => {
+    if (round?.name) {
+      if (round.name.toUpperCase().includes("ROUND_2")) {
+        setSelectedStatus("ALL");
+      } else {
+        setSelectedStatus("PENDING");
+      }
+    }
+  }, [round?.name]);
 
   // Fetch submissions
   const { data: submissionsData, isLoading: isLoadingSubmissions } = useQuery({
@@ -367,123 +379,236 @@ function RoundDetailContent() {
               </div>
 
               {/* Submissions Section */}
-              <div className="staff-card p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-bold staff-text-primary">
-                    Submissions
-                  </h3>
+              {round.name.toUpperCase().includes("ROUND_2") ? (
+                // ROUND_2 Layout - Show all submissions with status filters
+                <div className="staff-card p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold staff-text-primary">
+                      Submissions
+                    </h3>
 
-                  {/* Status Filter Tabs */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSelectedStatus("ALL")}
-                      className={`px-4 py-2 font-semibold transition-all ${
-                        selectedStatus === "ALL"
-                          ? "bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white shadow-md"
-                          : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
-                      }`}
-                    >
-                      All ({counts.all})
-                    </button>
-                    <button
-                      onClick={() => setSelectedStatus("PENDING")}
-                      className={`px-4 py-2 font-semibold transition-all ${
-                        selectedStatus === "PENDING"
-                          ? "bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-md"
-                          : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
-                      }`}
-                    >
-                      Pending ({counts.pending})
-                    </button>
-                    <button
-                      onClick={() => setSelectedStatus("ACCEPTED")}
-                      className={`px-4 py-2 font-semibold transition-all ${
-                        selectedStatus === "ACCEPTED"
-                          ? "bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-md"
-                          : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
-                      }`}
-                    >
-                      Accepted ({counts.accepted})
-                    </button>
-                    <button
-                      onClick={() => setSelectedStatus("REJECTED")}
-                      className={`px-4 py-2 font-semibold transition-all ${
-                        selectedStatus === "REJECTED"
-                          ? "bg-linear-to-r from-red-500 to-rose-500 text-white shadow-md"
-                          : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
-                      }`}
-                    >
-                      Rejected ({counts.rejected})
-                    </button>
-                  </div>
-                </div>
-
-                {isLoadingSubmissions ? (
-                  <div className="text-center py-8 staff-text-secondary">
-                    Loading submissions...
-                  </div>
-                ) : submissions.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {submissions.map((submission: Submission) => (
-                      <div
-                        key={submission.paintingId}
-                        className="border border-[#e6e2da] overflow-hidden hover:shadow-lg transition-shadow"
+                    {/* Status Filter Tabs */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedStatus("ALL")}
+                        className={`px-4 py-2 font-semibold transition-all ${
+                          selectedStatus === "ALL"
+                            ? "bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white shadow-md"
+                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                        }`}
                       >
-                        {/* Image */}
-                        <div className="relative h-48 bg-gray-100">
-                          {submission.imageUrl ? (
-                            <Image
-                              src={submission.imageUrl}
-                              alt={submission.title}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full text-gray-400">
-                              <div className="text-center">
-                                <IconPhoto className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                <p className="text-sm">No image</p>
+                        All ({counts.all})
+                      </button>
+                      <button
+                        onClick={() => setSelectedStatus("PENDING")}
+                        className={`px-4 py-2 font-semibold transition-all ${
+                          selectedStatus === "PENDING"
+                            ? "bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-md"
+                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                        }`}
+                      >
+                        Pending ({counts.pending})
+                      </button>
+                      <button
+                        onClick={() => setSelectedStatus("ACCEPTED")}
+                        className={`px-4 py-2 font-semibold transition-all ${
+                          selectedStatus === "ACCEPTED"
+                            ? "bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-md"
+                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                        }`}
+                      >
+                        Accepted ({counts.accepted})
+                      </button>
+                      <button
+                        onClick={() => setSelectedStatus("REJECTED")}
+                        className={`px-4 py-2 font-semibold transition-all ${
+                          selectedStatus === "REJECTED"
+                            ? "bg-linear-to-r from-red-500 to-rose-500 text-white shadow-md"
+                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                        }`}
+                      >
+                        Rejected ({counts.rejected})
+                      </button>
+                    </div>
+                  </div>
+
+                  {isLoadingSubmissions ? (
+                    <div className="text-center py-8 staff-text-secondary">
+                      Loading submissions...
+                    </div>
+                  ) : submissions.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      {submissions.map((submission: Submission) => (
+                        <div
+                          key={submission.paintingId}
+                          className="border border-[#e6e2da] overflow-hidden hover:shadow-lg transition-shadow"
+                        >
+                          {/* Image */}
+                          <div className="relative h-48 bg-gray-100">
+                            {submission.imageUrl ? (
+                              <Image
+                                src={submission.imageUrl}
+                                alt={submission.title}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full text-gray-400">
+                                <div className="text-center">
+                                  <IconPhoto className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                  <p className="text-sm">No image</p>
+                                </div>
                               </div>
+                            )}
+                            <div className="absolute top-2 right-2">
+                              <span
+                                className={getStatusColor(submission.status)}
+                              >
+                                {submission.status}
+                              </span>
                             </div>
-                          )}
-                          <div className="absolute top-2 right-2">
-                            <span className={getStatusColor(submission.status)}>
-                              {submission.status}
-                            </span>
+                          </div>
+
+                          {/* Content */}
+                          <div className="p-4">
+                            <h4 className="font-bold staff-text-primary mb-2 line-clamp-1">
+                              {submission.title}
+                            </h4>
+                            <p className="text-sm staff-text-secondary mb-3 line-clamp-2">
+                              {submission.description}
+                            </p>
+                            <p className="text-xs staff-text-secondary mb-3">
+                              Submitted: {formatDate(submission.submissionDate)}
+                            </p>
+
+                            {/* Actions */}
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() =>
+                                  setSelectedPaintingId(submission.paintingId)
+                                }
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
+                              >
+                                <IconEye className="h-4 w-4" />
+                                View
+                              </button>
+                              {submission.status === "PENDING" && (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      handleQuickAccept(submission.paintingId)
+                                    }
+                                    disabled={acceptMutation.isPending}
+                                    className="px-3 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
+                                    title="Accept"
+                                  >
+                                    <IconCheck className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleQuickReject(submission.paintingId)
+                                    }
+                                    disabled={rejectMutation.isPending}
+                                    className="px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                                    title="Reject"
+                                  >
+                                    <IconX className="h-4 w-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 staff-text-secondary">
+                      No submissions found for this round.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // ROUND_1 Layout - Focus on pending submissions only
+                <div className="space-y-6">
+                  {/* Pending Submissions - Primary Focus */}
+                  <div className="staff-card p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className="text-xl font-bold staff-text-primary flex items-center gap-2">
+                          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                          Pending Review ({counts.pending})
+                        </h3>
+                        <p className="text-sm staff-text-secondary mt-1">
+                          Submissions awaiting your approval or rejection
+                        </p>
+                      </div>
+                    </div>
 
-                        {/* Content */}
-                        <div className="p-4">
-                          <h4 className="font-bold staff-text-primary mb-2 line-clamp-1">
-                            {submission.title}
-                          </h4>
-                          <p className="text-sm staff-text-secondary mb-3 line-clamp-2">
-                            {submission.description}
-                          </p>
-                          <p className="text-xs staff-text-secondary mb-3">
-                            Submitted: {formatDate(submission.submissionDate)}
-                          </p>
+                    {isLoadingSubmissions ? (
+                      <div className="text-center py-8 staff-text-secondary">
+                        Loading submissions...
+                      </div>
+                    ) : counts.pending > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {submissions.map((submission: Submission) => (
+                          <div
+                            key={submission.paintingId}
+                            className="border-2 border-orange-200 overflow-hidden hover:shadow-lg transition-all hover:border-orange-300"
+                          >
+                            {/* Image */}
+                            <div className="relative h-48 bg-gray-100">
+                              {submission.imageUrl ? (
+                                <Image
+                                  src={submission.imageUrl}
+                                  alt={submission.title}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center h-full text-gray-400">
+                                  <div className="text-center">
+                                    <IconPhoto className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No image</p>
+                                  </div>
+                                </div>
+                              )}
+                              <div className="absolute top-2 right-2">
+                                <span className="bg-orange-500 text-white px-2 py-1 text-xs font-bold rounded">
+                                  PENDING
+                                </span>
+                              </div>
+                            </div>
 
-                          {/* Actions */}
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                setSelectedPaintingId(submission.paintingId)
-                              }
-                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
-                            >
-                              <IconEye className="h-4 w-4" />
-                              View
-                            </button>
-                            {submission.status === "PENDING" && (
-                              <>
+                            {/* Content */}
+                            <div className="p-4">
+                              <h4 className="font-bold staff-text-primary mb-2 line-clamp-1">
+                                {submission.title}
+                              </h4>
+                              <p className="text-sm staff-text-secondary mb-3 line-clamp-2">
+                                {submission.description}
+                              </p>
+                              <p className="text-xs staff-text-secondary mb-3">
+                                Submitted:{" "}
+                                {formatDate(submission.submissionDate)}
+                              </p>
+
+                              {/* Actions */}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() =>
+                                    setSelectedPaintingId(submission.paintingId)
+                                  }
+                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
+                                >
+                                  <IconEye className="h-4 w-4" />
+                                  View
+                                </button>
                                 <button
                                   onClick={() =>
                                     handleQuickAccept(submission.paintingId)
                                   }
                                   disabled={acceptMutation.isPending}
-                                  className="px-3 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
+                                  className="px-4 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 font-semibold"
                                   title="Accept"
                                 >
                                   <IconCheck className="h-4 w-4" />
@@ -493,24 +618,26 @@ function RoundDetailContent() {
                                     handleQuickReject(submission.paintingId)
                                   }
                                   disabled={rejectMutation.isPending}
-                                  className="px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                                  className="px-4 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 font-semibold"
                                   title="Reject"
                                 >
                                   <IconX className="h-4 w-4" />
                                 </button>
-                              </>
-                            )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="text-center py-8 staff-text-secondary">
+                        <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+                        <p className="text-lg font-medium">All caught up!</p>
+                        <p>No pending submissions to review.</p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-8 staff-text-secondary">
-                    No submissions found for this round.
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

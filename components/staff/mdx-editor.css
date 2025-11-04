@@ -1,5 +1,4 @@
-/* MDX Editor Custom Styling */
-.mdx-editor-wrapper {
+MDX Editor Custom Styling .mdx-editor-wrapper {
   border-radius: 0.375rem;
   overflow: hidden;
   background: white;
@@ -28,12 +27,12 @@
 }
 
 .mdx-editor-wrapper [role="toolbar"] button:hover {
-  background: #e5e7eb;
+  /* background: #e5e7eb; */
 }
 
 .mdx-editor-wrapper [role="toolbar"] button[aria-pressed="true"] {
-  background: #dbeafe;
-  border-color: #3b82f6;
+  /* background: #dbeafe; */
+  /* border-color: #3b82f6; */
   color: #1e40af;
 }
 
@@ -41,7 +40,7 @@
 .mdx-editor-wrapper [role="toolbar"] [data-separator] {
   width: 1px;
   height: 1.5rem;
-  background: #e5e7eb;
+  /* background: #e5e7eb; */
   margin: 0 0.25rem;
 }
 
@@ -49,7 +48,8 @@
 .mdx-editor-wrapper [contenteditable] {
   min-height: 400px;
   padding: 1rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
   font-size: 0.875rem;
   line-height: 1.625;
   color: #1f2937;

@@ -204,7 +204,6 @@ export default function AwardManagementPage() {
                 </button>
               </div>
 
-              {/* Award Management Section */}
               <div className="staff-card p-6">
                 {/* Create New Awards */}
                 <div className="mb-8">

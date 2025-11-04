@@ -6,7 +6,10 @@ import {
   GetStaffRoundsResponse,
   UpdateContestRequest,
 } from "@/types/staff/contest-dto";
-import { useMutation } from "@tanstack/react-query";
+import { CreatePostRequest } from "@/types/staff/post-dto";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
 
 /**
  * Staff Contest Management APIs
@@ -283,15 +286,37 @@ export const getStaffPosts = async (params?: {
 };
 
 // POST /api/staff/posts - Create a new post
-export const createStaffPost = async (data: {
-  title: string;
-  content: string;
-  image_url?: string;
-  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  tag_ids: number[];
-}) => {
-  const response = await myAxios.post("/staff/posts", data);
-  return response.data;
+export const createStaffPost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreatePostRequest) => {
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("content", data.content);
+      formData.append("status", data.status);
+      formData.append("tag_ids", JSON.stringify(data.tag_ids));
+      if (data.file) {
+        formData.append("file", data.file);
+      }
+      const response = await myAxios.post("/staff/posts", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/staff/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/posts"] });
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
 };
 
 // GET /api/staff/posts/{id} - Get post by ID

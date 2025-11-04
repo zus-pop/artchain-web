@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect, Suspense, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getStaffPostById,
   updateStaffPost,
@@ -32,6 +33,7 @@ import { toast } from "sonner";
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import ReactMarkdown from "react-markdown";
 
 const MDXEditorWrapper = dynamic(
   () =>
@@ -81,11 +83,9 @@ interface Post {
 function ViewPostContent() {
   const params = useParams();
   const postId = params.id as string;
+  const queryClient = useQueryClient();
 
-  const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   // Edit form state
   const [editedTitle, setEditedTitle] = useState("");
@@ -97,61 +97,106 @@ function ViewPostContent() {
 
   // Tag search state
   const [tagSearch, setTagSearch] = useState("");
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [showTagDropdown, setShowTagDropdown] = useState(false);
-  const [isLoadingTags, setIsLoadingTags] = useState(false);
-  const [isCreatingTag, setIsCreatingTag] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch post data
-  useEffect(() => {
-    const fetchPost = async () => {
-      setLoading(true);
-      try {
-        const response = await getStaffPostById(postId);
-        const postData = response.data;
-        setPost(postData);
-
-        // Initialize edit form
-        setEditedTitle(postData.title);
-        setEditedContent(postData.content);
-        setEditedImageFile(null); // Reset file when loading existing post
-        setEditedStatus(postData.status);
-        setEditedTagIds(postData.postTags.map((pt: PostTag) => pt.tag_id));
-        setSelectedTags(postData.postTags.map((pt: PostTag) => pt.tag));
-      } catch (error) {
-        console.error("Error fetching post:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (postId) {
-      fetchPost();
-    }
-  }, [postId]);
+  const {
+    data: post,
+    isLoading: isLoadingPost,
+    error: postError,
+  } = useQuery({
+    queryKey: ["staff-post", postId],
+    queryFn: () => getStaffPostById(postId).then((res) => res.data),
+    enabled: !!postId,
+  });
 
   // Fetch tags for search
-  useEffect(() => {
-    const fetchTags = async () => {
-      if (tagSearch.length >= 0) {
-        setIsLoadingTags(true);
-        try {
-          const response = await getStaffTags({ search: tagSearch });
-          const tags = response.data || response;
-          setAvailableTags(Array.isArray(tags) ? tags : []);
-        } catch (error) {
-          console.error("Error fetching tags:", error);
-          setAvailableTags([]);
-        } finally {
-          setIsLoadingTags(false);
-        }
-      }
-    };
+  const { data: availableTags = [], isLoading: isLoadingTags } = useQuery({
+    queryKey: ["staff-tags", tagSearch],
+    queryFn: () =>
+      getStaffTags({ search: tagSearch }).then((res) => res.data || res),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-    const debounceTimer = setTimeout(fetchTags, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [tagSearch]);
+  // Update post mutation
+  const updatePostMutation = useMutation({
+    mutationFn: (data: {
+      title: string;
+      content: string;
+      status: PostStatus;
+      tag_ids: number[];
+    }) => updateStaffPost(postId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staff-post", postId] });
+      setIsEditing(false);
+      toast.success("Post updated successfully!");
+    },
+    onError: (error) => {
+      console.error("Error updating post:", error);
+      toast.error("Failed to update post. Please try again.");
+    },
+  });
+
+  // Delete post mutation
+  const deletePostMutation = useMutation({
+    mutationFn: () => deleteStaffPost(postId),
+    onSuccess: () => {
+      toast.success("Post deleted successfully!");
+      window.location.href = "/dashboard/staff/posts";
+    },
+    onError: (error) => {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post. Please try again.");
+    },
+  });
+
+  // Create tag mutation
+  const createTagMutation = useMutation({
+    mutationFn: (data: { tag_name: string }) => createStaffTag(data),
+    onSuccess: (newTag) => {
+      const tagToAdd = {
+        tag_id: newTag.data.tag_id || newTag.id,
+        tag_name: newTag.data.tag_name || newTag.name,
+        created_at: newTag.data.created_at || new Date().toISOString(),
+      };
+
+      if (!selectedTags.find((t) => t.tag_id === tagToAdd.tag_id)) {
+        const updatedTags = [...selectedTags, tagToAdd];
+        setSelectedTags(updatedTags);
+        setEditedTagIds(updatedTags.map((t) => t.tag_id));
+      }
+
+      queryClient.setQueryData(["staff-tags", ""], (oldData: Tag[] = []) => {
+        if (!oldData.find((t) => t.tag_id === tagToAdd.tag_id)) {
+          return [...oldData, tagToAdd];
+        }
+        return oldData;
+      });
+
+      // Clear search and close dropdown
+      setTagSearch("");
+      setShowTagDropdown(false);
+
+      toast.success("Tag created successfully!");
+    },
+    onError: (error) => {
+      console.error("Error creating tag:", error);
+      toast.error("Failed to create tag. Please try again.");
+    },
+  });
+
+  // Initialize edit form when post data is loaded
+  useEffect(() => {
+    if (post) {
+      setEditedTitle(post.title);
+      setEditedContent(post.content);
+      setEditedImageFile(null); // Reset file when loading existing post
+      setEditedStatus(post.status);
+      setEditedTagIds(post.postTags.map((pt: PostTag) => pt.tag_id));
+      setSelectedTags(post.postTags.map((pt: PostTag) => pt.tag));
+    }
+  }, [post]);
 
   const handleSelectTag = (tag: Tag) => {
     if (!selectedTags.find((t) => t.tag_id === tag.tag_id)) {
@@ -172,58 +217,18 @@ function ViewPostContent() {
   const handleCreateTag = async () => {
     if (!tagSearch.trim()) return;
 
-    setIsCreatingTag(true);
-    try {
-      const response = await createStaffTag({ tag_name: tagSearch.trim() });
-      const newTag = response.data || response;
-
-      setAvailableTags((prev) => [...prev, newTag]);
-      handleSelectTag(newTag);
-    } catch (error) {
-      console.error("Error creating tag:", error);
-      toast.error("Failed to create tag. Please try again.");
-    } finally {
-      setIsCreatingTag(false);
-    }
+    createTagMutation.mutate({ tag_name: tagSearch.trim() });
   };
 
   const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      // Create FormData for file upload
-      const formDataToSend = new FormData();
-      formDataToSend.append("title", editedTitle);
-      formDataToSend.append("content", editedContent);
-      formDataToSend.append("status", editedStatus);
-      formDataToSend.append("tag_ids", JSON.stringify(editedTagIds));
+    const updateData = {
+      title: editedTitle,
+      content: editedContent,
+      status: editedStatus,
+      tag_ids: editedTagIds,
+    };
 
-      // Add image file if exists
-      if (editedImageFile) {
-        formDataToSend.append("file", editedImageFile);
-      }
-
-      // For update, we need to use a different approach since update API might not support FormData
-      // We'll use the regular object approach but keep the file handling for future API updates
-      const updateData = {
-        title: editedTitle,
-        content: editedContent,
-        status: editedStatus,
-        tag_ids: editedTagIds,
-      };
-
-      await updateStaffPost(postId, updateData);
-
-      // Refresh post data
-      const response = await getStaffPostById(postId);
-      setPost(response.data);
-      setIsEditing(false);
-      toast.success("Post updated successfully!");
-    } catch (error) {
-      console.error("Error updating post:", error);
-      toast.error("Failed to update post. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
+    updatePostMutation.mutate(updateData);
   };
 
   const handleCancelEdit = () => {
@@ -232,22 +237,15 @@ function ViewPostContent() {
       setEditedContent(post.content);
       setEditedImageFile(null); // Reset file when canceling
       setEditedStatus(post.status);
-      setEditedTagIds(post.postTags.map((pt) => pt.tag_id));
-      setSelectedTags(post.postTags.map((pt) => pt.tag));
+      setEditedTagIds(post.postTags.map((pt: PostTag) => pt.tag_id));
+      setSelectedTags(post.postTags.map((pt: PostTag) => pt.tag));
     }
     setIsEditing(false);
   };
 
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this post?")) {
-      try {
-        await deleteStaffPost(postId);
-        toast.success("Post deleted successfully!");
-        window.location.href = "/dashboard/staff/posts";
-      } catch (error) {
-        console.error("Error deleting post:", error);
-        toast.error("Failed to delete post. Please try again.");
-      }
+      deletePostMutation.mutate();
     }
   };
 
@@ -279,7 +277,7 @@ function ViewPostContent() {
     });
   };
 
-  if (loading) {
+  if (isLoadingPost) {
     return (
       <SidebarProvider
         style={
@@ -303,7 +301,7 @@ function ViewPostContent() {
     );
   }
 
-  if (!post) {
+  if (postError || !post) {
     return (
       <SidebarProvider
         style={
@@ -317,7 +315,9 @@ function ViewPostContent() {
         <SidebarInset>
           <SiteHeader title="Post Detail" />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Post not found</div>
+            <div className="text-gray-500">
+              {postError ? "Error loading post" : "Post not found"}
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -358,49 +358,50 @@ function ViewPostContent() {
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold staff-text-primary">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-xl font-bold staff-text-primary">
                         {post.title}
                       </h2>
                       <span className={getStatusBadgeColor(post.status)}>
                         {post.status}
                       </span>
                     </div>
-                    <p className="text-sm staff-text-secondary mt-1">
-                      Post ID: {post.post_id}
-                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                {/* Action Buttons - Spread out for more space */}
+                <div className="flex items-center gap-6">
                   {!isEditing ? (
                     <>
-                      <button
-                        onClick={handleShare}
-                        className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2"
-                      >
-                        <IconShare className="h-4 w-4" />
-                        Share
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={handleShare}
+                          className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2"
+                        >
+                          <IconShare className="h-4 w-4" />
+                          Share
+                        </button>
+                        <button
+                          onClick={handleDelete}
+                          className="border-2 border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors flex items-center gap-2"
+                        >
+                          <IconTrash className="h-4 w-4" />
+                          Delete
+                        </button>
+                      </div>
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
                       >
                         <IconEdit className="h-4 w-4" />
-                        Edit Post
-                      </button>
-                      <button
-                        onClick={handleDelete}
-                        className="border-2 border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors flex items-center gap-2"
-                      >
-                        <IconTrash className="h-4 w-4" />
-                        Delete
+                        Edit
                       </button>
                     </>
                   ) : (
                     <>
                       <button
                         onClick={handleCancelEdit}
-                        disabled={isSaving}
+                        disabled={updatePostMutation.isPending}
                         className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2 disabled:opacity-50"
                       >
                         <IconX className="h-4 w-4" />
@@ -408,11 +409,13 @@ function ViewPostContent() {
                       </button>
                       <button
                         onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
+                        disabled={updatePostMutation.isPending}
+                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-6 py-3 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
                       >
                         <IconDeviceFloppy className="h-4 w-4" />
-                        {isSaving ? "Saving..." : "Save Changes"}
+                        {updatePostMutation.isPending
+                          ? "Saving..."
+                          : "Save Changes"}
                       </button>
                     </>
                   )}
@@ -618,10 +621,9 @@ function ViewPostContent() {
                         <h3 className="text-lg font-bold staff-text-primary mb-4">
                           Content
                         </h3>
-                        <div
-                          className="prose max-w-none"
-                          dangerouslySetInnerHTML={{ __html: post.content }}
-                        />
+                        <div className="prose max-w-none">
+                          <ReactMarkdown>{post.content}</ReactMarkdown>
+                        </div>
                       </div>
                     </>
                   )}
@@ -723,12 +725,12 @@ function ViewPostContent() {
                       <div className="space-y-3">
                         {selectedTags.length > 0 && (
                           <div className="flex flex-wrap gap-2">
-                            {selectedTags.map((tag) => (
+                            {selectedTags.map((tag: Tag) => (
                               <span
-                                key={tag.tag_id}
+                                key={`selected-tag-${tag.tag_id}`}
                                 className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded border border-blue-200"
                               >
-                                {tag.tag_name}
+                                {tag.tag_name || "Unnamed Tag"}
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveTag(tag.tag_id)}
@@ -769,14 +771,14 @@ function ViewPostContent() {
                                   {availableTags.length > 0 ? (
                                     availableTags
                                       .filter(
-                                        (tag) =>
+                                        (tag: Tag) =>
                                           !selectedTags.find(
                                             (t) => t.tag_id === tag.tag_id
                                           )
                                       )
-                                      .map((tag) => (
+                                      .map((tag: Tag) => (
                                         <button
-                                          key={tag.tag_id}
+                                          key={`available-tag-${tag.tag_id}`}
                                           type="button"
                                           onClick={() => handleSelectTag(tag)}
                                           className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
@@ -796,18 +798,18 @@ function ViewPostContent() {
 
                                   {tagSearch.trim() &&
                                     !availableTags.find(
-                                      (tag) =>
+                                      (tag: Tag) =>
                                         tag.tag_name.toLowerCase() ===
                                         tagSearch.toLowerCase()
                                     ) && (
                                       <button
                                         type="button"
                                         onClick={handleCreateTag}
-                                        disabled={isCreatingTag}
+                                        disabled={createTagMutation.isPending}
                                         className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
                                       >
                                         <IconPlus className="h-4 w-4" />
-                                        {isCreatingTag
+                                        {createTagMutation.isPending
                                           ? "Creating..."
                                           : `Create "${tagSearch}"`}
                                       </button>
@@ -821,9 +823,9 @@ function ViewPostContent() {
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {post.postTags.length > 0 ? (
-                          post.postTags.map((postTag) => (
+                          post.postTags.map((postTag: PostTag) => (
                             <span
-                              key={postTag.tag_id}
+                              key={`post-tag-${postTag.tag_id}`}
                               className="inline-flex px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded"
                             >
                               {postTag.tag.tag_name}

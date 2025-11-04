@@ -10,6 +10,14 @@ export interface PostTag {
   };
 }
 
+export interface CreatePostRequest {
+  title: string;
+  content: string;
+  status: PostStatus;
+  tag_ids: number[];
+  file?: File;
+}
+
 export interface Post {
   post_id: number;
   account_id: string;

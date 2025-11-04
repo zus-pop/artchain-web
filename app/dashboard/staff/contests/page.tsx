@@ -22,11 +22,15 @@ import {
   IconSearch,
   IconTrophy,
   IconUsers,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Helper function to convert ContestDTO to Contest
 const convertContestDTOToContest = (dto: ContestDTO): Contest => {
@@ -51,7 +55,8 @@ export default function ContestsManagementPage() {
   const [selectedStatus, setSelectedStatus] = useState<ContestStatus | "ALL">(
     "ALL"
   );
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fetch contests from API
   const {
@@ -59,7 +64,13 @@ export default function ContestsManagementPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["staff-contests", selectedStatus, searchQuery],
+    queryKey: [
+      "staff-contests",
+      selectedStatus,
+      searchQuery,
+      currentPage,
+      pageSize,
+    ],
     queryFn: () =>
       getAllStaffContests({
         status:
@@ -67,6 +78,8 @@ export default function ContestsManagementPage() {
             ? (selectedStatus as ContestStatus)
             : undefined,
         search: searchQuery || undefined,
+        page: currentPage,
+        limit: pageSize,
       }),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -74,15 +87,14 @@ export default function ContestsManagementPage() {
   // Convert API data to local Contest type
   const contests = contestsResponse?.data.map(convertContestDTOToContest) || [];
   const totalFromAPI = contestsResponse?.meta.total || 0;
+  const totalPages = contestsResponse?.meta.totalPages || 1;
 
-  const statusOptions = ["ALL", "DRAFT", "ACTIVE", "COMPLETED", "CANCELLED"];
-  const categoryOptions = [
+  const statusOptions: ContestStatus[] = [
     "ALL",
-    "Mixed Media",
-    "Digital Art",
-    "Traditional",
-    "Sculpture",
-    "Photography",
+    "DRAFT",
+    "ACTIVE",
+    "COMPLETED",
+    "CANCELLED",
   ];
 
   const getStatusBadgeColor = (status: DashboardContestStatus) => {
@@ -114,6 +126,10 @@ export default function ContestsManagementPage() {
   );
   const totalAwards = contests.reduce((sum, c) => sum + (c.numOfAward || 0), 0);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, searchQuery]);
+
   return (
     <SidebarProvider
       style={
@@ -139,7 +155,7 @@ export default function ContestsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Contests ({contests.length})
+                    All Contests ({totalFromAPI})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
                     Manage art competitions and contests
@@ -212,19 +228,6 @@ export default function ContestsManagementPage() {
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
                         {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {categoryOptions.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
                       </option>
                     ))}
                   </select>
@@ -391,6 +394,80 @@ export default function ContestsManagementPage() {
                   </table>
                 </div>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm staff-text-secondary">
+                    <span>Show</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <span>entries per page</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm staff-text-secondary">
+                      Showing{" "}
+                      {contests.length > 0
+                        ? (currentPage - 1) * pageSize + 1
+                        : 0}{" "}
+                      to {Math.min(currentPage * pageSize, totalFromAPI)} of{" "}
+                      {totalFromAPI} entries
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="First page"
+                      >
+                        <IconChevronsLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Previous page"
+                      >
+                        <IconChevronLeft className="h-4 w-4" />
+                      </button>
+
+                      <span className="px-3 py-1 text-sm staff-text-primary">
+                        Page {currentPage} of {totalPages}
+                      </span>
+
+                      <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Next page"
+                      >
+                        <IconChevronRight className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Last page"
+                      >
+                        <IconChevronsRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

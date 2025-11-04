@@ -19,10 +19,17 @@ import {
   IconX,
   IconCheck,
   IconArrowLeft,
+  IconSpeakerphone,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString("vi-VN");
@@ -35,6 +42,7 @@ function PaintingAwardRow({
   onAssign,
   onRemove,
   isProcessing,
+  onImageClick,
 }: {
   painting: TopPainting;
   index: number;
@@ -42,6 +50,7 @@ function PaintingAwardRow({
   onAssign: (painting: TopPainting, award: Award) => void;
   onRemove: (painting: TopPainting) => void;
   isProcessing: boolean;
+  onImageClick: (imageUrl: string) => void;
 }) {
   const assignedAward = painting.award;
   return (
@@ -64,22 +73,15 @@ function PaintingAwardRow({
             </div>
           )}
         </div>
-        {assignedAward && (
-          <button
-            onClick={() => onRemove(painting)}
-            disabled={isProcessing}
-            className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Remove Award"
-          >
-            <IconX className="h-4 w-4" />
-          </button>
-        )}
       </div>
 
       <div className="flex gap-4">
-        {/* Painting Image */}
+        {/* Painting Image - Left side with click to view full */}
         {painting.imageUrl && (
-          <div className="shrink-0 w-32 h-32 bg-gray-100 rounded overflow-hidden">
+          <div
+            className="shrink-0 w-40 h-40 bg-gray-100 rounded-lg overflow-hidden border-2 border-[#e6e2da] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => onImageClick(painting.imageUrl)}
+          >
             <img
               src={painting.imageUrl}
               alt={painting.title}
@@ -96,46 +98,46 @@ function PaintingAwardRow({
           <p className="text-sm staff-text-secondary mb-2">
             By {painting.competitorName}
           </p>
-          <div className="flex gap-4 text-xs staff-text-secondary mb-3">
+          <div className="flex gap-4 text-xs staff-text-secondary mb-4">
             <span>Score: {painting.avgScoreRound2.toFixed(2)}</span>
             <span>Evaluations: {painting.evaluationCount}</span>
           </div>
 
           {/* Award Assignment */}
           {assignedAward ? (
-            <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <IconCheck className="h-5 w-5 text-green-600" />
-                <div className="flex-1">
-                  <div className="text-base font-bold text-green-900">
-                    {assignedAward.name}
-                  </div>
-                  <div className="text-sm text-green-700">
-                    Prize: {formatCurrency(parseFloat(assignedAward.prize))} ₫
+            <div className="bg-gray-50 border border-[#e6e2da] rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="shrink-0 w-10 h-10 bg-[#e6e2da] rounded-full flex items-center justify-center">
+                  <IconTrophy className="h-5 w-5 staff-text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h5 className="font-bold staff-text-primary text-base">
+                        {assignedAward.name}
+                      </h5>
+                      <div className="text-sm staff-text-secondary">
+                        Prize: {formatCurrency(parseFloat(assignedAward.prize))}{" "}
+                        ₫
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onRemove(painting)}
+                      disabled={isProcessing}
+                      className="shrink-0 ml-4 px-3 py-1.5 staff-btn-outline text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                      title="Remove Award"
+                    >
+                      <IconX className="h-4 w-4" />
+                      {isProcessing ? "Removing..." : "Remove"}
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => onRemove(painting)}
-                  disabled={isProcessing}
-                  className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                  title="Remove Award"
-                >
-                  <IconX className="h-4 w-4" />
-                  Remove
-                </button>
               </div>
-              <button
-                onClick={() => onRemove(painting)}
-                disabled={isProcessing}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <IconX className="h-4 w-4" />
-                {isProcessing ? "Removing..." : "Remove Award"}
-              </button>
             </div>
           ) : (
-            <div className="space-y-2">
-              <label className="text-sm font-semibold staff-text-primary">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold staff-text-primary flex items-center gap-2">
+                <IconTrophy className="h-4 w-4 staff-text-primary" />
                 Assign Award:
               </label>
               <div className="flex flex-wrap gap-2">
@@ -145,15 +147,16 @@ function PaintingAwardRow({
                       key={award.awardId}
                       onClick={() => onAssign(painting, award)}
                       disabled={isProcessing}
-                      className="px-3 py-1.5 text-sm bg-blue-50 hover:bg-blue-100 border border-blue-300 text-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 text-sm bg-white hover:bg-gray-50 border border-[#e6e2da] staff-text-primary rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {award.name} ({award.paintings.length}/{award.quantity})
                     </button>
                   ))
                 ) : (
-                  <span className="text-sm text-gray-500">
-                    No awards available
-                  </span>
+                  <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg">
+                    <IconTrophy className="h-4 w-4" />
+                    <span className="text-sm">No awards available</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -170,6 +173,7 @@ export default function AwardsManagementPage() {
   const contestId = searchParams.get("id") as string;
 
   const [currentPaintingId, setCurrentPaintingId] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const { data: contestData } = useQuery({
     queryKey: ["staff-contest", contestId],
@@ -211,6 +215,11 @@ export default function AwardsManagementPage() {
     (sum, award) => sum + award.paintings.length,
     0
   );
+
+  // Check if all paintings have awards assigned
+  const allPaintingsAwarded =
+    paintings.length > 0 &&
+    paintings.every((painting) => painting.award !== null);
 
   return (
     <SidebarProvider
@@ -267,17 +276,36 @@ export default function AwardsManagementPage() {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/staff/contests/awards/manage?id=${contestId}`
-                    )
-                  }
-                  className="staff-btn-primary flex items-center gap-2"
-                >
-                  <IconTrophy className="h-4 w-4" />
-                  Manage Awards
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/staff/contests/awards/manage?id=${contestId}`
+                      )
+                    }
+                    className="staff-btn-outline flex items-center gap-2"
+                  >
+                    <IconTrophy className="h-4 w-4" />
+                    Manage Awards
+                  </button>
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/staff/contests/awards/announce?id=${contestId}`
+                      )
+                    }
+                    disabled={!allPaintingsAwarded}
+                    className="staff-btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      !allPaintingsAwarded
+                        ? "All paintings must be awarded before announcing results"
+                        : "Announce contest results"
+                    }
+                  >
+                    <IconSpeakerphone className="h-4 w-4" />
+                    Announce Results
+                  </button>
+                </div>
               </div>
 
               {/* Two Column Layout */}
@@ -312,6 +340,7 @@ export default function AwardsManagementPage() {
                               onAssign={handleAssignAward}
                               onRemove={handleRemoveAward}
                               isProcessing={isProcessing}
+                              onImageClick={setSelectedImage}
                             />
                           );
                         })}
@@ -366,6 +395,32 @@ export default function AwardsManagementPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Full Image Modal */}
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={() => setSelectedImage(null)}
+      >
+        <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0">
+          <DialogTitle className="sr-only">Full Image View</DialogTitle>
+          <div className="relative">
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Full size painting"
+                className="w-full h-auto max-h-[85vh] object-contain"
+              />
+            )}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+              aria-label="Close"
+            >
+              <IconX className="h-5 w-5" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }
