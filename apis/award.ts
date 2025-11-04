@@ -91,6 +91,7 @@ export function useGetAwardsByContestId(contestId: string) {
       );
       return response.data;
     },
+    enabled: !!contestId,
   });
 }
 

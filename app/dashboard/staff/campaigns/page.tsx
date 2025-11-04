@@ -4,7 +4,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Campaign, CampaignStatus } from "@/types/dashboard";
+import { CampaignStatus } from "@/types/dashboard";
 import {
   IconChevronLeft,
   IconChevronRight,

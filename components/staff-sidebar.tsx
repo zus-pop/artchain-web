@@ -5,6 +5,7 @@ import {
   IconDashboard,
   IconFileText,
   IconMoneybag,
+  IconPalette,
   IconSettings,
   IconTrophy,
   IconUsers,
@@ -131,6 +132,21 @@ const data = {
         {
           title: "Create Campaign",
           url: "/dashboard/staff/campaigns/create",
+        },
+      ],
+    },
+    {
+      title: "Exhibition Management",
+      url: "/dashboard/staff/exhibitions",
+      icon: IconPalette,
+      items: [
+        {
+          title: "All Exhibitions",
+          url: "/dashboard/staff/exhibitions",
+        },
+        {
+          title: "Create Exhibition",
+          url: "/dashboard/staff/exhibitions/create",
         },
       ],
     },

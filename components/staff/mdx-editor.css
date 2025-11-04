@@ -26,10 +26,6 @@ MDX Editor Custom Styling .mdx-editor-wrapper {
   color: #374151;
 }
 
-.mdx-editor-wrapper [role="toolbar"] button:hover {
-  /* background: #e5e7eb; */
-}
-
 .mdx-editor-wrapper [role="toolbar"] button[aria-pressed="true"] {
   /* background: #dbeafe; */
   /* border-color: #3b82f6; */
