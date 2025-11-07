@@ -4,11 +4,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import {
-  IconArrowLeft,
-  IconFilter,
-  IconSearch,
-} from "@tabler/icons-react";
+import { IconArrowLeft, IconFilter, IconSearch } from "@tabler/icons-react";
 import { useState, useEffect, useCallback, use } from "react";
 import { getCampaignSponsors } from "@/apis/staff";
 import Link from "next/link";
@@ -39,50 +35,63 @@ export default function CampaignDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [sponsorsData, setSponsorsData] = useState<SponsorsResponse | null>(null);
+  const [sponsorsData, setSponsorsData] = useState<SponsorsResponse | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<"PENDING" | "PAID" | "ALL">("ALL");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "PENDING" | "PAID" | "ALL"
+  >("ALL");
 
   const statusOptions = ["ALL", "PENDING", "PAID"];
 
-  const fetchSponsors = useCallback(async (page = 1, status?: string) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchSponsors = useCallback(
+    async (page = 1, status?: string) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const queryParams: { page?: number; limit?: number; status?: "PENDING" | "PAID" } = {
-        page,
-        limit: pageSize,
-      };
+        const queryParams: {
+          page?: number;
+          limit?: number;
+          status?: "PENDING" | "PAID";
+        } = {
+          page,
+          limit: pageSize,
+        };
 
-      if (status && status !== "ALL") {
-        queryParams.status = status as "PENDING" | "PAID";
+        if (status && status !== "ALL") {
+          queryParams.status = status as "PENDING" | "PAID";
+        }
+
+        const response = await getCampaignSponsors(parseInt(id), queryParams);
+        setSponsorsData(response);
+      } catch (err) {
+        console.error("Error fetching sponsors:", err);
+        setError("Failed to load sponsors");
+      } finally {
+        setLoading(false);
       }
-
-      const response = await getCampaignSponsors(parseInt(id), queryParams);
-      setSponsorsData(response);
-    } catch (err) {
-      console.error('Error fetching sponsors:', err);
-      setError('Failed to load sponsors');
-    } finally {
-      setLoading(false);
-    }
-  }, [id, pageSize]);
+    },
+    [id, pageSize]
+  );
 
   useEffect(() => {
     fetchSponsors(currentPage, selectedStatus);
   }, [currentPage, selectedStatus, fetchSponsors]);
 
   // Filter sponsors based on search query
-  const filteredSponsors = sponsorsData?.data.filter((sponsor) =>
-    sponsor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    sponsor.contactInfo.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const filteredSponsors =
+    sponsorsData?.data.filter(
+      (sponsor) =>
+        sponsor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        sponsor.contactInfo.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
@@ -111,8 +120,7 @@ export default function CampaignDetailPage({
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
-                { label: "Sponsors", href: "/dashboard/staff/sponsors" },
-                { label: "Campaigns", href: "/dashboard/staff/sponsors/campaigns" },
+                { label: "Campaigns", href: "/dashboard/staff/campaigns" },
                 { label: `Campaign ${id} Sponsors` },
               ]}
               homeHref="/dashboard/staff"
@@ -124,7 +132,7 @@ export default function CampaignDetailPage({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Link
-                    href="/dashboard/staff/sponsors/campaigns"
+                    href="/dashboard/staff/campaigns"
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5" />
@@ -145,7 +153,9 @@ export default function CampaignDetailPage({
               {loading && (
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-2 text-gray-600">Loading sponsors...</span>
+                  <span className="ml-2 text-gray-600">
+                    Loading sponsors...
+                  </span>
                 </div>
               )}
 
@@ -157,12 +167,12 @@ export default function CampaignDetailPage({
                       <h3 className="text-sm font-medium text-red-800">
                         Error loading sponsors
                       </h3>
-                      <div className="mt-2 text-sm text-red-700">
-                        {error}
-                      </div>
+                      <div className="mt-2 text-sm text-red-700">{error}</div>
                       <div className="mt-4">
                         <button
-                          onClick={() => fetchSponsors(currentPage, selectedStatus)}
+                          onClick={() =>
+                            fetchSponsors(currentPage, selectedStatus)
+                          }
                           className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium"
                         >
                           Try Again
@@ -243,7 +253,10 @@ export default function CampaignDetailPage({
                             </tr>
                           ) : (
                             filteredSponsors.map((sponsor) => (
-                              <tr key={sponsor.sponsorId} className="hover:bg-gray-50">
+                              <tr
+                                key={sponsor.sponsorId}
+                                className="hover:bg-gray-50"
+                              >
                                 <td className="px-6 py-4">
                                   <div className="flex items-center gap-3">
                                     {sponsor.logoUrl ? (
@@ -273,7 +286,10 @@ export default function CampaignDetailPage({
                                   {sponsor.contactInfo}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium staff-text-primary">
-                                  ${parseFloat(sponsor.sponsorshipAmount).toLocaleString()}
+                                  $
+                                  {parseFloat(
+                                    sponsor.sponsorshipAmount
+                                  ).toLocaleString()}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span
@@ -306,11 +322,18 @@ export default function CampaignDetailPage({
                   {sponsorsData && sponsorsData.meta.totalPages > 1 && (
                     <div className="flex items-center justify-between">
                       <div className="text-sm staff-text-secondary">
-                        Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sponsorsData.meta.total)} of {sponsorsData.meta.total} sponsors
+                        Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                        {Math.min(
+                          currentPage * pageSize,
+                          sponsorsData.meta.total
+                        )}{" "}
+                        of {sponsorsData.meta.total} sponsors
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          onClick={() =>
+                            setCurrentPage(Math.max(1, currentPage - 1))
+                          }
                           disabled={currentPage === 1}
                           className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                         >
@@ -320,8 +343,17 @@ export default function CampaignDetailPage({
                           Page {currentPage} of {sponsorsData.meta.totalPages}
                         </span>
                         <button
-                          onClick={() => setCurrentPage(Math.min(sponsorsData.meta.totalPages, currentPage + 1))}
-                          disabled={currentPage === sponsorsData.meta.totalPages}
+                          onClick={() =>
+                            setCurrentPage(
+                              Math.min(
+                                sponsorsData.meta.totalPages,
+                                currentPage + 1
+                              )
+                            )
+                          }
+                          disabled={
+                            currentPage === sponsorsData.meta.totalPages
+                          }
                           className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                         >
                           Next
@@ -334,7 +366,7 @@ export default function CampaignDetailPage({
             </div>
           </div>
         </div>
-        </SidebarInset>
-      </SidebarProvider>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

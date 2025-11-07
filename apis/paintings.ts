@@ -1,6 +1,9 @@
 import myAxios from "@/lib/custom-axios";
-import { Painting } from "@/types/painting";
-import { useQuery } from "@tanstack/react-query";
+import { Painting, Round2ImageRequest, TopPainting } from "@/types/painting";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ApiResponse } from "../types";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 /**
  * Get all submissions of the current user
@@ -44,13 +47,17 @@ export const getStaffPendingSubmissions = async (params?: {
   limit?: number;
   contestId?: number;
 }) => {
-  const response = await myAxios.get("/staff/contests/submissions/pending", { params });
+  const response = await myAxios.get("/staff/contests/submissions/pending", {
+    params,
+  });
   return response.data;
 };
 
 // GET /api/staff/contests/submissions/{paintingId} - Get submission by ID
 export const getStaffSubmissionById = async (paintingId: string) => {
-  const response = await myAxios.get(`/staff/contests/submissions/${paintingId}`);
+  const response = await myAxios.get(
+    `/staff/contests/submissions/${paintingId}`
+  );
   return response.data;
 };
 
@@ -63,7 +70,10 @@ export const reviewStaffSubmission = async (
     feedback?: string;
   }
 ) => {
-  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/review`, data);
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/${paintingId}/review`,
+    data
+  );
   return response.data;
 };
 
@@ -74,7 +84,10 @@ export const acceptStaffSubmission = async (
     acceptNote?: string;
   }
 ) => {
-  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/accept`, data);
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/${paintingId}/accept`,
+    data
+  );
   return response.data;
 };
 
@@ -86,6 +99,60 @@ export const rejectStaffSubmission = async (
     rejectNote?: string;
   }
 ) => {
-  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/reject`, data);
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/${paintingId}/reject`,
+    data
+  );
   return response.data;
 };
+
+export function useGetRound2TopByContestId(contestId: string) {
+  return useQuery({
+    queryKey: ["/paintings/tops", contestId],
+    queryFn: async () => {
+      const response = await myAxios.get<ApiResponse<TopPainting[]>>(
+        `/paintings/round2/rankings`,
+        {
+          params: {
+            contestId: contestId,
+          },
+        }
+      );
+      return response.data;
+    },
+  });
+}
+
+export function useUploadRound2Image() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (round2ImageRequest: Round2ImageRequest) => {
+      const formData = new FormData();
+      formData.append("image", round2ImageRequest.image);
+
+      const response = await myAxios.post(
+        `/staff/paintings/${round2ImageRequest.paintingId}/upload-round2-image`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật ảnh vòng 2 thành công");
+      queryClient.invalidateQueries({ queryKey: ["round-submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["submission-detail"] });
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+}

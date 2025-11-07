@@ -63,7 +63,7 @@ export default function CreateCampaignPage() {
       console.log("Campaign created successfully:", response);
 
       toast.success("Campaign created successfully!");
-      router.push("/dashboard/staff/sponsors/campaigns");
+      router.push("/dashboard/staff/campaigns");
     } catch (error) {
       console.error("Error creating campaign:", error);
       toast.error("Failed to create campaign. Please try again.");
@@ -113,10 +113,9 @@ export default function CreateCampaignPage() {
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
-                { label: "Sponsors", href: "/dashboard/staff/sponsors" },
                 {
                   label: "Campaigns",
-                  href: "/dashboard/staff/sponsors/campaigns",
+                  href: "/dashboard/staff/campaigns",
                 },
                 { label: "Create Campaign" },
               ]}

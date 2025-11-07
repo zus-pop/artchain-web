@@ -22,32 +22,31 @@ import {
   IconSearch,
   IconTrophy,
   IconUsers,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Helper function to convert ContestDTO to Contest
 const convertContestDTOToContest = (dto: ContestDTO): Contest => {
   return {
-    id: dto.contestId.toString(),
+    contestId: dto.contestId.toString(),
     title: dto.title,
     description: dto.description,
     status: dto.status as DashboardContestStatus,
     startDate: new Date(dto.startDate).toLocaleDateString(),
     endDate: new Date(dto.endDate).toLocaleDateString(),
-    maxParticipants: 0,
-    currentParticipants: 0,
-    category: "General",
-    prizePool: `$${dto.numOfAward * 100}`,
-    examinersCount: 0,
-    submissionsCount: 0,
     createdAt: dto.startDate,
     createdBy: dto.createdBy,
     bannerUrl: dto.bannerUrl,
     numOfAward: dto.numOfAward,
     rounds: dto.rounds,
+    round2Quantity: dto.round2Quantity,
   };
 };
 
@@ -56,7 +55,8 @@ export default function ContestsManagementPage() {
   const [selectedStatus, setSelectedStatus] = useState<ContestStatus | "ALL">(
     "ALL"
   );
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fetch contests from API
   const {
@@ -64,7 +64,13 @@ export default function ContestsManagementPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["staff-contests", selectedStatus, searchQuery],
+    queryKey: [
+      "staff-contests",
+      selectedStatus,
+      searchQuery,
+      currentPage,
+      pageSize,
+    ],
     queryFn: () =>
       getAllStaffContests({
         status:
@@ -72,6 +78,8 @@ export default function ContestsManagementPage() {
             ? (selectedStatus as ContestStatus)
             : undefined,
         search: searchQuery || undefined,
+        page: currentPage,
+        limit: pageSize,
       }),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -79,23 +87,15 @@ export default function ContestsManagementPage() {
   // Convert API data to local Contest type
   const contests = contestsResponse?.data.map(convertContestDTOToContest) || [];
   const totalFromAPI = contestsResponse?.meta.total || 0;
+  const totalPages = contestsResponse?.meta.totalPages || 1;
 
-  const statusOptions = ["ALL", "DRAFT", "ACTIVE", "COMPLETED", "CANCELLED"];
-  const categoryOptions = [
+  const statusOptions: ContestStatus[] = [
     "ALL",
-    "Mixed Media",
-    "Digital Art",
-    "Traditional",
-    "Sculpture",
-    "Photography",
+    "DRAFT",
+    "ACTIVE",
+    "COMPLETED",
+    "CANCELLED",
   ];
-
-  // Client-side filter for category (since API doesn't support it)
-  const filteredContests = contests.filter((contest) => {
-    const matchesCategory =
-      selectedCategory === "ALL" || contest.category === selectedCategory;
-    return matchesCategory;
-  });
 
   const getStatusBadgeColor = (status: DashboardContestStatus) => {
     const colors = {
@@ -120,10 +120,15 @@ export default function ContestsManagementPage() {
   const totalContests = totalFromAPI;
   const activeContests = contests.filter((c) => c.status === "ACTIVE").length;
   const totalRounds = contests.reduce(
-    (sum, c) => sum + (c.rounds?.length || 0),
+    (sum, c) =>
+      sum + (c.rounds ? new Set(c.rounds.map((r) => r.name)).size : 0),
     0
   );
   const totalAwards = contests.reduce((sum, c) => sum + (c.numOfAward || 0), 0);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, searchQuery]);
 
   return (
     <SidebarProvider
@@ -150,7 +155,7 @@ export default function ContestsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Contests ({filteredContests.length})
+                    All Contests ({totalFromAPI})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
                     Manage art competitions and contests
@@ -199,60 +204,6 @@ export default function ContestsManagementPage() {
                 ]}
               />
 
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link
-                  href="/dashboard/staff/contests/active"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
-                >
-                  <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                    <IconCircleCheck className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold staff-text-primary">
-                      Active Contests
-                    </p>
-                    <p className="text-xs staff-text-secondary">
-                      Currently running
-                    </p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/dashboard/staff/contests/examiners"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
-                >
-                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                    <IconUsers className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold staff-text-primary">
-                      Manage Examiners
-                    </p>
-                    <p className="text-xs staff-text-secondary">
-                      Invite judges
-                    </p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/dashboard/staff/contests/awards"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
-                >
-                  <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                    <IconTrophy className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold staff-text-primary">
-                      Awards & Results
-                    </p>
-                    <p className="text-xs staff-text-secondary">
-                      Manage prizes
-                    </p>
-                  </div>
-                </Link>
-              </div>
-
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
@@ -277,19 +228,6 @@ export default function ContestsManagementPage() {
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
                         {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {categoryOptions.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
                       </option>
                     ))}
                   </select>
@@ -341,7 +279,7 @@ export default function ContestsManagementPage() {
                             Error loading contests. Please try again.
                           </td>
                         </tr>
-                      ) : filteredContests.length === 0 ? (
+                      ) : contests.length === 0 ? (
                         <tr>
                           <td
                             colSpan={6}
@@ -351,16 +289,21 @@ export default function ContestsManagementPage() {
                           </td>
                         </tr>
                       ) : (
-                        filteredContests.map((contest) => {
+                        contests.map((contest) => {
                           const StatusIcon = getStatusIcon(contest.status);
                           const activeRounds =
                             contest.rounds?.filter(
-                              (r: { status: string }) => r.status === "ACTIVE"
+                              (r: { status: string }) => r.status === "OPEN"
                             ).length || 0;
-                          const totalRoundCount = contest.rounds?.length || 0;
+                          const totalRoundCount = contest.rounds
+                            ? new Set(contest.rounds.map((r) => r.name)).size
+                            : 0;
 
                           return (
-                            <tr key={contest.id} className="hover:bg-gray-50">
+                            <tr
+                              key={contest.contestId}
+                              className="hover:bg-gray-50"
+                            >
                               <td className="px-6 py-4">
                                 <div className="flex items-start gap-3">
                                   {contest.bannerUrl && (
@@ -423,14 +366,14 @@ export default function ContestsManagementPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <Link
-                                  href={`/dashboard/staff/contests/detail?id=${contest.id}`}
+                                  href={`/dashboard/staff/contests/detail?id=${contest.contestId}`}
                                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors mr-2 inline-block"
                                   title="View Details"
                                 >
                                   <IconEye className="h-4 w-4" />
                                 </Link>
                                 <Link
-                                  href={`/dashboard/staff/contests/detail?id=${contest.id}`}
+                                  href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
                                   className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors mr-2 inline-block"
                                   title="Edit Contest"
                                 >
@@ -451,6 +394,80 @@ export default function ContestsManagementPage() {
                   </table>
                 </div>
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm staff-text-secondary">
+                    <span>Show</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                    <span>entries per page</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm staff-text-secondary">
+                      Showing{" "}
+                      {contests.length > 0
+                        ? (currentPage - 1) * pageSize + 1
+                        : 0}{" "}
+                      to {Math.min(currentPage * pageSize, totalFromAPI)} of{" "}
+                      {totalFromAPI} entries
+                    </span>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="First page"
+                      >
+                        <IconChevronsLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Previous page"
+                      >
+                        <IconChevronLeft className="h-4 w-4" />
+                      </button>
+
+                      <span className="px-3 py-1 text-sm staff-text-primary">
+                        Page {currentPage} of {totalPages}
+                      </span>
+
+                      <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Next page"
+                      >
+                        <IconChevronRight className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Last page"
+                      >
+                        <IconChevronsRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
