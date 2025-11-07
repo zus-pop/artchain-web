@@ -1,7 +1,6 @@
 "use client";
 
 import { useLoginMutation } from "@/hooks/useLoginMutation";
-import { FloatingInput } from "@/components/ui/floating-input";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
@@ -9,7 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+import Image from "next/image"; // Import Next.js Image
 
+// Định nghĩa schema validation
 const schema = z.object({
   username: z
     .string({ message: "Username is required" })
@@ -24,15 +25,19 @@ const schema = z.object({
 
 type Schema = z.infer<typeof schema>;
 
+// Prop interface, bao gồm onToggle
+export type LoginFormProps = React.ComponentProps<"div"> & {
+  onToggle?: () => void;
+};
+
 export function LoginForm({
   className,
   onToggle,
   ...props
-}: React.ComponentProps<"div"> & {
-  onToggle?: () => void;
-}) {
+}: LoginFormProps) {
   const { currentLanguage } = useLanguageStore();
   const translations = useTranslation(currentLanguage);
+
   const {
     control,
     handleSubmit,
@@ -46,6 +51,7 @@ export function LoginForm({
       staySignedIn: false,
     },
   });
+
   const { mutate, isPending } = useLoginMutation();
 
   const handleLogin = (data: Schema) => {
@@ -57,118 +63,172 @@ export function LoginForm({
 
   return (
     <div
-      className={cn("flex flex-col gap-3 w-full mx-auto", className)}
+      // Layout 2 cột, chiếm toàn bộ màn hình và không cuộn
+      className={cn(
+        "h-screen overflow-hidden grid grid-cols-1 md:grid-cols-2",
+        className
+      )}
       {...props}
     >
-      <form className="p-4 md:p-6 flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center text-center mb-4 w-full max-w-xs md:max-w-sm">
-          <h1 className="text-3xl font-bold text-gray-800 mb-3">
-            {translations.signIn}
-          </h1>
-        </div>
-        <div className="flex flex-col gap-3 w-full max-w-xs md:max-w-sm">
-          {/* ... Các trường input không đổi */}
-          <div className="grid gap-1">
-            <Controller
-              control={control}
-              name="username"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.username}
-                  error={errors.username?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          <div className="grid gap-1">
-            <Controller
-              control={control}
-              name="password"
-              render={({ field }) => (
-                <FloatingInput
-                  type="password"
-                  label={translations.password}
-                  error={errors.password?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-          {/* Thay đổi: Dùng màu border cho đường kẻ */}
-          <div className="h-px bg-border my-1 w-full" />
-
-          <label
-            className="relative flex cursor-pointer items-center gap-2"
-            htmlFor="star"
+      {/* CỘT BÊN TRÁI (Biểu mẫu) */}
+      <div
+        // Cột form có thể cuộn nội bộ nếu màn hình quá thấp
+        className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-auto min-h-screen"
+      >
+        <div className="w-full max-w-sm mx-auto">
+          {/* Nút Quay lại (Gán onToggle vào đây) */}
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-900 mb-6"
           >
-            <div className="relative h-[2em] w-[2em]">
-              <input
-                className="peer appearance-none"
-                id="star"
-                name="star"
-                type="checkbox"
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            {translations.back || "Quay lại"}
+          </button>
+
+          {/* Logo (Sử dụng đường dẫn từ AuthContainer của bạn) */}
+          <div className="mb-6">
+            <img 
+                src="/images/newlogo.png" 
+                alt="Artchain Logo" 
+                className="w-14 h-14 sm:w-16 sm:h-16 object-contain flex-shrink-0"
               />
-              {/* Thay đổi: Dùng màu secondary cho viền checkbox */}
-              <span className="absolute left-1/2 top-1/2 h-[1em] w-[1em] -translate-x-1/2 -translate-y-1/2 rounded-[0.25em] border border-black"></span>
-              <svg
-                // Thay đổi: Stroke mặc định là secondary, khi check là primary
-                className="absolute left-1/2 top-1/2 h-[2em] w-[2em] -translate-x-1/2 -translate-y-1/2 stroke-black duration-500 ease-out [stroke-dasharray:100] [stroke-dashoffset:100] peer-checked:stroke-black peer-checked:[stroke-dashoffset:0]"
-                viewBox="0 0 38 37"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+          </div>
+
+          {/* Tiêu đề với gạch chân xanh */}
+          <h1 className="text-5xl text-gray-900 mb-10">
+              {translations.signIn || "Đăng nhập"}
+          </h1>
+
+          {/* Biểu mẫu (Xóa gap và dùng margin-top thủ công) */}
+          <form
+            onSubmit={handleSubmit(handleLogin)}
+            className="flex flex-col"
+          >
+            {/* Trường Tên đăng nhập */}
+            <div className="grid gap-2">
+              <label
+                className="text-sm font-medium text-black"
+                htmlFor="username"
               >
-                {/* Thay đổi: Bỏ stroke cố định, để SVG cha quyết định */}
-                <path
-                  d="M6.617 36.785c-.676-5.093 4.49-10.776 6.318-14.952 1.887-4.31 4.315-10.701 6.055-15.506C20.343 2.59 20.456.693 20.57.789c3.262 2.744 1.697 10.518 2.106 14.675 1.926 19.575 4.62 12.875-7.635 4.43C12.194 17.933 2.911 12.1 1.351 8.82c-1.177-2.477 5.266 0 7.898 0 2.575 0 27.078-1.544 27.907-1.108.222.117-.312.422-.526.554-1.922 1.178-3.489 1.57-5.266 3.046-3.855 3.201-8.602 6.002-12.11 9.691-4.018 4.225-5.388 10.245-11.321 10.245"
-                  strokeWidth="1.5px"
-                  pathLength={100}
-                />
-              </svg>
+                {translations.username || "Tên đăng nhập"}
+              </label>
+              <Controller
+                control={control}
+                name="username"
+                render={({ field }) => (
+                  <input
+                    id="username"
+                    type="text"
+                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    {...field}
+                  />
+                )}
+              />
+              {errors.username && (
+                <p className="text-xs text-red-500">
+                  {errors.username.message}
+                </p>
+              )}
             </div>
 
-            {/* Thay đổi: Dùng màu muted-foreground cho text phụ */}
-            <p className="text-sm text-muted-foreground">
-              {/* {translations.staySignedIn} */}
-              Stay signed in
-            </p>
-          </label>
+            {/* Trường Mật khẩu */}
+            <div className="grid gap-2 mt-8">
+              <label
+                className="text-sm font-medium text-black"
+                htmlFor="password"
+              >
+                {translations.password || "Mật khẩu"}
+              </label>
+              <Controller
+                control={control}
+                name="password"
+                render={({ field }) => (
+                  <input
+                    id="password"
+                    type="password"
+                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    {...field}
+                  />
+                )}
+              />
+              {errors.password && (
+                <p className="text-xs text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
-          <div className="flex flex-col items-center gap-3 mt-4">
+            {/* Checkbox Ghi nhớ đăng nhập */}
+            <div className="flex items-center gap-2 mt-8">
+              <Controller
+                control={control}
+                name="staySignedIn"
+                render={({ field }) => (
+                  <input
+                    id="staySignedIn"
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="h-4 w-4 rounded border-gray-400 text-orange-500 focus:ring-orange-500"
+                  />
+                )}
+              />
+              <label
+                htmlFor="staySignedIn"
+                className="text-sm text-black"
+              >
+                {translations.staySignedIn || "Ghi nhớ đăng nhập"}
+              </label>
+            </div>
+
+            {/* Nút Đăng nhập */}
             <button
-              onClick={handleSubmit(handleLogin)}
               type="submit"
               disabled={!isValid || isPending}
-              // Thay đổi: Dùng màu primary và primary-foreground cho nút
-              className="group/button relative flex h-12 w-12 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-primary duration-300 hover:w-28 hover:rounded-[40px] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50 after:absolute after:text-nowrap after:text-primary-foreground after:content-[attr(data-label)] after:scale-0 after:duration-200 hover:after:scale-100"
-              data-label={translations.login}
+              className="flex items-center justify-center gap-2 w-full h-16 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10"
             >
+              {translations.login || "Đăng nhập"}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
-                // Thay đổi: Fill icon bằng màu primary-foreground
-                className="h-6 w-6 fill-primary-foreground duration-200 delay-50 group-hover/button:translate-x-30"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path>
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
-            {/* Thay đổi: Dùng màu muted-foreground cho text phụ */}
-            <span className="text-sm font-semibold uppercase text-muted-foreground">
-              {translations.cantSignIn}
-            </span>
-
-            <button
-              type="button"
-              onClick={onToggle}
-              // Thay đổi: Dùng màu foreground chính
-              className="cursor-pointer text-sm font-semibold uppercase text-foreground underline-offset-4 hover:underline"
-            >
-              {translations.createAccount}
-            </button>
-          </div>
+            
+            {/* Đã xóa nút "Tạo tài khoản" ở đây */}
+          </form>
         </div>
-      </form>
+      </div>
+
+      {/* CỘT BÊN PHẢI (Hình ảnh) */}
+      <div className="hidden md:block relative w-full h-full overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1548811579-017cf2a4268b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1289"
+          alt="Statue"
+          className="w-full h-full object-cover"
+        />
+      </div>
     </div>
   );
 }

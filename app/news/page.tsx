@@ -14,10 +14,10 @@ const CampaignCard = ({ imgSrc, title, description }: { imgSrc: string, title: s
     />
     <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
     <p 
-      className="text-gray-700 text-sm leading-relaxed mb-6 text-center" 
+      className="text-black text-sm leading-relaxed mb-6 text-center" 
       dangerouslySetInnerHTML={{ __html: description }} 
     />
-    <button className="w-full bg-black text-white px-4 py-2.5 font-medium text-sm hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+    <button className="w-full bg-[#FF6E1A] text-white px-4 py-2.5 font-medium text-sm hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
       Đăng kí tài trợ <ArrowRightIcon />
     </button>
   </div>
@@ -25,7 +25,7 @@ const CampaignCard = ({ imgSrc, title, description }: { imgSrc: string, title: s
 
 // Component Card cho Tin tức nhỏ
 const NewsCardSmall = ({ imgSrc, category, title, darkBg = false }: { imgSrc: string, category: string, title: string, darkBg?: boolean }) => (
-  <div className={`flex flex-col overflow-hidden ${darkBg ? 'bg-black text-white' : 'bg-white text-black'}`}>
+  <div className={`flex flex-col overflow-hidden ${darkBg ? 'bg-[#EAE6E0] text-white' : 'bg-white text-black'}`}>
     <img 
       src={imgSrc} 
       alt={title} 
@@ -33,9 +33,9 @@ const NewsCardSmall = ({ imgSrc, category, title, darkBg = false }: { imgSrc: st
       onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300x160/cccccc/333333?text=Image'; }}
     />
     <div className="p-3 sm:p-4">
-      <p className="text-[10px] sm:text-xs font-semibold text-gray-400 uppercase mb-1">{category}</p>
+      <p className="text-[10px] sm:text-xs font-semibold text-black uppercase mb-1">{category}</p>
       <h4 
-        className="text-sm sm:text-base font-semibold" 
+        className="text-sm sm:text-base text-black font-semibold" 
         dangerouslySetInnerHTML={{ __html: title }}
       />
     </div>
@@ -47,7 +47,7 @@ export default function Page() {
   const navItems = ["Trang chủ", "Cuộc thi", "Triển lãm", "Bài viết", "Chiến dịch"];
 
   return (
-    <div className="min-h-screen bg-[#F1EFEA] text-gray-900 font-[family-name:var(--font-be-vietnam-pro)]">
+    <div className="min-h-screen bg-[#EAE6E0] text-black font-[family-name:var(--font-be-vietnam-pro)]">
       
       {/* --- Header --- */}
       <div className="fixed top-2 sm:top-5 left-2 sm:left-4 right-2 sm:right-4 lg:left-0 lg:right-0 z-50 flex justify-center">
@@ -79,7 +79,7 @@ export default function Page() {
                 <a
                   key={item}
                   href="#"
-                  className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-black border-b-2 border-black pb-1' : 'text-gray-700 hover:text-black'} transition-colors`}
+                  className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-black border-b-2 border-black pb-1' : 'text-black hover:text-black'} transition-colors`}
                 >
                   {item}
                 </a>
@@ -87,13 +87,13 @@ export default function Page() {
             </nav>
             
             {/* Mobile menu button */}
-            <button className="lg:hidden p-2 text-gray-700 hover:text-black">
+            <button className="lg:hidden p-2 text-black hover:text-black">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
             
-            <button className="hidden sm:block bg-black text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap">
+            <button className="hidden sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap">
               Tham gia ngay
             </button>
           </div>
@@ -124,7 +124,7 @@ export default function Page() {
                 vọng qua màu sắc độc đáo của riêng mình. Nơi <br className="hidden sm:inline" />
                 tài năng hội họa của bạn được tỏa sáng.
               </p>
-              <button className="mt-6 sm:mt-10 bg-black text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
+              <button className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
                 Xem Triển Lãm <ArrowRightIcon />
               </button>
             </div>
@@ -132,29 +132,29 @@ export default function Page() {
         </section>
 
         {/* --- Contest Info Section --- */}
-        <section className="min-h-screen bg-[#F1EFEA] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden">
+        <section className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
             <div className="max-w-lg">
-              <h2 className="text-sm sm:text-base font-semibold text-gray-600 mb-2">Cuộc thi đang diễn ra</h2>
-              <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+              <h2 className="text-sm sm:text-base font-semibold text-black mb-2">Cuộc thi đang diễn ra</h2>
+              <h3 className="text-3xl sm:text-4xl text-[#423137] md:text-5xl font-bold mb-4 sm:mb-6">
                 Thành Phố Trong <br />
                 Mắt Em
               </h3>
-              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
                 &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ 
                 tranh dành cho học sinh lớp 1–9 tại 
                 TP.HCM, nơi các em thể hiện góc nhìn và 
                 ước mơ về thành phố bằng màu sắc sáng 
                 tạo.
               </p>
-              <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-800">
+              <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
                 <p><strong>Thời gian:</strong> 21-10-2025 đến 12-12-2025</p>
                 <p>
                   <strong>Lưu ý:</strong> Thí sinh cần nộp bản cứng tác phẩm 
                   trước ngày 30-04-1974
                 </p>
               </div>
-              <button className="mt-6 sm:mt-10 bg-black text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
+              <button className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
                 Tham gia ngay <ArrowRightIcon />
               </button>
             </div>
@@ -171,9 +171,9 @@ export default function Page() {
         </section>
 
         {/* --- News Section with 3 Columns --- */}
-        <section className="min-h-screen bg-black text-white flex items-center justify-center py-12 sm:py-20 md:py-32">
+        <section className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            <h2 className="text-sm sm:text-base font-semibold mb-4 sm:mb-6">Tin tức nổi bật</h2>
+            <h2 className="text-sm sm:text-base text-black font-semibold mb-4 sm:mb-6">Tin tức nổi bật</h2>
             
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
               
@@ -194,19 +194,19 @@ export default function Page() {
 
               <div className="hidden lg:block w-[2px] bg-neutral-700 h-full"></div>
 
-              <div className="flex flex-col bg-black text-white">
+              <div className="flex flex-col bg-[#EAE6E0] text-white">
                 <img
                   src="https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
                   alt="Spotlight To Emerging Artist"
                   className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
                   onError={(e) => { (e.target as HTMLImageElement).style.backgroundColor = '#FF5733'; }}
                 />
-                <p className="text-xs sm:text-sm font-semibold text-gray-400 uppercase mb-2">Artist Spotlight</p>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm font-semibold text-black uppercase mb-2">Artist Spotlight</p>
+                <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4">
                   Spotlight To Emerging Artist: Ones 
                   to watch in 2025
                 </h3>
-                <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
+                <p className="text-sm sm:text-base text-black leading-relaxed">
                   &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh dành cho 
                   học sinh từ lớp 1 đến lớp 9 đang học tập tại Thành phố 
                   Hồ Chí Minh. Cuộc thi khuyến khích các em thể hiện góc 
@@ -235,7 +235,7 @@ export default function Page() {
         </section>
 
         {/* --- Campaigns Section --- */}
-        <section className="min-h-screen bg-[#F1EFEA] flex items-center justify-center py-12 sm:py-20 md:py-32">
+        <section className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
             <h2 className="text-sm sm:text-base font-semibold mb-4 sm:mb-6 text-black">Chiến dịch đang diễn ra</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
@@ -260,7 +260,7 @@ export default function Page() {
       </main>
 
       {/* --- Footer --- */}
-      <footer className="py-8 sm:py-12 md:py-16 bg-black text-gray-400">
+      <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Về chúng tôi</h5>
