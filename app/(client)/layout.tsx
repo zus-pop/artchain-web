@@ -8,7 +8,7 @@ const ClientLayout = ({
 }>) => {
   return (
     <div>
-      <HeaderWrapper />
+      {/* <HeaderWrapper /> */}
       {children}
     </div>
   )
