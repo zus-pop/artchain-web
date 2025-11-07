@@ -49,7 +49,7 @@ const NewsCardSmall = ({
 }) => (
   <div
     className={`flex flex-col overflow-hidden ${
-      darkBg ? "bg-black text-white" : "bg-white text-black"
+      darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
     }`}
   >
     <img
@@ -62,7 +62,7 @@ const NewsCardSmall = ({
       }}
     />
     <div className="p-3 sm:p-4">
-      <p className="text-[10px] sm:text-xs font-semibold text-gray-400 uppercase mb-1">
+      <p className="text-[10px] sm:text-xs font-semibold text-black uppercase mb-1">
         {category}
       </p>
       <h4
@@ -124,7 +124,7 @@ export default function Page() {
             </nav>
 
             {/* Mobile menu button */}
-            <button className="lg:hidden p-2 text-gray-700 hover:text-black">
+            <button className="lg:hidden p-2 text-black hover:text-black">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -164,7 +164,7 @@ export default function Page() {
 
           <div className="relative z-5 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
             <div className="max-w-xl mt-0 sm:mt-[-10vh] lg:mt-[-17vh]">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-black font-semibold tracking-tighter leading-tight sm:leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight">
                 CUỘC THI <br />
                 NÉT VẼ XANH <br />
                 2025
@@ -187,19 +187,19 @@ export default function Page() {
         <section className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
             <div className="max-w-lg">
-              <h2 className="text-sm sm:text-base font-semibold text-gray-600 mb-2">
+              <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
                 Cuộc thi đang diễn ra
               </h2>
-              <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+              <h3 className="text-3xl text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                 Thành Phố Trong <br />
                 Mắt Em
               </h3>
-              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-4 sm:mb-6">
+              <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
                 &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh dành cho
                 học sinh lớp 1–9 tại TP.HCM, nơi các em thể hiện góc nhìn và ước
                 mơ về thành phố bằng màu sắc sáng tạo.
               </p>
-              <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-gray-800">
+              <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
                 <p>
                   <strong>Thời gian:</strong> 21-10-2025 đến 12-12-2025
                 </p>
@@ -230,7 +230,7 @@ export default function Page() {
         {/* --- News Section with 3 Columns --- */}
         <section className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            <h2 className="text-sm sm:text-base font-semibold mb-4 sm:mb-6">
+            <h2 className="text-sm text-black sm:text-base font-semibold mb-4 sm:mb-6">
               Tin tức nổi bật
             </h2>
 
