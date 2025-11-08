@@ -73,14 +73,14 @@ export function LoginForm({
       {/* CỘT BÊN TRÁI (Biểu mẫu) */}
       <div
         // Cột form có thể cuộn nội bộ nếu màn hình quá thấp
-        className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-auto min-h-screen"
+        className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-hidden min-h-screen"
       >
         <div className="w-full max-w-sm mx-auto">
           {/* Nút Quay lại (Gán onToggle vào đây) */}
           <button
             type="button"
             onClick={onToggle}
-            className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-900 mb-6"
+            className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-6 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -103,12 +103,12 @@ export function LoginForm({
             <img 
                 src="/images/newlogo.png" 
                 alt="Artchain Logo" 
-                className="w-14 h-14 sm:w-16 sm:h-16 object-contain flex-shrink-0"
+                className="w-20 h-20 sm:w-22 sm:h-22 object-contain flex-shrink-0"
               />
           </div>
 
           {/* Tiêu đề với gạch chân xanh */}
-          <h1 className="text-5xl text-gray-900 mb-10">
+          <h1 className="text-5xl text-[#423137] font-medium tracking-normal mb-10">
               {translations.signIn || "Đăng nhập"}
           </h1>
 
@@ -120,7 +120,7 @@ export function LoginForm({
             {/* Trường Tên đăng nhập */}
             <div className="grid gap-2">
               <label
-                className="text-sm font-medium text-black"
+                className="text-base font-medium text-black"
                 htmlFor="username"
               >
                 {translations.username || "Tên đăng nhập"}
@@ -132,22 +132,20 @@ export function LoginForm({
                   <input
                     id="username"
                     type="text"
-                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                    className="w-full h-12 px-4 rounded-sm border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                     {...field}
                   />
                 )}
               />
-              {errors.username && (
-                <p className="text-xs text-red-500">
-                  {errors.username.message}
-                </p>
-              )}
+              <p className="text-sm text-red-500 min-h-5">
+                {errors.username?.message}
+              </p>
             </div>
 
             {/* Trường Mật khẩu */}
-            <div className="grid gap-2 mt-8">
+            <div className="grid gap-2 mt-2">
               <label
-                className="text-sm font-medium text-black"
+                className="text-base font-medium text-black"
                 htmlFor="password"
               >
                 {translations.password || "Mật khẩu"}
@@ -159,20 +157,18 @@ export function LoginForm({
                   <input
                     id="password"
                     type="password"
-                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                    className="w-full h-12 px-4 rounded-sm border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                     {...field}
                   />
                 )}
               />
-              {errors.password && (
-                <p className="text-xs text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
+              <p className="text-sm text-red-500 min-h-5">
+                {errors.password?.message}
+              </p>
             </div>
 
             {/* Checkbox Ghi nhớ đăng nhập */}
-            <div className="flex items-center gap-2 mt-8">
+            <div className="flex items-center gap-2 mt-2">
               <Controller
                 control={control}
                 name="staySignedIn"
@@ -198,7 +194,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={!isValid || isPending}
-              className="flex items-center justify-center gap-2 w-full h-16 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
+              className="flex items-center justify-center gap-2 w-full h-14 rounded-sm px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
             >
               {translations.login || "Đăng nhập"}
               <svg
@@ -218,7 +214,7 @@ export function LoginForm({
             
             {/* Đã xóa nút "Tạo tài khoản" ở đây */}
           </form>
-          <div className="text-sm text-black">
+          <div className="text-base ml-23 text-black">
             Chưa có tài khoản?{" "}
             <span 
               onClick={onToggle}

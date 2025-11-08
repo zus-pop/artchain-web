@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+* {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
 /* Artist Theme Variables */
 :root {
   /* App specific colors */

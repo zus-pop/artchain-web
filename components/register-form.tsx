@@ -2,8 +2,6 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { FloatingInput } from "@/components/ui/floating-input";
-import { FloatingSelect } from "@/components/ui/floating-select";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,9 +9,10 @@ import { useRegisterMutation } from "@/hooks/useRegisterMutation";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { useWards } from "@/hooks/useWards";
-import { AnimatedNavButton } from "@/components/ui/animated-nav-button";
 // Import các icon từ @tabler/icons-react
 import { IconSchool, IconUsers } from "@tabler/icons-react";
+import Checkbox from "./Checkbox";
+import Image from "next/image";
 
 // Schema for Guardian (Người đại diện)
 const guardianSchema = z
@@ -189,50 +188,62 @@ export function RegisterForm({
 
           {/* Role Selection Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-            {/* Competitor Card */}
+            {/* Competitor Card - ĐÃ CẬP NHẬT CẤU TRÚC */}
             <div
               className={cn(
-                "relative bg-white rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 min-h-[180px]",
+                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-[160px] cursor-pointer",
                 selectedRole === 'competitor' ? "border-2 border-orange-500 shadow-md" : "border border-gray-200 hover:border-gray-300"
               )}
               onClick={() => setSelectedRole('competitor')}
             >
-              <div className="absolute top-4 right-4 w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center">
-                {selectedRole === 'competitor' && (
-                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                )}
+              <div className="w-full">
+                {/* Hàng 1: Icon và Checkbox */}
+                <div className="flex justify-between items-center w-full mb-4">
+                  <IconSchool
+                    className="w-12 h-10 text-gray-700"
+                    stroke={1.5}
+                  />
+                  <Checkbox
+                    checked={selectedRole === 'competitor'}
+                    onChange={(checked) => setSelectedRole(checked ? 'competitor' : null)}
+                    id="competitor-checkbox"
+                  />
+                </div>
+                
+                {/* Hàng 2: Text */}
+                <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
+                  {translations.iAmCompetitor || "Tôi là thí sinh tự do"}
+                </h3>
               </div>
-              {/* Đã thay thế icon SVG bằng IconSchool */}
-              <IconSchool
-                className="w-12 h-12 mb-4 text-gray-700"
-                stroke={1.5}
-              />
-              <h3 className="text-lg font-semibold text-gray-800 text-center">
-                {translations.iAmCompetitor || "Tôi là thí sinh tự do"}
-              </h3>
             </div>
 
-            {/* Guardian Card */}
+            {/* Guardian Card - ĐÃ CẬP NHẬT CẤU TRÚC */}
             <div
               className={cn(
-                "relative bg-white rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 min-h-[180px]",
+                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-[160px] cursor-pointer",
                 selectedRole === 'guardian' ? "border-2 border-orange-500 shadow-md" : "border border-gray-200 hover:border-gray-300"
               )}
               onClick={() => setSelectedRole('guardian')}
             >
-              <div className="absolute top-4 right-4 w-5 h-5 rounded-full border border-gray-400 flex items-center justify-center">
-                {selectedRole === 'guardian' && (
-                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                )}
+              <div className="w-full">
+                {/* Hàng 1: Icon và Checkbox */}
+                <div className="flex justify-between items-center w-full mb-4">
+                  <IconUsers
+                    className="w-12 h-10 text-gray-700"
+                    stroke={1.5}
+                  />
+                  <Checkbox
+                    checked={selectedRole === 'guardian'}
+                    onChange={(checked) => setSelectedRole(checked ? 'guardian' : null)}
+                    id="guardian-checkbox"
+                  />
+                </div>
+                
+                {/* Hàng 2: Text */}
+                <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
+                  {translations.iAmGuardian || "Tôi là người giám hộ"}
+                </h3>
               </div>
-              {/* Đã thay thế icon SVG bằng IconUsers */}
-              <IconUsers
-                className="w-12 h-12 mb-4 text-gray-700"
-                stroke={1.5}
-              />
-              <h3 className="text-lg font-semibold text-gray-800 text-center">
-                {translations.iAmGuardian || "Tôi là người giám hộ"}
-              </h3>
             </div>
           </div>
 
@@ -246,7 +257,7 @@ export function RegisterForm({
                 }
               }}
               disabled={!selectedRole}
-              className="flex items-center justify-center gap-2 w-full max-w-[300px] px-12 h-14 bg-orange-500 text-white text-lg font-semibold rounded-lg shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 w-full max-w-[300px] px-12 h-10 bg-orange-500 text-white text-lg font-semibold rounded-sm shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {translations.continue || "Đăng kí"}
               <svg
@@ -264,11 +275,11 @@ export function RegisterForm({
               </svg>
             </button>
 
-            <div className="text-sm text-gray-700 mt-4">
+            <div className="text-base text-gray-700 mt-2">
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
-                className="text-gray-900 hover:text-orange-500 cursor-pointer underline underline-offset-4"
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
                 {translations.signInNow || "Đăng nhập"}
               </span>
@@ -295,7 +306,7 @@ export function RegisterForm({
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="flex items-center gap-2 text-sm font-medium text-black hover:text-gray-900 mb-6"
+            className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-4 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -313,7 +324,7 @@ export function RegisterForm({
             {translations.back || "Quay lại"}
           </button>
           {/* Title */}
-          <h1 className="text-5xl text-gray-900 mb-10">
+          <h1 className="text-5xl text-black mb-6">
             {selectedRole === 'competitor' ? translations.registerCompetitor || "Đăng ký thí sinh" : translations.registerGuardian || "Đăng ký người giám hộ"}
           </h1>
 
@@ -323,7 +334,7 @@ export function RegisterForm({
               {/* Full Name and Email - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="guardian-fullName">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-fullName">
                     {translations.fullName || "Họ và tên"}
                   </label>
                   <Controller
@@ -333,18 +344,18 @@ export function RegisterForm({
                       <input
                         id="guardian-fullName"
                         type="text"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {guardianErrors.fullName && (
-                    <p className="text-xs text-red-500">{guardianErrors.fullName.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.fullName?.message}
+                  </p>
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="guardian-email">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-email">
                     {translations.email || "Email"}
                   </label>
                   <Controller
@@ -354,21 +365,21 @@ export function RegisterForm({
                       <input
                         id="guardian-email"
                         type="email"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {guardianErrors.email && (
-                    <p className="text-xs text-red-500">{guardianErrors.email.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.email?.message}
+                  </p>
                 </div>
               </div>
 
               {/* Username and Password - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="guardian-username">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-username">
                     {translations.username || "Tên đăng nhập"}
                   </label>
                   <Controller
@@ -378,18 +389,18 @@ export function RegisterForm({
                       <input
                         id="guardian-username"
                         type="text"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {guardianErrors.username && (
-                    <p className="text-xs text-red-500">{guardianErrors.username.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.username?.message}
+                  </p>
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="guardian-password">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-password">
                     {translations.password || "Mật khẩu"}
                   </label>
                   <Controller
@@ -399,20 +410,20 @@ export function RegisterForm({
                       <input
                         id="guardian-password"
                         type="password"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {guardianErrors.password && (
-                    <p className="text-xs text-red-500">{guardianErrors.password.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.password?.message}
+                  </p>
                 </div>
               </div>
 
               {/* Confirm Password - Full width */}
-              <div className="grid gap-2 mt-6">
-                <label className="text-sm font-medium text-black" htmlFor="guardian-confirmPassword">
+              <div className="grid gap-2 mt-2">
+                <label className="text-base font-medium text-black" htmlFor="guardian-confirmPassword">
                   {translations.confirmPassword || "Xác nhận mật khẩu"}
                 </label>
                 <Controller
@@ -422,21 +433,21 @@ export function RegisterForm({
                     <input
                       id="guardian-confirmPassword"
                       type="password"
-                      className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                      className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                       {...field}
                     />
                   )}
                 />
-                {guardianErrors.confirmPassword && (
-                  <p className="text-xs text-red-500">{guardianErrors.confirmPassword.message}</p>
-                )}
+                <p className="text-sm text-red-500 min-h-5">
+                  {guardianErrors.confirmPassword?.message}
+                </p>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={!guardianIsValid || isPending}
-                className="flex items-center justify-center gap-2 w-full h-14 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-8 mb-4"
+                className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
                 {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
                 <svg
@@ -456,13 +467,26 @@ export function RegisterForm({
             </form>
           )}
 
+          {/* Link to login */}
+          {selectedRole === 'guardian' && (
+            <div className="text-base text-black mt-4 ml-14">
+              {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
+              <span
+                onClick={onToggle}
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+              >
+                {translations.signInNow || "Đăng nhập"}
+              </span>
+            </div>
+          )}
+
           {/* Competitor Form */}
           {selectedRole === 'competitor' && (
             <form onSubmit={competitorHandleSubmit(handleCompetitorRegister)} className="flex flex-col">
               {/* Full Name and Email - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-fullName">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-fullName">
                     {translations.fullName || "Họ và tên"}
                   </label>
                   <Controller
@@ -472,18 +496,18 @@ export function RegisterForm({
                       <input
                         id="competitor-fullName"
                         type="text"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.fullName && (
-                    <p className="text-xs text-red-500">{competitorErrors.fullName.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.fullName?.message}
+                  </p>
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-email">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-email">
                     {translations.email || "Email"}
                   </label>
                   <Controller
@@ -493,21 +517,21 @@ export function RegisterForm({
                       <input
                         id="competitor-email"
                         type="email"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.email && (
-                    <p className="text-xs text-red-500">{competitorErrors.email.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.email?.message}
+                  </p>
                 </div>
               </div>
 
               {/* Username and Password - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-username">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-username">
                     {translations.username || "Tên đăng nhập"}
                   </label>
                   <Controller
@@ -517,18 +541,18 @@ export function RegisterForm({
                       <input
                         id="competitor-username"
                         type="text"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.username && (
-                    <p className="text-xs text-red-500">{competitorErrors.username.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.username?.message}
+                  </p>
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-password">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-password">
                     {translations.password || "Mật khẩu"}
                   </label>
                   <Controller
@@ -538,21 +562,21 @@ export function RegisterForm({
                       <input
                         id="competitor-password"
                         type="password"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.password && (
-                    <p className="text-xs text-red-500">{competitorErrors.password.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.password?.message}
+                  </p>
                 </div>
               </div>
 
               {/* Confirm Password and Birthday - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-confirmPassword">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-confirmPassword">
                     {translations.confirmPassword || "Xác nhận mật khẩu"}
                   </label>
                   <Controller
@@ -562,18 +586,18 @@ export function RegisterForm({
                       <input
                         id="competitor-confirmPassword"
                         type="password"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.confirmPassword && (
-                    <p className="text-xs text-red-500">{competitorErrors.confirmPassword.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.confirmPassword?.message}
+                  </p>
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-birthday">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-birthday">
                     {translations.birthday || "Ngày sinh"}
                   </label>
                   <Controller
@@ -583,20 +607,20 @@ export function RegisterForm({
                       <input
                         id="competitor-birthday"
                         type="date"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.birthday && (
-                    <p className="text-xs text-red-500">{competitorErrors.birthday.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.birthday?.message}
+                  </p>
                 </div>
               </div>
 
               {/* School Name - Full width */}
-              <div className="grid gap-2 mt-6">
-                <label className="text-sm font-medium text-black" htmlFor="competitor-schoolName">
+              <div className="grid gap-2 mt-2">
+                <label className="text-base font-medium text-black" htmlFor="competitor-schoolName">
                   {translations.schoolName || "Tên trường"}
                 </label>
                 <Controller
@@ -606,20 +630,20 @@ export function RegisterForm({
                     <input
                       id="competitor-schoolName"
                       type="text"
-                      className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                      className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                       {...field}
                     />
                   )}
                 />
-                {competitorErrors.schoolName && (
-                  <p className="text-xs text-red-500">{competitorErrors.schoolName.message}</p>
-                )}
+                <p className="text-sm text-red-500 min-h-5">
+                  {competitorErrors.schoolName?.message}
+                </p>
               </div>
 
               {/* Ward and Grade - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-ward">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-ward">
                     {translations.ward || "Phường/Xã"}
                   </label>
                   <Controller
@@ -628,7 +652,7 @@ export function RegisterForm({
                     render={({ field }) => (
                       <select
                         id="competitor-ward"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       >
                         <option value="">Chọn phường/xã</option>
@@ -640,13 +664,13 @@ export function RegisterForm({
                       </select>
                     )}
                   />
-                  {competitorErrors.ward && (
-                    <p className="text-xs text-red-500">{competitorErrors.ward.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.ward?.message}
+                  </p>
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-grade">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-grade">
                     {translations.grade || "Lớp"}
                   </label>
                   <Controller
@@ -656,14 +680,14 @@ export function RegisterForm({
                       <input
                         id="competitor-grade"
                         type="text"
-                        className="w-full h-14 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
                   />
-                  {competitorErrors.grade && (
-                    <p className="text-xs text-red-500">{competitorErrors.grade.message}</p>
-                  )}
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.grade?.message}
+                  </p>
                 </div>
               </div>
 
@@ -671,7 +695,7 @@ export function RegisterForm({
               <button
                 type="submit"
                 disabled={!competitorIsValid || isPending}
-                className="flex items-center justify-center gap-2 w-full h-14 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-8 mb-4"
+                className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
                 {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
                 <svg
@@ -690,15 +714,29 @@ export function RegisterForm({
               </button>
             </form>
           )}
+
+          {/* Link to login */}
+          {selectedRole === 'competitor' && (
+            <div className="text-base text-black mt-4 ml-14">
+              {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
+              <span
+                onClick={onToggle}
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+              >
+                {translations.signInNow || "Đăng nhập"}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* CỘT BÊN PHẢI (Hình ảnh) */}
       <div className="hidden md:block relative w-full h-full overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1548811579-017cf2a4268b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%D%D&auto=format&fit=crop&q=80&w=1289"
+        <Image
+          src="https://images.unsplash.com/photo-1548811579-017cf2a4268b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%D&auto=format&fit=crop&q=80&w=1289"
           alt="Statue"
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
         />
       </div>
     </div>

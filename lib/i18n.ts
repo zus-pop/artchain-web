@@ -23,7 +23,7 @@ export const translations = {
     registerArtistFree: 'Đăng Ký Nghệ Sĩ Miễn Phí',
     
     // Auth
-    signIn: 'Đăng Nhập',
+    signIn: 'Đăng nhập',
     signUp: 'Đăng Ký', 
     username: 'Tên Đăng Nhập',
     password: 'Mật Khẩu',

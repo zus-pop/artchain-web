@@ -58,7 +58,7 @@ const CampaignCard = ({
       dangerouslySetInnerHTML={{ __html: description }} 
 
     />
-    <button className="w-full bg-[#FF6E1A] text-white px-4 py-2.5 font-medium text-sm hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
+    <button className="w-full bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
       Đăng kí tài trợ <ArrowRightIcon />
     </button>
   </div>
@@ -138,7 +138,7 @@ export default function Page() {
             <img
               src="/images/newlogo.png"
               alt="Artchain Logo"
-              className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0"
+              className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
             />
             <nav className="hidden lg:flex gap-6">
               {navItems.map((item, index) => (
@@ -169,7 +169,7 @@ export default function Page() {
               </svg>
             </button>
 
-            <button className="hidden sm:block bg-black text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap">
+            <button className="hidden rounded-sm sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] transition-colors whitespace-nowrap">
               Tham gia ngay
             </button>
           </div>
@@ -191,7 +191,7 @@ export default function Page() {
             />
           </div>
 
-          <div className="relative z-5 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
+          <div className="relative z-5 mt-8 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
             <div className="max-w-xl mt-0 sm:mt-[-10vh] lg:mt-[-17vh]">
               <AnimatedContainer
                 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight"
@@ -217,7 +217,7 @@ export default function Page() {
                 animation="animate-zoom-in"
                 delay={400}
               >
-                <button className="bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
+                <button className="bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2">
                   Xem Triển Lãm <ArrowRightIcon />
                 </button>
               </AnimatedContainer>
@@ -235,7 +235,7 @@ export default function Page() {
               <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
                 Cuộc thi đang diễn ra
               </h2>
-              <h3 className="text-3xl text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+              <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                 Thành Phố Trong <br />
                 Mắt Em
               </h3>
@@ -253,12 +253,12 @@ export default function Page() {
                   trước ngày 30-04-1974
                 </p>
               </div>
-              <button className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
+              <button className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2">
                 Tham gia ngay <ArrowRightIcon />
               </button>
             </div>
 
-            <div className="h-64 sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
+            <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
               <img
                 src="https://plus.unsplash.com/premium_vector-1697729767007-36c5a80b5782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2910"
                 alt="Minh họa thành phố"
@@ -479,7 +479,7 @@ export default function Page() {
             </ul>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12 border-t border-gray-800 pt-6 sm:pt-8 text-center text-xs sm:text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12 border-t border-[#FF833B] rounded-sm pt-6 sm:pt-8 text-center text-xs sm:text-sm">
           <p>&copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.</p>
         </div>
       </footer>
