@@ -132,7 +132,7 @@ export function LoginForm({
                   <input
                     id="username"
                     type="text"
-                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                     {...field}
                   />
                 )}
@@ -159,7 +159,7 @@ export function LoginForm({
                   <input
                     id="password"
                     type="password"
-                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    className="w-full h-16 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                     {...field}
                   />
                 )}
@@ -198,7 +198,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={!isValid || isPending}
-              className="flex items-center justify-center gap-2 w-full h-16 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10"
+              className="flex items-center justify-center gap-2 w-full h-16 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
             >
               {translations.login || "Đăng nhập"}
               <svg
@@ -218,9 +218,17 @@ export function LoginForm({
             
             {/* Đã xóa nút "Tạo tài khoản" ở đây */}
           </form>
+          <div className="text-sm text-black">
+            Chưa có tài khoản?{" "}
+            <span 
+              onClick={onToggle}
+              className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-8"
+            >
+              Đăng kí
+            </span>
+          </div>
         </div>
       </div>
-
       {/* CỘT BÊN PHẢI (Hình ảnh) */}
       <div className="hidden md:block relative w-full h-full overflow-hidden">
         <img
