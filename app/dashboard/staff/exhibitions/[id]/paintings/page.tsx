@@ -270,7 +270,7 @@ export default function EditExhibitionPaintingsPage({
                                           exhibitionPainting.paintingId
                                         )
                                       }
-                                      className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-lg"
+                                      className="p-1.5 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-lg"
                                       title="Remove from exhibition"
                                       disabled={
                                         deletePaintingMutation.isPending
@@ -294,18 +294,7 @@ export default function EditExhibitionPaintingsPage({
                                         exhibitionPainting.addedAt
                                       ).toLocaleDateString()}
                                     </span>
-                                    <span
-                                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                        exhibitionPainting.status === "APPROVED"
-                                          ? "bg-green-100 text-green-800"
-                                          : exhibitionPainting.status ===
-                                            "PENDING"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-red-100 text-red-800"
-                                      }`}
-                                    >
-                                      {exhibitionPainting.status}
-                                    </span>
+                                    
                                   </div>
                                 </div>
                               </div>
@@ -402,7 +391,7 @@ export default function EditExhibitionPaintingsPage({
                             onChange={(e) =>
                               setSelectedContestId(e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                           >
                             <option value="">Select a contest...</option>
                             {contestsResponse?.data?.map((contest) => (
@@ -443,7 +432,7 @@ export default function EditExhibitionPaintingsPage({
                                           Rank #{award.rank}
                                         </p>
                                       </div>
-                                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                                      <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium">
                                         {award.paintings?.length || 0}
                                       </span>
                                     </div>
@@ -451,60 +440,97 @@ export default function EditExhibitionPaintingsPage({
                                     {award.paintings &&
                                     award.paintings.length > 0 ? (
                                       <div className="grid grid-cols-2 gap-2">
-                                        {award.paintings.map((painting) => (
-                                          <div
-                                            key={painting.paintingId}
-                                            className="relative group cursor-pointer"
-                                            onClick={() =>
-                                              handlePaintingSelection(
-                                                painting.paintingId,
-                                                !selectedPaintingIds.includes(
-                                                  painting.paintingId
-                                                )
-                                              )
-                                            }
-                                          >
-                                            <div className="aspect-square bg-gray-100 rounded border-2 border-transparent group-hover:border-blue-300 transition-colors relative overflow-hidden">
-                                              <Image
-                                                src={
-                                                  painting.imageUrl ||
-                                                  "/placeholder-painting.jpg"
-                                                }
-                                                alt={painting.title}
-                                                fill
-                                                className="object-cover"
-                                                onError={(e) => {
-                                                  // Handle error by setting src to placeholder
-                                                  const target =
-                                                    e.target as HTMLImageElement;
-                                                  if (target) {
-                                                    target.src =
-                                                      "/placeholder-painting.jpg";
-                                                  }
-                                                }}
-                                              />
-                                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity flex items-center justify-center">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={selectedPaintingIds.includes(
+                                        {award.paintings.map((painting) => {
+                                          const isAlreadyAdded =
+                                            exhibition.exhibitionPaintings?.some(
+                                              (exhibitionPainting) =>
+                                                exhibitionPainting.paintingId ===
+                                                painting.paintingId
+                                            );
+
+                                          return (
+                                            <div
+                                              key={painting.paintingId}
+                                              className={`relative group ${
+                                                isAlreadyAdded
+                                                  ? "cursor-not-allowed opacity-60"
+                                                  : "cursor-pointer"
+                                              }`}
+                                              onClick={() =>
+                                                !isAlreadyAdded &&
+                                                handlePaintingSelection(
+                                                  painting.paintingId,
+                                                  !selectedPaintingIds.includes(
                                                     painting.paintingId
-                                                  )}
-                                                  onChange={(e) => {
-                                                    e.stopPropagation();
-                                                    handlePaintingSelection(
-                                                      painting.paintingId,
-                                                      e.target.checked
-                                                    );
-                                                  }}
-                                                  className="w-4 h-4"
-                                                />
+                                                  )
+                                                )
+                                              }
+                                            >
+                                              <div
+                                                className={`aspect-square bg-gray-100 border-2 transition-colors relative overflow-hidden ${
+                                                  isAlreadyAdded
+                                                    ? "border-gray-300"
+                                                    : "border-transparent group-hover:border-blue-300"
+                                                }`}
+                                              >
+                                                {painting.imageUrl &&
+                                                painting.imageUrl.trim() !==
+                                                  "" ? (
+                                                  <Image
+                                                    src={painting.imageUrl}
+                                                    alt={painting.title}
+                                                    fill
+                                                    className="object-cover"
+                                                  />
+                                                ) : (
+                                                  <div className="flex items-center justify-center h-full text-gray-400">
+                                                    <div className="text-center">
+                                                      <IconPhoto className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                                      <p className="text-xs">
+                                                        No image
+                                                      </p>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {isAlreadyAdded ? (
+                                                  <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
+                                                    <span className="bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded font-medium">
+                                                      Added
+                                                    </span>
+                                                  </div>
+                                                ) : (
+                                                  <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-opacity">
+                                                    <div className="absolute top-2 left-2">
+                                                      <input
+                                                        type="checkbox"
+                                                        checked={selectedPaintingIds.includes(
+                                                          painting.paintingId
+                                                        )}
+                                                        onChange={(e) => {
+                                                          e.stopPropagation();
+                                                          handlePaintingSelection(
+                                                            painting.paintingId,
+                                                            e.target.checked
+                                                          );
+                                                        }}
+                                                        className="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer transition-all duration-200 hover:border-blue-400 checked:bg-blue-600 checked:border-blue-600"
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                )}
                                               </div>
+                                              <p
+                                                className={`text-xs mt-1 line-clamp-1 text-center ${
+                                                  isAlreadyAdded
+                                                    ? "text-gray-500"
+                                                    : "staff-text-primary"
+                                                }`}
+                                              >
+                                                {painting.title}
+                                              </p>
                                             </div>
-                                            <p className="text-xs staff-text-primary mt-1 line-clamp-1 text-center">
-                                              {painting.title}
-                                            </p>
-                                          </div>
-                                        ))}
+                                          );
+                                        })}
                                       </div>
                                     ) : (
                                       <div className="text-center py-2 text-gray-500 text-xs">
@@ -527,7 +553,7 @@ export default function EditExhibitionPaintingsPage({
 
                         {/* Selected paintings count and add button */}
                         {selectedPaintingIds.length > 0 && (
-                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <div className="bg-blue-50 border border-blue-200 p-3">
                             <div className="flex items-center justify-between">
                               <span className="text-sm staff-text-primary font-medium">
                                 {selectedPaintingIds.length} painting

@@ -1,101 +1,99 @@
 "use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { StaffSidebar } from "@/components/staff-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { createStaffCampaign } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { SiteHeader } from "@/components/site-header";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconCalendar,
-  IconMoneybag,
-  IconFileText,
   IconDeviceFloppy,
+  IconFileText,
+  IconMoneybag,
 } from "@tabler/icons-react";
-import { CampaignStatus } from "@/types/dashboard";
-import { createStaffCampaign } from "@/apis/staff";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
+import { CreateCampaignRequest } from "@/types/staff/campaign";
 
-interface CampaignFormData {
-  title: string;
-  description: string;
-  goalAmount: number;
-  deadline: string;
-  status: CampaignStatus;
-}
+// Zod schema for form validation
+const campaignSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(200, "Title must be less than 200 characters"),
+  description: z
+    .string()
+    .min(1, "Description is required")
+    .max(1000, "Description must be less than 1000 characters"),
+  goalAmount: z.number().min(1000, "Goal amount must be greater than 1000"),
+  deadline: z.string().min(1, "Deadline is required"),
+  status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
+  image: z
+    .instanceof(File)
+    .refine((file) => file.size > 0, "Image is required"),
+});
+
+type CampaignFormData = z.infer<typeof campaignSchema>;
 
 export default function CreateCampaignPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<CampaignFormData>({
-    title: "",
-    description: "",
-    goalAmount: 0,
-    deadline: "",
-    status: "DRAFT",
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+
+  // React Hook Form setup
+  const form = useForm<CampaignFormData>({
+    resolver: zodResolver(campaignSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      goalAmount: 0,
+      deadline: "",
+      status: "DRAFT",
+      image: undefined as any, // Will be set by file input
+    },
+    mode: "all",
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const watchedImage = form.watch("image");
 
-  const handleInputChange = (
-    field: keyof CampaignFormData,
-    value: string | number
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const campaignData = {
-        title: formData.title,
-        description: formData.description,
-        goalAmount: formData.goalAmount,
-        deadline: formData.deadline ? `${formData.deadline}T23:59:59.000Z` : "",
-        status: formData.status,
-      };
-
-      const response = await createStaffCampaign(campaignData);
-      console.log("Campaign created successfully:", response);
-
+  const mutation = useMutation({
+    mutationFn: async (data: CreateCampaignRequest) => {
+      return createStaffCampaign(data);
+    },
+    onSuccess: () => {
       toast.success("Campaign created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["staff-campaigns"] });
       router.push("/dashboard/staff/campaigns");
-    } catch (error) {
-      console.error("Error creating campaign:", error);
-      toast.error("Failed to create campaign. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+
+  const handleSubmit = async (data: CampaignFormData) => {
+    setIsSubmitting(true);
+    await mutation.mutateAsync(data);
+    setIsSubmitting(false);
   };
 
   const handleSaveDraft = () => {
-    console.log("Saving draft:", formData);
+    console.log("Saving draft:", form.getValues());
     // Here you would typically make an API call to save as draft
   };
 
-  const calculateWordCount = (text: string) => {
-    return text
-      .trim()
-      .split(/\s+/)
-      .filter((word) => word.length > 0).length;
+  const formatVNDAmount = (amount: number) => {
+    return new Intl.NumberFormat("vi-VN").format(amount);
   };
-
-  const calculateReadingTime = (text: string) => {
-    const wordsPerMinute = 200;
-    const wordCount = calculateWordCount(text);
-    const minutes = Math.ceil(wordCount / wordsPerMinute);
-    return minutes;
-  };
-
-  const isFormValid =
-    formData.title &&
-    formData.description &&
-    formData.goalAmount > 0 &&
-    formData.deadline;
 
   return (
     <SidebarProvider
@@ -143,8 +141,8 @@ export default function CreateCampaignPage() {
                   Save Draft
                 </button>
                 <button
-                  onClick={handleSubmit}
-                  disabled={!isFormValid || isSubmitting}
+                  onClick={form.handleSubmit(handleSubmit)}
+                  disabled={!form.formState.isValid || isSubmitting}
                   className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? "Creating..." : "Create Campaign"}
@@ -154,130 +152,233 @@ export default function CreateCampaignPage() {
 
             {/* Form */}
             <form
-              onSubmit={handleSubmit}
-              className="max-w-4xl mx-auto space-y-6"
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
-              {/* Basic Information */}
-              <div className="bg-white  border border-[#e6e2da] p-6">
-                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                  <IconFileText className="h-5 w-5" />
-                  Basic Information
-                </h3>
+              {/* Left Column - Basic Information (takes 2/3 of space) */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Basic Information */}
+                <div className="bg-white  border border-[#e6e2da] p-6">
+                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <IconFileText className="h-5 w-5" />
+                    Basic Information
+                  </h3>
 
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Campaign Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.title}
-                      onChange={(e) =>
-                        handleInputChange("title", e.target.value)
-                      }
-                      placeholder="Enter campaign title"
-                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                  </div>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Campaign Title *
+                      </label>
+                      <input
+                        type="text"
+                        {...form.register("title")}
+                        placeholder="Enter campaign title"
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                      {form.formState.errors.title && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {form.formState.errors.title.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Description *
-                    </label>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) =>
-                        handleInputChange("description", e.target.value)
-                      }
-                      placeholder="Describe the campaign goals, objectives, and impact..."
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                    <div className="flex justify-between text-sm staff-text-secondary mt-1">
-                      <span>
-                        {calculateWordCount(formData.description)} words
-                      </span>
-                      <span>
-                        ~{calculateReadingTime(formData.description)} min read
-                      </span>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Campaign Description *
+                      </label>
+                      <textarea
+                        {...form.register("description")}
+                        placeholder="Enter campaign description"
+                        rows={4}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                      <div className="flex justify-between items-center mt-1">
+                        {form.formState.errors.description && (
+                          <p className="text-sm text-red-600">
+                            {form.formState.errors.description.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Campaign Image *
+                      </label>
+                      <div className="space-y-3">
+                        {/* Hidden file input */}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              form.setValue("image", file);
+                              form.trigger("image"); // Trigger validation
+                            }
+                          }}
+                          className="hidden"
+                          id="campaign-image"
+                          required
+                        />
+
+                        {/* Custom upload area */}
+                        <div className="relative">
+                          <label
+                            htmlFor="campaign-image"
+                            className={`flex flex-col items-center justify-center aspect-video border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 group ${
+                              watchedImage
+                                ? "border-green-300 bg-green-50"
+                                : "border-gray-300 bg-gray-50 hover:bg-gray-100"
+                            }`}
+                          >
+                            {!watchedImage && (
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg
+                                  className="w-8 h-8 mb-4 text-gray-500 group-hover:text-gray-600 transition-colors"
+                                  aria-hidden="true"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 20 16"
+                                >
+                                  <path
+                                    stroke="currentColor"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                                  />
+                                </svg>
+                                <p className="mb-2 text-sm text-gray-500 group-hover:text-gray-600 transition-colors">
+                                  Click to upload
+                                </p>
+                                <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
+                                  PNG, JPG, GIF up to 10MB
+                                </p>
+                              </div>
+                            )}
+                          </label>
+
+                          {/* Preview overlay */}
+                          {watchedImage && (
+                            <div className="absolute inset-0 rounded-lg overflow-hidden">
+                              <Image
+                                src={URL.createObjectURL(watchedImage)}
+                                alt="Campaign preview"
+                                fill
+                                className="object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                                <div className="text-center text-white">
+                                  <p className="text-sm font-medium mb-1">
+                                    Click to change image
+                                  </p>
+                                  <p className="text-xs">{watchedImage.name}</p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  form.setValue("image", undefined as any);
+                                  // Reset the file input
+                                  const fileInput = document.getElementById(
+                                    "campaign-image"
+                                  ) as HTMLInputElement;
+                                  if (fileInput) fileInput.value = "";
+                                }}
+                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors shadow-lg"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Financial & Status Details */}
-              <div className="bg-white  border border-[#e6e2da] p-6">
-                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                  <IconMoneybag className="h-5 w-5" />
-                  Financial & Status Details
-                </h3>
+              {/* Right Column - Financial & Deadline (takes 1/3 of space) */}
+              <div className="space-y-6">
+                {/* Financial & Status Details */}
+                <div className="bg-white  border border-[#e6e2da] p-6">
+                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <IconMoneybag className="h-5 w-5" />
+                    Financial & Status Details
+                  </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Goal Amount (VND) *
+                      </label>
+                      <input
+                        type="number"
+                        {...form.register("goalAmount", {
+                          valueAsNumber: true,
+                        })}
+                        step={100_000}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                      {form.watch("goalAmount") > 0 && (
+                        <p className="mt-1 text-sm text-gray-600">
+                          Formatted: {formatVNDAmount(form.watch("goalAmount"))}{" "}
+                          VND
+                        </p>
+                      )}
+                      {form.formState.errors.goalAmount && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {form.formState.errors.goalAmount.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Status
+                      </label>
+                      <select
+                        {...form.register("status")}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="DRAFT">Draft</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="PAUSED">Paused</option>
+                        <option value="COMPLETED">Completed</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Deadline */}
+                <div className="bg-white  border border-[#e6e2da] p-6">
+                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <IconCalendar className="h-5 w-5" />
+                    Campaign Deadline
+                  </h3>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Goal Amount ($) *
+                      Deadline *
                     </label>
                     <input
-                      type="number"
-                      value={formData.goalAmount}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "goalAmount",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      placeholder="50000"
-                      min="0"
+                      type="date"
+                      {...form.register("deadline")}
                       className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
+                    {form.formState.errors.deadline && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {form.formState.errors.deadline.message}
+                      </p>
+                    )}
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Status
-                    </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "status",
-                          e.target.value as CampaignStatus
-                        )
-                      }
-                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="DRAFT">Draft</option>
-                      <option value="ACTIVE">Active</option>
-                      <option value="PAUSED">Paused</option>
-                      <option value="COMPLETED">Completed</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Deadline */}
-              <div className="bg-white  border border-[#e6e2da] p-6">
-                <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                  <IconCalendar className="h-5 w-5" />
-                  Campaign Deadline
-                </h3>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Deadline *
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.deadline}
-                    onChange={(e) =>
-                      handleInputChange("deadline", e.target.value)
-                    }
-                    className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
                 </div>
               </div>
             </form>

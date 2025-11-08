@@ -1,5 +1,6 @@
 import myAxios from "@/lib/custom-axios";
-import { CampaignsAPIResponse } from "@/types/campaign";
+import { CampaignAPIResponse, CampaignsAPIResponse } from "@/types/campaign";
+import { ApiResponse } from "../types";
 
 /**
  * Public Campaign APIs
@@ -17,6 +18,8 @@ export const getCampaigns = async (params?: {
 
 // GET /api/campaigns/{campaignId} - Get a single campaign by ID
 export const getCampaign = async (campaignId: number | string) => {
-  const response = await myAxios.get(`/campaigns/${campaignId}`);
+  const response = await myAxios.get<ApiResponse<CampaignAPIResponse>>(
+    `/campaigns/${campaignId}`
+  );
   return response.data;
 };

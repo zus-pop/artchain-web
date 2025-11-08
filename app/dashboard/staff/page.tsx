@@ -1,10 +1,33 @@
+"use client";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import Link from "next/link";
-
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks";
+import { useEffect } from "react";
 export default function StaffDashboardPage() {
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Redirect to auth page if not authenticated
+      router.push("/auth");
+      return;
+    }
+
+    // Redirect based on user role
+    if (user?.role === "ADMIN") {
+      router.push("/dashboard/admin");
+    } else if (user?.role === "STAFF") {
+      router.push("/dashboard/staff");
+    } else {
+      // For COMPETITOR and GUARDIAN, redirect to home or show access denied
+      router.push("/");
+    }
+  }, [isAuthenticated, user, router]);
   return (
     <SidebarProvider
       style={

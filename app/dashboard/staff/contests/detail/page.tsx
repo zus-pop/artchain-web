@@ -503,11 +503,11 @@ function ContestDetailContent() {
                                 </span>
                               )}
                             </h4>
-                            {round.status && (
+                            {/* {round.status && (
                               <span className={getStatusColor(round.status)}>
                                 {round.status}
                               </span>
-                            )}
+                            )} */}
                           </div>
                           {!round.isRound2 && round.roundId && (
                             <div className="flex items-center gap-2">

@@ -38,33 +38,33 @@ const data = {
       url: "/dashboard/staff",
       icon: IconDashboard,
     },
-    {
-      title: "Competitor Management",
-      url: "/dashboard/staff/competitors",
-      icon: IconUsers,
-      items: [
-        {
-          title: "All Competitors",
-          url: "/dashboard/staff/competitors",
-        },
-        {
-          title: "Search & Filter",
-          url: "/dashboard/staff/competitors/search",
-        },
-        {
-          title: "Paintings - Pending Review",
-          url: "/dashboard/staff/competitors/paintings/pending",
-        },
-        {
-          title: "Paintings - Approved",
-          url: "/dashboard/staff/competitors/paintings/approved",
-        },
-        {
-          title: "Paintings - Rejected",
-          url: "/dashboard/staff/competitors/paintings/rejected",
-        },
-      ],
-    },
+    // {
+    //   title: "Competitor Management",
+    //   url: "/dashboard/staff/competitors",
+    //   icon: IconUsers,
+    //   items: [
+    //     {
+    //       title: "All Competitors",
+    //       url: "/dashboard/staff/competitors",
+    //     },
+    //     {
+    //       title: "Search & Filter",
+    //       url: "/dashboard/staff/competitors/search",
+    //     },
+    //     {
+    //       title: "Paintings - Pending Review",
+    //       url: "/dashboard/staff/competitors/paintings/pending",
+    //     },
+    //     {
+    //       title: "Paintings - Approved",
+    //       url: "/dashboard/staff/competitors/paintings/approved",
+    //     },
+    //     {
+    //       title: "Paintings - Rejected",
+    //       url: "/dashboard/staff/competitors/paintings/rejected",
+    //     },
+    //   ],
+    // },
     {
       title: "Contest Management",
       url: "/dashboard/staff/contests",

@@ -10,6 +10,7 @@ import { CreatePostRequest } from "@/types/staff/post-dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
+import { CreateCampaignRequest } from "../types/staff/campaign";
 
 /**
  * Staff Contest Management APIs
@@ -476,14 +477,20 @@ export const deleteStaffSchedule = async (scheduleId: number) => {
  */
 
 // POST /api/staff/campaign - Create a new campaign
-export const createStaffCampaign = async (data: {
-  title: string;
-  description: string;
-  goalAmount: number;
-  deadline: string;
-  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
-}) => {
-  const response = await myAxios.post("/staff/campaign", data);
+export const createStaffCampaign = async (data: CreateCampaignRequest) => {
+  const formData = new FormData();
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("goalAmount", data.goalAmount.toString());
+  formData.append("deadline", data.deadline);
+  formData.append("status", data.status);
+  formData.append("image", data.image);
+
+  const response = await myAxios.post("/staff/campaign", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 

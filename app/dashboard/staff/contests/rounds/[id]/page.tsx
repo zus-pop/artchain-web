@@ -288,9 +288,9 @@ function RoundDetailContent() {
                           </span>
                         )}
                       </h2>
-                      <span className={getStatusColor(round.status)}>
+                      {/* <span className={getStatusColor(round.status)}>
                         {round.status}
-                      </span>
+                      </span> */}
                     </div>
                     <p className="text-sm staff-text-secondary mt-1">
                       Round ID: {round.roundId}

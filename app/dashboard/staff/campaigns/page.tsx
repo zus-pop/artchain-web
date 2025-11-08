@@ -267,6 +267,9 @@ export default function CampaignsPage() {
                             <thead className="bg-gray-50">
                               <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
+                                  Image
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                                   Campaign
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
@@ -287,7 +290,7 @@ export default function CampaignsPage() {
                               {campaigns.length === 0 ? (
                                 <tr>
                                   <td
-                                    colSpan={5}
+                                    colSpan={6}
                                     className="px-6 py-12 text-center staff-text-secondary"
                                   >
                                     No campaigns found
@@ -312,6 +315,21 @@ export default function CampaignsPage() {
                                         key={campaign.campaignId}
                                         className="hover:bg-gray-50"
                                       >
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                          <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                            {campaign.image ? (
+                                              <img
+                                                src={campaign.image}
+                                                alt={campaign.title}
+                                                className="w-full h-full object-cover"
+                                              />
+                                            ) : (
+                                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                                No Image
+                                              </div>
+                                            )}
+                                          </div>
+                                        </td>
                                         <td className="px-6 py-4">
                                           <div>
                                             <div className="text-sm font-medium staff-text-primary">

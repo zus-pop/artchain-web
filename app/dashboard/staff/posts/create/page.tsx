@@ -328,7 +328,7 @@ Ready to join the revolution? Create your free account today and start exploring
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/posts"
-                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
