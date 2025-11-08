@@ -1,4 +1,3 @@
-import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 import React from 'react';
 
 const ClientLayout = ({

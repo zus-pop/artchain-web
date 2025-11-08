@@ -2,7 +2,36 @@
 
 import React from "react";
 import GlassSurface from "@/components/GlassSurface";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+
 const ArrowRightIcon = () => <span>&rarr;</span>;
+
+// Animated Container Component
+const AnimatedContainer = ({
+  children,
+  className = "",
+  animation = "animate-fade-in-up",
+  delay = 0,
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  animation?: string;
+  delay?: number;
+} & React.HTMLAttributes<HTMLDivElement>) => {
+  const { ref, isIntersecting } = useIntersectionObserver<HTMLDivElement>();
+
+  return (
+    <div
+      ref={ref}
+      className={`${className} ${isIntersecting ? animation : 'opacity-0'}`}
+      style={{ animationDelay: `${delay}ms` }}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+};
 
 const CampaignCard = ({
   imgSrc,
@@ -164,27 +193,43 @@ export default function Page() {
 
           <div className="relative z-5 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
             <div className="max-w-xl mt-0 sm:mt-[-10vh] lg:mt-[-17vh]">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight">
+              <AnimatedContainer
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight"
+                animation="animate-fade-in-down"
+              >
                 CUỘC THI <br />
                 NÉT VẼ XANH <br />
                 2025
-              </h1>
-              <p className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-black leading-relaxed">
+              </AnimatedContainer>
+              <AnimatedContainer
+                className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-black leading-relaxed"
+                animation="animate-fade-in-up"
+                delay={200}
+              >
                 Gửi gắm những câu chuyện, ý tưởng và khát{" "}
                 <br className="hidden sm:inline" />
                 vọng qua màu sắc độc đáo của riêng mình. Nơi{" "}
                 <br className="hidden sm:inline" />
                 tài năng hội họa của bạn được tỏa sáng.
-              </p>
-              <button className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
-                Xem Triển Lãm <ArrowRightIcon />
-              </button>
+              </AnimatedContainer>
+              <AnimatedContainer
+                className="mt-6 sm:mt-10"
+                animation="animate-zoom-in"
+                delay={400}
+              >
+                <button className="bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-gray-800 transition-colors flex items-center gap-2">
+                  Xem Triển Lãm <ArrowRightIcon />
+                </button>
+              </AnimatedContainer>
             </div>
           </div>
         </section>
 
         {/* --- Contest Info Section --- */}
-        <section className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden">
+        <AnimatedContainer
+          className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden"
+          animation="animate-fade-in-left"
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
             <div className="max-w-lg">
               <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
@@ -225,14 +270,20 @@ export default function Page() {
               />
             </div>
           </div>
-        </section>
+        </AnimatedContainer>
 
         {/* --- News Section with 3 Columns --- */}
-        <section className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32">
+        <AnimatedContainer
+          className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32"
+          animation="animate-zoom-in"
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            <h2 className="text-sm text-black sm:text-base font-semibold mb-4 sm:mb-6">
+            <AnimatedContainer
+              className="text-sm text-black sm:text-base font-semibold mb-4 sm:mb-6"
+              animation="animate-fade-in-down"
+            >
               Tin tức nổi bật
-            </h2>
+            </AnimatedContainer>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
               <div className="flex flex-col justify-between gap-6 sm:gap-8">
@@ -262,17 +313,30 @@ export default function Page() {
                       "#FF5733";
                   }}
                 />
-                <p className="text-xs sm:text-sm font-semibold text-black uppercase mb-2">Artist Spotlight</p>
-                <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4">
+                <AnimatedContainer
+                  className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
+                  animation="animate-fade-in-left"
+                >
+                  Artist Spotlight
+                </AnimatedContainer>
+                <AnimatedContainer
+                  className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
+                  animation="animate-fade-in-right"
+                  delay={200}
+                >
                   Spotlight To Emerging Artist: Ones 
                   to watch in 2025
-                </h3>
-                <p className="text-sm sm:text-base text-black leading-relaxed">
+                </AnimatedContainer>
+                <AnimatedContainer
+                  className="text-sm sm:text-base text-black leading-relaxed"
+                  animation="animate-fade-in-up"
+                  delay={400}
+                >
                   &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh dành cho 
                   học sinh từ lớp 1 đến lớp 9 đang học tập tại Thành phố 
                   Hồ Chí Minh. Cuộc thi khuyến khích các em thể hiện góc 
                   nhìn riêng về thành phố qua màu sắc, đường nét và trí...
-                </p>
+                </AnimatedContainer>
               </div>
 
               <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
@@ -293,14 +357,20 @@ export default function Page() {
               </div>
             </div>
           </div>
-        </section>
+        </AnimatedContainer>
 
         {/* --- Campaigns Section --- */}
-        <section className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32">
+        <AnimatedContainer
+          className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32"
+          animation="animate-fade-in-right"
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
-            <h2 className="text-sm sm:text-base font-semibold mb-4 sm:mb-6 text-black">
+            <AnimatedContainer
+              className="text-sm sm:text-base font-semibold mb-4 sm:mb-6 text-black"
+              animation="animate-fade-in-down"
+            >
               Chiến dịch đang diễn ra
-            </h2>
+            </AnimatedContainer>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
               <CampaignCard
                 imgSrc="https://placehold.co/400x300/2ecc71/ffffff?text=Campaign+1"
@@ -319,7 +389,7 @@ export default function Page() {
               />
             </div>
           </div>
-        </section>
+        </AnimatedContainer>
       </main>
 
       {/* --- Footer --- */}
