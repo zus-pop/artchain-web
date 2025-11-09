@@ -23,6 +23,8 @@ import {
   IconUsers,
   IconX,
 } from "@tabler/icons-react";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -83,6 +85,9 @@ function AnnounceResultsPage() {
   const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const { data: contestData } = useQuery({
     queryKey: ["staff-contest", contestId],
@@ -168,7 +173,7 @@ function AnnounceResultsPage() {
       handleSelectTag(newTag);
     } catch (error) {
       console.error("Error creating tag:", error);
-      toast.error("Failed to create tag. Please try again.");
+      toast.error(t.failedCreateTagAnnounce);
     } finally {
       setIsCreatingTag(false);
     }
@@ -227,7 +232,7 @@ function AnnounceResultsPage() {
 
   const handlePublish = async () => {
     if (!postTitle.trim() || !postContent.trim()) {
-      toast.error("Please fill in both title and content");
+      toast.error(t.fillBothTitleContent);
       return;
     }
 
@@ -242,7 +247,7 @@ function AnnounceResultsPage() {
       },
       {
         onSuccess: (v) => {
-          toast.success("Thông báo kết quả cuộc thi thành công");
+          toast.success(t.contestResultsAnnouncedSuccess);
           setIsPublishing(false);
           router.push(`/dashboard/staff/posts/${v.data.post_id}`);
         },
@@ -252,7 +257,7 @@ function AnnounceResultsPage() {
 
   const handleSaveDraft = async () => {
     if (!postTitle.trim() || !postContent.trim()) {
-      toast.error("Please fill in both title and content");
+      toast.error(t.fillBothTitleContent);
       return;
     }
 
@@ -293,12 +298,13 @@ function AnnounceResultsPage() {
                       <IconCheck className="h-6 w-6 text-green-600" />
                     </div>
                     <h3 className="text-lg font-medium text-green-900 mb-2">
-                      Results Announced Successfully!
+                      {t.resultsAnnouncedSuccessfully}
                     </h3>
                     <p className="text-green-700 mb-6">
-                      The contest results for <strong>{contest?.title}</strong>{" "}
-                      have been published as an announcement post. All
-                      participants will be notified.
+                      {t.contestResultsPublishedAnnouncement.replace(
+                        "{contest}",
+                        contest?.title || ""
+                      )}
                     </p>
                     <div className="flex gap-4 justify-center">
                       <Link
@@ -317,7 +323,7 @@ function AnnounceResultsPage() {
                         }}
                         className="border border-green-300 text-green-700 px-4 py-2 hover:bg-green-50 transition-colors"
                       >
-                        Create Another Announcement
+                        {t.createAnotherAnnouncement}
                       </button>
                     </div>
                   </div>
@@ -347,7 +353,7 @@ function AnnounceResultsPage() {
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagement,
                   href: "/dashboard/staff/contests",
                 },
                 {
@@ -355,10 +361,10 @@ function AnnounceResultsPage() {
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
                 {
-                  label: "Awards",
+                  label: t.awardsBreadcrumb,
                   href: `/dashboard/staff/contests/awards?id=${contestId}`,
                 },
-                { label: "Announce Results" },
+                { label: t.announceResultsBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -376,11 +382,10 @@ function AnnounceResultsPage() {
                   </Link>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      Create Contest Results Announcement
+                      {t.createContestResultsAnnouncement}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Announce winners and create a public post about contest
-                      results
+                      {t.announceWinnersCreatePublicPost}
                     </p>
                   </div>
                 </div>
@@ -392,7 +397,7 @@ function AnnounceResultsPage() {
                   {/* Image Upload - Moved to top */}
                   <div className="staff-card p-6">
                     <label className="block text-sm font-medium staff-text-primary mb-2">
-                      Featured Image (Optional)
+                      {t.featuredImageOptional}
                     </label>
 
                     {/* Upload Area */}
@@ -433,7 +438,7 @@ function AnnounceResultsPage() {
                               }}
                               className="text-red-600 hover:text-red-800 text-sm font-medium"
                             >
-                              Remove image
+                              {t.removeImageAnnounce}
                             </button>
                           </div>
                         ) : (
@@ -458,10 +463,10 @@ function AnnounceResultsPage() {
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-900">
-                                Click to upload image
+                                {t.clickToUploadImageAnnounce}
                               </p>
                               <p className="text-xs text-gray-500">
-                                PNG, JPG, GIF up to 10MB
+                                {t.pngJpgGifUpTo10MB}
                               </p>
                             </div>
                           </div>
@@ -493,8 +498,7 @@ function AnnounceResultsPage() {
                       />
 
                       <p className="text-xs staff-text-secondary">
-                        Upload an image file to display with your announcement
-                        post (optional)
+                        {t.uploadImageFileOptional}
                       </p>
                     </div>
                   </div>
@@ -503,14 +507,14 @@ function AnnounceResultsPage() {
                   <div className="staff-card p-6">
                     <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                       <IconFileText className="h-5 w-5" />
-                      Announcement Post
+                      {t.announcementPost}
                     </h3>
 
                     <div className="space-y-4">
                       {/* Title */}
                       <div>
                         <label className="block text-sm font-medium staff-text-primary mb-2">
-                          Post Title *
+                          {t.postTitleRequired}
                         </label>
                         <input
                           type="text"
@@ -524,12 +528,12 @@ function AnnounceResultsPage() {
                       {/* Content */}
                       <div>
                         <label className="block text-sm font-medium staff-text-primary mb-2">
-                          Post Content *
+                          {t.postContentRequired}
                         </label>
                         <MDXEditorWrapper
                           markdown={postContent}
                           onChange={(value) => setPostContent(value)}
-                          placeholder="Announcement content will be auto-generated..."
+                          placeholder={t.announcementContentAutoGenerated}
                         />
                         <p className="text-xs staff-text-secondary mt-2">
                           Use the toolbar to format your content with Markdown
@@ -545,7 +549,7 @@ function AnnounceResultsPage() {
                   <div className="staff-card p-6">
                     <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                       <IconTag className="h-5 w-5" />
-                      Tags
+                      {t.tagsLabel}
                     </h3>
 
                     <div className="space-y-3">
@@ -583,7 +587,7 @@ function AnnounceResultsPage() {
                               setShowTagDropdown(true);
                             }}
                             onFocus={() => setShowTagDropdown(true)}
-                            placeholder="Search or create tags..."
+                            placeholder={t.searchOrCreateTags}
                             className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
                           />
                         </div>
@@ -593,7 +597,7 @@ function AnnounceResultsPage() {
                           <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da] shadow-lg max-h-60 overflow-y-auto rounded-lg">
                             {isLoadingTags ? (
                               <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                                Loading tags...
+                                {t.loadingTags}
                               </div>
                             ) : (
                               <>
@@ -618,11 +622,11 @@ function AnnounceResultsPage() {
                                     ))
                                 ) : tagSearch.trim() ? (
                                   <div className="px-4 py-2 text-sm text-gray-500">
-                                    No tags found
+                                    {t.noTagsFound}
                                   </div>
                                 ) : (
                                   <div className="px-4 py-2 text-sm text-gray-500">
-                                    Start typing to search tags
+                                    {t.startTypingSearchTags}
                                   </div>
                                 )}
 
@@ -641,7 +645,7 @@ function AnnounceResultsPage() {
                                     >
                                       <IconPlus className="h-4 w-4" />
                                       {isCreatingTag
-                                        ? "Creating..."
+                                        ? t.creatingTag
                                         : `Create "${tagSearch}"`}
                                     </button>
                                   )}
@@ -652,8 +656,7 @@ function AnnounceResultsPage() {
                       </div>
 
                       <p className="text-xs staff-text-secondary">
-                        Search for existing tags or create new ones to
-                        categorize your announcement
+                        {t.searchExistingTags}
                       </p>
                     </div>
                   </div>
@@ -662,12 +665,12 @@ function AnnounceResultsPage() {
                   <div className="staff-card p-4">
                     <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                       <IconUsers className="h-5 w-5" />
-                      Winners ({paintings.length})
+                      {t.winners} ({paintings.length})
                     </h3>
 
                     {paintingsLoading ? (
                       <div className="text-center py-8 staff-text-secondary">
-                        Loading winners...
+                        {t.loadingWinnersAnnounce}
                       </div>
                     ) : paintings.length > 0 ? (
                       <div className="space-y-3">
@@ -713,7 +716,7 @@ function AnnounceResultsPage() {
                       </div>
                     ) : (
                       <div className="text-center py-8 staff-text-secondary">
-                        No winners yet
+                        {t.noWinnersYetAnnounce}
                       </div>
                     )}
                   </div>
@@ -721,24 +724,24 @@ function AnnounceResultsPage() {
                   {/* Preview Info */}
                   <div className="staff-card p-4">
                     <h4 className="font-semibold staff-text-primary mb-3">
-                      What happens when you publish:
+                      {t.whatHappensWhenPublish}
                     </h4>
                     <ul className="text-sm staff-text-secondary space-y-2">
                       <li className="flex items-start gap-2">
                         <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>Public announcement post is created</span>
+                        <span>{t.publicAnnouncementPostCreated}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>Winners are publicly celebrated</span>
+                        <span>{t.winnersPubliclyCelebrated}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>Contest results are officially announced</span>
+                        <span>{t.contestResultsOfficiallyAnnounced}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <IconCheck className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                        <span>Community engagement increases</span>
+                        <span>{t.communityEngagementIncreases}</span>
                       </li>
                     </ul>
                   </div>
@@ -762,12 +765,12 @@ function AnnounceResultsPage() {
                   {isPublishing ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Publishing...
+                      {t.publishingAnnouncement}
                     </>
                   ) : (
                     <>
                       <IconSend className="h-4 w-4" />
-                      Publish Announcement
+                      {t.publishAnnouncement}
                     </>
                   )}
                 </button>

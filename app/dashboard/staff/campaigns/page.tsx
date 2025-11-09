@@ -8,6 +8,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { formatCurrency } from "@/lib/utils";
 import { CampaignStatus } from "@/types/dashboard";
 import { CampaignAPIResponse } from "@/types/staff/campaign";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -29,6 +31,8 @@ import { useState } from "react";
 // API Response Types
 
 export default function CampaignsPage() {
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
   const [selectedStatus, setSelectedStatus] = useState<CampaignStatus | "ALL">(
     "ALL"
   );
@@ -115,11 +119,11 @@ export default function CampaignsPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Sponsorship Campaigns" />
+        <SiteHeader title={t.campaignManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
-              items={[{ label: "Campaigns" }]}
+              items={[{ label: t.campaignManagement }]}
               homeHref="/dashboard/staff"
             />
           </div>
@@ -131,17 +135,17 @@ export default function CampaignsPage() {
                   <div className="flex">
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">
-                        Error loading campaigns
+                        {t.errorLoadingContests}
                       </h3>
                       <div className="mt-2 text-sm text-red-700">
-                        {error.message || "Failed to load campaigns"}
+                        {error.message || t.loadError}
                       </div>
                       <div className="mt-4">
                         <button
                           onClick={() => refetch()}
                           className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium"
                         >
-                          Try Again
+                          {t.tryAgain}
                         </button>
                       </div>
                     </div>
@@ -155,12 +159,11 @@ export default function CampaignsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-2xl font-bold staff-text-primary">
-                        Sponsorship Campaigns (
+                        {t.campaignsManagement} (
                         {campaignsResponse?.meta?.total || campaigns.length})
                       </h2>
                       <p className="text-sm staff-text-secondary mt-1">
-                        Manage and track all sponsorship campaigns and their
-                        progress
+                        {t.manageCampaigns}
                       </p>
                     </div>
                     <Link
@@ -168,7 +171,7 @@ export default function CampaignsPage() {
                       className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                     >
                       <IconPlus className="h-4 w-4" />
-                      Create Campaign
+                      {t.createCampaign}
                     </Link>
                   </div>
 
@@ -182,7 +185,7 @@ export default function CampaignsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium staff-text-secondary">
-                            Total Raised
+                            {t.totalRaised}
                           </p>
                           <p className="text-2xl font-bold staff-text-primary">
                             {formatCurrency(totalRaised)}
@@ -199,7 +202,7 @@ export default function CampaignsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium staff-text-secondary">
-                            Campaign Goal
+                            {t.campaignGoal}
                           </p>
                           <p className="text-2xl font-bold staff-text-primary">
                             {formatCurrency(totalGoal)}
@@ -216,7 +219,7 @@ export default function CampaignsPage() {
                         </div>
                         <div>
                           <p className="text-sm font-medium staff-text-secondary">
-                            Active
+                            {t.active}
                           </p>
                           <p className="text-2xl font-bold staff-text-primary">
                             {activeCampaigns}
@@ -255,7 +258,7 @@ export default function CampaignsPage() {
                       <div className="flex justify-center items-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         <span className="ml-2 text-gray-600">
-                          Loading campaigns...
+                          {t.loadingCampaigns}
                         </span>
                       </div>
                     </div>
@@ -267,22 +270,22 @@ export default function CampaignsPage() {
                             <thead className="bg-gray-50">
                               <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  Image
+                                  {t.image}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  Campaign
+                                  {t.campaignTitle}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  Progress
+                                  {t.progress}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  Status
+                                  {t.status}
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  Deadline
+                                  {t.deadline}
                                 </th>
                                 <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  Actions
+                                  {t.actions}
                                 </th>
                               </tr>
                             </thead>
@@ -293,7 +296,7 @@ export default function CampaignsPage() {
                                     colSpan={6}
                                     className="px-6 py-12 text-center staff-text-secondary"
                                   >
-                                    No campaigns found
+                                    {t.noCampaignsFound}
                                   </td>
                                 </tr>
                               ) : (
@@ -325,7 +328,7 @@ export default function CampaignsPage() {
                                               />
                                             ) : (
                                               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                                                No Image
+                                                {t.campaignNoImage}
                                               </div>
                                             )}
                                           </div>
@@ -386,7 +389,7 @@ export default function CampaignsPage() {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                           <div>
                                             <div>
-                                              Deadline:{" "}
+                                              {t.deadline}:{" "}
                                               {new Date(
                                                 campaign.deadline
                                               ).toLocaleDateString()}
@@ -432,7 +435,7 @@ export default function CampaignsPage() {
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
                               <span className="text-sm staff-text-secondary">
-                                Show per page:
+                                {t.showPerPage}
                               </span>
                               <select
                                 value={pageSize}
@@ -449,16 +452,17 @@ export default function CampaignsPage() {
                               </select>
                             </div>
                             <div className="text-sm staff-text-secondary">
-                              Showing{" "}
+                              {t.showing}{" "}
                               {campaigns.length > 0
                                 ? (currentPage - 1) * pageSize + 1
                                 : 0}{" "}
-                              to{" "}
+                              {t.to}{" "}
                               {Math.min(
                                 currentPage * pageSize,
                                 campaignsResponse.meta.total
                               )}{" "}
-                              of {campaignsResponse.meta.total} campaigns
+                              {t.of} {campaignsResponse.meta.total}{" "}
+                              {t.campaigns}
                             </div>
                           </div>
 
@@ -483,7 +487,7 @@ export default function CampaignsPage() {
                             </button>
 
                             <span className="px-3 py-1 text-sm staff-text-primary">
-                              Page {currentPage} of{" "}
+                              {t.page} {currentPage} {t.of}{" "}
                               {campaignsResponse.meta.totalPages}
                             </span>
 

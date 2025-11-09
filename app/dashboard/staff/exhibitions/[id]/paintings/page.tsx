@@ -11,6 +11,8 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import {
   IconArrowLeft,
   IconPhoto,
@@ -29,6 +31,8 @@ export default function EditExhibitionPaintingsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Painting management state
   const [selectedPaintingIds, setSelectedPaintingIds] = useState<string[]>([]);
@@ -109,11 +113,11 @@ export default function EditExhibitionPaintingsPage({
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Exhibition Paintings" />
+          <SiteHeader title={t.editExhibitionPaintings} />
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 staff-text-secondary">Loading exhibition...</p>
+              <p className="mt-4 staff-text-secondary">{t.loadingExhibition}</p>
             </div>
           </div>
         </SidebarInset>
@@ -133,15 +137,15 @@ export default function EditExhibitionPaintingsPage({
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Exhibition Paintings" />
+          <SiteHeader title={t.editExhibitionPaintings} />
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <div className="text-center">
-              <p className="staff-text-secondary">Exhibition not found</p>
+              <p className="staff-text-secondary">{t.exhibitionNotFound}</p>
               <Link
                 href="/dashboard/staff/exhibitions"
                 className="staff-btn-primary mt-4 inline-block"
               >
-                Back to Exhibitions
+                {t.backToExhibitions}
               </Link>
             </div>
           </div>
@@ -161,20 +165,20 @@ export default function EditExhibitionPaintingsPage({
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Edit Exhibition Paintings" />
+        <SiteHeader title={t.editExhibitionPaintings} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
             <Breadcrumb
               items={[
                 {
-                  label: "Exhibition Management",
+                  label: t.exhibitionsManagement,
                   href: "/dashboard/staff/exhibitions",
                 },
                 {
                   label: exhibition.name,
                   href: `/dashboard/staff/exhibitions/${id}`,
                 },
-                { label: "Manage Paintings" },
+                { label: t.managePaintings },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -188,17 +192,16 @@ export default function EditExhibitionPaintingsPage({
                     <Link
                       href={`/dashboard/staff/exhibitions/${id}/edit`}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Back to Exhibition Edit"
+                      title={t.backToExhibitionEdit}
                     >
                       <IconArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
                       <h1 className="text-3xl font-bold staff-text-primary">
-                        Manage Paintings
+                        {t.managePaintingsTitle}
                       </h1>
                       <p className="text-sm staff-text-secondary mt-1">
-                        Curate paintings from contest winners for this
-                        exhibition
+                        {t.curatePaintingsFromWinners}
                       </p>
                     </div>
                   </div>
@@ -208,7 +211,7 @@ export default function EditExhibitionPaintingsPage({
                       className="staff-btn-secondary flex items-center gap-2"
                     >
                       <IconArrowLeft className="h-4 w-4" />
-                      Back to Exhibition
+                      {t.backToExhibition}
                     </Link>
                   </div>
                 </div>
@@ -225,11 +228,11 @@ export default function EditExhibitionPaintingsPage({
                           </div>
                           <div>
                             <h2 className="text-xl font-semibold staff-text-primary">
-                              Current Paintings
+                              {t.currentPaintings}
                             </h2>
                             <p className="text-sm staff-text-secondary">
                               {exhibition.exhibitionPaintings?.length || 0}{" "}
-                              paintings in this exhibition
+                              {t.paintingsText} in this exhibition
                             </p>
                           </div>
                         </div>
@@ -289,12 +292,11 @@ export default function EditExhibitionPaintingsPage({
                                   </p>
                                   <div className="flex items-center justify-between mt-3">
                                     <span className="text-xs staff-text-secondary">
-                                      Added:{" "}
+                                      {t.added}:{" "}
                                       {new Date(
                                         exhibitionPainting.addedAt
                                       ).toLocaleDateString()}
                                     </span>
-                                    
                                   </div>
                                 </div>
                               </div>
@@ -305,10 +307,10 @@ export default function EditExhibitionPaintingsPage({
                         <div className="text-center py-12">
                           <IconPhoto className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                           <h3 className="text-lg font-medium staff-text-primary mb-2">
-                            No paintings yet
+                            {t.noPaintingsYet}
                           </h3>
                           <p className="text-sm staff-text-secondary">
-                            Add paintings from contest winners below
+                            {t.addPaintingsFromWinners}
                           </p>
                         </div>
                       )}
@@ -320,12 +322,12 @@ export default function EditExhibitionPaintingsPage({
                     {/* Quick Stats */}
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                        Exhibition Stats
+                        {t.exhibitionStats}
                       </h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm staff-text-secondary">
-                            Total Paintings
+                            {t.totalPaintings}
                           </span>
                           <span className="font-semibold staff-text-primary text-lg">
                             {exhibition.exhibitionPaintings?.length || 0}
@@ -333,7 +335,7 @@ export default function EditExhibitionPaintingsPage({
                         </div>
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm staff-text-secondary">
-                            Status
+                            {t.statusLabel}
                           </span>
                           <span
                             className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -351,7 +353,7 @@ export default function EditExhibitionPaintingsPage({
                         </div>
                         <div className="flex flex-col py-2">
                           <span className="text-sm staff-text-secondary mb-1">
-                            Duration
+                            {t.duration}
                           </span>
                           <span className="text-sm font-medium staff-text-primary">
                             {new Date(
@@ -372,10 +374,10 @@ export default function EditExhibitionPaintingsPage({
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold staff-text-primary">
-                            Add Paintings
+                            {t.addPaintings}
                           </h3>
                           <p className="text-sm staff-text-secondary">
-                            Select from contest winners
+                            {t.selectFromContestWinners}
                           </p>
                         </div>
                       </div>
@@ -384,7 +386,7 @@ export default function EditExhibitionPaintingsPage({
                         {/* Contest Selection */}
                         <div>
                           <label className="block text-sm font-medium staff-text-primary mb-2">
-                            Choose Contest
+                            {t.chooseContest}
                           </label>
                           <select
                             value={selectedContestId}
@@ -393,7 +395,7 @@ export default function EditExhibitionPaintingsPage({
                             }
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
                           >
-                            <option value="">Select a contest...</option>
+                            <option value="">{t.chooseContest}</option>
                             {contestsResponse?.data?.map((contest) => (
                               <option
                                 key={contest.contestId}
@@ -412,7 +414,7 @@ export default function EditExhibitionPaintingsPage({
                               <div className="text-center py-6">
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
                                 <p className="mt-2 text-sm staff-text-secondary">
-                                  Loading awards...
+                                  {t.loadingAwards}
                                 </p>
                               </div>
                             ) : awardsResponse?.data &&
@@ -487,7 +489,7 @@ export default function EditExhibitionPaintingsPage({
                                                     <div className="text-center">
                                                       <IconPhoto className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                                       <p className="text-xs">
-                                                        No image
+                                                        {t.noImageText}
                                                       </p>
                                                     </div>
                                                   </div>
@@ -495,7 +497,7 @@ export default function EditExhibitionPaintingsPage({
                                                 {isAlreadyAdded ? (
                                                   <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
                                                     <span className="bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded font-medium">
-                                                      Added
+                                                      {t.addedToExhibition}
                                                     </span>
                                                   </div>
                                                 ) : (
@@ -534,7 +536,7 @@ export default function EditExhibitionPaintingsPage({
                                       </div>
                                     ) : (
                                       <div className="text-center py-2 text-gray-500 text-xs">
-                                        No paintings awarded
+                                        {t.noPaintingsAwarded}
                                       </div>
                                     )}
                                   </div>
@@ -544,7 +546,7 @@ export default function EditExhibitionPaintingsPage({
                               <div className="text-center py-6">
                                 <IconTrophy className="h-8 w-8 text-gray-300 mx-auto mb-2" />
                                 <p className="text-sm staff-text-secondary">
-                                  No awards found
+                                  {t.noAwardsFound}
                                 </p>
                               </div>
                             )}
@@ -556,11 +558,11 @@ export default function EditExhibitionPaintingsPage({
                           <div className="bg-blue-50 border border-blue-200 p-3">
                             <div className="flex items-center justify-between">
                               <span className="text-sm staff-text-primary font-medium">
-                                {selectedPaintingIds.length} painting
-                                {selectedPaintingIds.length !== 1
-                                  ? "s"
-                                  : ""}{" "}
-                                selected
+                                {selectedPaintingIds.length}{" "}
+                                {selectedPaintingIds.length === 1
+                                  ? t.paintingText
+                                  : t.paintingsText}{" "}
+                                {t.selectedText}
                               </span>
                               <button
                                 type="button"
@@ -570,8 +572,8 @@ export default function EditExhibitionPaintingsPage({
                               >
                                 <IconPlus className="h-3 w-3" />
                                 {addPaintingMutation.isPending
-                                  ? "Adding..."
-                                  : "Add"}
+                                  ? t.addingText
+                                  : t.addText}
                               </button>
                             </div>
                           </div>

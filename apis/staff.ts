@@ -30,26 +30,19 @@ export const getAllStaffContests = async (params?: {
 // POST /api/staff/contests - Create a new contest
 export const createStaffContest = async (data: CreateContestRequest) => {
   const formData = new FormData();
-  if (data.title) formData.append("title", data.title);
-  if (data.description) formData.append("description", data.description);
-  if (data.round2Quantity !== undefined)
-    formData.append("round2Quantity", data.round2Quantity.toString());
-  if (data.startDate) formData.append("startDate", data.startDate);
-  if (data.endDate) formData.append("endDate", data.endDate);
-  if (data.banner) formData.append("banner", data.banner);
-  if (data.rule) formData.append("rule", data.rule);
-  if (data.roundStartDate)
-    formData.append("roundStartDate", data.roundStartDate);
-  if (data.roundEndDate) formData.append("roundEndDate", data.roundEndDate);
-  if (data.roundSubmissionDeadline)
-    formData.append("roundSubmissionDeadline", data.roundSubmissionDeadline);
-  if (data.roundResultAnnounceDate)
-    formData.append("roundResultAnnounceDate", data.roundResultAnnounceDate);
-  if (data.roundSendOriginalDeadline)
-    formData.append(
-      "roundSendOriginalDeadline",
-      data.roundSendOriginalDeadline
-    );
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("round2Quantity", data.round2Quantity.toString());
+  formData.append("numberOfTablesRound2", data.numberOfTablesRound2.toString());
+  formData.append("startDate", data.startDate);
+  formData.append("endDate", data.endDate);
+  formData.append("banner", data.banner);
+  formData.append("rule", data.rule);
+  formData.append("roundStartDate", data.roundStartDate);
+  formData.append("roundEndDate", data.roundEndDate);
+  formData.append("roundSubmissionDeadline", data.roundSubmissionDeadline);
+  formData.append("roundResultAnnounceDate", data.roundResultAnnounceDate);
+  formData.append("roundSendOriginalDeadline", data.roundSendOriginalDeadline);
   formData.append("numOfAward", "0");
   formData.append("roundName", "ROUND_1");
   formData.append("roundTable", "paintings");
@@ -110,6 +103,33 @@ export const updateStaffContest = async (
   return response.data;
 };
 
+export function toggleExaminerScheduleEnforcement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (contestId: string) => {
+      const response = await myAxios.patch(
+        `/staff/contests/${contestId}/schedule-enforcement`
+      );
+      return response.data;
+    },
+    onSuccess: (value: { data: { isScheduleEnforced: boolean } }) => {
+      queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
+      if (value.data.isScheduleEnforced) {
+        toast.success("Bật ràng buộc lịch chấm thành công");
+      } else {
+        toast.success("Tắt ràng buộc lịch chấm thành công");
+      }
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+}
+
 // GET /api/staff/contests/{id} - Get contest by ID (staff view)
 export const getStaffContestById = async (id: number) => {
   const response = await myAxios.get(`/staff/contests/${id}`);
@@ -117,7 +137,7 @@ export const getStaffContestById = async (id: number) => {
 };
 
 // PATCH /api/staff/contests/{id}/publish - Publish a contest
-export const publishStaffContest = async (id: number) => {
+export const publishStaffContest = async (id: string) => {
   const response = await myAxios.patch(`/staff/contests/${id}/publish`);
   return response.data;
 };
@@ -202,7 +222,7 @@ export const deleteStaffRound = async (contestId: number, roundId: string) => {
 // POST /api/staff/contests/{id}/create-round2 - Create round 2
 export const createStaffRound2 = async (
   contestId: number,
-  data: { date: string }
+  data: { date: string; numberOfTables: number }
 ) => {
   const response = await myAxios.post(
     `/staff/contests/${contestId}/create-round2`,

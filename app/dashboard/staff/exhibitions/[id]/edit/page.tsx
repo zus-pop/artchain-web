@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ExhibitionStatus } from "@/types/exhibition";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
@@ -48,6 +50,8 @@ export default function EditExhibitionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
   const router = useRouter();
 
   // Form setup with React Hook Form and Zod
@@ -122,11 +126,13 @@ export default function EditExhibitionPage({
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Exhibition" />
+          <SiteHeader title={t.editExhibitionTitle} />
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 staff-text-secondary">Loading exhibition...</p>
+              <p className="mt-4 staff-text-secondary">
+                {t.loadingExhibitionEdit}
+              </p>
             </div>
           </div>
         </SidebarInset>
@@ -146,15 +152,15 @@ export default function EditExhibitionPage({
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Exhibition" />
+          <SiteHeader title={t.editExhibitionTitle} />
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <div className="text-center">
-              <p className="staff-text-secondary">Exhibition not found</p>
+              <p className="staff-text-secondary">{t.exhibitionNotFoundEdit}</p>
               <Link
                 href="/dashboard/staff/exhibitions"
                 className="staff-btn-primary mt-4 inline-block"
               >
-                Back to Exhibitions
+                {t.backToExhibitionsEdit}
               </Link>
             </div>
           </div>
@@ -174,20 +180,20 @@ export default function EditExhibitionPage({
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Edit Exhibition" />
+        <SiteHeader title={t.editExhibitionTitle} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
             <Breadcrumb
               items={[
                 {
-                  label: "Exhibition Management",
+                  label: t.exhibitionManagementBreadcrumb,
                   href: "/dashboard/staff/exhibitions",
                 },
                 {
                   label: exhibition.name,
                   href: `/dashboard/staff/exhibitions/${id}`,
                 },
-                { label: "Edit" },
+                { label: t.editBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -201,16 +207,16 @@ export default function EditExhibitionPage({
                     <Link
                       href={`/dashboard/staff/exhibitions/${id}`}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Back to Exhibition Details"
+                      title={t.backToExhibitionDetails}
                     >
                       <IconArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
                       <h1 className="text-3xl font-bold staff-text-primary">
-                        Edit Exhibition Details
+                        {t.editExhibitionDetails}
                       </h1>
                       <p className="text-sm staff-text-secondary mt-1">
-                        Update exhibition information and manage paintings
+                        {t.updateExhibitionInfo}
                       </p>
                     </div>
                   </div>
@@ -220,14 +226,14 @@ export default function EditExhibitionPage({
                       className="staff-btn-secondary flex items-center gap-2"
                     >
                       <IconPhoto className="h-4 w-4" />
-                      Manage Paintings
+                      {t.managePaintingsBtn}
                     </Link>
                     <Link
                       href={`/dashboard/staff/exhibitions/${id}`}
                       className="staff-btn-secondary flex items-center gap-2"
                     >
                       <IconX className="h-4 w-4" />
-                      Cancel
+                      {t.cancel}
                     </Link>
                     <button
                       onClick={handleSubmit(onSubmit)}
@@ -235,7 +241,7 @@ export default function EditExhibitionPage({
                       className="staff-btn-primary flex items-center gap-2"
                     >
                       <IconDeviceFloppy className="h-4 w-4" />
-                      {isSubmitting ? "Saving..." : "Save Changes"}
+                      {isSubmitting ? t.saving : t.saveChanges}
                     </button>
                   </div>
                 </div>
@@ -251,10 +257,10 @@ export default function EditExhibitionPage({
                         </div>
                         <div>
                           <h2 className="text-xl font-semibold staff-text-primary">
-                            Exhibition Details
+                            {t.exhibitionDetails}
                           </h2>
                           <p className="text-sm staff-text-secondary">
-                            Basic information about your exhibition
+                            {t.basicExhibitionInfo}
                           </p>
                         </div>
                       </div>
@@ -266,7 +272,7 @@ export default function EditExhibitionPage({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Exhibition Name *
+                              {t.exhibitionNameLabel}
                             </label>
                             <input
                               type="text"
@@ -276,7 +282,7 @@ export default function EditExhibitionPage({
                                   ? "border-red-300"
                                   : "border-[#e6e2da]"
                               }`}
-                              placeholder="Enter exhibition name"
+                              placeholder={t.enterExhibitionName}
                             />
                             {errors.name && (
                               <p className="mt-1 text-sm text-red-600">
@@ -287,7 +293,7 @@ export default function EditExhibitionPage({
 
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Description *
+                              {t.descriptionLabel}
                             </label>
                             <textarea
                               {...register("description")}
@@ -297,7 +303,7 @@ export default function EditExhibitionPage({
                                   ? "border-red-300"
                                   : "border-[#e6e2da]"
                               }`}
-                              placeholder="Describe your exhibition..."
+                              placeholder={t.describeExhibition}
                             />
                             {errors.description && (
                               <p className="mt-1 text-sm text-red-600">
@@ -308,7 +314,7 @@ export default function EditExhibitionPage({
 
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Start Date *
+                              {t.startDateLabel}
                             </label>
                             <input
                               type="date"
@@ -328,7 +334,7 @@ export default function EditExhibitionPage({
 
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              End Date *
+                              {t.endDateLabel}
                             </label>
                             <input
                               type="date"
@@ -349,7 +355,7 @@ export default function EditExhibitionPage({
 
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Status
+                              {t.statusLabel}
                             </label>
                             <select
                               {...register("status")}
@@ -372,12 +378,12 @@ export default function EditExhibitionPage({
                     {/* Quick Stats */}
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                        Exhibition Stats
+                        {t.exhibitionStats}
                       </h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm staff-text-secondary">
-                            Total Paintings
+                            {t.totalPaintings}
                           </span>
                           <span className="font-semibold staff-text-primary text-lg">
                             {exhibition.exhibitionPaintings?.length || 0}
@@ -385,7 +391,7 @@ export default function EditExhibitionPage({
                         </div>
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm staff-text-secondary">
-                            Status
+                            {t.statusLabel}
                           </span>
                           <span
                             className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -403,7 +409,7 @@ export default function EditExhibitionPage({
                         </div>
                         <div className="flex flex-col py-2">
                           <span className="text-sm staff-text-secondary mb-1">
-                            Duration
+                            {t.duration}
                           </span>
                           <span className="text-sm font-medium staff-text-primary">
                             {new Date(

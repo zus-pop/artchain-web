@@ -8,6 +8,8 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Competitor, CompetitorStatus } from "@/types/dashboard";
 import { StatsCards } from "@/components/staff/StatsCards";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import {
   IconUser,
   IconSearch,
@@ -24,6 +26,8 @@ import {
 } from "@tabler/icons-react";
 
 export default function CompetitorsManagementPage() {
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
   const [competitors] = useState<Competitor[]>([
     {
       id: "1",
@@ -220,11 +224,11 @@ export default function CompetitorsManagementPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Competitor Management" />
+        <SiteHeader title={t.competitorManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
-              items={[{ label: "Competitor Management" }]}
+              items={[{ label: t.competitorManagement }]}
               homeHref="/dashboard/staff"
             />
           </div>
@@ -234,15 +238,16 @@ export default function CompetitorsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Competitors ({filteredCompetitors.length})
+                    {t.competitorManagement} ({filteredCompetitors.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Manage all registered competitors and their activities
+                    {t.manageCompetitors ||
+                      "Manage all registered competitors and their activities"}
                   </p>
                 </div>
                 <button className="staff-btn-primary flex items-center gap-2">
                   <IconPlus className="h-4 w-4" />
-                  Add Competitor
+                  {t.addCompetitor || "Add Competitor"}
                 </button>
               </div>
 
@@ -250,30 +255,30 @@ export default function CompetitorsManagementPage() {
               <StatsCards
                 stats={[
                   {
-                    title: "Total Competitors",
+                    title: t.totalCompetitors,
                     value: totalCompetitors,
-                    subtitle: "+8.2% from last month",
+                    subtitle: t.growthFromLastMonth,
                     icon: <IconUser className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
-                    title: "Pending Paintings",
+                    title: t.pendingPaintings,
                     value: pendingPaintings,
-                    subtitle: "Awaiting review",
+                    subtitle: t.awaitingReview,
                     icon: <IconPalette className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
-                    title: "Active Competitors",
+                    title: t.activeCompetitors,
                     value: activeCompetitors,
-                    subtitle: "Currently participating",
+                    subtitle: t.currentlyParticipating,
                     icon: <IconAward className="h-6 w-6" />,
                     variant: "success",
                   },
                   {
-                    title: "Total Paintings",
+                    title: t.totalPaintings,
                     value: totalPaintings,
-                    subtitle: "All submissions",
+                    subtitle: t.allSubmissions,
                     icon: <IconPalette className="h-6 w-6" />,
                     variant: "primary",
                   },
@@ -291,9 +296,11 @@ export default function CompetitorsManagementPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold staff-text-primary">
-                      Review Paintings
+                      {t.reviewPaintings}
                     </p>
-                    <p className="text-xs staff-text-secondary">67 pending</p>
+                    <p className="text-xs staff-text-secondary">
+                      67 {t.pendingCount}
+                    </p>
                   </div>
                 </Link>
 
@@ -306,10 +313,10 @@ export default function CompetitorsManagementPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold staff-text-primary">
-                      Approved Paintings
+                      {t.approvedPaintings}
                     </p>
                     <p className="text-xs staff-text-secondary">
-                      View all approved
+                      {t.viewAllApproved}
                     </p>
                   </div>
                 </Link>
@@ -323,10 +330,10 @@ export default function CompetitorsManagementPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold staff-text-primary">
-                      Search & Filter
+                      {t.searchFilter}
                     </p>
                     <p className="text-xs staff-text-secondary">
-                      Advanced search
+                      {t.advancedSearch}
                     </p>
                   </div>
                 </Link>
@@ -338,7 +345,7 @@ export default function CompetitorsManagementPage() {
                   <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by name, email, or username..."
+                    placeholder={t.searchCompetitorsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -371,7 +378,7 @@ export default function CompetitorsManagementPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Competitor
+                          {t.competitor}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           Contact
@@ -397,7 +404,7 @@ export default function CompetitorsManagementPage() {
                             colSpan={6}
                             className="px-6 py-12 text-center staff-text-secondary"
                           >
-                            No competitors found matching your criteria
+                            {t.noCompetitorsFound}
                           </td>
                         </tr>
                       ) : (
@@ -413,7 +420,7 @@ export default function CompetitorsManagementPage() {
                                     {competitor.fullName}
                                   </div>
                                   <div className="text-sm staff-text-secondary">
-                                    @{competitor.username} • Age{" "}
+                                    @{competitor.username} • {t.age}{" "}
                                     {competitor.age}
                                   </div>
                                   {competitor.school && (
@@ -460,8 +467,12 @@ export default function CompetitorsManagementPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                               <div>
-                                <div>Joined: {competitor.joinedDate}</div>
-                                <div>Last active: {competitor.lastActive}</div>
+                                <div>
+                                  {t.joined}: {competitor.joinedDate}
+                                </div>
+                                <div>
+                                  {t.lastActive}: {competitor.lastActive}
+                                </div>
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -523,17 +534,17 @@ export default function CompetitorsManagementPage() {
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-semibold staff-text-primary">
-                    Basic Information
+                    {t.basicInformation}
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <IconUser className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="text-sm font-medium staff-text-secondary">
-                          Age
+                          {t.age}
                         </p>
                         <p className="text-base staff-text-primary">
-                          {selectedCompetitor.age} years old
+                          {selectedCompetitor.age} {t.yearsOld}
                         </p>
                       </div>
                     </div>
@@ -541,7 +552,7 @@ export default function CompetitorsManagementPage() {
                       <IconMail className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="text-sm font-medium staff-text-secondary">
-                          Email
+                          {t.email}
                         </p>
                         <p className="text-base staff-text-primary">
                           {selectedCompetitor.email}
@@ -553,7 +564,7 @@ export default function CompetitorsManagementPage() {
                         <IconPhone className="h-5 w-5 text-gray-400" />
                         <div>
                           <p className="text-sm font-medium staff-text-secondary">
-                            Phone
+                            {t.phone}
                           </p>
                           <p className="text-base staff-text-primary">
                             {selectedCompetitor.phone}
@@ -566,7 +577,7 @@ export default function CompetitorsManagementPage() {
                         <IconMapPin className="h-5 w-5 text-gray-400" />
                         <div>
                           <p className="text-sm font-medium staff-text-secondary">
-                            Location
+                            {t.location}
                           </p>
                           <p className="text-base staff-text-primary">
                             {selectedCompetitor.location}
@@ -579,7 +590,7 @@ export default function CompetitorsManagementPage() {
                         <IconAward className="h-5 w-5 text-gray-400" />
                         <div>
                           <p className="text-sm font-medium staff-text-secondary">
-                            School
+                            {t.competitorSchool}
                           </p>
                           <p className="text-base staff-text-primary">
                             {selectedCompetitor.school}
@@ -593,7 +604,7 @@ export default function CompetitorsManagementPage() {
                 {/* Activity Statistics */}
                 <div className="space-y-4">
                   <h4 className="text-lg font-semibold staff-text-primary">
-                    Activity Statistics
+                    {t.activityStatistics}
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className=" border border-[#e6e2da] p-4">
@@ -601,7 +612,7 @@ export default function CompetitorsManagementPage() {
                         {selectedCompetitor.totalPaintings}
                       </div>
                       <div className="text-sm staff-text-secondary">
-                        Total Paintings
+                        {t.totalPaintings}
                       </div>
                     </div>
                     <div className=" border border-[#e6e2da] p-4">
@@ -609,7 +620,7 @@ export default function CompetitorsManagementPage() {
                         {selectedCompetitor.approvedPaintings}
                       </div>
                       <div className="text-sm staff-text-secondary">
-                        Approved
+                        {t.approved}
                       </div>
                     </div>
                     <div className=" border border-[#e6e2da] p-4">
@@ -617,7 +628,7 @@ export default function CompetitorsManagementPage() {
                         {selectedCompetitor.pendingPaintings}
                       </div>
                       <div className="text-sm staff-text-secondary">
-                        Pending
+                        {t.pending}
                       </div>
                     </div>
                     <div className=" border border-[#e6e2da] p-4">
@@ -625,7 +636,7 @@ export default function CompetitorsManagementPage() {
                         {selectedCompetitor.rejectedPaintings}
                       </div>
                       <div className="text-sm staff-text-secondary">
-                        Rejected
+                        {t.rejected}
                       </div>
                     </div>
                   </div>
@@ -633,7 +644,7 @@ export default function CompetitorsManagementPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm staff-text-secondary">
-                        Competitions Entered
+                        {t.competitionsEnteredLabel}
                       </span>
                       <span className="font-semibold">
                         {selectedCompetitor.competitionsEntered}
@@ -641,7 +652,7 @@ export default function CompetitorsManagementPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm staff-text-secondary">
-                        Awards Won
+                        {t.awardsWonLabel}
                       </span>
                       <span className="font-semibold">
                         {selectedCompetitor.awardsWon}
@@ -655,14 +666,14 @@ export default function CompetitorsManagementPage() {
                   selectedCompetitor.guardianEmail) && (
                   <div className="space-y-4 lg:col-span-2">
                     <h4 className="text-lg font-semibold staff-text-primary">
-                      Guardian Information
+                      {t.guardianInformation}
                     </h4>
                     <div className=" border border-[#e6e2da] p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {selectedCompetitor.guardianName && (
                           <div>
                             <p className="text-sm font-medium staff-text-secondary">
-                              Guardian Name
+                              {t.guardianName}
                             </p>
                             <p className="text-base staff-text-primary">
                               {selectedCompetitor.guardianName}
@@ -672,7 +683,7 @@ export default function CompetitorsManagementPage() {
                         {selectedCompetitor.guardianEmail && (
                           <div>
                             <p className="text-sm font-medium staff-text-secondary">
-                              Guardian Email
+                              {t.guardianEmail}
                             </p>
                             <p className="text-base staff-text-primary">
                               {selectedCompetitor.guardianEmail}
@@ -687,14 +698,14 @@ export default function CompetitorsManagementPage() {
                 {/* Activity Timeline */}
                 <div className="space-y-4 lg:col-span-2">
                   <h4 className="text-lg font-semibold staff-text-primary">
-                    Activity Timeline
+                    {t.activityTimeline}
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <IconCalendar className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          Joined ArtChain
+                          {t.joinedArtChain}
                         </p>
                         <p className="text-sm staff-text-secondary">
                           {selectedCompetitor.joinedDate}
@@ -705,7 +716,7 @@ export default function CompetitorsManagementPage() {
                       <IconClock className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          Last Active
+                          {t.lastActiveLabel}
                         </p>
                         <p className="text-sm staff-text-secondary">
                           {selectedCompetitor.lastActive}

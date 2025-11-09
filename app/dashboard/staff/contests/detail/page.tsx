@@ -5,20 +5,34 @@ import {
   deleteStaffRound,
   getStaffContestById,
   getStaffRounds,
+  publishStaffContest,
+  toggleExaminerScheduleEnforcement,
 } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { ExaminersDialog } from "@/components/staff/ExaminersDialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Contest } from "@/types/dashboard";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import {
   IconArrowLeft,
   IconCalendar,
   IconClock,
   IconEdit,
   IconEye,
+  IconFileText,
   IconPlus,
+  IconSettings,
   IconTrash,
   IconTrophy,
   IconUsers,
@@ -29,15 +43,21 @@ import { AxiosError } from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 function ContestDetailContent() {
   const searchParams = useSearchParams();
   const contestId = searchParams.get("id");
   const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const [isExaminersDialogOpen, setIsExaminersDialogOpen] = useState(false);
+  const [showEmbeddedPdf, setShowEmbeddedPdf] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [showCreateRound2Confirm, setShowCreateRound2Confirm] = useState(false);
+  const [round2NumberOfTables, setRound2NumberOfTables] = useState<number>(0);
 
   // Fetch contest details
   const { data: contestData, isLoading } = useQuery({
@@ -57,6 +77,13 @@ function ContestDetailContent() {
 
   const contest = contestData?.data as Contest;
   const rounds = roundsData?.data || [];
+
+  // Set default number of tables when contest loads
+  useEffect(() => {
+    if (contest?.numberOfTablesRound2) {
+      setRound2NumberOfTables(contest.numberOfTablesRound2);
+    }
+  }, [contest?.numberOfTablesRound2]);
 
   // Delete round mutation
   const deleteMutation = useMutation({
@@ -79,13 +106,23 @@ function ContestDetailContent() {
 
   // Create round 2 mutation
   const createRound2Mutation = useMutation({
-    mutationFn: (contestId: number) =>
-      createStaffRound2(contestId, { date: new Date().toISOString() }),
+    mutationFn: ({
+      contestId,
+      numberOfTables,
+    }: {
+      contestId: number;
+      numberOfTables: number;
+    }) =>
+      createStaffRound2(contestId, {
+        date: new Date().toISOString(),
+        numberOfTables,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["contest-rounds", contestId],
       });
       toast.success("Tạo vòng 2 thành công");
+      setShowCreateRound2Confirm(false);
     },
     onError: (error) => {
       let message = error.message;
@@ -96,12 +133,32 @@ function ContestDetailContent() {
     },
   });
 
+  // Publish contest mutation
+  const publishContestMutation = useMutation({
+    mutationFn: (contestId: string) => publishStaffContest(contestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", contestId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-rounds", contestId],
+      });
+      toast.success("Contest published successfully");
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+
+  // Toggle schedule enforcement mutation
+  const toggleScheduleEnforcementMutation = toggleExaminerScheduleEnforcement();
+
   const handleDeleteRound = (roundId: number) => {
-    if (
-      confirm(
-        "Are you sure you want to delete this round? This action cannot be undone."
-      )
-    ) {
+    if (confirm(t.confirmDeleteRoundDetail)) {
       deleteMutation.mutate({
         contestId: Number(contestId),
         roundId: String(roundId),
@@ -147,9 +204,9 @@ function ContestDetailContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Contest Detail" />
+          <SiteHeader title={t.contestDetailTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Contest ID is required</div>
+            <div className="text-gray-500">{t.contestIdRequiredDetail}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -168,9 +225,9 @@ function ContestDetailContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Contest Detail" />
+          <SiteHeader title={t.contestDetailTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Loading contest details...</div>
+            <div className="text-gray-500">{t.loadingContestDetailsDetail}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -189,9 +246,9 @@ function ContestDetailContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Contest Detail" />
+          <SiteHeader title={t.contestDetailTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Contest not found</div>
+            <div className="text-gray-500">{t.contestNotFoundDetail}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -209,13 +266,13 @@ function ContestDetailContent() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Contest Detail" />
+        <SiteHeader title={t.contestDetailTitle} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagementBreadcrumb,
                   href: "/dashboard/staff/contests",
                 },
                 { label: contest.title },
@@ -245,17 +302,28 @@ function ContestDetailContent() {
                       </span>
                     </div>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Contest ID: {contest.contestId}
+                      {t.contestIdLabelDetail} {contest.contestId}
                     </p>
                   </div>
                 </div>
-                <Link
-                  href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
-                  className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
-                >
-                  <IconEdit className="h-4 w-4" />
-                  Edit Contest
-                </Link>
+                {contest.status === "DRAFT" && (
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
+                      className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                    >
+                      <IconEdit className="h-4 w-4" />
+                      {t.editContestDetail}
+                    </Link>
+                    <button
+                      onClick={() => setShowPublishConfirm(true)}
+                      className="bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                    >
+                      <IconTrophy className="h-4 w-4" />
+                      {t.publishContestDetail}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Banner Image */}
@@ -266,10 +334,122 @@ function ContestDetailContent() {
                     alt={contest.title}
                     width={1200}
                     height={400}
-                    className="w-full h-64 object-cover"
+                    className="w-full h-96 object-cover"
                   />
                 </div>
               )}
+
+              {/* Contest Details */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Description */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.descriptionDetail}
+                  </h3>
+                  <p className="staff-text-secondary whitespace-pre-wrap">
+                    {contest.description}
+                  </p>
+                </div>
+
+                {/* Contest Information */}
+                <div className="staff-card p-6 space-y-4">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.contestInformationDetail}
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.startDateDetail}
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {formatDate(contest.startDate)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.endDateDetail}
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {formatDate(contest.endDate)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconTrophy className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.numberOfAwardsDetail}
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {contest.numOfAward} prizes
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <IconClock className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.currentStatusDetail}
+                        </p>
+                        <span
+                          className={`${getStatusColor(contest.status)} mt-1`}
+                        >
+                          {contest.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Schedule Enforcement Toggle */}
+                  <div className="pt-4 border-t border-[#e6e2da]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <IconSettings className="h-5 w-5 staff-text-secondary" />
+                        <div>
+                          <p className="text-sm font-medium staff-text-primary">
+                            {t.scheduleEnforcementDetail}
+                          </p>
+                          <p className="text-xs staff-text-secondary">
+                            {t.controlExaminerScheduleDetail}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          toggleScheduleEnforcementMutation.mutate(contestId)
+                        }
+                        disabled={toggleScheduleEnforcementMutation.isPending}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                          contest.isScheduleEnforced
+                            ? "bg-green-600"
+                            : "bg-gray-200"
+                        } ${
+                          toggleScheduleEnforcementMutation.isPending
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            contest.isScheduleEnforced
+                              ? "translate-x-6"
+                              : "translate-x-1"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Stats Cards */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -280,7 +460,7 @@ function ContestDetailContent() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Awards
+                        {t.awardsDetail}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">
                         {contest.numOfAward}
@@ -296,7 +476,7 @@ function ContestDetailContent() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Participants
+                        {t.participantsDetail}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">0</p>
                     </div>
@@ -310,7 +490,7 @@ function ContestDetailContent() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Examiners
+                        {t.examinersDetail}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">
                         {contest.examiners?.length || 0}
@@ -326,7 +506,7 @@ function ContestDetailContent() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Status
+                        {t.statusDetail}
                       </p>
                       <p className="text-sm font-bold staff-text-primary">
                         {contest.status}
@@ -335,6 +515,82 @@ function ContestDetailContent() {
                   </div>
                 </div>
               </div>
+
+              {/* Rules PDF */}
+              {contest.ruleUrl && (
+                <div className="staff-card p-0 overflow-hidden">
+                  {/* PDF Header */}
+                  <div className="bg-linear-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-[#e6e2da]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-100 p-2 rounded-lg">
+                          <IconFileText className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold staff-text-primary">
+                            {t.contestRulesAndRegulationsDetail}
+                          </h3>
+                          <p className="text-sm staff-text-secondary">
+                            {t.officialContestGuidelinesDetail}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setShowEmbeddedPdf(!showEmbeddedPdf)}
+                          className="bg-linear-to-r from-gray-500 to-gray-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                        >
+                          <IconFileText className="h-4 w-4" />
+                          {showEmbeddedPdf ? t.hideDetail : t.showDetail}{" "}
+                          {t.embeddedViewDetail}
+                        </button>
+                        <a
+                          href={contest.ruleUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                        >
+                          <IconEye className="h-4 w-4" />
+                          {t.viewPDFDetail}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PDF Viewer */}
+                  {showEmbeddedPdf && (
+                    <div className="relative">
+                      <div className="bg-gray-50 px-6 py-3 border-b border-[#e6e2da]">
+                        <div className="flex items-center gap-2 text-sm staff-text-secondary">
+                          <IconFileText className="h-4 w-4" />
+                          <span>{t.pdfDocumentViewerDetail}</span>
+                          <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                            Embedded View
+                          </span>
+                        </div>
+                      </div>
+                      <div className="relative bg-white">
+                        <iframe
+                          src={contest.ruleUrl}
+                          className="w-full h-[600px] md:h-[700px] lg:h-[800px] border-0"
+                          title="Contest Rules PDF"
+                          loading="lazy"
+                        />
+                        {/* Loading overlay */}
+                        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center opacity-0 transition-opacity duration-300 pointer-events-none">
+                          <div className="flex items-center gap-3">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                            <span className="text-sm staff-text-secondary">
+                              {t.loadingPDFDetail}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-col md:flex-row gap-4">
                 <button
                   type="button"
@@ -348,10 +604,10 @@ function ContestDetailContent() {
                   {/* Text Section */}
                   <div>
                     <p className="text-sm font-bold staff-text-primary text-left">
-                      Manage Paticipant
+                      {t.manageParticipantDetail}
                     </p>
                     <p className="text-xs staff-text-secondary text-left">
-                      Invite judges
+                      {t.inviteJudgesDetail}
                     </p>
                   </div>
                 </button>
@@ -367,10 +623,11 @@ function ContestDetailContent() {
                   {/* Text Section */}
                   <div>
                     <p className="text-sm font-bold staff-text-primary text-left">
-                      Manage Examiners ({contest.examiners?.length || 0})
+                      {t.manageExaminersDetail} (
+                      {contest.examiners?.length || 0})
                     </p>
                     <p className="text-xs staff-text-secondary text-left">
-                      Invite and manage judges
+                      {t.inviteAndManageJudgesDetail}
                     </p>
                   </div>
                 </button>
@@ -385,103 +642,29 @@ function ContestDetailContent() {
                   {/* Text Section */}
                   <div>
                     <p className="text-sm font-bold staff-text-primary text-left">
-                      Manage Awards ({contest.numOfAward || 0})
+                      {t.manageAwardsDetail} ({contest.numOfAward || 0})
                     </p>
                     <p className="text-xs staff-text-secondary text-left">
-                      Assign prizes to winners
+                      {t.assignPrizesToWinnersDetail}
                     </p>
                   </div>
                 </Link>
-              </div>
-
-              {/* Contest Details */}
-              <div className="grid gap-6 lg:grid-cols-2">
-                {/* Description */}
-                <div className="staff-card p-6">
-                  <h3 className="text-lg font-bold staff-text-primary mb-4">
-                    Description
-                  </h3>
-                  <p className="staff-text-secondary whitespace-pre-wrap">
-                    {contest.description}
-                  </p>
-                </div>
-
-                {/* Contest Information */}
-                <div className="staff-card p-6 space-y-4">
-                  <h3 className="text-lg font-bold staff-text-primary mb-4">
-                    Contest Information
-                  </h3>
-
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
-                      <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium staff-text-secondary">
-                          Start Date
-                        </p>
-                        <p className="text-sm staff-text-primary font-semibold">
-                          {formatDate(contest.startDate)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
-                      <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium staff-text-secondary">
-                          End Date
-                        </p>
-                        <p className="text-sm staff-text-primary font-semibold">
-                          {formatDate(contest.endDate)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
-                      <IconTrophy className="h-5 w-5 staff-text-secondary mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium staff-text-secondary">
-                          Number of Awards
-                        </p>
-                        <p className="text-sm staff-text-primary font-semibold">
-                          {contest.numOfAward} prizes
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <IconClock className="h-5 w-5 staff-text-secondary mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium staff-text-secondary">
-                          Current Status
-                        </p>
-                        <span
-                          className={`${getStatusColor(contest.status)} mt-1`}
-                        >
-                          {contest.status}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Contest Rounds */}
               <div className="staff-card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-bold staff-text-primary">
-                    Contest Rounds
+                    {t.contestRoundsDetail}
                   </h3>
                   {!rounds.some((round) => round.isRound2) && (
                     <button
-                      onClick={() =>
-                        createRound2Mutation.mutate(Number(contestId))
-                      }
+                      onClick={() => setShowCreateRound2Confirm(true)}
                       disabled={createRound2Mutation.isPending}
                       className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
                     >
                       <IconPlus className="h-4 w-4" />
-                      Round 2
+                      {t.round2Detail}
                     </button>
                   )}
                 </div>
@@ -514,7 +697,7 @@ function ContestDetailContent() {
                               <Link
                                 href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
                                 className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
-                                title="View round details"
+                                title={t.viewRoundDetailsDetail}
                               >
                                 <IconEye className="h-4 w-4 staff-text-secondary" />
                               </Link>
@@ -524,7 +707,7 @@ function ContestDetailContent() {
                                   handleDeleteRound(round.roundId)
                                 }
                                 className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
-                                title="Delete round"
+                                title={t.deleteRoundDetail}
                                 disabled={
                                   deleteMutation.isPending || !round.roundId
                                 }
@@ -540,7 +723,7 @@ function ContestDetailContent() {
                             {round.startDate && (
                               <div>
                                 <p className="staff-text-secondary">
-                                  Start Date
+                                  {t.startDateDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
                                   {formatDate(round.startDate)}
@@ -558,7 +741,7 @@ function ContestDetailContent() {
                             {round.submissionDeadline && (
                               <div>
                                 <p className="staff-text-secondary">
-                                  Submission Deadline
+                                  {t.submissionDeadlineDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
                                   {formatDate(round.submissionDeadline)}
@@ -568,7 +751,7 @@ function ContestDetailContent() {
                             {round.resultAnnounceDate && (
                               <div>
                                 <p className="staff-text-secondary">
-                                  Result Announce
+                                  {t.resultAnnounceDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
                                   {formatDate(round.resultAnnounceDate)}
@@ -578,7 +761,7 @@ function ContestDetailContent() {
                             {round.sendOriginalDeadline && (
                               <div>
                                 <p className="staff-text-secondary">
-                                  Original Deadline
+                                  {t.originalDeadlineDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
                                   {formatDate(round.sendOriginalDeadline)}
@@ -589,7 +772,7 @@ function ContestDetailContent() {
                         ) : (
                           <div>
                             <p className="text-sm staff-text-secondary mb-3">
-                              Total Tables: {round.totalTables}
+                              {t.totalTablesDetail} {round.totalTables}
                             </p>
                             <div className="space-y-2">
                               {round.tables?.map((table) => (
@@ -612,7 +795,7 @@ function ContestDetailContent() {
                                       <Link
                                         href={`/dashboard/staff/contests/rounds/${table.roundId}?contestId=${contest.contestId}`}
                                         className="p-1 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
-                                        title="View table details"
+                                        title={t.viewTableDetailsDetail}
                                       >
                                         <IconEye className="h-3 w-3 staff-text-secondary" />
                                       </Link>
@@ -621,7 +804,7 @@ function ContestDetailContent() {
                                           handleDeleteRound(table.roundId)
                                         }
                                         className="p-1 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
-                                        title="Delete table"
+                                        title={t.deleteTableDetail}
                                         disabled={deleteMutation.isPending}
                                       >
                                         <IconTrash className="h-3 w-3" />
@@ -632,7 +815,7 @@ function ContestDetailContent() {
                                     {table.startDate && (
                                       <div>
                                         <p className="staff-text-secondary">
-                                          Start
+                                          {t.startDetail}
                                         </p>
                                         <p className="staff-text-primary font-semibold">
                                           {formatDate(table.startDate)}
@@ -642,7 +825,7 @@ function ContestDetailContent() {
                                     {table.endDate && (
                                       <div>
                                         <p className="staff-text-secondary">
-                                          End
+                                          {t.endDetail}
                                         </p>
                                         <p className="staff-text-primary font-semibold">
                                           {formatDate(table.endDate)}
@@ -660,8 +843,7 @@ function ContestDetailContent() {
                   </div>
                 ) : (
                   <div className="text-center py-8 staff-text-secondary">
-                    No rounds created yet. Click &quot;+ Round 2&quot; to add
-                    one.
+                    {t.noRoundsCreatedYetDetail}
                   </div>
                 )}
               </div>
@@ -674,6 +856,108 @@ function ContestDetailContent() {
         onClose={() => setIsExaminersDialogOpen(false)}
         contestId={Number(contestId)}
       />
+
+      {/* Publish Confirmation Dialog */}
+      <Dialog open={showPublishConfirm} onOpenChange={setShowPublishConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="bg-[#d9534f]/10 p-2 rounded-full">
+                <IconTrophy className="h-6 w-6 text-[#d9534f]" />
+              </div>
+              {t.publishContestDetail}
+            </DialogTitle>
+            <DialogDescription>
+              {t.publishContestConfirmDetail}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => setShowPublishConfirm(false)}
+              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+            >
+              {t.cancelDetail}
+            </button>
+            <button
+              onClick={() => {
+                publishContestMutation.mutate(contest.contestId.toString());
+                setShowPublishConfirm(false);
+              }}
+              disabled={publishContestMutation.isPending}
+              className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {publishContestMutation.isPending
+                ? t.publishingDetail
+                : t.publishDetail}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Round 2 Confirmation Dialog */}
+      <Dialog
+        open={showCreateRound2Confirm}
+        onOpenChange={setShowCreateRound2Confirm}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="bg-[#d9534f]/10 p-2 rounded-full">
+                <IconPlus className="h-6 w-6 text-[#d9534f]" />
+              </div>
+              {t.createRound2Detail}
+            </DialogTitle>
+            <DialogDescription>{t.createRound2ConfirmDetail}</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium staff-text-primary mb-2">
+                  {t.numberOfTablesDetail}
+                </label>
+                <p className="text-xs staff-text-secondary mb-3">
+                  {t.currentContestSettingDetail} {contest.numberOfTablesRound2}{" "}
+                  {t.tablesDetail}
+                </p>
+                <input
+                  type="number"
+                  min="1"
+                  value={round2NumberOfTables}
+                  onChange={(e) =>
+                    setRound2NumberOfTables(Number(e.target.value))
+                  }
+                  className="w-full px-3 py-2 border border-[#e6e2da] rounded-md focus:outline-none focus:ring-2 focus:ring-[#d9534f] focus:border-transparent"
+                  placeholder={t.enterNumberOfTablesDetail}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <button
+              onClick={() => setShowCreateRound2Confirm(false)}
+              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+            >
+              {t.cancelDetail}
+            </button>
+            <button
+              onClick={() => {
+                createRound2Mutation.mutate({
+                  contestId: Number(contestId),
+                  numberOfTables: round2NumberOfTables,
+                });
+              }}
+              disabled={
+                createRound2Mutation.isPending || round2NumberOfTables < 1
+              }
+              className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {createRound2Mutation.isPending
+                ? t.creatingDetail
+                : t.createRound2BtnDetail}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }

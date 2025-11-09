@@ -65,7 +65,6 @@ export default function RootLayout({
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} antialiased`}
-        suppressHydrationWarning
       >
         <ReactQueryProvider>
           <AuthInitializer>

@@ -20,35 +20,38 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CreateCampaignRequest } from "@/types/staff/campaign";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 
 // Zod schema for form validation
-const campaignSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters"),
-  description: z
-    .string()
-    .min(1, "Description is required")
-    .max(1000, "Description must be less than 1000 characters"),
-  goalAmount: z.number().min(1000, "Goal amount must be greater than 1000"),
-  deadline: z.string().min(1, "Deadline is required"),
-  status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
-  image: z
-    .instanceof(File)
-    .refine((file) => file.size > 0, "Image is required"),
-});
+const getCampaignSchema = (t: any) =>
+  z.object({
+    title: z
+      .string()
+      .min(1, t.campaignTitleRequired)
+      .max(200, t.campaignTitleMaxLength),
+    description: z
+      .string()
+      .min(1, t.campaignDescriptionRequired)
+      .max(1000, t.campaignDescriptionMaxLength),
+    goalAmount: z.number().min(1000, t.goalAmountMin),
+    deadline: z.string().min(1, t.deadlineRequired),
+    status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
+    image: z.instanceof(File).refine((file) => file.size > 0, t.imageRequired),
+  });
 
-type CampaignFormData = z.infer<typeof campaignSchema>;
+type CampaignFormData = z.infer<ReturnType<typeof getCampaignSchema>>;
 
 export default function CreateCampaignPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // React Hook Form setup
   const form = useForm<CampaignFormData>({
-    resolver: zodResolver(campaignSchema),
+    resolver: zodResolver(getCampaignSchema(t)),
     defaultValues: {
       title: "",
       description: "",
@@ -67,7 +70,7 @@ export default function CreateCampaignPage() {
       return createStaffCampaign(data);
     },
     onSuccess: () => {
-      toast.success("Campaign created successfully!");
+      toast.success(t.campaignCreatedSuccess);
       queryClient.invalidateQueries({ queryKey: ["staff-campaigns"] });
       router.push("/dashboard/staff/campaigns");
     },
@@ -106,16 +109,16 @@ export default function CreateCampaignPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Create Sponsorship Campaign" />
+        <SiteHeader title={t.createSponsorshipCampaign} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
-                  label: "Campaigns",
+                  label: t.campaignsManagement,
                   href: "/dashboard/staff/campaigns",
                 },
-                { label: "Create Campaign" },
+                { label: t.createCampaign },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -125,11 +128,10 @@ export default function CreateCampaignPage() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold staff-text-primary">
-                  Create New Campaign
+                  {t.createNewCampaign}
                 </h2>
                 <p className="text-sm staff-text-secondary mt-1">
-                  Set up a new sponsorship campaign to engage with the ArtChain
-                  community
+                  {t.setupNewCampaign}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -138,14 +140,14 @@ export default function CreateCampaignPage() {
                   className=" border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
                 >
                   <IconDeviceFloppy className="h-4 w-4" />
-                  Save Draft
+                  {t.saveDraft}
                 </button>
                 <button
                   onClick={form.handleSubmit(handleSubmit)}
                   disabled={!form.formState.isValid || isSubmitting}
                   className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isSubmitting ? "Creating..." : "Create Campaign"}
+                  {isSubmitting ? t.creatingCampaign : t.createCampaignBtn}
                 </button>
               </div>
             </div>
@@ -161,18 +163,18 @@ export default function CreateCampaignPage() {
                 <div className="bg-white  border border-[#e6e2da] p-6">
                   <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                     <IconFileText className="h-5 w-5" />
-                    Basic Information
+                    {t.basicInformationSection}
                   </h3>
 
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Campaign Title *
+                        {t.campaignTitleLabel} *
                       </label>
                       <input
                         type="text"
                         {...form.register("title")}
-                        placeholder="Enter campaign title"
+                        placeholder={t.enterCampaignTitle}
                         className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
@@ -185,11 +187,11 @@ export default function CreateCampaignPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Campaign Description *
+                        {t.campaignDescriptionLabel} *
                       </label>
                       <textarea
                         {...form.register("description")}
-                        placeholder="Enter campaign description"
+                        placeholder={t.enterCampaignDescription}
                         rows={4}
                         className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
@@ -205,7 +207,7 @@ export default function CreateCampaignPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Campaign Image *
+                        {t.campaignImageLabel} *
                       </label>
                       <div className="space-y-3">
                         {/* Hidden file input */}
@@ -252,10 +254,10 @@ export default function CreateCampaignPage() {
                                   />
                                 </svg>
                                 <p className="mb-2 text-sm text-gray-500 group-hover:text-gray-600 transition-colors">
-                                  Click to upload
+                                  {t.clickToUpload}
                                 </p>
                                 <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors">
-                                  PNG, JPG, GIF up to 10MB
+                                  {t.imageRequirements}
                                 </p>
                               </div>
                             )}
@@ -273,7 +275,7 @@ export default function CreateCampaignPage() {
                               <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
                                 <div className="text-center text-white">
                                   <p className="text-sm font-medium mb-1">
-                                    Click to change image
+                                    {t.clickToChangeImage}
                                   </p>
                                   <p className="text-xs">{watchedImage.name}</p>
                                 </div>
@@ -309,13 +311,13 @@ export default function CreateCampaignPage() {
                 <div className="bg-white  border border-[#e6e2da] p-6">
                   <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                     <IconMoneybag className="h-5 w-5" />
-                    Financial & Status Details
+                    {t.financialStatusDetails}
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Goal Amount (VND) *
+                        {t.goalAmountVND} *
                       </label>
                       <input
                         type="number"
@@ -328,8 +330,10 @@ export default function CreateCampaignPage() {
                       />
                       {form.watch("goalAmount") > 0 && (
                         <p className="mt-1 text-sm text-gray-600">
-                          Formatted: {formatVNDAmount(form.watch("goalAmount"))}{" "}
-                          VND
+                          {t.formattedAmount.replace(
+                            "{amount}",
+                            formatVNDAmount(form.watch("goalAmount"))
+                          )}
                         </p>
                       )}
                       {form.formState.errors.goalAmount && (
@@ -341,16 +345,16 @@ export default function CreateCampaignPage() {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Status
+                        {t.campaignStatus}
                       </label>
                       <select
                         {...form.register("status")}
                         className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="DRAFT">Draft</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="PAUSED">Paused</option>
-                        <option value="COMPLETED">Completed</option>
+                        <option value="DRAFT">{t.draftOption}</option>
+                        <option value="ACTIVE">{t.activeOption}</option>
+                        <option value="PAUSED">{t.pausedOption}</option>
+                        <option value="COMPLETED">{t.completedOption}</option>
                       </select>
                     </div>
                   </div>
@@ -360,12 +364,12 @@ export default function CreateCampaignPage() {
                 <div className="bg-white  border border-[#e6e2da] p-6">
                   <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                     <IconCalendar className="h-5 w-5" />
-                    Campaign Deadline
+                    {t.campaignDeadline}
                   </h3>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Deadline *
+                      {t.deadlineLabel} *
                     </label>
                     <input
                       type="date"

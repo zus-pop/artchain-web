@@ -31,6 +31,8 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 // Helper function to convert ContestDTO to Contest
 const convertContestDTOToContest = (dto: ContestDTO): Contest => {
@@ -44,9 +46,12 @@ const convertContestDTOToContest = (dto: ContestDTO): Contest => {
     createdAt: dto.startDate,
     createdBy: dto.createdBy,
     bannerUrl: dto.bannerUrl,
+    ruleUrl: dto.ruleUrl,
+    isScheduleEnforced: dto.isScheduleEnforcement,
     numOfAward: dto.numOfAward,
     rounds: dto.rounds,
     round2Quantity: dto.round2Quantity,
+    numberOfTablesRound2: dto.numberOfTablesRound2,
   };
 };
 
@@ -57,6 +62,9 @@ export default function ContestsManagementPage() {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Fetch contests from API
   const {
@@ -141,11 +149,11 @@ export default function ContestsManagementPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Contest Management" />
+        <SiteHeader title={t.contestManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
-              items={[{ label: "Contest Management" }]}
+              items={[{ label: t.contestManagement }]}
               homeHref="/dashboard/staff"
             />
           </div>
@@ -155,10 +163,10 @@ export default function ContestsManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Contests ({totalFromAPI})
+                    {t.allContestsCount} ({totalFromAPI})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Manage art competitions and contests
+                    {t.manageArtCompetitions}
                   </p>
                 </div>
                 <Link
@@ -166,7 +174,7 @@ export default function ContestsManagementPage() {
                   className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
-                  Create Contest
+                  {t.createNewContest}
                 </Link>
               </div>
 
@@ -174,30 +182,30 @@ export default function ContestsManagementPage() {
               <StatsCards
                 stats={[
                   {
-                    title: "Total Contests",
+                    title: t.totalContests,
                     value: totalContests,
-                    subtitle: "All competitions",
+                    subtitle: t.allCompetitions,
                     icon: <IconTrophy className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
-                    title: "Active Contests",
+                    title: t.activeContests,
                     value: activeContests,
-                    subtitle: "Currently running",
+                    subtitle: t.currentlyRunning,
                     icon: <IconCircleCheck className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
-                    title: "Total Rounds",
+                    title: t.totalRounds,
                     value: totalRounds,
-                    subtitle: "All competition rounds",
+                    subtitle: t.allCompetitionRounds,
                     icon: <IconUsers className="h-6 w-6" />,
                     variant: "success",
                   },
                   {
-                    title: "Total Awards",
+                    title: t.totalAwards,
                     value: totalAwards,
-                    subtitle: "Prizes to be awarded",
+                    subtitle: t.prizesToBeAwarded,
                     icon: <IconTrophy className="h-6 w-6" />,
                     variant: "primary",
                   },
@@ -210,7 +218,7 @@ export default function ContestsManagementPage() {
                   <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search contests by title, description, or category..."
+                    placeholder={t.searchContestsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -227,7 +235,7 @@ export default function ContestsManagementPage() {
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
-                        {status}
+                        {status === "ALL" ? t.allStatus : status}
                       </option>
                     ))}
                   </select>
@@ -241,22 +249,22 @@ export default function ContestsManagementPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Contest
+                          {t.contestTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Status
+                          {t.statusTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Awards
+                          {t.awardsTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Rounds
+                          {t.roundsTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Dates
+                          {t.datesTable}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Actions
+                          {t.actions}
                         </th>
                       </tr>
                     </thead>
@@ -267,7 +275,7 @@ export default function ContestsManagementPage() {
                             colSpan={6}
                             className="px-6 py-12 text-center staff-text-secondary"
                           >
-                            Loading contests...
+                            {t.loadingContests}
                           </td>
                         </tr>
                       ) : error ? (
@@ -276,7 +284,7 @@ export default function ContestsManagementPage() {
                             colSpan={6}
                             className="px-6 py-12 text-center text-red-500"
                           >
-                            Error loading contests. Please try again.
+                            {t.errorLoadingContests}
                           </td>
                         </tr>
                       ) : contests.length === 0 ? (
@@ -285,7 +293,7 @@ export default function ContestsManagementPage() {
                             colSpan={6}
                             className="px-6 py-12 text-center staff-text-secondary"
                           >
-                            No contests found matching your criteria
+                            {t.noContestsFound}
                           </td>
                         </tr>
                       ) : (
@@ -341,26 +349,29 @@ export default function ContestsManagementPage() {
                                     {contest.numOfAward || 0}
                                   </span>
                                   {/* <IconTrophy className="h-4 w-4 text-yellow-500" /> */}
-                                  <span className="text-xs">prizes</span>
+                                  <span className="text-xs">
+                                    {t.prizesText}
+                                  </span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                 <div>
                                   <div className="font-medium staff-text-primary">
-                                    {totalRoundCount} rounds
+                                    {totalRoundCount}{" "}
+                                    {t.roundsTable.toLowerCase()}
                                   </div>
                                   <div className="text-xs">
-                                    {activeRounds} active
+                                    {activeRounds} {t.activeText}
                                   </div>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                 <div>
                                   <div className="text-xs">
-                                    Start: {contest.startDate}
+                                    {t.startText}: {contest.startDate}
                                   </div>
                                   <div className="text-xs">
-                                    End: {contest.endDate}
+                                    {t.endText}: {contest.endDate}
                                   </div>
                                 </div>
                               </td>
@@ -399,7 +410,7 @@ export default function ContestsManagementPage() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm staff-text-secondary">
-                    <span>Show</span>
+                    <span>{t.show}</span>
                     <select
                       value={pageSize}
                       onChange={(e) => {
@@ -413,17 +424,18 @@ export default function ContestsManagementPage() {
                       <option value={20}>20</option>
                       <option value={50}>50</option>
                     </select>
-                    <span>entries per page</span>
+                    <span>{t.entriesPerPage}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="text-sm staff-text-secondary">
-                      Showing{" "}
+                      {t.showingEntries}{" "}
                       {contests.length > 0
                         ? (currentPage - 1) * pageSize + 1
                         : 0}{" "}
-                      to {Math.min(currentPage * pageSize, totalFromAPI)} of{" "}
-                      {totalFromAPI} entries
+                      {t.toText}{" "}
+                      {Math.min(currentPage * pageSize, totalFromAPI)}{" "}
+                      {t.ofText} {totalFromAPI} {t.entriesText}
                     </span>
 
                     <div className="flex items-center gap-1">
@@ -445,7 +457,7 @@ export default function ContestsManagementPage() {
                       </button>
 
                       <span className="px-3 py-1 text-sm staff-text-primary">
-                        Page {currentPage} of {totalPages}
+                        {t.pageText} {currentPage} {t.ofText} {totalPages}
                       </span>
 
                       <button

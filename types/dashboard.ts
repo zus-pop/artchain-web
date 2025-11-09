@@ -131,9 +131,12 @@ export interface Contest {
   endDate: string;
   createdAt: string;
   createdBy: string;
+  isScheduleEnforced: boolean;
   bannerUrl?: string;
+  ruleUrl: string | null;
   numOfAward?: number;
   round2Quantity: number;
+  numberOfTablesRound2: number;
   rounds?: Array<{
     roundId: number;
     contestId: number;

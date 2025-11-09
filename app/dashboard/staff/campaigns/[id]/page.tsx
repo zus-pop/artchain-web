@@ -11,6 +11,8 @@ import { getCampaign } from "@/apis/campaign";
 import { CampaignAPIResponse } from "@/types/campaign";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 interface Sponsor {
   sponsorId: number;
@@ -45,6 +47,9 @@ export default function CampaignDetailPage({
   const [selectedStatus, setSelectedStatus] = useState<
     "PENDING" | "PAID" | "ALL"
   >("ALL");
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const statusOptions = ["ALL", "PENDING", "PAID"];
 
@@ -117,12 +122,15 @@ export default function CampaignDetailPage({
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Campaign Sponsors" />
+        <SiteHeader title={t.campaignSponsors} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
-                { label: "Campaigns", href: "/dashboard/staff/campaigns" },
+                {
+                  label: t.campaignsManagement,
+                  href: "/dashboard/staff/campaigns",
+                },
                 {
                   label: `${campaignData?.title || `Campaign ${id}`}`,
                 },
@@ -147,7 +155,7 @@ export default function CampaignDetailPage({
                       {filteredSponsors.length})
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
-                      View and manage sponsors for this campaign
+                      {t.viewManageSponsors}
                     </p>
                   </div>
                 </div>
@@ -159,7 +167,7 @@ export default function CampaignDetailPage({
                   <div className="flex justify-center items-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                     <span className="ml-2 text-gray-600">
-                      Loading campaign...
+                      {t.loadingCampaign}
                     </span>
                   </div>
                 ) : campaignError ? (
@@ -167,18 +175,17 @@ export default function CampaignDetailPage({
                     <div className="flex">
                       <div className="ml-3">
                         <h3 className="text-sm font-medium text-red-800">
-                          Error loading campaign
+                          {t.errorLoadingCampaign}
                         </h3>
                         <div className="mt-2 text-sm text-red-700">
-                          {campaignError.message ||
-                            "Failed to load campaign details"}
+                          {campaignError.message || t.failedLoadCampaignDetails}
                         </div>
                         <div className="mt-4">
                           <button
                             onClick={() => refetchCampaign()}
                             className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium"
                           >
-                            Try Again
+                            {t.tryAgain}
                           </button>
                         </div>
                       </div>
@@ -197,7 +204,7 @@ export default function CampaignDetailPage({
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                           <div>
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                              Goal Amount
+                              {t.goalAmount}
                             </p>
                             <p className="text-lg font-semibold staff-text-primary">
                               {Math.round(
@@ -208,7 +215,7 @@ export default function CampaignDetailPage({
                           </div>
                           <div>
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                              Current Amount
+                              {t.currentAmount}
                             </p>
                             <p className="text-lg font-semibold text-green-600">
                               {Math.round(
@@ -219,7 +226,7 @@ export default function CampaignDetailPage({
                           </div>
                           <div>
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                              Deadline
+                              {t.deadline}
                             </p>
                             <p className="text-sm font-medium staff-text-primary">
                               {new Date(
@@ -229,7 +236,7 @@ export default function CampaignDetailPage({
                           </div>
                           <div>
                             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                              Status
+                              {t.status}
                             </p>
                             <span
                               className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -264,7 +271,7 @@ export default function CampaignDetailPage({
                     {/* Progress Bar */}
                     <div className="mt-4">
                       <div className="flex justify-between text-sm text-gray-600 mb-1">
-                        <span>Progress</span>
+                        <span>{t.progress}</span>
                         <span>
                           {Math.round(
                             (parseFloat(campaignData.currentAmount) /
@@ -291,7 +298,7 @@ export default function CampaignDetailPage({
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-gray-500">Campaign not found</p>
+                    <p className="text-gray-500">{t.campaignNotFound}</p>
                   </div>
                 )}
               </div>
@@ -301,7 +308,7 @@ export default function CampaignDetailPage({
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   <span className="ml-2 text-gray-600">
-                    Loading sponsors...
+                    {t.loadingSponsors}
                   </span>
                 </div>
               )}
@@ -312,17 +319,17 @@ export default function CampaignDetailPage({
                   <div className="flex">
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">
-                        Error loading sponsors
+                        {t.errorLoadingSponsors}
                       </h3>
                       <div className="mt-2 text-sm text-red-700">
-                        {sponsorsError.message || "Failed to load sponsors"}
+                        {sponsorsError.message || t.failedLoadSponsors}
                       </div>
                       <div className="mt-4">
                         <button
                           onClick={() => refetchSponsors()}
                           className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium"
                         >
-                          Try Again
+                          {t.tryAgain}
                         </button>
                       </div>
                     </div>
@@ -339,7 +346,7 @@ export default function CampaignDetailPage({
                       <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <input
                         type="text"
-                        placeholder="Search by sponsor name or contact info..."
+                        placeholder={t.searchSponsorsPlaceholder}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -372,19 +379,19 @@ export default function CampaignDetailPage({
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                              Sponsor
+                              {t.sponsor}
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                              Contact Info
+                              {t.contactInfo}
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                              Amount
+                              {t.amount}
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                              Status
+                              {t.status}
                             </th>
                             <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                              Actions
+                              {t.actions}
                             </th>
                           </tr>
                         </thead>
@@ -395,7 +402,7 @@ export default function CampaignDetailPage({
                                 colSpan={5}
                                 className="px-6 py-12 text-center staff-text-secondary"
                               >
-                                No sponsors found matching your criteria
+                                {t.noSponsorsFound}
                               </td>
                             </tr>
                           ) : (
@@ -424,7 +431,7 @@ export default function CampaignDetailPage({
                                         {sponsor.name}
                                       </div>
                                       <div className="text-sm staff-text-secondary">
-                                        ID: {sponsor.sponsorId}
+                                        {t.sponsorId} {sponsor.sponsorId}
                                       </div>
                                     </div>
                                   </div>
@@ -451,7 +458,7 @@ export default function CampaignDetailPage({
                                   <div className="flex items-center justify-end gap-2">
                                     <button
                                       className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                                      title="View Details"
+                                      title={t.view}
                                     >
                                       <IconSearch className="h-4 w-4" />
                                     </button>
@@ -469,12 +476,13 @@ export default function CampaignDetailPage({
                   {sponsorsResponse && sponsorsResponse.meta.totalPages > 1 && (
                     <div className="flex items-center justify-between">
                       <div className="text-sm staff-text-secondary">
-                        Showing {(currentPage - 1) * pageSize + 1} to{" "}
+                        {t.showingSponsors} {(currentPage - 1) * pageSize + 1}{" "}
+                        {t.to}{" "}
                         {Math.min(
                           currentPage * pageSize,
                           sponsorsResponse.meta.total
                         )}{" "}
-                        of {sponsorsResponse.meta.total} sponsors
+                        {t.of} {sponsorsResponse.meta.total} {t.sponsors}
                       </div>
                       <div className="flex items-center gap-2">
                         <button
@@ -484,10 +492,10 @@ export default function CampaignDetailPage({
                           disabled={currentPage === 1}
                           className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                         >
-                          Previous
+                          {t.previous}
                         </button>
                         <span className="text-sm staff-text-secondary">
-                          Page {currentPage} of{" "}
+                          {t.page} {currentPage} {t.of}{" "}
                           {sponsorsResponse.meta.totalPages}
                         </span>
                         <button
@@ -504,7 +512,7 @@ export default function CampaignDetailPage({
                           }
                           className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                         >
-                          Next
+                          {t.next}
                         </button>
                       </div>
                     </div>
