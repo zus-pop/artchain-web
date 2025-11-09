@@ -54,7 +54,7 @@ export default function CompetitorProfileScreen({
       : "15/10/2004",
     ward: authUser?.ward || "Phường Sài Gòn",
     avatarUrl:
-      (authUser as any)?.avatarUrl ||
+      authUser?.avatarUrl ||
       "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480", // <-- THAY BẰNG AVATAR THẬT
     bannerUrl:
       "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022", // <-- THAY BẰNG BANNER THẬT
