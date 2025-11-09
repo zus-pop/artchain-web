@@ -19,7 +19,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -35,7 +35,18 @@ const createContestSchema = z
       .number()
       .min(0, "Number of top competitors must be at least 0")
       .max(100, "Number of top competitors is too high"),
-    startDate: z.string().min(1, "Start date is required"),
+    numberOfTablesRound2: z
+      .number()
+      .min(0, "Number of tables must be at least 0")
+      .max(26, "Maximum of table round 2 is 26"),
+
+    startDate: z
+      .string()
+      .min(1, "Start date is required")
+      .refine((data) => new Date(data) > new Date(), {
+        message: "Start date must be in the future",
+        path: ["startDate"],
+      }),
     endDate: z.string().min(1, "End date is required"),
     banner: z
       .instanceof(File)
@@ -72,6 +83,7 @@ const createContestSchema = z
       .string()
       .min(1, "Original deadline is required"),
   })
+
   .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
     message: "End date must be after start date",
     path: ["endDate"],
@@ -90,6 +102,24 @@ const createContestSchema = z
       message: "Submission deadline must be on or after round start date",
       path: ["roundSubmissionDeadline"],
     }
+  )
+  .refine(
+    (data) => {
+      // If round2Quantity is 0, numberOfTablesRound2 must also be 0
+      if (data.round2Quantity === 0) {
+        return data.numberOfTablesRound2 === 0;
+      }
+      // If round2Quantity > 0, numberOfTablesRound2 must be at least 1 and round2Quantity must be divisible by numberOfTablesRound2
+      return (
+        data.numberOfTablesRound2 >= 1 &&
+        data.round2Quantity % data.numberOfTablesRound2 === 0
+      );
+    },
+    {
+      message:
+        "Number of competitors must be evenly divisible by the number of tables",
+      path: ["numberOfTablesRound2"],
+    }
   );
 
 type CreateContestFormData = z.infer<typeof createContestSchema>;
@@ -102,29 +132,72 @@ export default function CreateContestPage() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    control,
+    formState: { errors, isSubmitting, isValid },
     setValue,
     watch,
     trigger,
   } = useForm<CreateContestFormData>({
+    mode: "all",
     resolver: zodResolver(createContestSchema),
     defaultValues: {
       round2Quantity: 0,
+      numberOfTablesRound2: 0,
     },
   });
 
-  const watchedBanner = watch("banner");
+  const watchedRound2Quantity = watch("round2Quantity");
 
-  // Update banner preview when file changes
+  // Watch date fields for interdependent validation
+  const watchedStartDate = watch("startDate");
+  const watchedRoundStartDate = watch("roundStartDate");
+
+  // Cleanup banner preview URL on unmount
   React.useEffect(() => {
-    if (watchedBanner) {
-      const url = URL.createObjectURL(watchedBanner);
-      setBannerPreview(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setBannerPreview(null);
+    return () => {
+      if (bannerPreview) {
+        URL.revokeObjectURL(bannerPreview);
+      }
+    };
+  }, [bannerPreview]);
+
+  // Update numberOfTablesRound2 when round2Quantity changes
+  React.useEffect(() => {
+    if (watchedRound2Quantity === 0) {
+      setValue("numberOfTablesRound2", 0);
+    } else if (watchedRound2Quantity > 0) {
+      const currentValue = watch("numberOfTablesRound2") || 0;
+      // If current value is 0 or doesn't divide evenly into round2Quantity, set it to a divisor
+      if (currentValue === 0 || watchedRound2Quantity % currentValue !== 0) {
+        // Find the largest divisor that's reasonable (prefer smaller numbers)
+        const possibleDivisors = [];
+        for (let i = 1; i <= Math.min(watchedRound2Quantity, 10); i++) {
+          if (watchedRound2Quantity % i === 0) {
+            possibleDivisors.push(i);
+          }
+        }
+        // Use the middle value or a reasonable default
+        const defaultValue =
+          possibleDivisors[Math.floor(possibleDivisors.length / 2)] || 1;
+        setValue("numberOfTablesRound2", defaultValue);
+      }
     }
-  }, [watchedBanner]);
+  }, [watchedRound2Quantity, setValue, watch]);
+
+  // Validate endDate when startDate changes
+  React.useEffect(() => {
+    if (watchedStartDate) {
+      trigger("endDate");
+    }
+  }, [watchedStartDate, trigger]);
+
+  // Validate roundEndDate and roundSubmissionDeadline when roundStartDate changes
+  React.useEffect(() => {
+    if (watchedRoundStartDate) {
+      trigger("roundEndDate");
+      trigger("roundSubmissionDeadline");
+    }
+  }, [watchedRoundStartDate, trigger]);
 
   const createMutation = useMutation({
     mutationFn: createStaffContest,
@@ -162,7 +235,10 @@ export default function CreateContestPage() {
     const file = event.target.files?.[0];
     if (file) {
       setValue(field, file);
-      trigger(field);
+      if (field === "banner") {
+        const previewUrl = URL.createObjectURL(file);
+        setBannerPreview(previewUrl);
+      }
     }
   };
 
@@ -270,10 +346,22 @@ export default function CreateContestPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Start Date *
                             </label>
-                            <input
-                              type="date"
-                              {...register("startDate")}
-                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            <Controller
+                              name="startDate"
+                              control={control}
+                              render={({
+                                field: { onChange, value, ...field },
+                              }) => (
+                                <input
+                                  type="date"
+                                  {...field}
+                                  value={value || ""}
+                                  onChange={(e) =>
+                                    onChange(e.target.value || undefined)
+                                  }
+                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              )}
                             />
                             {errors.startDate && (
                               <p className="text-red-500 text-sm mt-1">
@@ -285,10 +373,22 @@ export default function CreateContestPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               End Date *
                             </label>
-                            <input
-                              type="date"
-                              {...register("endDate")}
-                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            <Controller
+                              name="endDate"
+                              control={control}
+                              render={({
+                                field: { onChange, value, ...field },
+                              }) => (
+                                <input
+                                  type="date"
+                                  {...field}
+                                  value={value || ""}
+                                  onChange={(e) =>
+                                    onChange(e.target.value || undefined)
+                                  }
+                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              )}
                             />
                             {errors.endDate && (
                               <p className="text-red-500 text-sm mt-1">
@@ -302,20 +402,106 @@ export default function CreateContestPage() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Number of Top Competitors for Round 2 *
                           </label>
-                          <input
-                            type="number"
-                            {...register("round2Quantity", {
-                              valueAsNumber: true,
-                            })}
-                            minLength={16}
-                            step={4}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="3"
-                            min="0"
+                          <Controller
+                            name="round2Quantity"
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                type="number"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value) || 0;
+                                  field.onChange(value);
+                                }}
+                                step={1}
+                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="3"
+                                min="0"
+                              />
+                            )}
                           />
                           {errors.round2Quantity && (
                             <p className="text-red-500 text-sm mt-1">
                               {errors.round2Quantity.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Number of Tables for Round 2 *
+                            {watchedRound2Quantity === 0 && (
+                              <span className="text-gray-500 text-xs ml-1">
+                                (Disabled when no competitors advance)
+                              </span>
+                            )}
+                          </label>
+                          <Controller
+                            name="numberOfTablesRound2"
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                type="number"
+                                {...field}
+                                onChange={(e) => {
+                                  const value = parseInt(e.target.value) || 0;
+                                  field.onChange(value);
+                                }}
+                                disabled={watchedRound2Quantity === 0}
+                                step={1}
+                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                placeholder={
+                                  watchedRound2Quantity === 0
+                                    ? "0"
+                                    : (() => {
+                                        const divisors = [];
+                                        for (
+                                          let i = 1;
+                                          i <=
+                                          Math.min(watchedRound2Quantity, 10);
+                                          i++
+                                        ) {
+                                          if (watchedRound2Quantity % i === 0) {
+                                            divisors.push(i);
+                                          }
+                                        }
+                                        return (
+                                          divisors[
+                                            Math.floor(divisors.length / 2)
+                                          ]?.toString() || "1"
+                                        );
+                                      })()
+                                }
+                                min={watchedRound2Quantity === 0 ? "0" : "1"}
+                                max="26"
+                              />
+                            )}
+                          />
+                          {errors.numberOfTablesRound2 && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.numberOfTablesRound2.message}
+                            </p>
+                          )}
+                          {watchedRound2Quantity > 0 && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              {watchedRound2Quantity} competitors ÷ tables =
+                              even distribution. Valid:{" "}
+                              {(() => {
+                                const divisors = [];
+                                for (
+                                  let i = 1;
+                                  i <= Math.min(watchedRound2Quantity, 10);
+                                  i++
+                                ) {
+                                  if (watchedRound2Quantity % i === 0) {
+                                    divisors.push(i);
+                                  }
+                                }
+                                return (
+                                  divisors.slice(0, 5).join(", ") +
+                                  (divisors.length > 5 ? "..." : "")
+                                );
+                              })()}
                             </p>
                           )}
                         </div>
@@ -336,10 +522,22 @@ export default function CreateContestPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Round Start Date *
                             </label>
-                            <input
-                              type="date"
-                              {...register("roundStartDate")}
-                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            <Controller
+                              name="roundStartDate"
+                              control={control}
+                              render={({
+                                field: { onChange, value, ...field },
+                              }) => (
+                                <input
+                                  type="date"
+                                  {...field}
+                                  value={value || ""}
+                                  onChange={(e) =>
+                                    onChange(e.target.value || undefined)
+                                  }
+                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              )}
                             />
                             {errors.roundStartDate && (
                               <p className="text-red-500 text-sm mt-1">
@@ -351,10 +549,22 @@ export default function CreateContestPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Round End Date *
                             </label>
-                            <input
-                              type="date"
-                              {...register("roundEndDate")}
-                              className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            <Controller
+                              name="roundEndDate"
+                              control={control}
+                              render={({
+                                field: { onChange, value, ...field },
+                              }) => (
+                                <input
+                                  type="date"
+                                  {...field}
+                                  value={value || ""}
+                                  onChange={(e) =>
+                                    onChange(e.target.value || undefined)
+                                  }
+                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              )}
                             />
                             {errors.roundEndDate && (
                               <p className="text-red-500 text-sm mt-1">
@@ -368,10 +578,22 @@ export default function CreateContestPage() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Submission Deadline *
                           </label>
-                          <input
-                            type="date"
-                            {...register("roundSubmissionDeadline")}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          <Controller
+                            name="roundSubmissionDeadline"
+                            control={control}
+                            render={({
+                              field: { onChange, value, ...field },
+                            }) => (
+                              <input
+                                type="date"
+                                {...field}
+                                value={value || ""}
+                                onChange={(e) =>
+                                  onChange(e.target.value || undefined)
+                                }
+                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            )}
                           />
                           {errors.roundSubmissionDeadline && (
                             <p className="text-red-500 text-sm mt-1">
@@ -384,10 +606,22 @@ export default function CreateContestPage() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Result Announcement Date *
                           </label>
-                          <input
-                            type="date"
-                            {...register("roundResultAnnounceDate")}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          <Controller
+                            name="roundResultAnnounceDate"
+                            control={control}
+                            render={({
+                              field: { onChange, value, ...field },
+                            }) => (
+                              <input
+                                type="date"
+                                {...field}
+                                value={value || ""}
+                                onChange={(e) =>
+                                  onChange(e.target.value || undefined)
+                                }
+                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            )}
                           />
                           {errors.roundResultAnnounceDate && (
                             <p className="text-red-500 text-sm mt-1">
@@ -400,10 +634,22 @@ export default function CreateContestPage() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Send Original Deadline *
                           </label>
-                          <input
-                            type="date"
-                            {...register("roundSendOriginalDeadline")}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          <Controller
+                            name="roundSendOriginalDeadline"
+                            control={control}
+                            render={({
+                              field: { onChange, value, ...field },
+                            }) => (
+                              <input
+                                type="date"
+                                {...field}
+                                value={value || ""}
+                                onChange={(e) =>
+                                  onChange(e.target.value || undefined)
+                                }
+                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            )}
                           />
                           {errors.roundSendOriginalDeadline && (
                             <p className="text-red-500 text-sm mt-1">
@@ -484,7 +730,9 @@ export default function CreateContestPage() {
                   </Link>
                   <button
                     type="submit"
-                    disabled={isSubmitting || createMutation.isPending}
+                    disabled={
+                      isSubmitting || createMutation.isPending || !isValid
+                    }
                     className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />

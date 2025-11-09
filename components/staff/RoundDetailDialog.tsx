@@ -20,7 +20,7 @@ interface RoundDetailDialogProps {
   roundId: number;
 }
 
-export function RoundDetailDialog({
+function RoundDetailDialog({
   isOpen,
   onClose,
   contestId,
@@ -63,8 +63,12 @@ export function RoundDetailDialog({
       status?: string;
     }) => updateStaffRound(contestId, String(roundId), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["round-detail", contestId, roundId] });
-      queryClient.invalidateQueries({ queryKey: ["contest-detail", String(contestId)] });
+      queryClient.invalidateQueries({
+        queryKey: ["round-detail", contestId, roundId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", String(contestId)],
+      });
       setIsEditing(false);
     },
   });
@@ -132,7 +136,7 @@ export function RoundDetailDialog({
       sendOriginalDeadline?: string;
       status?: string;
     } = {};
-    
+
     // So sánh và chỉ gửi những trường thay đổi
     if (formData.name && formData.name !== round?.name) {
       updateData.name = formData.name;
@@ -141,20 +145,44 @@ export function RoundDetailDialog({
       updateData.table = formData.table || null;
     }
     // Chuyển đổi datetime-local string sang ISO string cho backend (chỉ khi giá trị thay đổi)
-    if (formData.startDate && formatDateForInput(round?.startDate || "") !== formData.startDate) {
+    if (
+      formData.startDate &&
+      formatDateForInput(round?.startDate || "") !== formData.startDate
+    ) {
       updateData.startDate = new Date(formData.startDate).toISOString();
     }
-    if (formData.endDate && formatDateForInput(round?.endDate || "") !== formData.endDate) {
+    if (
+      formData.endDate &&
+      formatDateForInput(round?.endDate || "") !== formData.endDate
+    ) {
       updateData.endDate = new Date(formData.endDate).toISOString();
     }
-    if (formData.submissionDeadline && formatDateForInput(round?.submissionDeadline || "") !== formData.submissionDeadline) {
-      updateData.submissionDeadline = new Date(formData.submissionDeadline).toISOString();
+    if (
+      formData.submissionDeadline &&
+      formatDateForInput(round?.submissionDeadline || "") !==
+        formData.submissionDeadline
+    ) {
+      updateData.submissionDeadline = new Date(
+        formData.submissionDeadline
+      ).toISOString();
     }
-    if (formData.resultAnnounceDate && formatDateForInput(round?.resultAnnounceDate || "") !== formData.resultAnnounceDate) {
-      updateData.resultAnnounceDate = new Date(formData.resultAnnounceDate).toISOString();
+    if (
+      formData.resultAnnounceDate &&
+      formatDateForInput(round?.resultAnnounceDate || "") !==
+        formData.resultAnnounceDate
+    ) {
+      updateData.resultAnnounceDate = new Date(
+        formData.resultAnnounceDate
+      ).toISOString();
     }
-    if (formData.sendOriginalDeadline && formatDateForInput(round?.sendOriginalDeadline || "") !== formData.sendOriginalDeadline) {
-      updateData.sendOriginalDeadline = new Date(formData.sendOriginalDeadline).toISOString();
+    if (
+      formData.sendOriginalDeadline &&
+      formatDateForInput(round?.sendOriginalDeadline || "") !==
+        formData.sendOriginalDeadline
+    ) {
+      updateData.sendOriginalDeadline = new Date(
+        formData.sendOriginalDeadline
+      ).toISOString();
     }
     if (formData.status && formData.status !== round?.status) {
       updateData.status = formData.status;
@@ -171,6 +199,7 @@ export function RoundDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px]">
+          <DialogTitle className="sr-only">Loading Round Details</DialogTitle>
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
           </div>
@@ -183,6 +212,7 @@ export function RoundDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px]">
+          <DialogTitle className="sr-only">Round Not Found</DialogTitle>
           <div className="text-center py-8 staff-text-secondary">
             Round not found
           </div>
@@ -202,9 +232,7 @@ export function RoundDetailDialog({
 
         {!isEditing ? (
           <div className="space-y-4">
-            
             <div className="flex items-start justify-between pb-4 border-b border-[#e6e2da]">
-              
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold staff-text-primary">
                   {round.name}
@@ -214,9 +242,11 @@ export function RoundDetailDialog({
                     </span>
                   )}
                 </h3>
-                <span className={getStatusColor(round.status)}>{round.status}</span>
+                <span className={getStatusColor(round.status)}>
+                  {round.status}
+                </span>
               </div>
-              
+
               {/* Cột 2: Nút Edit (Icon) */}
               <button
                 onClick={handleEdit}

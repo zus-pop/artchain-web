@@ -44,8 +44,11 @@ export interface ContestDTO {
   title: string;
   description: string;
   bannerUrl: string;
+  ruleUrl: string;
+  isScheduleEnforcement: boolean;
   numOfAward: number;
   round2Quantity: number;
+  numberOfTablesRound2: number;
   startDate: string;
   endDate: string;
   status: string;
@@ -128,6 +131,7 @@ export interface CreateContestRequest {
   title: string;
   description: string;
   round2Quantity: number;
+  numberOfTablesRound2: number;
   startDate: string;
   endDate: string;
   banner: File;

@@ -15,6 +15,8 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 
 type ExaminerStatus = "ACTIVE" | "INACTIVE" | "PENDING";
 
@@ -35,6 +37,8 @@ interface Examiner {
 }
 
 export default function ExaminersManagementPage() {
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
   const [examiners] = useState<Examiner[]>([
     {
       id: "1",
@@ -192,16 +196,16 @@ export default function ExaminersManagementPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Examiner Management" />
+        <SiteHeader title={t.examinerManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagementBreadcrumb,
                   href: "/dashboard/staff/contests",
                 },
-                { label: "Examiners" },
+                { label: t.examinersBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -212,10 +216,10 @@ export default function ExaminersManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Examiners ({filteredExaminers.length})
+                    {t.allExaminers} ({filteredExaminers.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Manage contest judges and their assignments
+                    {t.manageContestJudges}
                   </p>
                 </div>
                 <Link
@@ -223,7 +227,7 @@ export default function ExaminersManagementPage() {
                   className="staff-btn-primary transition-colors flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
-                  Invite Examiner
+                  {t.inviteExaminer}
                 </Link>
               </div>
 
@@ -236,7 +240,7 @@ export default function ExaminersManagementPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Total Examiners
+                        {t.totalExaminers}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">
                         {totalExaminers}
@@ -252,7 +256,7 @@ export default function ExaminersManagementPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Active Examiners
+                        {t.activeExaminers}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">
                         {activeExaminers}
@@ -268,7 +272,7 @@ export default function ExaminersManagementPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Contests Judged
+                        {t.contestsJudged}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">
                         {totalContestsJudged}
@@ -284,7 +288,7 @@ export default function ExaminersManagementPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Avg. Rating
+                        {t.avgRating}
                       </p>
                       <p className="text-2xl font-bold staff-text-primary">
                         {averageRating.toFixed(1)}
@@ -300,7 +304,7 @@ export default function ExaminersManagementPage() {
                   <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by name, email, or specialization..."
+                    placeholder={t.searchExaminersPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -346,22 +350,22 @@ export default function ExaminersManagementPage() {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Examiner
+                          {t.examiner}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Specialization
+                          {t.specialization}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Status
+                          {t.statusTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Performance
+                          {t.performance}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Activity
+                          {t.activity}
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          Actions
+                          {t.actions}
                         </th>
                       </tr>
                     </thead>
@@ -372,7 +376,7 @@ export default function ExaminersManagementPage() {
                             colSpan={6}
                             className="px-6 py-12 text-center staff-text-secondary"
                           >
-                            No examiners found matching your criteria
+                            {t.noExaminersFound}
                           </td>
                         </tr>
                       ) : (
@@ -395,7 +399,7 @@ export default function ExaminersManagementPage() {
                                     {examiner.email}
                                   </div>
                                   <div className="text-xs text-gray-400">
-                                    {examiner.experience} experience
+                                    {examiner.experience} {t.experience}
                                   </div>
                                 </div>
                               </div>
@@ -432,7 +436,8 @@ export default function ExaminersManagementPage() {
                                 </span>
                               </div>
                               <div className="text-xs text-gray-400 mt-1">
-                                {examiner.contestsJudged} contests judged
+                                {examiner.contestsJudged}{" "}
+                                {t.contestsJudged.toLowerCase()}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
@@ -440,7 +445,8 @@ export default function ExaminersManagementPage() {
                                 <div>Joined: {examiner.joinedDate}</div>
                                 <div>Last active: {examiner.lastActive}</div>
                                 <div className="text-xs text-blue-600 font-medium mt-1">
-                                  {examiner.currentContests} active contests
+                                  {examiner.currentContests}{" "}
+                                  {t.activeContestsLabel}
                                 </div>
                               </div>
                             </td>

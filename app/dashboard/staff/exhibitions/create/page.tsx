@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ExhibitionStatus } from "@/types/exhibition";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
@@ -42,6 +44,8 @@ type ExhibitionFormData = z.infer<typeof exhibitionSchema>;
 
 export default function CreateExhibitionPage() {
   const router = useRouter();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Form setup with React Hook Form and Zod
   const {
@@ -92,16 +96,16 @@ export default function CreateExhibitionPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Create Exhibition" />
+        <SiteHeader title={t.createExhibitionTitle} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
             <Breadcrumb
               items={[
                 {
-                  label: "Exhibition Management",
+                  label: t.exhibitionsManagement,
                   href: "/dashboard/staff/exhibitions",
                 },
-                { label: "Create" },
+                { label: t.create },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -115,17 +119,16 @@ export default function CreateExhibitionPage() {
                     <Link
                       href="/dashboard/staff/exhibitions"
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Back to Exhibitions"
+                      title={t.backToExhibitions}
                     >
                       <IconArrowLeft className="h-5 w-5" />
                     </Link>
                     <div>
                       <h1 className="text-3xl font-bold staff-text-primary">
-                        Create New Exhibition
+                        {t.createNewExhibition}
                       </h1>
                       <p className="text-sm staff-text-secondary mt-1">
-                        Set up a new art exhibition and add paintings to
-                        showcase
+                        {t.setupNewExhibition}
                       </p>
                     </div>
                   </div>
@@ -135,7 +138,7 @@ export default function CreateExhibitionPage() {
                       className="staff-btn-secondary flex items-center gap-2"
                     >
                       <IconX className="h-4 w-4" />
-                      Cancel
+                      {t.cancel}
                     </Link>
                     <button
                       onClick={handleSubmit(onSubmit)}
@@ -143,7 +146,7 @@ export default function CreateExhibitionPage() {
                       className="staff-btn-primary flex items-center gap-2"
                     >
                       <IconDeviceFloppy className="h-4 w-4" />
-                      {isSubmitting ? "Creating..." : "Create Exhibition"}
+                      {isSubmitting ? t.creating : t.createExhibition}
                     </button>
                   </div>
                 </div>
@@ -159,10 +162,10 @@ export default function CreateExhibitionPage() {
                         </div>
                         <div>
                           <h2 className="text-xl font-semibold staff-text-primary">
-                            Exhibition Details
+                            {t.exhibitionDetails}
                           </h2>
                           <p className="text-sm staff-text-secondary">
-                            Basic information about your exhibition
+                            {t.basicExhibitionInfo}
                           </p>
                         </div>
                       </div>
@@ -174,7 +177,7 @@ export default function CreateExhibitionPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Exhibition Name *
+                              {t.exhibitionNameLabel}
                             </label>
                             <input
                               type="text"
@@ -184,7 +187,7 @@ export default function CreateExhibitionPage() {
                                   ? "border-red-300"
                                   : "border-[#e6e2da]"
                               }`}
-                              placeholder="Enter exhibition name"
+                              placeholder={t.enterExhibitionName}
                             />
                             {errors.name && (
                               <p className="mt-1 text-sm text-red-600">
@@ -195,7 +198,7 @@ export default function CreateExhibitionPage() {
 
                           <div className="md:col-span-2">
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Description *
+                              {t.descriptionLabel}
                             </label>
                             <textarea
                               {...register("description")}
@@ -205,7 +208,7 @@ export default function CreateExhibitionPage() {
                                   ? "border-red-300"
                                   : "border-[#e6e2da]"
                               }`}
-                              placeholder="Describe your exhibition..."
+                              placeholder={t.describeExhibition}
                             />
                             {errors.description && (
                               <p className="mt-1 text-sm text-red-600">
@@ -216,7 +219,7 @@ export default function CreateExhibitionPage() {
 
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Start Date *
+                              {t.startDateLabel}
                             </label>
                             <input
                               type="date"
@@ -236,7 +239,7 @@ export default function CreateExhibitionPage() {
 
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              End Date *
+                              {t.endDateLabel}
                             </label>
                             <input
                               type="date"
@@ -257,7 +260,7 @@ export default function CreateExhibitionPage() {
 
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-2">
-                              Status
+                              {t.statusLabel}
                             </label>
                             <select
                               {...register("status")}
@@ -280,12 +283,12 @@ export default function CreateExhibitionPage() {
                     {/* Quick Info */}
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                        Exhibition Setup
+                        {t.exhibitionSetup}
                       </h3>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm staff-text-secondary">
-                            Initial Status
+                            {t.initialStatus}
                           </span>
                           <span className="font-semibold staff-text-primary text-sm">
                             DRAFT
@@ -293,21 +296,21 @@ export default function CreateExhibitionPage() {
                         </div>
                         <div className="flex items-center justify-between py-2">
                           <span className="text-sm staff-text-secondary">
-                            Paintings
+                            {t.paintingsLabel}
                           </span>
                           <span className="font-semibold staff-text-primary text-sm">
-                            0 (Add after creation)
+                            {t.addAfterCreation}
                           </span>
                         </div>
                         <div className="text-sm staff-text-secondary py-2">
                           <p className="mb-2">
-                            <strong>Next Steps:</strong>
+                            <strong>{t.nextSteps}</strong>
                           </p>
                           <ol className="list-decimal list-inside space-y-1">
-                            <li>Fill in exhibition details</li>
-                            <li>Create the exhibition</li>
-                            <li>Add paintings to showcase</li>
-                            <li>Publish when ready</li>
+                            <li>{t.fillExhibitionDetails}</li>
+                            <li>{t.createTheExhibition}</li>
+                            <li>{t.addPaintingsToShowcase}</li>
+                            <li>{t.publishWhenReady}</li>
                           </ol>
                         </div>
                       </div>

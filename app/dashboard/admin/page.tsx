@@ -1,7 +1,8 @@
+"use client";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Breadcrumb } from "@/components/breadcrumb";
 
 export default function AdminDashboardPage() {
   return (

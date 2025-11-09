@@ -7,6 +7,8 @@ import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Contest } from "@/types/dashboard";
 import { UpdateContestRequest } from "@/types/staff/contest-dto";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { IconArrowLeft, IconDeviceFloppy, IconX } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -21,6 +23,8 @@ function EditContestContent() {
   const contestId = searchParams.get("id");
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -180,9 +184,9 @@ function EditContestContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Contest" />
+          <SiteHeader title={t.editContestTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Contest ID is required</div>
+            <div className="text-gray-500">{t.contestIdRequired}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -201,9 +205,9 @@ function EditContestContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Contest" />
+          <SiteHeader title={t.editContestTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Loading contest details...</div>
+            <div className="text-gray-500">{t.loadingContestDetails}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -222,9 +226,9 @@ function EditContestContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Edit Contest" />
+          <SiteHeader title={t.editContestTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Contest not found</div>
+            <div className="text-gray-500">{t.contestNotFound}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -242,20 +246,20 @@ function EditContestContent() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Edit Contest" />
+        <SiteHeader title={t.editContestTitle} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagementBreadcrumb,
                   href: "/dashboard/staff/contests",
                 },
                 {
                   label: contest.title,
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
-                { label: "Edit" },
+                { label: t.editBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -273,7 +277,7 @@ function EditContestContent() {
                   </Link>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      Edit Contest
+                      {t.editContestTitle}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
                       Contest ID: {contest.contestId}
@@ -305,7 +309,7 @@ function EditContestContent() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium staff-text-primary mb-2">
-                        Number of round 2 competitors
+                        {t.round2CompetitorsLabel}
                       </label>
                       <input
                         type="number"
@@ -337,7 +341,7 @@ function EditContestContent() {
                 {/* Dates */}
                 <div className="staff-card p-6">
                   <h3 className="text-lg font-bold staff-text-primary mb-4">
-                    Contest Dates
+                    {t.contestDates}
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
@@ -372,7 +376,7 @@ function EditContestContent() {
                 {/* Round Dates */}
                 <div className="staff-card p-6">
                   <h3 className="text-lg font-bold staff-text-primary mb-4">
-                    Round Dates
+                    {t.roundDates}
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <div>
@@ -441,12 +445,12 @@ function EditContestContent() {
                 {/* Files */}
                 <div className="staff-card p-6">
                   <h3 className="text-lg font-bold staff-text-primary mb-4">
-                    Files
+                    {t.files}
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
                       <label className="block text-sm font-medium staff-text-primary mb-2">
-                        Banner Image
+                        {t.bannerImage}
                       </label>
                       <input
                         type="file"
@@ -468,7 +472,7 @@ function EditContestContent() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium staff-text-primary mb-2">
-                        Rules File
+                        {t.rulesFile}
                       </label>
                       <input
                         type="file"
@@ -478,7 +482,7 @@ function EditContestContent() {
                       />
                       {ruleFile && (
                         <p className="text-sm staff-text-secondary mt-1">
-                          Selected: {ruleFile.name}
+                          {t.selectedFile}: {ruleFile.name}
                         </p>
                       )}
                     </div>
@@ -493,7 +497,7 @@ function EditContestContent() {
                     className="px-6 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
                   >
                     <IconX className="h-4 w-4" />
-                    Cancel
+                    {t.cancel}
                   </button>
                   <button
                     type="submit"
@@ -501,7 +505,7 @@ function EditContestContent() {
                     className="px-6 py-2 bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
-                    {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                    {updateMutation.isPending ? "Saving..." : t.saveChanges}
                   </button>
                 </div>
               </form>

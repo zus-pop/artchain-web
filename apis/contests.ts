@@ -1,7 +1,7 @@
 import myAxios from "@/lib/custom-axios";
 import { useQuery } from "@tanstack/react-query";
 import { Contest, ContestStatus } from "@/types/contest";
-
+import { ApiResponse } from "@/types";
 
 // Get all contests with optional status filter
 export function useGetContests(status?: ContestStatus) {
@@ -10,9 +10,11 @@ export function useGetContests(status?: ContestStatus) {
     queryFn: async () => {
       try {
         const params = status ? { status } : {};
-        const response = await myAxios.get("/contests", { params });
-        // API /contests trả về array trực tiếp
-        return response.data.data as Contest[] || [];
+        const response = await myAxios.get<ApiResponse<Contest[]>>(
+          "/contests",
+          { params }
+        );
+        return response.data.data || [];
       } catch (error) {
         console.error("Error fetching contests:", error);
         return [];

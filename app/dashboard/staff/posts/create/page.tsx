@@ -23,6 +23,8 @@ import { getStaffTags, createStaffTag, updateStaffPost } from "@/apis/staff";
 import myAxios from "@/lib/custom-axios";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 const MDXEditorWrapper = dynamic(
   () =>
@@ -65,6 +67,9 @@ export function CreatePostPage() {
   const searchParams = useSearchParams();
   const postId = searchParams.get("id");
   const isEditing = !!postId;
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const [formData, setFormData] = useState<PostFormData>({
     title: "",
@@ -166,9 +171,10 @@ export function CreatePostPage() {
       // Add the new tag to available tags and select it
       setAvailableTags((prev) => [...prev, newTag]);
       handleSelectTag(newTag);
+      toast.success(t.tagCreatedSuccess);
     } catch (error) {
       console.error("Error creating tag:", error);
-      toast.error("Failed to create tag. Please try again.");
+      toast.error(t.failedCreateTag);
     } finally {
       setIsCreatingTag(false);
     }
@@ -264,7 +270,7 @@ Ready to join the revolution? Create your free account today and start exploring
           tag_ids: formData.tag_ids,
         };
         await updateStaffPost(postId, updateData);
-        toast.success("Post updated successfully!");
+        toast.success(t.postUpdatedSuccess);
       } else {
         // Create new post with FormData
         await myAxios.post("/staff/posts", formDataToSend, {
@@ -272,14 +278,14 @@ Ready to join the revolution? Create your free account today and start exploring
             "Content-Type": "multipart/form-data",
           },
         });
-        toast.success("Post created successfully!");
+        toast.success(t.postCreatedSuccess);
       }
 
       // Redirect to posts list
       window.location.href = "/dashboard/staff/posts";
     } catch (error) {
       console.error("Error saving post:", error);
-      toast.error("Failed to save post. Please try again.");
+      toast.error(t.savePostError);
     } finally {
       setIsSubmitting(false);
     }
@@ -310,13 +316,13 @@ Ready to join the revolution? Create your free account today and start exploring
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title={isEditing ? "Edit Post" : "Create Post"} />
+        <SiteHeader title={isEditing ? t.editPost : t.createPost} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
-                { label: "Posts Management", href: "/dashboard/staff/posts" },
-                { label: isEditing ? "Edit Post" : "Create Post" },
+                { label: t.postsManagement, href: "/dashboard/staff/posts" },
+                { label: isEditing ? t.editPost : t.createPost },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -328,18 +334,16 @@ Ready to join the revolution? Create your free account today and start exploring
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/posts"
-                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      {isEditing ? "Edit Post" : "Create New Post"}
+                      {isEditing ? t.editPost : t.createNewPost}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
-                      {isEditing
-                        ? "Update and modify your existing post content"
-                        : "Write and publish announcements, news, and content for the ArtChain community"}
+                      {isEditing ? t.updateModifyPost : t.writePublishContent}
                     </p>
                   </div>
                 </div>
@@ -350,7 +354,7 @@ Ready to join the revolution? Create your free account today and start exploring
                     className=" border border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     <IconEye className="h-4 w-4" />
-                    {previewMode ? "Edit" : "Preview"}
+                    {previewMode ? t.editMode : t.previewMode}
                   </button>
                 </div>
               </div>
@@ -372,7 +376,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       {/* Title */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Post Title *
+                          {t.postTitleLabel} *
                         </label>
                         <input
                           type="text"
@@ -381,7 +385,7 @@ Ready to join the revolution? Create your free account today and start exploring
                             handleInputChange("title", e.target.value)
                           }
                           className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-medium"
-                          placeholder="Enter an engaging title for your post"
+                          placeholder={t.enterEngagingTitle}
                           required
                         />
                       </div>
@@ -389,7 +393,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       {/* Image Upload */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Featured Image
+                          {t.featuredImage}
                         </label>
 
                         {/* Upload Area */}
@@ -441,7 +445,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                   }}
                                   className="text-red-600 hover:text-red-800 text-sm font-medium"
                                 >
-                                  Remove image
+                                  {t.removeImage}
                                 </button>
                               </div>
                             ) : (
@@ -467,10 +471,10 @@ Ready to join the revolution? Create your free account today and start exploring
                                 </div>
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">
-                                    Click to upload image
+                                    {t.clickToUploadImage}
                                   </p>
                                   <p className="text-xs text-gray-500">
-                                    PNG, JPG, GIF up to 10MB
+                                    {t.imageRequirementsPosts}
                                   </p>
                                 </div>
                               </div>
@@ -487,16 +491,12 @@ Ready to join the revolution? Create your free account today and start exploring
                               if (file) {
                                 // Validate file size (10MB limit)
                                 if (file.size > 10 * 1024 * 1024) {
-                                  toast.error(
-                                    "File size must be less than 10MB"
-                                  );
+                                  toast.error(t.fileSizeTooLarge);
                                   return;
                                 }
                                 // Validate file type
                                 if (!file.type.startsWith("image/")) {
-                                  toast.error(
-                                    "Please select a valid image file"
-                                  );
+                                  toast.error(t.selectValidImage);
                                   return;
                                 }
                                 setFormData((prev) => ({
@@ -509,8 +509,7 @@ Ready to join the revolution? Create your free account today and start exploring
                           />
 
                           <p className="text-xs staff-text-secondary">
-                            Upload an image file to display with your post
-                            (optional)
+                            {t.uploadImageOptional}
                           </p>
                         </div>
                       </div>
@@ -518,7 +517,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       {/* Content */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Content *
+                          {t.contentLabel} *
                         </label>
                         {previewMode ? (
                           <div className="prose max-w-none">
@@ -537,11 +536,11 @@ Ready to join the revolution? Create your free account today and start exploring
                             onChange={(value) =>
                               handleInputChange("content", value)
                             }
-                            placeholder="Write your post content here using Markdown..."
+                            placeholder={t.writeContentHere}
                           />
                         )}
                         <p className="text-xs staff-text-secondary mt-2">
-                          Use the toolbar to format your content with Markdown
+                          {t.useToolbarFormat}
                         </p>
                       </div>
                     </div>
@@ -552,7 +551,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       <div className="staff-card p-6">
                         <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                           <IconSend className="h-5 w-5 " />
-                          Status
+                          {t.statusLabel}
                         </h3>
 
                         <div className="space-y-4">
@@ -567,8 +566,10 @@ Ready to join the revolution? Create your free account today and start exploring
                               }
                               className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                              <option value="DRAFT">Draft</option>
-                              <option value="PUBLISHED">Published</option>
+                              <option value="DRAFT">{t.draftStatusPost}</option>
+                              <option value="PUBLISHED">
+                                {t.publishedStatusPost}
+                              </option>
                             </select>
                           </div>
                         </div>
@@ -578,7 +579,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       <div className="staff-card p-6">
                         <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                           <IconTag className="h-5 w-5 " />
-                          Tags
+                          {t.tagsLabel}
                         </h3>
 
                         <div className="space-y-3">
@@ -616,7 +617,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                   setShowTagDropdown(true);
                                 }}
                                 onFocus={() => setShowTagDropdown(true)}
-                                placeholder="Search or create tags..."
+                                placeholder={t.searchOrCreateTags}
                                 className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                               />
                             </div>
@@ -626,7 +627,7 @@ Ready to join the revolution? Create your free account today and start exploring
                               <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da]  shadow-lg max-h-60 overflow-y-auto">
                                 {isLoadingTags ? (
                                   <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                                    Loading tags...
+                                    {t.loadingTags}
                                   </div>
                                 ) : (
                                   <>
@@ -651,11 +652,11 @@ Ready to join the revolution? Create your free account today and start exploring
                                         ))
                                     ) : tagSearch.trim() ? (
                                       <div className="px-4 py-2 text-sm text-gray-500">
-                                        No tags found
+                                        {t.noTagsFound}
                                       </div>
                                     ) : (
                                       <div className="px-4 py-2 text-sm text-gray-500">
-                                        Start typing to search tags
+                                        {t.startTypingSearch}
                                       </div>
                                     )}
 
@@ -674,8 +675,8 @@ Ready to join the revolution? Create your free account today and start exploring
                                         >
                                           <IconPlus className="h-4 w-4" />
                                           {isCreatingTag
-                                            ? "Creating..."
-                                            : `Create "${tagSearch}"`}
+                                            ? t.creatingTag
+                                            : t.createTagText}
                                         </button>
                                       )}
                                   </>
@@ -685,7 +686,7 @@ Ready to join the revolution? Create your free account today and start exploring
                           </div>
 
                           <p className="text-xs staff-text-secondary">
-                            Search for existing tags or create new ones
+                            {t.searchExistingTags}
                           </p>
                         </div>
                       </div>
@@ -694,13 +695,13 @@ Ready to join the revolution? Create your free account today and start exploring
                       <div className="staff-card p-6">
                         <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                           <IconEye className="h-5 w-5 " />
-                          Preview Stats
+                          {t.previewStats}
                         </h3>
 
                         <div className="space-y-3 text-sm">
                           <div className="flex justify-between">
                             <span className="staff-text-secondary">
-                              Word Count:
+                              {t.wordCount}
                             </span>
                             <span className="font-medium">
                               {
@@ -713,7 +714,7 @@ Ready to join the revolution? Create your free account today and start exploring
                           </div>
                           <div className="flex justify-between">
                             <span className="staff-text-secondary">
-                              Character Count:
+                              {t.characterCount}
                             </span>
                             <span className="font-medium">
                               {formData.content.length}
@@ -721,7 +722,7 @@ Ready to join the revolution? Create your free account today and start exploring
                           </div>
                           <div className="flex justify-between">
                             <span className="staff-text-secondary">
-                              Reading Time:
+                              {t.readingTime}
                             </span>
                             <span className="font-medium">
                               ~
@@ -732,7 +733,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                   .filter((word) => word.length > 0).length /
                                   200
                               )}{" "}
-                              min
+                              {t.min}
                             </span>
                           </div>
                         </div>
@@ -746,7 +747,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       href="/dashboard/staff/posts"
                       className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      Cancel
+                      {t.cancelBtn}
                     </Link>
                     <button
                       type="button"
@@ -755,7 +756,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <IconDeviceFloppy className="h-4 w-4" />
-                      Save Draft
+                      {t.saveDraftBtn}
                     </button>
                     <button
                       type="button"
@@ -770,12 +771,12 @@ Ready to join the revolution? Create your free account today and start exploring
                       {isSubmitting ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Publishing...
+                          {t.publishing}
                         </>
                       ) : (
                         <>
                           <IconSend className="h-4 w-4" />
-                          {isEditing ? "Update Post" : "Publish Post"}
+                          {isEditing ? t.updatePost : t.publishPost}
                         </>
                       )}
                     </button>

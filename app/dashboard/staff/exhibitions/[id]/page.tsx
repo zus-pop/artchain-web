@@ -6,6 +6,8 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ExhibitionStatus } from "@/types/exhibition";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -29,6 +31,8 @@ export default function ExhibitionDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Fetch exhibition details
   const { data: exhibitionResponse, isLoading } = useGetExhibitionById(id);
@@ -74,11 +78,11 @@ export default function ExhibitionDetailPage({
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Exhibition Details" />
+          <SiteHeader title={t.exhibitionDetail} />
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-4 staff-text-secondary">Loading exhibition...</p>
+              <p className="mt-4 staff-text-secondary">{t.loadingExhibition}</p>
             </div>
           </div>
         </SidebarInset>
@@ -98,15 +102,15 @@ export default function ExhibitionDetailPage({
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Exhibition Details" />
+          <SiteHeader title={t.exhibitionDetail} />
           <div className="flex flex-1 flex-col items-center justify-center py-12">
             <div className="text-center">
-              <p className="staff-text-secondary">Exhibition not found</p>
+              <p className="staff-text-secondary">{t.exhibitionNotFound}</p>
               <Link
                 href="/dashboard/staff/exhibitions"
                 className="staff-btn-primary mt-4 inline-block"
               >
-                Back to Exhibitions
+                {t.backToExhibitions}
               </Link>
             </div>
           </div>
@@ -126,13 +130,13 @@ export default function ExhibitionDetailPage({
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Exhibition Details" />
+        <SiteHeader title={t.exhibitionDetail} />
         <div className="flex flex-1 flex-col overflow-hidden">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
             <Breadcrumb
               items={[
                 {
-                  label: "Exhibition Management",
+                  label: t.exhibitionsManagement,
                   href: "/dashboard/staff/exhibitions",
                 },
                 { label: exhibition.name },
@@ -153,7 +157,7 @@ export default function ExhibitionDetailPage({
                           <Link
                             href="/dashboard/staff/exhibitions"
                             className="p-2 hover:bg-white/80 rounded-lg transition-colors"
-                            title="Back to Exhibitions"
+                            title={t.backToExhibitions}
                           >
                             <IconArrowLeft className="h-5 w-5 text-gray-600" />
                           </Link>
@@ -166,7 +170,7 @@ export default function ExhibitionDetailPage({
                                 {exhibition.name}
                               </h1>
                               <p className="text-sm staff-text-secondary mt-1">
-                                Exhibition Details & Management
+                                {t.exhibitionDetailsManagement}
                               </p>
                             </div>
                           </div>
@@ -201,7 +205,7 @@ export default function ExhibitionDetailPage({
                           </div>
                           <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconPhoto className="h-4 w-4" />
-                            {exhibition.numberOfPaintings} paintings
+                            {exhibition.numberOfPaintings} {t.paintingsText}
                           </div>
                         </div>
 
@@ -216,7 +220,7 @@ export default function ExhibitionDetailPage({
                           className="staff-btn-secondary flex items-center gap-2"
                         >
                           <IconEdit className="h-4 w-4" />
-                          Edit Exhibition
+                          {t.editExhibition}
                         </Link>
                         <button
                           onClick={handleDeleteExhibition}
@@ -224,7 +228,7 @@ export default function ExhibitionDetailPage({
                           disabled={deleteExhibitionMutation.isPending}
                         >
                           <IconTrash className="h-4 w-4" />
-                          Delete
+                          {t.deleteExhibition}
                         </button>
                       </div>
                     </div>
@@ -243,7 +247,7 @@ export default function ExhibitionDetailPage({
                           {exhibition.numberOfPaintings}
                         </p>
                         <p className="text-sm staff-text-secondary">
-                          Total Paintings
+                          {t.totalPaintings}
                         </p>
                       </div>
                     </div>
@@ -263,7 +267,7 @@ export default function ExhibitionDetailPage({
                           )}
                         </p>
                         <p className="text-sm staff-text-secondary">
-                          Days Duration
+                          {t.daysDuration}
                         </p>
                       </div>
                     </div>
@@ -279,7 +283,7 @@ export default function ExhibitionDetailPage({
                           {new Date(exhibition.startDate).toLocaleDateString()}
                         </p>
                         <p className="text-sm staff-text-secondary">
-                          Start Date
+                          {t.startDate}
                         </p>
                       </div>
                     </div>
@@ -294,7 +298,9 @@ export default function ExhibitionDetailPage({
                         <p className="text-lg font-bold staff-text-primary">
                           {new Date(exhibition.endDate).toLocaleDateString()}
                         </p>
-                        <p className="text-sm staff-text-secondary">End Date</p>
+                        <p className="text-sm staff-text-secondary">
+                          {t.endDate}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -313,11 +319,11 @@ export default function ExhibitionDetailPage({
                           </div>
                           <div>
                             <h2 className="text-xl font-semibold staff-text-primary">
-                              Exhibition Paintings
+                              {t.exhibitionPaintingsGallery}
                             </h2>
                             <p className="text-sm staff-text-secondary">
                               {exhibition.exhibitionPaintings?.length || 0}{" "}
-                              paintings curated for this exhibition
+                              {t.paintingsCurated}
                             </p>
                           </div>
                         </div>
@@ -326,7 +332,7 @@ export default function ExhibitionDetailPage({
                           className="staff-btn-primary flex items-center gap-2"
                         >
                           <IconPlus className="h-4 w-4" />
-                          Manage Paintings
+                          {t.managePaintings}
                         </Link>
                       </div>
 
@@ -353,7 +359,7 @@ export default function ExhibitionDetailPage({
                                       <div className="text-center">
                                         <IconPhoto className="h-16 w-16 mx-auto mb-4 opacity-50" />
                                         <p className="text-lg">
-                                          No image available
+                                          {t.noImageAvailable}
                                         </p>
                                       </div>
                                     </div>
@@ -391,13 +397,13 @@ export default function ExhibitionDetailPage({
                                   </p>
                                   <div className="flex items-center justify-between text-xs">
                                     <span className="staff-text-secondary">
-                                      Added{" "}
+                                      {t.added}{" "}
                                       {new Date(
                                         exhibitionPainting.createdAt
                                       ).toLocaleDateString()}
                                     </span>
                                     <span className="text-blue-600 hover:text-blue-800 font-medium">
-                                      View Painting →
+                                      {t.viewPainting}
                                     </span>
                                   </div>
                                 </div>
@@ -411,19 +417,17 @@ export default function ExhibitionDetailPage({
                             <IconPhoto className="h-12 w-12 text-gray-400" />
                           </div>
                           <h3 className="text-xl font-semibold staff-text-primary mb-2">
-                            No Paintings Yet
+                            {t.noPaintingsYet}
                           </h3>
                           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                            This exhibition doesn&apos;t have any paintings yet.
-                            Start curating by adding paintings from contest
-                            winners.
+                            {t.addPaintingsFromWinners}
                           </p>
                           <Link
                             href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/paintings`}
                             className="staff-btn-primary inline-flex items-center gap-2"
                           >
                             <IconPlus className="h-4 w-4" />
-                            Add Paintings to Exhibition
+                            {t.managePaintings}
                           </Link>
                         </div>
                       )}
@@ -439,7 +443,7 @@ export default function ExhibitionDetailPage({
                           <IconCalendar className="h-5 w-5 text-blue-600" />
                         </div>
                         <h3 className="text-lg font-semibold staff-text-primary">
-                          Exhibition Timeline
+                          {t.exhibitionTimeline}
                         </h3>
                       </div>
 
@@ -451,7 +455,7 @@ export default function ExhibitionDetailPage({
                           </div>
                           <div className="flex-1 pb-6">
                             <h4 className="font-semibold staff-text-primary text-sm">
-                              Exhibition Starts
+                              {t.exhibitionStarts}
                             </h4>
                             <p className="text-sm staff-text-secondary mt-1">
                               {new Date(
@@ -464,7 +468,7 @@ export default function ExhibitionDetailPage({
                               })}
                             </p>
                             <p className="text-xs text-blue-600 mt-1">
-                              Opening day preparations
+                              {t.openingDayPreparations}
                             </p>
                           </div>
                         </div>
@@ -481,7 +485,7 @@ export default function ExhibitionDetailPage({
                           </div>
                           <div className="flex-1">
                             <h4 className="font-semibold staff-text-primary text-sm">
-                              Exhibition Ends
+                              {t.exhibitionEnds}
                             </h4>
                             <p className="text-sm staff-text-secondary mt-1">
                               {new Date(exhibition.endDate).toLocaleDateString(
@@ -496,8 +500,8 @@ export default function ExhibitionDetailPage({
                             </p>
                             <p className="text-xs text-green-600 mt-1">
                               {new Date() > new Date(exhibition.endDate)
-                                ? "Completed"
-                                : "Ongoing exhibition"}
+                                ? t.completedText
+                                : t.ongoingExhibition}
                             </p>
                           </div>
                         </div>
@@ -511,7 +515,7 @@ export default function ExhibitionDetailPage({
                           <IconTrophy className="h-5 w-5 text-green-600" />
                         </div>
                         <h3 className="text-lg font-semibold staff-text-primary">
-                          Quick Actions
+                          {t.quickActions}
                         </h3>
                       </div>
 
@@ -521,14 +525,14 @@ export default function ExhibitionDetailPage({
                           className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 font-medium transition-colors flex items-center justify-center gap-2"
                         >
                           <IconEdit className="h-4 w-4" />
-                          Edit Exhibition Details
+                          {t.editExhibitionDetailsText}
                         </Link>
                         <Link
                           href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/paintings`}
                           className="w-full bg-purple-50 hover:bg-purple-100 text-purple-700 px-4 py-3 font-medium transition-colors flex items-center justify-center gap-2"
                         >
                           <IconPlus className="h-4 w-4" />
-                          Manage Paintings
+                          {t.managePaintings}
                         </Link>
                         <button
                           onClick={handleDeleteExhibition}
@@ -537,8 +541,8 @@ export default function ExhibitionDetailPage({
                         >
                           <IconTrash className="h-4 w-4" />
                           {deleteExhibitionMutation.isPending
-                            ? "Deleting..."
-                            : "Delete Exhibition"}
+                            ? t.deleting
+                            : t.deleteExhibitionText}
                         </button>
                       </div>
                     </div>
@@ -550,14 +554,14 @@ export default function ExhibitionDetailPage({
                           <IconUsers className="h-5 w-5 text-orange-600" />
                         </div>
                         <h3 className="text-lg font-semibold staff-text-primary">
-                          Exhibition Status
+                          {t.exhibitionStatus}
                         </h3>
                       </div>
 
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <span className="text-sm staff-text-secondary">
-                            Current Status
+                            {t.currentStatus}
                           </span>
                           <span
                             className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(
@@ -569,7 +573,7 @@ export default function ExhibitionDetailPage({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm staff-text-secondary">
-                            Paintings Count
+                            {t.paintingsCount}
                           </span>
                           <span className="font-semibold staff-text-primary">
                             {exhibition.numberOfPaintings}
@@ -577,7 +581,7 @@ export default function ExhibitionDetailPage({
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm staff-text-secondary">
-                            Days Remaining
+                            {t.daysRemaining}
                           </span>
                           <span className="font-semibold staff-text-primary">
                             {Math.max(

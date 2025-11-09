@@ -8,8 +8,17 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { User, UserRole } from "@/types";
 import { getAllUsers, AdminUser, banUser, activateUser } from "@/apis/admin";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  IconPlus,
+  IconSearch,
+  IconChevronsLeft,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsRight,
+} from "@tabler/icons-react";
 import { useState } from "react";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 // Helper function to convert AdminUser to User type
 const convertAdminUserToUser = (adminUser: AdminUser): User => {
@@ -29,7 +38,11 @@ export default function AccountsManagementPage() {
   const [selectedRole, setSelectedRole] = useState<UserRole | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageLimit] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Translation
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Fetch users from API
   const {
@@ -38,17 +51,11 @@ export default function AccountsManagementPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: [
-      "admin-users",
-      currentPage,
-      pageLimit,
-      selectedRole,
-      searchQuery,
-    ],
+    queryKey: ["admin-users", currentPage, pageSize, selectedRole, searchQuery],
     queryFn: () =>
       getAllUsers({
         page: currentPage,
-        limit: pageLimit,
+        limit: pageSize,
         role: selectedRole !== "ALL" ? selectedRole : undefined,
         search: searchQuery || undefined,
       }),
@@ -92,11 +99,11 @@ export default function AccountsManagementPage() {
 
   const getRoleBadgeColor = (role: UserRole) => {
     const colors: Record<UserRole, string> = {
-      COMPETITOR: "bg-blue-100 text-blue-800",
-      GUARDIAN: "bg-green-100 text-green-800",
-      STAFF: "bg-purple-100 text-purple-800",
-      ADMIN: "bg-red-100 text-red-800",
-      EXAMINER: "bg-orange-100 text-orange-800",
+      COMPETITOR: "staff-badge-pending",
+      GUARDIAN: "staff-badge-approved",
+      STAFF: "staff-badge-active",
+      ADMIN: "staff-badge-rejected",
+      EXAMINER: "staff-badge-neutral",
     };
     return colors[role];
   };
@@ -121,11 +128,11 @@ export default function AccountsManagementPage() {
     >
       <AdminSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Account Management" />
+        <SiteHeader title={t.accountManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-linear-to-r from-red-50 to-orange-50">
             <Breadcrumb
-              items={[{ label: "Account Management" }]}
+              items={[{ label: t.accountManagement }]}
               homeHref="/dashboard/admin"
             />
           </div>
@@ -134,28 +141,28 @@ export default function AccountsManagementPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    All Users ({meta?.total || 0})
+                  <h2 className="staff-heading">
+                    {t.allUsers} ({meta?.total || 0})
                   </h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    Manage all user accounts in the system
+                    {t.manageAllUserAccounts}
                   </p>
                 </div>
                 <button
                   onClick={() => setIsCreateDialogOpen(true)}
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                  className="staff-btn-primary flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
-                  Add New User
+                  {t.addNewUser}
                 </button>
               </div>
 
               {/* Search Bar */}
-              <div className="relative">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <div className="relative border-[1.5]">
+                <IconSearch className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search by name, email, or username..."
+                  placeholder={t.searchByNameEmailUsername}
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -166,7 +173,7 @@ export default function AccountsManagementPage() {
                       refetch();
                     }
                   }}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="staff-input w-full pl-10 pr-4 py-2"
                 />
               </div>
 
@@ -177,101 +184,101 @@ export default function AccountsManagementPage() {
                     setSelectedRole("ALL");
                     setCurrentPage(1);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "ALL"
-                      ? "bg-blue-600 text-white"
+                      ? "staff-badge-active"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  All Users
+                  {t.allUsersFilter}
                 </button>
                 <button
                   onClick={() => {
                     setSelectedRole("COMPETITOR");
                     setCurrentPage(1);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "COMPETITOR"
-                      ? "bg-blue-600 text-white"
+                      ? "staff-badge-pending"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Competitors
+                  {t.competitorsFilter}
                 </button>
                 <button
                   onClick={() => {
                     setSelectedRole("GUARDIAN");
                     setCurrentPage(1);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "GUARDIAN"
-                      ? "bg-blue-600 text-white"
+                      ? "staff-badge-approved"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Guardians
+                  {t.guardiansFilter}
                 </button>
                 <button
                   onClick={() => {
                     setSelectedRole("STAFF");
                     setCurrentPage(1);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "STAFF"
-                      ? "bg-blue-600 text-white"
+                      ? "staff-badge-rejected"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Staff
+                  {t.staffFilter}
                 </button>
                 <button
                   onClick={() => {
                     setSelectedRole("ADMIN");
                     setCurrentPage(1);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "ADMIN"
-                      ? "bg-blue-600 text-white"
+                      ? "staff-badge-neutral"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Admins
+                  {t.adminsFilter}
                 </button>
                 <button
                   onClick={() => {
                     setSelectedRole("EXAMINER");
                     setCurrentPage(1);
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
                     selectedRole === "EXAMINER"
-                      ? "bg-blue-600 text-white"
+                      ? "staff-badge-active"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Examiners
+                  {t.examinersFilter}
                 </button>
               </div>
 
               {/* Users Table */}
-              <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+              <div className="staff-card overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-linear-to-r from-red-50 to-orange-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User
+                          {t.userTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
+                          {t.emailTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Role
+                          {t.roleTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
+                          {t.createdTable}
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Active
+                          {t.activeTableAdmin}
                         </th>
                       </tr>
                     </thead>
@@ -282,7 +289,7 @@ export default function AccountsManagementPage() {
                             colSpan={5}
                             className="px-6 py-12 text-center text-gray-500"
                           >
-                            Loading users...
+                            {t.loadingUsers}
                           </td>
                         </tr>
                       ) : error ? (
@@ -291,7 +298,7 @@ export default function AccountsManagementPage() {
                             colSpan={5}
                             className="px-6 py-12 text-center text-red-500"
                           >
-                            Error loading users. Please try again.
+                            {t.errorLoadingUsers}
                           </td>
                         </tr>
                       ) : filteredUsers.length === 0 ? (
@@ -300,7 +307,7 @@ export default function AccountsManagementPage() {
                             colSpan={5}
                             className="px-6 py-12 text-center text-gray-500"
                           >
-                            No users found matching your criteria
+                            {t.noUsersFound}
                           </td>
                         </tr>
                       ) : (
@@ -308,7 +315,7 @@ export default function AccountsManagementPage() {
                           <tr key={user.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                                <div className="h-10 w-10 rounded-full bg-[#d9534f] flex items-center justify-center text-white font-semibold">
                                   {getInitials(user.fullName)}
                                 </div>
                                 <div className="ml-4">
@@ -328,7 +335,7 @@ export default function AccountsManagementPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className={`inline-flex rounded-sm px-2 py-1 text-xs font-semibold ${getRoleBadgeColor(
+                                className={`inline-flex px-2 py-1 text-xs font-semibold ${getRoleBadgeColor(
                                   user.role
                                 )}`}
                               >
@@ -350,9 +357,9 @@ export default function AccountsManagementPage() {
                                   }
                                   className="sr-only peer"
                                 />
-                                <div className="group peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-24 h-12 shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-10 after:w-10 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-12 peer-hover:after:scale-95 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed">
+                                <div className="group peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-16 h-8 shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-6 after:w-6 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-8 peer-hover:after:scale-95 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed">
                                   <svg
-                                    className="absolute top-1 left-12 stroke-gray-900 w-10 h-10"
+                                    className="absolute top-1 left-8 stroke-gray-900 w-6 h-6"
                                     height={100}
                                     preserveAspectRatio="xMidYMid meet"
                                     viewBox="0 0 100 100"
@@ -367,7 +374,7 @@ export default function AccountsManagementPage() {
                                     ></path>
                                   </svg>
                                   <svg
-                                    className="absolute top-1 left-1 stroke-gray-900 w-10 h-10"
+                                    className="absolute top-1 left-1 stroke-gray-900 w-6 h-6"
                                     height={100}
                                     preserveAspectRatio="xMidYMid meet"
                                     viewBox="0 0 100 100"
@@ -394,75 +401,78 @@ export default function AccountsManagementPage() {
 
               {/* Pagination */}
               {meta && meta.totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 rounded-b-lg">
-                  <div className="flex flex-1 justify-between sm:hidden">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={!meta.hasPreviousPage}
-                      className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage((p) => p + 1)}
-                      disabled={!meta.hasNextPage}
-                      className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Next
-                    </button>
-                  </div>
-                  <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm text-gray-700">
-                        Showing page{" "}
-                        <span className="font-medium">{meta.page}</span> of{" "}
-                        <span className="font-medium">{meta.totalPages}</span> (
-                        <span className="font-medium">{meta.total}</span> total
-                        users)
-                      </p>
-                    </div>
-                    <div>
-                      <nav
-                        className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-                        aria-label="Pagination"
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm staff-text-secondary">
+                        {t.show} {t.perPage}:
+                      </span>
+                      <select
+                        value={pageSize}
+                        onChange={(e) => {
+                          setPageSize(Number(e.target.value));
+                          setCurrentPage(1); // Reset to first page when changing page size
+                        }}
+                        className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-[#d9534f] text-sm"
                       >
-                        <button
-                          onClick={() =>
-                            setCurrentPage((p) => Math.max(1, p - 1))
-                          }
-                          disabled={!meta.hasPreviousPage}
-                          className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="sr-only">Previous</span>‹
-                        </button>
-                        {Array.from(
-                          { length: Math.min(5, meta.totalPages) },
-                          (_, i) => {
-                            const pageNum = i + 1;
-                            return (
-                              <button
-                                key={pageNum}
-                                onClick={() => setCurrentPage(pageNum)}
-                                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                                  currentPage === pageNum
-                                    ? "z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                                    : "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                                }`}
-                              >
-                                {pageNum}
-                              </button>
-                            );
-                          }
-                        )}
-                        <button
-                          onClick={() => setCurrentPage((p) => p + 1)}
-                          disabled={!meta.hasNextPage}
-                          className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <span className="sr-only">Next</span>›
-                        </button>
-                      </nav>
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                      </select>
                     </div>
+                    <div className="text-sm staff-text-secondary">
+                      {t.showing}{" "}
+                      {users.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
+                      {t.to} {Math.min(currentPage * pageSize, meta.total)}{" "}
+                      {t.of} {meta.total} {t.entries.toLowerCase()}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="First page"
+                    >
+                      <IconChevronsLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(1, prev - 1))
+                      }
+                      disabled={currentPage === 1}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Previous page"
+                    >
+                      <IconChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    <span className="px-3 py-1 text-sm staff-text-primary">
+                      {t.pageText} {currentPage} {t.ofText} {meta.totalPages}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) =>
+                          Math.min(meta.totalPages, prev + 1)
+                        )
+                      }
+                      disabled={currentPage === meta.totalPages}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Next page"
+                    >
+                      <IconChevronRight className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(meta.totalPages)}
+                      disabled={currentPage === meta.totalPages}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Last page"
+                    >
+                      <IconChevronsRight className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               )}
