@@ -54,12 +54,14 @@ export default function CompetitorProfileScreen({
       : "15/10/2004",
     ward: authUser?.ward || "Phường Sài Gòn",
     avatarUrl:
-      (authUser as any)?.avatarUrl || "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480", // <-- THAY BẰNG AVATAR THẬT
-    bannerUrl: "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022", // <-- THAY BẰNG BANNER THẬT
+      (authUser as any)?.avatarUrl ||
+      "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480", // <-- THAY BẰNG AVATAR THẬT
+    bannerUrl:
+      "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022", // <-- THAY BẰNG BANNER THẬT
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#EAE6E0]">
       {/* === Banner Section === */}
       {/* Lấy banner có style giống ảnh (watercolor) */}
       <div className="relative h-48 w-full sm:h-56">
@@ -86,40 +88,40 @@ export default function CompetitorProfileScreen({
                   alt={profile.name}
                   layout="fill"
                   objectFit="cover"
-                  className="rounded-full border-4 border-white shadow-lg bg-gray-200"
+                  className="rounded-full border-4 border-white shadow-lg bg-black"
                 />
               </div>
               <div className="ml-4 sm:ml-6">
-                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                <h1 className="text-2xl font-bold text-black sm:text-3xl">
                   {profile.name}
                 </h1>
-                <p className="mt-1 text-sm text-gray-600">{profile.school}</p>
-                <p className="text-sm text-gray-600">{profile.class}</p>
+                <p className="mt-1 text-sm text-black">{profile.school}</p>
+                <p className="text-sm text-black">{profile.class}</p>
               </div>
             </div>
 
             {/* Right side: Thông tin Ngày sinh / Phường */}
             <div className="flex w-full justify-start gap-8 sm:w-auto sm:justify-end">
               <div>
-                <p className="text-sm font-medium text-gray-500">Ngày sinh</p>
-                <p className="mt-1 text-base font-semibold text-gray-900">
+                <p className="text-sm font-bold text-black">Ngày sinh</p>
+                <p className="mt-1 text-base font-regular text-black">
                   {profile.dob}
                 </p>
               </div>
             </div>
-              <div className="mr-15">
-                <p className="text-sm font-medium text-gray-500">Phường</p>
-                <p className="mt-1 text-base font-semibold text-gray-900">
-                  {profile.ward}
-                </p>
-              </div>
+            <div className="mr-15">
+              <p className="text-sm font-bold text-black">Phường</p>
+              <p className="mt-1 text-base font-regular text-black">
+                {profile.ward}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* === Tabs Section === */}
         {/* Thay thế Tabs của ShadCN bằng tab-nav đơn giản */}
         <div className="mt-10">
-          <div className="border-b border-gray-200">
+          <div className="border-b border-[#B1B1B1]">
             <nav className="-mb-px flex space-x-8" aria-label="Tabs">
               {/* Tab Đã nộp */}
               <button
@@ -128,9 +130,9 @@ export default function CompetitorProfileScreen({
                   ${
                     activeTab === "submitted"
                       ? "border-black text-black"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      : "border-transparent text-black"
                   }
-                  whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
                 `}
               >
                 Đã nộp
@@ -143,9 +145,9 @@ export default function CompetitorProfileScreen({
                   ${
                     activeTab === "awards"
                       ? "border-black text-black"
-                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                      : "border-transparent text-black hover:border-black hover:text-black"
                   }
-                  whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
                 `}
               >
                 Giải thưởng
@@ -160,24 +162,21 @@ export default function CompetitorProfileScreen({
           {activeTab === "submitted" && (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {submittedArtworks.map((art) => (
-                <div
-                  key={art.id}
-                  className="overflow-hidden"
-                >
+                <div key={art.id} className="overflow-hidden">
                   <div className="relative h-56 w-full">
                     <Image
                       src={art.imageUrl}
                       alt={art.competitionName}
                       layout="fill"
                       objectFit="cover"
-                      className="bg-gray-200 rounded-md" // Placeholder
+                      className="bg-black rounded-md" // Placeholder
                     />
                   </div>
                   <div className="py-2">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-black">
                       Ngày nộp: {art.submissionDate}
                     </p>
-                    <p className="mt-1 font-medium text-gray-900">
+                    <p className="mt-1 font-medium text-black">
                       Cuộc thi: {art.competitionName}
                     </p>
                   </div>
@@ -188,8 +187,8 @@ export default function CompetitorProfileScreen({
 
           {/* Nội dung tab "Giải thưởng" (Placeholder) */}
           {activeTab === "awards" && (
-            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-              <p className="text-gray-500">Chưa có giải thưởng nào.</p>
+            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
+              <p className="text-black">Chưa có giải thưởng nào.</p>
             </div>
           )}
         </div>
