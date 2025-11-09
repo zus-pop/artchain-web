@@ -12,7 +12,7 @@ export function useGetContests(status?: ContestStatus) {
         const params = status ? { status } : {};
         const response = await myAxios.get("/contests", { params });
         // API /contests trả về array trực tiếp
-        return response.data as Contest[] || [];
+        return response.data.data as Contest[] || [];
       } catch (error) {
         console.error("Error fetching contests:", error);
         return [];
