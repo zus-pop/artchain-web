@@ -1,9 +1,10 @@
+"use client";
+
 import { GuardianChild, WhoAmI } from "@/types";
 import Image from "next/image";
-import UserProfileCards from "../UserProfileCards";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -17,259 +18,289 @@ export default function GuardianProfileScreen({
   guardianChildren,
   isLoadingChildren,
 }: GuardianProfileScreenProps) {
+  const [activeTab, setActiveTab] = useState<
+    "children" | "competitions" | "progress" | "about"
+  >("children");
+
+  // Xử lý dữ liệu từ authUser, dùng fallback
+  const profile = {
+    name: authUser?.fullName || "Loading...",
+    dob: authUser?.birthday
+      ? new Date(authUser.birthday).toLocaleDateString("vi-VN")
+      : "Chưa cập nhật",
+    ward: authUser?.ward || "Chưa cập nhật",
+    avatarUrl:
+      (authUser as any)?.avatarUrl ||
+      "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480",
+    bannerUrl:
+      "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022",
+  };
+
   return (
-    <>
-      <section className="relative block h-96">
-        <div
-          className="absolute top-0 w-full h-full bg-center bg-cover"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
-          }}
-        >
-          <span className="w-full h-full absolute opacity-40 bg-black"></span>
-        </div>
-      </section>
-      <section className="relative py-16 bg-transparent">
-        <div className="container mx-auto px-4">
-          <div className="relative flex flex-col min-w-0 wrap-break-word bg-white/90 backdrop-blur-sm w-full mb-6 shadow-xl -mt-64">
-            <div className="px-6">
-              <div className="flex flex-wrap justify-between items-start relative">
-                {/* Left side - Avatar and Name */}
-                <div className="w-full lg:w-6/12 px-4 flex items-start space-x-6">
-                  <div className="relative shrink-0">
-                    <Image
-                      alt="Profile"
-                      src="https://images.unsplash.com/photo-1727386245656-d6e2d264e6b8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1057"
-                      width={150}
-                      height={150}
-                      className="shadow-xl rounded-full border-4 border-white absolute -top-16 max-w-[150px]"
-                    />
-                  </div>
-                  <div className="flex-1 pt-4 ml-40">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-3xl font-semibold leading-normal text-gray-800">
-                        {authUser ? authUser.fullName : "Loading..."}
-                      </h3>
-                      <button
-                        className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-full transition-all duration-200"
-                        type="button"
-                        title="Edit Profile"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="text-sm leading-normal mt-0 mb-2 text-muted-foreground font-bold uppercase">
-                      <i className="fas fa-user-shield mr-2 text-lg text-primary"></i>
-                      Phụ huynh
-                    </div>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-[#EAE6E0]">
+      {/* === Banner Section === */}
+      <div className="relative h-48 w-full sm:h-56">
+        <Image
+          src={profile.bannerUrl}
+          alt="Banner"
+          layout="fill"
+          objectFit="cover"
+          className="bg-gradient-to-r from-blue-100 via-pink-100 to-orange-100"
+        />
+      </div>
 
-                {/* Right side - Stats */}
-                <div className="w-full lg:w-6/12 px-4 mt-2">
-                  <div className="flex justify-center lg:justify-end items-center divide-x divide-gray-300">
-                    <UserProfileCards
-                      birthday={authUser?.birthday}
-                      ward={authUser?.ward}
-                    />
-                  </div>
-                </div>
+      {/* === Main Content Area === */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* === Profile Info Section === */}
+        <div className="relative -mt-24 sm:-mt-28">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 mt-[7vh]">
+            {/* Left side: Avatar và Tên */}
+            <div className="flex items-end">
+              <div className="relative h-32 w-32 flex-shrink-0 sm:h-40 sm:w-40">
+                <Image
+                  src={profile.avatarUrl}
+                  alt={profile.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-full border-4 border-white shadow-lg bg-black"
+                />
               </div>
-
-              {/* Guardian Stats */}
-              <div className="py-10 border-t border-gray-200 text-center">
-                <div className="flex flex-wrap justify-center">
-                  <div className="w-full px-4">
-                    <div className="p-2 pt-3 pb-1.5 flex flex-col rounded-xl backdrop-blur-lg bg-primary/5 text-foreground w-full mx-auto mb-6">
-                      <div className="flex divide-x divide-border">
-                        <div className="flex-1 pr-6">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Con em tham gia
-                          </p>
-                          <p className="text-xl font-semibold text-foreground">
-                            {guardianChildren?.length || 0}
-                          </p>
-                        </div>
-                        <div className="flex-1 pl-6">
-                          <p className="text-xs font-medium text-muted-foreground">
-                            Bài dự thi
-                          </p>
-                          <p className="text-xl font-semibold text-foreground">
-                            {guardianChildren?.reduce(
-                              (total, child) =>
-                                total + (child.status === 1 ? 1 : 0),
-                              0
-                            ) || 0}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="ml-4 sm:ml-6">
+                <h1 className="text-2xl font-bold text-black sm:text-3xl">
+                  {profile.name}
+                </h1>
+                <p className="mt-1 text-sm text-black">Phụ huynh</p>
+                <p className="text-sm text-black">
+                  Quản lý {guardianChildren?.length || 0} thí sinh
+                </p>
               </div>
+            </div>
 
-              {/* Guardian Tabs */}
-              <Tabs defaultValue="children" className="w-full">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="children">Con em</TabsTrigger>
-                  <TabsTrigger value="competitions">Cuộc thi</TabsTrigger>
-                  <TabsTrigger value="progress">Tiến độ</TabsTrigger>
-                  <TabsTrigger value="about">Thông tin</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="children" className="mb-8">
-                  <div className="space-y-6">
-                    <div className="bg-card p-6 rounded-lg shadow-md">
-                      <div className="flex justify-between items-center mb-4">
-                        <div>
-                          <h3 className="text-lg font-semibold text-foreground">
-                            Quản lý con em
-                          </h3>
-                          <p className="text-muted-foreground">
-                            Theo dõi và quản lý thông tin các con em tham gia
-                            cuộc thi nghệ thuật.
-                          </p>
-                        </div>
-                        <Link
-                          href="/add-child"
-                          className="bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90 transition-colors flex items-center space-x-2 font-medium"
-                        >
-                          <Plus className="h-4 w-4" />
-                          <span>Thêm con em</span>
-                        </Link>
-                      </div>
-                      {isLoadingChildren ? (
-                        <div className="text-center py-8">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                          <p className="text-muted-foreground mt-2">
-                            Đang tải danh sách con em...
-                          </p>
-                        </div>
-                      ) : guardianChildren && guardianChildren.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {guardianChildren.map((child) => (
-                            <div
-                              key={child.userId}
-                              className="bg-card p-4 border border-border"
-                            >
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                                  <span className="text-primary-foreground font-semibold">
-                                    {child.fullName.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold text-foreground">
-                                    {child.fullName}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {child.username}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="space-y-1 text-sm">
-                                <p>
-                                  <span className="font-medium">Email:</span>{" "}
-                                  {child.email}
-                                </p>
-                                <p>
-                                  <span className="font-medium">Trường:</span>{" "}
-                                  {child.schoolName || "Chưa cập nhật"}
-                                </p>
-                                <p>
-                                  <span className="font-medium">Lớp:</span>{" "}
-                                  {child.grade || "N/A"}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 bg-muted rounded-lg">
-                          <p className="text-muted-foreground">
-                            Chưa có con em nào được đăng ký
-                          </p>
-                          <p className="text-sm text-muted-foreground/70 mt-1">
-                            Hãy thêm con em để bắt đầu tham gia cuộc thi
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="competitions">
-                  <div className="bg-card p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Cuộc thi đang tham gia
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Theo dõi các cuộc thi mà con em đang tham gia.
-                    </p>
-                    {/* Add competitions content for guardian */}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="progress">
-                  <div className="bg-card p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Tiến độ học tập
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Theo dõi sự phát triển và thành tích của con em trong nghệ
-                      thuật.
-                    </p>
-                    {/* Add progress tracking content */}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="about">
-                  <div className="bg-card p-6 rounded-lg shadow-md">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Thông tin phụ huynh
-                    </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">
-                          Họ và tên
-                        </label>
-                        <p className="text-foreground">{authUser?.fullName}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">
-                          Email
-                        </label>
-                        <p className="text-foreground">{authUser?.email}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground">
-                          Số điện thoại
-                        </label>
-                        <p className="text-foreground">
-                          {authUser?.phone || "Chưa cập nhật"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+            {/* Right side: Thông tin Ngày sinh / Phường */}
+            <div className="flex w-full justify-start gap-8 sm:w-auto sm:justify-end">
+              <div>
+                <p className="text-sm font-bold text-black">Ngày sinh</p>
+                <p className="mt-1 text-base font-regular text-black">
+                  {profile.dob}
+                </p>
+              </div>
+            </div>
+            <div className="mr-15">
+              <p className="text-sm font-bold text-black">Phường</p>
+              <p className="mt-1 text-base font-regular text-black">
+                {profile.ward}
+              </p>
             </div>
           </div>
         </div>
-      </section>
-    </>
+
+        {/* Guardian Stats
+        <div className="py-10 border-black text-center">
+          <div className="flex flex-wrap justify-center">
+            <div className="w-full px-4">
+              <div className="p-2 pt-3 pb-1.5 flex flex-col rounded-xl bg-gray-50 w-full mx-auto mb-6">
+                <div className="flex divide-x divide-black">
+                  <div className="flex-1 pr-6">
+                    <p className="text-xs font-medium text-black">
+                      Quản lý thí sinh
+                    </p>
+                    <p className="text-xl font-semibold text-black">
+                      {guardianChildren?.length || 0}
+                    </p>
+                  </div>
+                  <div className="flex-1 pl-6">
+                    <p className="text-xs font-medium text-black">
+                      Số bài dự thi
+                    </p>
+                    <p className="text-xl font-semibold text-black">
+                      {guardianChildren?.reduce(
+                        (total, child) =>
+                          total + (child.status === 1 ? 1 : 0),
+                        0
+                      ) || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+
+        {/* === Tabs Section === */}
+        <div className="mt-10">
+          <div className="border-b border-[#B1B1B1]">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              {/* Tab Con em */}
+              <button
+                onClick={() => setActiveTab("children")}
+                className={`
+                  ${
+                    activeTab === "children"
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:border-black hover:text-black"
+                  }
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Thí sinh
+              </button>
+
+              {/* Tab Cuộc thi */}
+              <button
+                onClick={() => setActiveTab("competitions")}
+                className={`
+                  ${
+                    activeTab === "competitions"
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:border-black hover:text-black"
+                  }
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Cuộc thi
+              </button>
+
+              {/* Tab Tiến độ */}
+              <button
+                onClick={() => setActiveTab("progress")}
+                className={`
+                  ${
+                    activeTab === "progress"
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:border-black hover:text-black"
+                  }
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Tiến độ
+              </button>
+
+              {/* Tab Thông tin */}
+              <button
+                onClick={() => setActiveTab("about")}
+                className={`
+                  ${
+                    activeTab === "about"
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:border-black hover:text-black"
+                  }
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Thông tin
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* === Tab Content Section === */}
+        <div className="py-8">
+          {/* Nội dung tab "Con em" */}
+          {activeTab === "children" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                <div></div>
+                <Link
+                  href="/add-child"
+                  className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors flex items-center space-x-2 font-medium"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Thêm các bé</span>
+                </Link>
+              </div>
+              {isLoadingChildren ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                  <p className="text-[#423137] mt-2">
+                    Đang tải danh sách con em...
+                  </p>
+                </div>
+              ) : guardianChildren && guardianChildren.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {guardianChildren.map((child) => (
+                    <div
+                      key={child.userId}
+                      className="p-8 border border-[#423137] rounded-sm bg-[#F2F2F2] overflow-hidden aspect-video lg:aspect-[487/251]"
+                    >
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div>
+                          <h4 className="font-semibold text-3xl text-[#423137]">
+                            {child.fullName}
+                          </h4>
+                          {/* username removed to match provided design - keep styling unchanged */}
+                        </div>
+                      </div>
+                      <div className="space-y-1 text-base text-[#423137]">
+                        <p>
+                          <span className="font-medium text-black">Email:</span>{" "}
+                          {child.email}
+                        </p>
+                        <p>
+                          <span className="font-medium text-black">
+                            Trường:
+                          </span>{" "}
+                          {child.schoolName || "Chưa cập nhật"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-black">Lớp:</span>{" "}
+                          {child.grade || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <p className="text-black">Chưa có con em nào được đăng ký</p>
+                  <p className="text-sm text-black mt-1">
+                    Hãy thêm con em để bắt đầu tham gia cuộc thi
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Nội dung tab "Cuộc thi" */}
+          {activeTab === "competitions" && (
+            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
+              <p className="text-black">Chưa có cuộc thi nào.</p>
+            </div>
+          )}
+
+          {/* Nội dung tab "Tiến độ" */}
+          {activeTab === "progress" && (
+            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
+              <p className="text-black">Chưa có tiến độ nào.</p>
+            </div>
+          )}
+
+          {/* Nội dung tab "Thông tin" */}
+          {activeTab === "about" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-black">
+                  Họ và tên
+                </label>
+                <p className="text-[#423137]">{authUser?.fullName}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black">
+                  Email
+                </label>
+                <p className="text-[#423137]">{authUser?.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-black">
+                  Số điện thoại
+                </label>
+                <p className="text-[#423137]">
+                  {authUser?.phone || "Chưa cập nhật"}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
