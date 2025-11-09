@@ -3,6 +3,7 @@
 import React from "react";
 import GlassSurface from "@/components/GlassSurface";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { useGetContestsPaginated } from "@/apis/contests";
 
 const ArrowRightIcon = () => <span>&rarr;</span>;
 
@@ -111,6 +112,10 @@ export default function Page() {
     "Bài viết",
     "Chiến dịch",
   ];
+
+  // Fetch active contest for contest info section
+  const { data: activeContests, isLoading: isLoadingContest } = useGetContestsPaginated("ACTIVE", 1, 1);
+  const activeContest = activeContests?.[0];
 
   return (
     <div className="min-h-screen bg-[#EAE6E0] text-black font-[family-name:var(--font-be-vietnam-pro)]">
@@ -236,21 +241,29 @@ export default function Page() {
                 Cuộc thi đang diễn ra
               </h2>
               <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-                Thành Phố Trong <br />
-                Mắt Em
+                {isLoadingContest ? "Đang tải..." : (activeContest?.title || "Thành Phố Trong Mắt Em")}
               </h3>
               <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
-                &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh dành cho
-                học sinh lớp 1–9 tại TP.HCM, nơi các em thể hiện góc nhìn và ước
-                mơ về thành phố bằng màu sắc sáng tạo.
+                {isLoadingContest ? "Đang tải thông tin cuộc thi..." : (activeContest?.description || "\"Thành Phố Trong Mắt Em\" là cuộc thi vẽ tranh dành cho học sinh lớp 1–9 tại TP.HCM, nơi các em thể hiện góc nhìn và ước mơ về thành phố bằng màu sắc sáng tạo.")}
               </p>
               <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
                 <p>
-                  <strong>Thời gian:</strong> 21-10-2025 đến 12-12-2025
+                  <strong>Thời gian:</strong>{" "}
+                  {isLoadingContest 
+                    ? "Đang tải..." 
+                    : activeContest 
+                      ? `${new Date(activeContest.startDate).toLocaleDateString("vi-VN")} đến ${new Date(activeContest.endDate).toLocaleDateString("vi-VN")}`
+                      : "21-10-2025 đến 12-12-2025"
+                  }
                 </p>
                 <p>
-                  <strong>Lưu ý:</strong> Thí sinh cần nộp bản cứng tác phẩm
-                  trước ngày 30-04-1974
+                  <strong>Lưu ý:</strong>{" "}
+                  {isLoadingContest 
+                    ? "Đang tải..." 
+                    : activeContest?.rounds?.[0]?.sendOriginalDeadline 
+                      ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${new Date(activeContest.rounds[0].sendOriginalDeadline).toLocaleDateString("vi-VN")}`
+                      : "Thí sinh cần nộp bản cứng tác phẩm trước ngày 30-04-1974"
+                  }
                 </p>
               </div>
               <button className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2">
@@ -260,7 +273,7 @@ export default function Page() {
 
             <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
               <img
-                src="https://plus.unsplash.com/premium_vector-1697729767007-36c5a80b5782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2910"
+                src={activeContest?.bannerUrl || "https://plus.unsplash.com/premium_vector-1697729767007-36c5a80b5782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2910"}
                 alt="Minh họa thành phố"
                 className="h-full w-full object-cover md:w-[50vw] max-w-none "
                 onError={(e) => {
