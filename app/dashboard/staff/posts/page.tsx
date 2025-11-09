@@ -26,6 +26,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStaffPosts, deleteStaffPost, updateStaffPost } from "@/apis/staff";
 import { toast } from "sonner";
 import { Post } from "@/types/staff/post-dto";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 export default function PostsPage() {
   const queryClient = useQueryClient();
@@ -35,6 +37,9 @@ export default function PostsPage() {
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const statusOptions: (PostStatus | "ALL")[] = [
     "ALL",
@@ -93,11 +98,11 @@ export default function PostsPage() {
     mutationFn: (postId: number) => deleteStaffPost(String(postId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-posts"] });
-      toast.success("Post deleted successfully!");
+      toast.success(t.postDeletedSuccess);
     },
     onError: (error) => {
       console.error("Error deleting post:", error);
-      toast.error("Failed to delete post. Please try again.");
+      toast.error(t.postDeletedError);
     },
   });
 
@@ -107,11 +112,11 @@ export default function PostsPage() {
       updateStaffPost(String(postId), { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-posts"] });
-      toast.success("Post status updated successfully!");
+      toast.success(t.postStatusUpdatedSuccess);
     },
     onError: (error) => {
       console.error("Error updating post status:", error);
-      toast.error("Failed to update post status. Please try again.");
+      toast.error(t.postStatusUpdatedError);
     },
   });
 
@@ -129,7 +134,7 @@ export default function PostsPage() {
   };
 
   const handleDeletePost = async (postId: number) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
+    if (!confirm(t.confirmDeletePost)) return;
     deletePostMutation.mutate(postId);
   };
 
@@ -148,11 +153,11 @@ export default function PostsPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Posts Management" />
+        <SiteHeader title={t.postsManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
-              items={[{ label: "Posts Management" }]}
+              items={[{ label: t.postsManagement }]}
               homeHref="/dashboard/staff"
             />
           </div>
@@ -162,14 +167,14 @@ export default function PostsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Posts ({totalPosts})
+                    {t.postsManagement} ({totalPosts})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Manage announcements, news, and content for the ArtChain
-                    platform
+                    {t.manageArtCompetitions}
                   </p>
                   <p className="text-xs staff-text-secondary mt-1">
-                    💡 <strong>Archive</strong> keeps old content accessible but
+                    💡 <strong>{t.archivedStatus}</strong>{" "}
+                    {t.archivedStatus.toLowerCase()} old content accessible but
                     hidden from main listings for better organization
                   </p>
                 </div>
@@ -178,7 +183,7 @@ export default function PostsPage() {
                   className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
-                  Create New Post
+                  {t.create}
                 </Link>
               </div>
 
@@ -186,30 +191,30 @@ export default function PostsPage() {
               <StatsCards
                 stats={[
                   {
-                    title: "Total Posts",
+                    title: t.totalPosts,
                     value: totalPosts,
-                    subtitle: "All content",
+                    subtitle: t.allContent,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
-                    title: "Published",
+                    title: t.publishedStatus,
                     value: posts.filter((p: Post) => p.status === "PUBLISHED")
                       .length,
-                    subtitle: "Live content",
+                    subtitle: t.liveContent,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
-                    title: "Drafts",
+                    title: t.drafts,
                     value: posts.filter((p: Post) => p.status === "DRAFT")
                       .length,
-                    subtitle: "Work in progress",
+                    subtitle: t.workInProgress,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "success",
                   },
                   {
-                    title: "Total Tags",
+                    title: t.totalTags,
                     value: Array.from(
                       new Set(
                         posts.flatMap((p: Post) =>
@@ -217,7 +222,7 @@ export default function PostsPage() {
                         )
                       )
                     ).length,
-                    subtitle: "Unique tags",
+                    subtitle: t.uniqueTags,
                     icon: <IconEye className="h-6 w-6" />,
                     variant: "primary",
                   },
@@ -230,7 +235,7 @@ export default function PostsPage() {
                   <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by title or content..."
+                    placeholder={t.searchPostsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -261,7 +266,7 @@ export default function PostsPage() {
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                       <p className="mt-4 staff-text-secondary">
-                        Loading posts...
+                        {t.loading}...
                       </p>
                     </div>
                   </div>
@@ -271,19 +276,19 @@ export default function PostsPage() {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Post
+                            {t.postTitle}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                             Tags
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Status
+                            {t.postStatus}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Created
+                            {t.postCreated}
                           </th>
                           <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Actions
+                            {t.actions}
                           </th>
                         </tr>
                       </thead>
@@ -294,7 +299,7 @@ export default function PostsPage() {
                               colSpan={5}
                               className="px-6 py-12 text-center staff-text-secondary"
                             >
-                              No posts found matching your criteria
+                              {t.noData}
                             </td>
                           </tr>
                         ) : (
@@ -317,7 +322,8 @@ export default function PostsPage() {
                                       {post.title}
                                     </div>
                                     <div className="text-xs staff-text-secondary">
-                                      by {post.creator.fullName}
+                                      {t.postAuthor.toLowerCase()}{" "}
+                                      {post.creator.fullName}
                                     </div>
                                   </div>
                                 </div>
@@ -338,13 +344,14 @@ export default function PostsPage() {
                                         ))}
                                       {post.postTags.length > 3 && (
                                         <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                                          +{post.postTags.length - 3} more
+                                          +{post.postTags.length - 3}{" "}
+                                          {t.moreTags}
                                         </span>
                                       )}
                                     </>
                                   ) : (
                                     <span className="text-xs staff-text-secondary">
-                                      No tags
+                                      {t.noData}
                                     </span>
                                   )}
                                 </div>
@@ -368,7 +375,7 @@ export default function PostsPage() {
                                   {post.published_at &&
                                     post.status === "PUBLISHED" && (
                                       <div className="text-xs text-green-600">
-                                        Published:{" "}
+                                        {t.publishedDate}{" "}
                                         {new Date(
                                           post.published_at
                                         ).toLocaleDateString()}
@@ -453,7 +460,7 @@ export default function PostsPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <span className="text-sm staff-text-secondary">
-                        Show per page:
+                        {t.show} {t.perPage}:
                       </span>
                       <select
                         value={pageSize}
@@ -470,10 +477,10 @@ export default function PostsPage() {
                       </select>
                     </div>
                     <div className="text-sm staff-text-secondary">
-                      Showing{" "}
+                      {t.showing}{" "}
                       {posts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
-                      to {Math.min(currentPage * pageSize, totalPosts)} of{" "}
-                      {totalPosts} posts
+                      {t.to} {Math.min(currentPage * pageSize, totalPosts)}{" "}
+                      {t.of} {totalPosts} {t.entries.toLowerCase()}
                     </div>
                   </div>
 
@@ -498,7 +505,7 @@ export default function PostsPage() {
                     </button>
 
                     <span className="px-3 py-1 text-sm staff-text-primary">
-                      Page {currentPage} of {totalPages}
+                      {t.pageText} {currentPage} {t.ofText} {totalPages}
                     </span>
 
                     <button

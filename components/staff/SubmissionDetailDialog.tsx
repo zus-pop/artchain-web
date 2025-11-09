@@ -1,30 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useUploadRound2Painting } from "@/apis/paintings";
 import {
-  getStaffSubmissionById,
   acceptStaffSubmission,
+  getStaffSubmissionById,
   rejectStaffSubmission,
 } from "@/apis/staff";
-import { useUploadRound2Image } from "@/apis/paintings";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconCalendar,
   IconCheck,
-  IconX,
-  IconUser,
-  IconTrophy,
-  IconUpload,
   IconPhoto,
+  IconTrophy,
+  IconUser,
+  IconX,
 } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+// Zod schema for form validation
+const paintingDetailsSchema = z.object({
+  title: z
+    .string()
+    .min(2, "Title must be at least 2 character")
+    .max(200, "Title must be less than 200 characters")
+    .optional(),
+  description: z
+    .string()
+    .max(1000, "Description must be less than 1000 characters")
+    .optional(),
+  round2Image: z.any().optional(),
+});
+
+type PaintingDetailsForm = z.infer<typeof paintingDetailsSchema>;
 
 interface SubmissionDetailDialogProps {
   isOpen: boolean;
@@ -42,8 +60,18 @@ export function SubmissionDetailDialog({
   const queryClient = useQueryClient();
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
-  const [round2Image, setRound2Image] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // React Hook Form setup
+  const form = useForm<PaintingDetailsForm>({
+    resolver: zodResolver(paintingDetailsSchema),
+    mode: "all",
+    defaultValues: {
+      title: "",
+      description: "",
+      round2Image: undefined,
+    },
+  });
 
   // Fetch submission details
   const { data: submissionData, isLoading } = useQuery({
@@ -53,9 +81,11 @@ export function SubmissionDetailDialog({
   });
 
   const submission = submissionData?.data;
+  const round2Image = form.watch("round2Image");
+
   // Create preview URL when round2Image changes
   useEffect(() => {
-    if (round2Image) {
+    if (round2Image && round2Image instanceof File) {
       const url = URL.createObjectURL(round2Image);
       setPreviewUrl(url);
 
@@ -68,16 +98,27 @@ export function SubmissionDetailDialog({
     }
   }, [round2Image]);
 
+  // Populate form when submission loads
+  useEffect(() => {
+    if (submission) {
+      form.reset({
+        title: submission.title || "",
+        description: submission.description || "",
+        round2Image: undefined,
+      });
+    }
+  }, [submission, form]);
+
   // Cleanup preview URL when dialog closes
   useEffect(() => {
     if (!isOpen) {
-      setRound2Image(null);
+      form.setValue("round2Image", undefined);
       setPreviewUrl(null);
     }
-  }, [isOpen]);
+  }, [isOpen, form]);
 
   // Upload round 2 image mutation
-  const uploadRound2ImageMutation = useUploadRound2Image();
+  const uploadRound2PaintingMutation = useUploadRound2Painting();
 
   // Accept mutation
   const acceptMutation = useMutation({
@@ -150,29 +191,43 @@ export function SubmissionDetailDialog({
     setRejectReason("");
   };
 
-  const handleRound2ImageUpload = () => {
-    if (round2Image && paintingId) {
-      const formData = new FormData();
-      formData.append("image", round2Image);
+  const handleUpdatePaintingDetails = form.handleSubmit((data) => {
+    const updateData: {
+      paintingId: string;
+      title?: string;
+      description?: string;
+      image?: File;
+    } = {
+      paintingId: paintingId,
+    };
 
-      uploadRound2ImageMutation.mutate(
-        {
-          paintingId,
-          image: round2Image,
-        },
-        {
-          onSuccess: () => {
-            onClose();
-          },
-        }
-      );
+    if (data.title?.trim()) {
+      updateData.title = data.title.trim();
     }
-  };
+
+    if (data.description?.trim()) {
+      updateData.description = data.description.trim();
+    }
+
+    if (data.round2Image instanceof File) {
+      updateData.image = data.round2Image;
+    }
+
+    // Only proceed if at least one field has content
+    if (!updateData.title && !updateData.description && !updateData.image) {
+      return;
+    }
+
+    uploadRound2PaintingMutation.mutate(updateData);
+  });
 
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <DialogTitle className="sr-only">
+            Loading Submission Details
+          </DialogTitle>
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
           </div>
@@ -185,6 +240,7 @@ export function SubmissionDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[800px]">
+          <DialogTitle className="sr-only">Submission Not Found</DialogTitle>
           <div className="text-center py-8 staff-text-secondary">
             Submission not found
           </div>
@@ -227,14 +283,138 @@ export function SubmissionDetailDialog({
             )}
           </div>
 
-          {/* Title and Description */}
-          <div>
-            <h3 className="text-2xl font-bold staff-text-primary mb-2">
-              {submission.title}
-            </h3>
-            <p className="staff-text-secondary whitespace-pre-wrap">
-              {submission.description}
-            </p>
+          {/* Title and Description - Editable */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium staff-text-primary mb-2">
+                Title
+              </label>
+              <input
+                {...form.register("title")}
+                className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                placeholder="Enter painting title"
+              />
+              {form.formState.errors.title && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.title.message}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium staff-text-primary mb-2">
+                Description
+              </label>
+              <textarea
+                {...form.register("description")}
+                rows={4}
+                className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
+                placeholder="Enter painting description"
+              />
+              {form.formState.errors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {form.formState.errors.description.message}
+                </p>
+              )}
+            </div>
+
+            {/* Round 2 Image Upload - Integrated */}
+            {roundName &&
+              (roundName.toLowerCase().includes("round 2") ||
+                roundName.toLowerCase().includes("round_2") ||
+                roundName.toLowerCase().includes(" 2")) &&
+              submission.status === "ACCEPTED" && (
+                <div className="border border-[#e6e2da] rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <IconPhoto className="h-5 w-5 staff-text-secondary" />
+                    <h4 className="font-semibold staff-text-primary">
+                      Round 2 Image
+                    </h4>
+                  </div>
+                  <p className="text-sm staff-text-secondary mb-4">
+                    Upload the final artwork image for round 2 evaluation.
+                  </p>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium staff-text-primary mb-2 block">
+                        Select Image File
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          form.setValue("round2Image", file);
+                        }}
+                        className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                      />
+                      {round2Image && (
+                        <p className="text-xs staff-text-secondary mt-1">
+                          Selected: {round2Image.name}
+                        </p>
+                      )}
+                      {form.formState.errors.round2Image && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {typeof form.formState.errors.round2Image.message ===
+                          "string"
+                            ? form.formState.errors.round2Image.message
+                            : "Invalid file"}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Image Preview */}
+                    {round2Image && previewUrl && (
+                      <div className="border border-[#e6e2da] rounded-lg p-4 bg-white">
+                        <h5 className="text-sm font-medium staff-text-primary mb-3">
+                          Preview
+                        </h5>
+                        <div className="relative w-full h-48 bg-white rounded border">
+                          <Image
+                            src={previewUrl}
+                            alt="Round 2 image preview"
+                            fill
+                            className="object-contain rounded"
+                          />
+                        </div>
+                        <div className="mt-2 text-xs staff-text-secondary">
+                          <p>
+                            File size:{" "}
+                            {(round2Image.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                          <p>Type: {round2Image.type}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            <div className="flex justify-end">
+              <button
+                onClick={handleUpdatePaintingDetails}
+                disabled={
+                  uploadRound2PaintingMutation.isPending ||
+                  (!form.watch("title")?.trim() &&
+                    !form.watch("description")?.trim() &&
+                    !round2Image) ||
+                  !!form.formState.errors.title ||
+                  !!form.formState.errors.description ||
+                  (roundName &&
+                    (roundName.toLowerCase().includes("round 2") ||
+                      roundName.toLowerCase().includes("round_2") ||
+                      roundName.toLowerCase().includes(" 2")) &&
+                    submission.status === "ACCEPTED" &&
+                    !!form.formState.errors.round2Image)
+                }
+                className="staff-btn-primary disabled:opacity-50 flex items-center gap-2"
+              >
+                <IconCheck className="h-4 w-4" />
+                {uploadRound2PaintingMutation.isPending
+                  ? "Updating..."
+                  : "Update Details"}
+              </button>
+            </div>
           </div>
 
           {/* Information Grid */}
@@ -317,83 +497,6 @@ export function SubmissionDetailDialog({
               </p>
             </div>
           </div>
-
-          {/* Round 2 Image Upload */}
-          {roundName &&
-            (roundName.toLowerCase().includes("round 2") ||
-              roundName.toLowerCase().includes("round_2") ||
-              roundName.toLowerCase().includes(" 2")) &&
-            submission.status === "ACCEPTED" && (
-              <div className="staff-card p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <IconPhoto className="h-5 w-5 staff-text-secondary" />
-                  <h4 className="font-semibold staff-text-primary">
-                    Round 2 Image
-                  </h4>
-                </div>
-                <p className="text-sm staff-text-secondary mb-4">
-                  Upload the final artwork image for round 2 evaluation.
-                </p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium staff-text-primary mb-2 block">
-                      Select Image File
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setRound2Image(e.target.files?.[0] || null)
-                      }
-                      className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    />
-                    {round2Image && (
-                      <p className="text-xs staff-text-secondary mt-1">
-                        Selected: {round2Image.name}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Image Preview */}
-                  {round2Image && previewUrl && (
-                    <div className="border border-[#e6e2da] rounded-lg p-4 bg-gray-50">
-                      <h5 className="text-sm font-medium staff-text-primary mb-3">
-                        Preview
-                      </h5>
-                      <div className="relative w-full h-48 bg-white rounded border">
-                        <Image
-                          src={previewUrl}
-                          alt="Round 2 image preview"
-                          fill
-                          className="object-contain rounded"
-                        />
-                      </div>
-                      <div className="mt-2 text-xs staff-text-secondary">
-                        <p>
-                          File size:{" "}
-                          {(round2Image.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                        <p>Type: {round2Image.type}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleRound2ImageUpload}
-                    disabled={
-                      !round2Image || uploadRound2ImageMutation.isPending
-                    }
-                    className="staff-btn-primary disabled:opacity-50 flex items-center gap-2"
-                  >
-                    <IconUpload className="h-4 w-4" />
-                    {uploadRound2ImageMutation.isPending
-                      ? "Uploading..."
-                      : "Upload Round 2 Image"}
-                  </button>
-                </div>
-              </div>
-            )}
 
           {/* Reject Reason Input */}
           {showRejectInput && (

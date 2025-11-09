@@ -3,6 +3,7 @@
 import { WhoAmI } from "@/types";
 import Image from "next/image";
 import { useState } from "react";
+import { Lang } from "../../lib/i18n";
 
 // --- Dữ liệu giả lập cho các bài đã nộp ---
 // (Dựa trên hình ảnh của bạn)
@@ -31,12 +32,11 @@ const submittedArtworks = [
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
-  t: any; // Giữ prop 't' nhưng code này sẽ không dùng vì text trong ảnh là cố định
+  t: Lang; // Giữ prop 't' nhưng code này sẽ không dùng vì text trong ảnh là cố định
 }
 
 export default function CompetitorProfileScreen({
   authUser,
-  t,
 }: CompetitorProfileScreenProps) {
   // State để quản lý tab đang active
   const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
@@ -48,7 +48,7 @@ export default function CompetitorProfileScreen({
   const profile = {
     name: authUser?.fullName || "Việt Hoàng",
     school: authUser?.schoolName || "Trường Tiểu học Nha Trang",
-    class: (authUser as any)?.class || "Lớp 5", // Giả sử authUser có 'class'
+    class: authUser?.grade ? `Lớp ${authUser.grade}` : "Lớp 5", // Giả sử authUser có 'class'
     dob: authUser?.birthday
       ? new Date(authUser.birthday).toLocaleDateString("vi-VN")
       : "15/10/2004",
@@ -70,7 +70,7 @@ export default function CompetitorProfileScreen({
           alt="Banner"
           layout="fill"
           objectFit="cover"
-          className="bg-gradient-to-r from-blue-100 via-pink-100 to-orange-100" // Placeholder
+          className="bg-linear-to-r from-blue-100 via-pink-100 to-orange-100" // Placeholder
         />
       </div>
 
@@ -82,7 +82,7 @@ export default function CompetitorProfileScreen({
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 mt-[7vh]">
             {/* Left side: Avatar và Tên/Trường/Lớp */}
             <div className="flex items-end">
-              <div className="relative h-32 w-32 flex-shrink-0 sm:h-40 sm:w-40">
+              <div className="relative h-32 w-32 shrink-0 sm:h-40 sm:w-40">
                 <Image
                   src={profile.avatarUrl}
                   alt={profile.name}

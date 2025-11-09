@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Award } from "@/types/award";
 import { TopPainting } from "@/types/painting";
+import { useLanguageStore } from "@/store/language-store";
+import { Lang, useTranslation } from "@/lib/i18n";
 import {
   IconArrowLeft,
   IconSpeakerphone,
@@ -36,6 +38,7 @@ function PaintingAwardRow({
   onRemove,
   isProcessing,
   onImageClick,
+  t,
 }: {
   painting: TopPainting;
   index: number;
@@ -44,6 +47,7 @@ function PaintingAwardRow({
   onRemove: (painting: TopPainting) => void;
   isProcessing: boolean;
   onImageClick: (imageUrl: string) => void;
+  t: Lang;
 }) {
   const assignedAward = painting.award;
   return (
@@ -57,12 +61,12 @@ function PaintingAwardRow({
           {assignedAward ? (
             <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
               <IconTrophy className="h-3 w-3" />
-              Awarded
+              {t.awarded}
             </div>
           ) : (
             <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
               <IconTrophy className="h-3 w-3" />
-              Unassigned
+              {t.unassigned}
             </div>
           )}
         </div>
@@ -121,7 +125,7 @@ function PaintingAwardRow({
                       title="Remove Award"
                     >
                       <IconX className="h-4 w-4" />
-                      {isProcessing ? "Removing..." : "Remove"}
+                      {isProcessing ? t.removing : t.remove}
                     </button>
                   </div>
                 </div>
@@ -131,7 +135,7 @@ function PaintingAwardRow({
             <div className="space-y-3">
               <label className="text-sm font-semibold staff-text-primary flex items-center gap-2">
                 <IconTrophy className="h-4 w-4 staff-text-primary" />
-                Assign Award:
+                {t.assignAward}
               </label>
               <div className="flex flex-wrap gap-2">
                 {availableAwards.length > 0 ? (
@@ -148,7 +152,7 @@ function PaintingAwardRow({
                 ) : (
                   <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg">
                     <IconTrophy className="h-4 w-4" />
-                    <span className="text-sm">No awards available</span>
+                    <span className="text-sm">{t.noAwardsAvailable}</span>
                   </div>
                 )}
               </div>
@@ -175,6 +179,9 @@ function AwardsManagementPage() {
 
   const [currentPaintingId, setCurrentPaintingId] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const { data: contestData } = useQuery({
     queryKey: ["staff-contest", contestId],
@@ -239,14 +246,14 @@ function AwardsManagementPage() {
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagement,
                   href: "/dashboard/staff/contests",
                 },
                 {
                   label: contest?.title || "Contest Detail",
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
-                { label: "Awards" },
+                { label: t.awardsBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -269,11 +276,11 @@ function AwardsManagementPage() {
                   </button>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      Award Assignment - {contest?.title || "Contest"}
+                      {t.awardAssignment} - {contest?.title || "Contest"}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Assign awards to top paintings • {assignedSlots} /{" "}
-                      {totalAwardSlots} slots filled
+                      {t.assignAwardsToPaintings} • {assignedSlots} /{" "}
+                      {totalAwardSlots} {t.slotsFilled}
                     </p>
                   </div>
                 </div>
@@ -287,7 +294,7 @@ function AwardsManagementPage() {
                     className="staff-btn-outline flex items-center gap-2"
                   >
                     <IconTrophy className="h-4 w-4" />
-                    Manage Awards
+                    {t.manageAwards}
                   </button>
                   <button
                     onClick={() =>
@@ -299,12 +306,12 @@ function AwardsManagementPage() {
                     className="staff-btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     title={
                       !allPaintingsAwarded
-                        ? "All paintings must be awarded before announcing results"
-                        : "Announce contest results"
+                        ? t.allPaintingsMustBeAwarded
+                        : t.announceContestResults
                     }
                   >
                     <IconSpeakerphone className="h-4 w-4" />
-                    Announce Results
+                    {t.announceResults}
                   </button>
                 </div>
               </div>
@@ -315,11 +322,11 @@ function AwardsManagementPage() {
                 <div className="lg:col-span-2 space-y-4">
                   <div className="staff-card p-6">
                     <h3 className="text-lg font-bold staff-text-primary mb-4">
-                      Top Paintings ({paintings.length})
+                      {t.topPaintings} ({paintings.length})
                     </h3>
                     {paintingsLoading ? (
                       <div className="text-center py-12 staff-text-secondary">
-                        Loading paintings...
+                        {t.loadingPaintings}
                       </div>
                     ) : paintings.length > 0 ? (
                       <div className="space-y-4">
@@ -342,13 +349,14 @@ function AwardsManagementPage() {
                               onRemove={handleRemoveAward}
                               isProcessing={isProcessing}
                               onImageClick={setSelectedImage}
+                              t={t}
                             />
                           );
                         })}
                       </div>
                     ) : (
                       <div className="text-center py-12 staff-text-secondary">
-                        No top paintings available yet
+                        {t.noTopPaintingsAvailable}
                       </div>
                     )}
                   </div>
@@ -359,7 +367,7 @@ function AwardsManagementPage() {
                   {/* Available Awards */}
                   <div className="staff-card p-4 sticky top-4">
                     <h3 className="text-lg font-semibold staff-text-primary mb-3">
-                      Available Awards
+                      {t.availableAwards}
                     </h3>
                     <div className="space-y-2">
                       {awards.map((award) => (
@@ -382,7 +390,7 @@ function AwardsManagementPage() {
                               </div>
                               <div className="text-xs staff-text-secondary mt-1">
                                 {award.paintings.length}/{award.quantity}{" "}
-                                assigned
+                                {t.assigned}
                               </div>
                             </div>
                           </div>

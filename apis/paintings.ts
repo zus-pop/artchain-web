@@ -123,13 +123,23 @@ export function useGetRound2TopByContestId(contestId: string) {
   });
 }
 
-export function useUploadRound2Image() {
+export function useUploadRound2Painting() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (round2ImageRequest: Round2ImageRequest) => {
       const formData = new FormData();
-      formData.append("image", round2ImageRequest.image);
+      if (round2ImageRequest.image) {
+        formData.append("image", round2ImageRequest.image);
+      }
+
+      if (round2ImageRequest.title) {
+        formData.append("title", round2ImageRequest.title);
+      }
+
+      if (round2ImageRequest.description) {
+        formData.append("description", round2ImageRequest.description);
+      }
 
       const response = await myAxios.post(
         `/staff/paintings/${round2ImageRequest.paintingId}/upload-round2-image`,

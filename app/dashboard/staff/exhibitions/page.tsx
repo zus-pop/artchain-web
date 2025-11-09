@@ -11,6 +11,8 @@ import { StaffSidebar } from "@/components/staff-sidebar";
 import { StatsCards } from "@/components/staff/StatsCards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Exhibition, ExhibitionStatus } from "@/types/exhibition";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import {
   IconCalendar,
   IconChevronLeft,
@@ -29,6 +31,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function ExhibitionsPage() {
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
     ExhibitionStatus | "ALL"
@@ -110,7 +114,7 @@ export default function ExhibitionsPage() {
   };
 
   const handleDeleteExhibition = async (exhibitionId: string) => {
-    if (!confirm("Are you sure you want to delete this exhibition?")) return;
+    if (!confirm(t.confirmDelete)) return;
     deleteExhibitionMutation.mutate(exhibitionId);
   };
 
@@ -148,11 +152,11 @@ export default function ExhibitionsPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Exhibition Management" />
+        <SiteHeader title={t.exhibitionsManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
             <Breadcrumb
-              items={[{ label: "Exhibition Management" }]}
+              items={[{ label: t.exhibitionsManagement }]}
               homeHref="/dashboard/staff"
             />
           </div>
@@ -162,14 +166,13 @@ export default function ExhibitionsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    All Exhibitions ({totalExhibitionsCount})
+                    {t.allExhibitions} ({totalExhibitionsCount})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Manage art exhibitions and showcase collections
+                    {t.manageExhibitions}
                   </p>
                   <p className="text-xs staff-text-secondary mt-1">
-                    💡 <strong>Exhibitions</strong> display curated collections
-                    of paintings from contests and competitions
+                    {t.exhibitionsTip}
                   </p>
                 </div>
                 <Link
@@ -177,7 +180,7 @@ export default function ExhibitionsPage() {
                   className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
                 >
                   <IconPlus className="h-4 w-4" />
-                  Create Exhibition
+                  {t.createExhibition}
                 </Link>
               </div>
 
@@ -185,30 +188,30 @@ export default function ExhibitionsPage() {
               <StatsCards
                 stats={[
                   {
-                    title: "Total Exhibitions",
+                    title: t.totalExhibitions,
                     value: totalExhibitionsCount,
-                    subtitle: "All exhibitions",
+                    subtitle: t.allExhibitionsText,
                     icon: <IconPalette className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
-                    title: "Active Exhibitions",
+                    title: t.activeExhibitions,
                     value: activeExhibitions,
-                    subtitle: "Currently running",
+                    subtitle: t.currentlyRunning,
                     icon: <IconCalendar className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
-                    title: "Total Paintings",
+                    title: t.totalPaintings,
                     value: totalPaintings,
-                    subtitle: "Paintings on display",
+                    subtitle: t.paintingsOnDisplay,
                     icon: <IconPalette className="h-6 w-6" />,
                     variant: "success",
                   },
                   {
-                    title: "Completed",
+                    title: t.completed,
                     value: completedExhibitions,
-                    subtitle: "Finished exhibitions",
+                    subtitle: t.finishedExhibitions,
                     icon: <IconPalette className="h-6 w-6" />,
                     variant: "primary",
                   },
@@ -221,7 +224,7 @@ export default function ExhibitionsPage() {
                   <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search by exhibition name or description..."
+                    placeholder={t.searchExhibitions}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -254,7 +257,7 @@ export default function ExhibitionsPage() {
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                       <p className="mt-4 staff-text-secondary">
-                        Loading exhibitions...
+                        {t.loadingExhibitions}
                       </p>
                     </div>
                   </div>
@@ -264,19 +267,19 @@ export default function ExhibitionsPage() {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Exhibition
+                            {t.exhibition}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Status
+                            {t.status}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Paintings
+                            {t.paintings}
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Dates
+                            {t.dates}
                           </th>
                           <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                            Actions
+                            {t.actions}
                           </th>
                         </tr>
                       </thead>
@@ -287,7 +290,7 @@ export default function ExhibitionsPage() {
                               colSpan={5}
                               className="px-6 py-12 text-center staff-text-secondary"
                             >
-                              No exhibitions found matching your criteria
+                              {t.noExhibitionsFound}
                             </td>
                           </tr>
                         ) : (
@@ -321,19 +324,19 @@ export default function ExhibitionsPage() {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                   <div className="flex items-center gap-2">
                                     <IconPalette className="h-4 w-4" />
-                                    {exhibition.numberOfPaintings} paintings
+                                    {exhibition.numberOfPaintings} {t.paintings}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                   <div>
                                     <div>
-                                      Start:{" "}
+                                      {t.start}:{" "}
                                       {new Date(
                                         exhibition.startDate
                                       ).toLocaleDateString()}
                                     </div>
                                     <div>
-                                      End:{" "}
+                                      {t.end}:{" "}
                                       {new Date(
                                         exhibition.endDate
                                       ).toLocaleDateString()}
@@ -422,7 +425,7 @@ export default function ExhibitionsPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <span className="text-sm staff-text-secondary">
-                        Show per page:
+                        {t.showPerPage}
                       </span>
                       <select
                         value={pageSize}
@@ -439,12 +442,13 @@ export default function ExhibitionsPage() {
                       </select>
                     </div>
                     <div className="text-sm staff-text-secondary">
-                      Showing{" "}
+                      {t.showing}{" "}
                       {paginatedExhibitions.length > 0
                         ? (currentPage - 1) * pageSize + 1
                         : 0}{" "}
-                      to {Math.min(currentPage * pageSize, totalExhibitions)} of{" "}
-                      {totalExhibitions} exhibitions
+                      {t.to}{" "}
+                      {Math.min(currentPage * pageSize, totalExhibitions)}{" "}
+                      {t.of} {totalExhibitions} {t.exhibitions}
                     </div>
                   </div>
 
@@ -469,7 +473,7 @@ export default function ExhibitionsPage() {
                     </button>
 
                     <span className="px-3 py-1 text-sm staff-text-primary">
-                      Page {currentPage} of {totalPages}
+                      {t.page} {currentPage} {t.of} {totalPages}
                     </span>
 
                     <button

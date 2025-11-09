@@ -9,6 +9,7 @@ export interface CampaignAPIResponse {
   staffId: string;
   createdAt: string;
   updatedAt: string;
+  image: string | null;
 }
 
 export interface CampaignsAPIResponse {

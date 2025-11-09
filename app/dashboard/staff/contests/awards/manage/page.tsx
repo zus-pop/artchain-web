@@ -20,6 +20,8 @@ import {
   IconTrophy,
   IconX,
 } from "@tabler/icons-react";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -56,6 +58,9 @@ function AwardManagementPage() {
     }>
   >([{ name: "", description: "", rank: 1, quantity: 1, prize: 0 }]);
 
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+
   const { data: contestData } = useQuery({
     queryKey: ["staff-contest", contestId],
     queryFn: () => getStaffContestById(Number(contestId)),
@@ -76,7 +81,7 @@ function AwardManagementPage() {
       (award) => award.name.trim() && award.prize > 0
     );
     if (validAwards.length === 0) {
-      toast.error("Please add at least one valid award");
+      toast.error(t.addAtLeastOneValidAward);
       return;
     }
 
@@ -101,11 +106,7 @@ function AwardManagementPage() {
   };
 
   const handleDeleteAward = async (awardId: string) => {
-    if (
-      confirm(
-        "Are you sure you want to delete this award? This will also remove it from any assigned paintings."
-      )
-    ) {
+    if (confirm(t.confirmDeleteAward)) {
       deleteMutation.mutate(awardId);
     }
   };
@@ -175,7 +176,7 @@ function AwardManagementPage() {
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagement,
                   href: "/dashboard/staff/contests",
                 },
                 {
@@ -183,10 +184,10 @@ function AwardManagementPage() {
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
                 {
-                  label: "Awards",
+                  label: t.awardsBreadcrumb,
                   href: `/dashboard/staff/contests/awards?id=${contestId}`,
                 },
-                { label: "Manage" },
+                { label: t.manageBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -197,10 +198,10 @@ function AwardManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold staff-text-primary">
-                    Award Management - {contest?.title || "Contest"}
+                    {t.awardManagement} - {contest?.title || "Contest"}
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Create, edit, and delete awards for this contest
+                    {t.createEditDeleteAwards}
                   </p>
                 </div>
                 <button
@@ -212,7 +213,7 @@ function AwardManagementPage() {
                   className="staff-btn-outline flex items-center gap-2"
                 >
                   <IconArrowLeft className="h-4 w-4" />
-                  Back to Awards
+                  {t.backToAwards}
                 </button>
               </div>
 
@@ -220,7 +221,7 @@ function AwardManagementPage() {
                 {/* Create New Awards */}
                 <div className="mb-8">
                   <h4 className="text-lg font-semibold staff-text-primary mb-4">
-                    Create New Awards
+                    {t.createNewAwards}
                   </h4>
                   <div className="space-y-4">
                     {newAwards.map((award, index) => (
@@ -231,7 +232,7 @@ function AwardManagementPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-1">
-                              Name *
+                              {t.nameRequired}
                             </label>
                             <input
                               type="text"
@@ -245,7 +246,7 @@ function AwardManagementPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-1">
-                              Prize (VNĐ) *
+                              {t.prizeVNDRequired}
                             </label>
                             <div className="relative">
                               <input
@@ -269,7 +270,7 @@ function AwardManagementPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-1">
-                              Quantity
+                              {t.quantity}
                             </label>
                             <input
                               type="number"
@@ -287,7 +288,7 @@ function AwardManagementPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-1">
-                              Rank
+                              {t.rank}
                             </label>
                             <input
                               type="number"
@@ -316,7 +317,7 @@ function AwardManagementPage() {
                         </div>
                         <div className="mt-4">
                           <label className="block text-sm font-medium staff-text-primary mb-1">
-                            Description
+                            {t.description}
                           </label>
                           <textarea
                             value={award.description}
@@ -340,7 +341,7 @@ function AwardManagementPage() {
                         className="staff-btn-outline flex items-center gap-2"
                       >
                         <IconPlus className="h-4 w-4" />
-                        Add Another Award
+                        {t.addAnotherAward}
                       </button>
                       <button
                         onClick={handleCreateAwards}
@@ -348,8 +349,8 @@ function AwardManagementPage() {
                         className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {createBatchMutation.isPending
-                          ? "Creating..."
-                          : "Create Awards"}
+                          ? t.creatingAwards
+                          : t.createAwards}
                       </button>
                     </div>
                   </div>
@@ -358,7 +359,7 @@ function AwardManagementPage() {
                 {/* Existing Awards List */}
                 <div>
                   <h4 className="text-lg font-semibold staff-text-primary mb-4">
-                    Existing Awards ({awards.length})
+                    {t.existingAwards} ({awards.length})
                   </h4>
                   <div className="space-y-4">
                     {awards.map((award) => (
@@ -372,7 +373,7 @@ function AwardManagementPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                               <div>
                                 <label className="block text-sm font-medium staff-text-primary mb-1">
-                                  Name *
+                                  {t.nameRequired}
                                 </label>
                                 <input
                                   type="text"
@@ -388,7 +389,7 @@ function AwardManagementPage() {
                               </div>
                               <div>
                                 <label className="block text-sm font-medium staff-text-primary mb-1">
-                                  Prize (VNĐ) *
+                                  {t.prizeVNDRequired}
                                 </label>
                                 <div className="relative">
                                   <input
@@ -409,7 +410,7 @@ function AwardManagementPage() {
                               </div>
                               <div>
                                 <label className="block text-sm font-medium staff-text-primary mb-1">
-                                  Quantity
+                                  {t.quantity}
                                 </label>
                                 <input
                                   type="number"
@@ -426,7 +427,7 @@ function AwardManagementPage() {
                               </div>
                               <div>
                                 <label className="block text-sm font-medium staff-text-primary mb-1">
-                                  Rank
+                                  {t.rank}
                                 </label>
                                 <input
                                   type="number"
@@ -444,7 +445,7 @@ function AwardManagementPage() {
                             </div>
                             <div>
                               <label className="block text-sm font-medium staff-text-primary mb-1">
-                                Description
+                                {t.description}
                               </label>
                               <textarea
                                 value={editFormData?.description || ""}
@@ -468,14 +469,14 @@ function AwardManagementPage() {
                                 className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {updateMutation.isPending
-                                  ? "Updating..."
-                                  : "Update"}
+                                  ? t.updatingAward
+                                  : t.updateAward}
                               </button>
                               <button
                                 onClick={cancelEditing}
                                 className="staff-btn-outline"
                               >
-                                Cancel
+                                {t.cancelAwardEdit}
                               </button>
                             </div>
                           </div>
@@ -501,7 +502,7 @@ function AwardManagementPage() {
                                 </span>
                                 <span className="staff-text-secondary">
                                   {award.paintings.length}/{award.quantity}{" "}
-                                  assigned
+                                  {t.assigned}
                                 </span>
                               </div>
                             </div>
@@ -528,8 +529,7 @@ function AwardManagementPage() {
                     ))}
                     {awards.length === 0 && (
                       <div className="text-center py-8 text-sm staff-text-secondary">
-                        No awards created yet. Create some awards above to get
-                        started.
+                        {t.noAwardsCreatedYet}
                       </div>
                     )}
                   </div>

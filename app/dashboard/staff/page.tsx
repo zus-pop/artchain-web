@@ -1,10 +1,15 @@
+"use client";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";
-
 export default function StaffDashboardPage() {
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+
   return (
     <SidebarProvider
       style={
@@ -16,7 +21,7 @@ export default function StaffDashboardPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Staff Dashboard" />
+        <SiteHeader title={t.staffDashboard} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb items={[]} homeHref="/dashboard/staff" />
@@ -29,7 +34,7 @@ export default function StaffDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Total Competitors
+                        {t.totalCompetitors}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">
                         1,234
@@ -52,7 +57,7 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    +8.2% from last month
+                    {t.newThisMonth}
                   </p>
                 </div>
 
@@ -60,7 +65,7 @@ export default function StaffDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Pending Paintings
+                        {t.pendingPaintings}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">
                         67
@@ -83,7 +88,7 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    Awaiting review
+                    {t.awaitingReview}
                   </p>
                 </div>
 
@@ -91,7 +96,7 @@ export default function StaffDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Active Contests
+                        {t.activeContests}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">8</p>
                     </div>
@@ -112,7 +117,7 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    Currently running
+                    {t.currentlyRunning}
                   </p>
                 </div>
 
@@ -120,7 +125,7 @@ export default function StaffDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Active Sponsors
+                        {t.activeSponsors}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">
                         15
@@ -143,14 +148,14 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    2 new this month
+                    {t.newThisMonth}
                   </p>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="staff-card p-6">
-                <h2 className="staff-heading mb-6">Quick Actions</h2>
+                <h2 className="staff-heading mb-6">{t.quickActions}</h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <Link
                     href="/dashboard/staff/competitors/paintings/pending"
@@ -173,9 +178,11 @@ export default function StaffDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Review Paintings
+                        {t.reviewPaintings}
                       </p>
-                      <p className="text-xs staff-text-secondary">67 pending</p>
+                      <p className="text-xs staff-text-secondary">
+                        {t.pending} 67
+                      </p>
                     </div>
                   </Link>
 
@@ -200,9 +207,11 @@ export default function StaffDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Create Contest
+                        {t.createContest}
                       </p>
-                      <p className="text-xs staff-text-secondary">Start new</p>
+                      <p className="text-xs staff-text-secondary">
+                        {t.startNew}
+                      </p>
                     </div>
                   </Link>
 
@@ -227,10 +236,10 @@ export default function StaffDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Invite Examiner
+                        {t.inviteExaminer}
                       </p>
                       <p className="text-xs staff-text-secondary">
-                        Send invitation
+                        {t.sendInvitation}
                       </p>
                     </div>
                   </Link>
@@ -256,10 +265,10 @@ export default function StaffDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Create Post
+                        {t.createPost}
                       </p>
                       <p className="text-xs staff-text-secondary">
-                        New announcement
+                        {t.newAnnouncement}
                       </p>
                     </div>
                   </Link>
@@ -269,7 +278,7 @@ export default function StaffDashboardPage() {
               {/* Recent Activity */}
               <div className="staff-card p-6">
                 <h2 className="text-lg font-semibold staff-text-primary mb-4">
-                  Recent Activity
+                  {t.recentActivity}
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-gray-100 pb-4">
@@ -291,7 +300,7 @@ export default function StaffDashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          Painting approved
+                          {t.paintingApproved}
                         </p>
                         <p className="text-xs staff-text-secondary">
                           &ldquo;Sunset Dreams&rdquo; by Alice Chen
@@ -299,7 +308,7 @@ export default function StaffDashboardPage() {
                       </div>
                     </div>
                     <span className="text-xs staff-text-secondary">
-                      10 min ago
+                      10 {t.minAgo}
                     </span>
                   </div>
 
@@ -322,7 +331,7 @@ export default function StaffDashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          New contest started
+                          {t.newContestStarted}
                         </p>
                         <p className="text-xs staff-text-secondary">
                           Spring Art Competition 2025
@@ -330,7 +339,7 @@ export default function StaffDashboardPage() {
                       </div>
                     </div>
                     <span className="text-xs staff-text-secondary">
-                      2 hours ago
+                      2 {t.hoursAgo}
                     </span>
                   </div>
 
@@ -353,15 +362,15 @@ export default function StaffDashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          New post published
+                          {t.newPostPublished}
                         </p>
                         <p className="text-xs staff-text-secondary">
-                          Contest guidelines update
+                          {t.contestGuidelinesUpdate}
                         </p>
                       </div>
                     </div>
                     <span className="text-xs staff-text-secondary">
-                      5 hours ago
+                      5 {t.hoursAgo}
                     </span>
                   </div>
                 </div>

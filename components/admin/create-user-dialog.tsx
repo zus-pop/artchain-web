@@ -10,6 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRegisterMutation } from "@/hooks/useRegisterMutation";
+import { Lang, useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { RegisterRequest } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,25 +19,23 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 // Zod schema for create user form validation
-const createUserSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be less than 20 characters")
-    .regex(
-      /^[a-zA-Z0-9_]+$/,
-      "Username can only contain letters, numbers, and underscores"
-    ),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  fullName: z
-    .string()
-    .min(2, "Full name must be at least 2 characters")
-    .max(50, "Full name must be less than 50 characters"),
-  email: z.email("Please enter a valid email address"),
-  role: z.enum(["STAFF", "ADMIN", "EXAMINER"]),
-});
+const createUserSchema = (t: Lang) =>
+  z.object({
+    username: z
+      .string()
+      .min(3, t.usernameMinLength)
+      .max(20, t.usernameMaxLength)
+      .regex(/^[a-zA-Z0-9_]+$/, t.usernamePattern),
+    password: z.string().min(6, t.passwordMinLength),
+    fullName: z
+      .string()
+      .min(2, t.fullNameMinLength)
+      .max(50, t.fullNameMaxLength),
+    email: z.email(t.emailInvalid),
+    role: z.enum(["STAFF", "ADMIN", "EXAMINER"]),
+  });
 
-type CreateUserFormValues = z.infer<typeof createUserSchema>;
+type CreateUserFormValues = z.infer<ReturnType<typeof createUserSchema>>;
 
 interface CreateUserDialogProps {
   open: boolean;
@@ -46,13 +46,17 @@ export function CreateUserDialog({
   open,
   onOpenChange,
 }: CreateUserDialogProps) {
+  // Translation
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
     reset,
   } = useForm<CreateUserFormValues>({
-    resolver: zodResolver(createUserSchema),
+    resolver: zodResolver(createUserSchema(t)),
     defaultValues: {
       username: "",
       password: "",
@@ -91,10 +95,8 @@ export function CreateUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Create New User</DialogTitle>
-          <DialogDescription>
-            Add a new user account to the system
-          </DialogDescription>
+          <DialogTitle>{t.addNewUser}</DialogTitle>
+          <DialogDescription>{t.manageAllUserAccounts}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmitForm)}>
           <div className="space-y-4 py-4">
@@ -103,13 +105,13 @@ export function CreateUserDialog({
                 htmlFor="create-fullName"
                 className="text-sm font-medium text-gray-900 block mb-2"
               >
-                Full Name
+                {t.fullName}
               </label>
               <input
                 id="create-fullName"
                 type="text"
                 {...register("fullName")}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="staff-input w-full"
                 placeholder="John Doe"
               />
               {errors.fullName && (
@@ -123,13 +125,13 @@ export function CreateUserDialog({
                 htmlFor="create-username"
                 className="text-sm font-medium text-gray-900 block mb-2"
               >
-                Username
+                {t.username}
               </label>
               <input
                 id="create-username"
                 type="text"
                 {...register("username")}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="staff-input w-full"
                 placeholder="johndoe"
               />
               {errors.username && (
@@ -143,13 +145,13 @@ export function CreateUserDialog({
                 htmlFor="create-password"
                 className="text-sm font-medium text-gray-900 block mb-2"
               >
-                Password
+                {t.password}
               </label>
               <input
                 id="create-password"
                 type="password"
                 {...register("password")}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="staff-input w-full"
                 placeholder="Enter password"
               />
               {errors.password && (
@@ -163,13 +165,13 @@ export function CreateUserDialog({
                 htmlFor="create-email"
                 className="text-sm font-medium text-gray-900 block mb-2"
               >
-                Email
+                {t.email}
               </label>
               <input
                 id="create-email"
                 type="email"
                 {...register("email")}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="staff-input w-full"
                 placeholder="john@example.com"
               />
               {errors.email && (
@@ -183,16 +185,16 @@ export function CreateUserDialog({
                 htmlFor="create-role"
                 className="text-sm font-medium text-gray-900 block mb-2"
               >
-                Role
+                {t.roleTable}
               </label>
               <select
                 id="create-role"
                 {...register("role")}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="staff-input w-full"
               >
-                <option value="STAFF">Staff</option>
-                <option value="ADMIN">Admin</option>
-                <option value="EXAMINER">Examiner</option>
+                <option value="STAFF">{t.staffFilter}</option>
+                <option value="ADMIN">{t.adminsFilter}</option>
+                <option value="EXAMINER">{t.examinersFilter}</option>
               </select>
               {errors.role && (
                 <p className="text-red-500 text-sm mt-1">
@@ -202,15 +204,20 @@ export function CreateUserDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCancel}>
-              Cancel
+            <Button
+              className="rounded-none"
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+            >
+              {t.cancel}
             </Button>
             <Button
               type="submit"
               disabled={!isValid || registerMutation.isPending}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400"
+              className="staff-btn-primary disabled:opacity-50 rounded-none"
             >
-              {registerMutation.isPending ? "Creating..." : "Create User"}
+              {registerMutation.isPending ? t.processing : t.addNewUser}
             </Button>
           </DialogFooter>
         </form>

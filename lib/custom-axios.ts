@@ -2,8 +2,9 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store";
 
 // const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://rflz4357-3001.asse.devtunnels.ms/api";
-const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://513q6dp9-3000.asse.devtunnels.ms/api";
-
+const baseURL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://513q6dp9-3000.asse.devtunnels.ms/api";
 
 if (process.env.NODE_ENV === "development") {
   console.log("🔧 myAxios baseURL:", baseURL);
@@ -11,7 +12,7 @@ if (process.env.NODE_ENV === "development") {
 
 const myAxios = axios.create({
   baseURL: baseURL,
-  timeout: 30000, 
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,17 +21,17 @@ const myAxios = axios.create({
 myAxios.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const { accessToken } = useAuthStore.getState();
-    
+
     if (process.env.NODE_ENV === "development") {
       console.log("🔑 Request:", config.method?.toUpperCase(), config.url);
       console.log("🔑 Token exists:", !!accessToken);
     }
-    
+
     // Attach token if available
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
-    
+
     return config;
   },
   (error: AxiosError) => {
@@ -58,10 +59,10 @@ myAxios.interceptors.response.use(
     if (error.response?.status === 401) {
       const { logout } = useAuthStore.getState();
       logout();
-      
-      if (typeof window !== "undefined") {
-        window.location.href = "/auth?error=unauthorized";
-      }
+
+      //   if (typeof window !== "undefined") {
+      //     window.location.href = "/auth?error=unauthorized";
+      //   }
     }
 
     if (error.response?.status === 403) {
@@ -69,10 +70,8 @@ myAxios.interceptors.response.use(
     }
 
     const errorData = error.response?.data as { message?: string } | undefined;
-    const errorMessage = 
-      errorData?.message || 
-      error.message || 
-      "An unexpected error occurred";
+    const errorMessage =
+      errorData?.message || error.message || "An unexpected error occurred";
 
     return Promise.reject({
       message: errorMessage,

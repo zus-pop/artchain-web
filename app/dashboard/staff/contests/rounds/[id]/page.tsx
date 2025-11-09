@@ -24,6 +24,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -48,6 +50,8 @@ function RoundDetailContent() {
   const roundId = params.id as string;
   const contestId = searchParams.get("contestId");
   const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const [selectedStatus, setSelectedStatus] = useState<
     "ALL" | "PENDING" | "ACCEPTED" | "REJECTED"
@@ -114,13 +118,13 @@ function RoundDetailContent() {
   });
 
   const handleQuickAccept = (paintingId: string) => {
-    if (confirm("Are you sure you want to accept this submission?")) {
+    if (confirm(t.confirmAcceptSubmission)) {
       acceptMutation.mutate(paintingId);
     }
   };
 
   const handleQuickReject = (paintingId: string) => {
-    if (confirm("Are you sure you want to reject this submission?")) {
+    if (confirm(t.confirmRejectSubmission)) {
       rejectMutation.mutate(paintingId);
     }
   };
@@ -185,11 +189,9 @@ function RoundDetailContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Round Detail" />
+          <SiteHeader title={t.roundDetailTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">
-              Contest ID and Round ID are required
-            </div>
+            <div className="text-gray-500">{t.contestIdAndRoundIdRequired}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -208,9 +210,9 @@ function RoundDetailContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Round Detail" />
+          <SiteHeader title={t.roundDetailTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Loading round details...</div>
+            <div className="text-gray-500">{t.roundLoadingRoundDetails}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -229,9 +231,9 @@ function RoundDetailContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Round Detail" />
+          <SiteHeader title={t.roundDetailTitle} />
           <div className="flex flex-1 items-center justify-center">
-            <div className="text-gray-500">Round not found</div>
+            <div className="text-gray-500">{t.roundRoundNotFound}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -255,14 +257,14 @@ function RoundDetailContent() {
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagementBreadcrumb,
                   href: "/dashboard/staff/contests",
                 },
                 {
-                  label: "Contest Detail",
+                  label: t.contestDetailBreadcrumb,
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
-                { label: round.name },
+                { label: t.roundDetailBreadcrumb },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -288,12 +290,12 @@ function RoundDetailContent() {
                           </span>
                         )}
                       </h2>
-                      <span className={getStatusColor(round.status)}>
+                      {/* <span className={getStatusColor(round.status)}>
                         {round.status}
-                      </span>
+                      </span> */}
                     </div>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Round ID: {round.roundId}
+                      {t.roundIdLabel} {round.roundId}
                     </p>
                   </div>
                 </div>
@@ -309,7 +311,7 @@ function RoundDetailContent() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-secondary">
-                          Start Date
+                          {t.roundStartDateLabel}
                         </p>
                         <p className="text-sm font-bold staff-text-primary">
                           {new Date(round.startDate).toLocaleDateString()}
@@ -327,7 +329,7 @@ function RoundDetailContent() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-secondary">
-                          End Date
+                          {t.roundEndDateLabel}
                         </p>
                         <p className="text-sm font-bold staff-text-primary">
                           {new Date(round.endDate).toLocaleDateString()}
@@ -345,7 +347,7 @@ function RoundDetailContent() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-secondary">
-                          Submission Deadline
+                          {t.roundSubmissionDeadlineLabel}
                         </p>
                         <p className="text-sm font-bold staff-text-primary">
                           {new Date(
@@ -365,7 +367,7 @@ function RoundDetailContent() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-secondary">
-                          Result Announce
+                          {t.resultAnnounce}
                         </p>
                         <p className="text-sm font-bold staff-text-primary">
                           {new Date(
@@ -384,7 +386,7 @@ function RoundDetailContent() {
                 <div className="staff-card p-6">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold staff-text-primary">
-                      Submissions
+                      {t.submissions}
                     </h3>
 
                     {/* Status Filter Tabs */}
@@ -397,7 +399,7 @@ function RoundDetailContent() {
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
-                        All ({counts.all})
+                        {t.all} ({counts.all})
                       </button>
                       <button
                         onClick={() => setSelectedStatus("PENDING")}
@@ -407,7 +409,7 @@ function RoundDetailContent() {
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
-                        Pending ({counts.pending})
+                        {t.pendingReview} ({counts.pending})
                       </button>
                       <button
                         onClick={() => setSelectedStatus("ACCEPTED")}
@@ -417,7 +419,7 @@ function RoundDetailContent() {
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
-                        Accepted ({counts.accepted})
+                        {t.approved} ({counts.accepted})
                       </button>
                       <button
                         onClick={() => setSelectedStatus("REJECTED")}
@@ -427,14 +429,14 @@ function RoundDetailContent() {
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
-                        Rejected ({counts.rejected})
+                        {t.rejected} ({counts.rejected})
                       </button>
                     </div>
                   </div>
 
                   {isLoadingSubmissions ? (
                     <div className="text-center py-8 staff-text-secondary">
-                      Loading submissions...
+                      {t.roundLoadingSubmissions}
                     </div>
                   ) : submissions.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -456,7 +458,7 @@ function RoundDetailContent() {
                               <div className="flex items-center justify-center h-full text-gray-400">
                                 <div className="text-center">
                                   <IconPhoto className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                  <p className="text-sm">No image</p>
+                                  <p className="text-sm">{t.roundNoImage}</p>
                                 </div>
                               </div>
                             )}
@@ -478,7 +480,8 @@ function RoundDetailContent() {
                               {submission.description}
                             </p>
                             <p className="text-xs staff-text-secondary mb-3">
-                              Submitted: {formatDate(submission.submissionDate)}
+                              {t.roundSubmitted}{" "}
+                              {formatDate(submission.submissionDate)}
                             </p>
 
                             {/* Actions */}
@@ -490,7 +493,7 @@ function RoundDetailContent() {
                                 className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
                               >
                                 <IconEye className="h-4 w-4" />
-                                View
+                                {t.viewBtn}
                               </button>
                               {submission.status === "PENDING" && (
                                 <>
@@ -523,7 +526,7 @@ function RoundDetailContent() {
                     </div>
                   ) : (
                     <div className="text-center py-8 staff-text-secondary">
-                      No submissions found for this round.
+                      {t.noSubmissionsFound}
                     </div>
                   )}
                 </div>
@@ -536,10 +539,10 @@ function RoundDetailContent() {
                       <div>
                         <h3 className="text-xl font-bold staff-text-primary flex items-center gap-2">
                           <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                          Pending Review ({counts.pending})
+                          {t.pendingReview} ({counts.pending})
                         </h3>
                         <p className="text-sm staff-text-secondary mt-1">
-                          Submissions awaiting your approval or rejection
+                          {t.submissionsAwaitingReview}
                         </p>
                       </div>
                     </div>
@@ -568,7 +571,7 @@ function RoundDetailContent() {
                                 <div className="flex items-center justify-center h-full text-gray-400">
                                   <div className="text-center">
                                     <IconPhoto className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No image</p>
+                                    <p className="text-sm">{t.roundNoImage}</p>
                                   </div>
                                 </div>
                               )}
@@ -588,7 +591,7 @@ function RoundDetailContent() {
                                 {submission.description}
                               </p>
                               <p className="text-xs staff-text-secondary mb-3">
-                                Submitted:{" "}
+                                {t.roundSubmitted}{" "}
                                 {formatDate(submission.submissionDate)}
                               </p>
 
@@ -601,7 +604,7 @@ function RoundDetailContent() {
                                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
                                 >
                                   <IconEye className="h-4 w-4" />
-                                  View
+                                  {t.viewBtn}
                                 </button>
                                 <button
                                   onClick={() =>
@@ -631,8 +634,10 @@ function RoundDetailContent() {
                     ) : (
                       <div className="text-center py-8 staff-text-secondary">
                         <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                        <p className="text-lg font-medium">All caught up!</p>
-                        <p>No pending submissions to review.</p>
+                        <p className="text-lg font-medium">
+                          {t.roundAllCaughtUp}
+                        </p>
+                        <p>{t.noPendingSubmissions}</p>
                       </div>
                     )}
                   </div>

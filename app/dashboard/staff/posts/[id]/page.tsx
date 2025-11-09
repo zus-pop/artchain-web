@@ -30,6 +30,8 @@ import {
   createStaffTag,
 } from "@/apis/staff";
 import { toast } from "sonner";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -64,6 +66,8 @@ function ViewPostContent() {
   const params = useParams();
   const postId = params.id as string;
   const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const [isEditing, setIsEditing] = useState(false);
 
@@ -110,11 +114,11 @@ function ViewPostContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-post", postId] });
       setIsEditing(false);
-      toast.success("Post updated successfully!");
+      toast.success(t.postUpdatedSuccess);
     },
     onError: (error) => {
       console.error("Error updating post:", error);
-      toast.error("Failed to update post. Please try again.");
+      toast.error(t.postUpdatedError);
     },
   });
 
@@ -122,12 +126,12 @@ function ViewPostContent() {
   const deletePostMutation = useMutation({
     mutationFn: () => deleteStaffPost(postId),
     onSuccess: () => {
-      toast.success("Post deleted successfully!");
+      toast.success(t.postDeletedSuccess);
       window.location.href = "/dashboard/staff/posts";
     },
     onError: (error) => {
       console.error("Error deleting post:", error);
-      toast.error("Failed to delete post. Please try again.");
+      toast.error(t.postDeletedError);
     },
   });
 
@@ -158,11 +162,11 @@ function ViewPostContent() {
       setTagSearch("");
       setShowTagDropdown(false);
 
-      toast.success("Tag created successfully!");
+      toast.success(t.tagCreatedSuccess);
     },
     onError: (error) => {
       console.error("Error creating tag:", error);
-      toast.error("Failed to create tag. Please try again.");
+      toast.error(t.failedCreateTag);
     },
   });
 
@@ -224,14 +228,14 @@ function ViewPostContent() {
   };
 
   const handleDelete = async () => {
-    if (confirm("Are you sure you want to delete this post?")) {
+    if (confirm(t.confirmDeletePost)) {
       deletePostMutation.mutate();
     }
   };
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success("Post URL copied to clipboard!");
+    toast.success(t.postUrlCopied);
   };
 
   const getStatusBadgeColor = (status: PostStatus) => {
@@ -273,7 +277,7 @@ function ViewPostContent() {
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f] mx-auto"></div>
-              <p className="mt-4 staff-text-secondary">Loading post...</p>
+              <p className="mt-4 staff-text-secondary">{t.loadingPost}</p>
             </div>
           </div>
         </SidebarInset>
@@ -293,10 +297,10 @@ function ViewPostContent() {
       >
         <StaffSidebar variant="inset" />
         <SidebarInset>
-          <SiteHeader title="Post Detail" />
+          <SiteHeader title={t.postDetail} />
           <div className="flex flex-1 items-center justify-center">
             <div className="text-gray-500">
-              {postError ? "Error loading post" : "Post not found"}
+              {postError ? t.errorLoadingPost : t.postNotFound}
             </div>
           </div>
         </SidebarInset>
@@ -315,12 +319,12 @@ function ViewPostContent() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Post Detail" />
+        <SiteHeader title={t.postDetail} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
-                { label: "Posts Management", href: "/dashboard/staff/posts" },
+                { label: t.postsManagement, href: "/dashboard/staff/posts" },
                 { label: post.title },
               ]}
               homeHref="/dashboard/staff"
@@ -359,14 +363,14 @@ function ViewPostContent() {
                           className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2"
                         >
                           <IconShare className="h-4 w-4" />
-                          Share
+                          {t.share}
                         </button>
                         <button
                           onClick={handleDelete}
                           className="border-2 border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50 transition-colors flex items-center gap-2"
                         >
                           <IconTrash className="h-4 w-4" />
-                          Delete
+                          {t.deletePost}
                         </button>
                       </div>
                       <button
@@ -374,7 +378,7 @@ function ViewPostContent() {
                         className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
                       >
                         <IconEdit className="h-4 w-4" />
-                        Edit
+                        {t.editPostBtn}
                       </button>
                     </>
                   ) : (
@@ -385,7 +389,7 @@ function ViewPostContent() {
                         className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2 disabled:opacity-50"
                       >
                         <IconX className="h-4 w-4" />
-                        Cancel
+                        {t.cancelEdit}
                       </button>
                       <button
                         onClick={handleSave}
@@ -394,8 +398,8 @@ function ViewPostContent() {
                       >
                         <IconDeviceFloppy className="h-4 w-4" />
                         {updatePostMutation.isPending
-                          ? "Saving..."
-                          : "Save Changes"}
+                          ? t.saving
+                          : t.saveChanges}
                       </button>
                     </>
                   )}
@@ -425,7 +429,7 @@ function ViewPostContent() {
                       {/* Edit Title */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Title
+                          {t.postTitleLabel}
                         </label>
                         <input
                           type="text"
@@ -438,7 +442,7 @@ function ViewPostContent() {
                       {/* Edit Image Upload */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Featured Image
+                          {t.featuredImage}
                         </label>
 
                         {/* Upload Area */}
@@ -487,7 +491,7 @@ function ViewPostContent() {
                                   }}
                                   className="text-red-600 hover:text-red-800 text-sm font-medium"
                                 >
-                                  Remove image
+                                  {t.removeImage}
                                 </button>
                               </div>
                             ) : post?.image_url ? (
@@ -507,10 +511,10 @@ function ViewPostContent() {
                                 </div>
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">
-                                    Current image
+                                    {t.currentImage}
                                   </p>
                                   <p className="text-xs text-gray-500">
-                                    Click to change
+                                    {t.clickToChangeImageDetail}
                                   </p>
                                 </div>
                               </div>
@@ -537,10 +541,10 @@ function ViewPostContent() {
                                 </div>
                                 <div>
                                   <p className="text-sm font-medium text-gray-900">
-                                    Click to upload image
+                                    {t.clickToUploadImage}
                                   </p>
                                   <p className="text-xs text-gray-500">
-                                    PNG, JPG, GIF up to 10MB
+                                    {t.imageRequirementsPosts}
                                   </p>
                                 </div>
                               </div>
@@ -557,16 +561,12 @@ function ViewPostContent() {
                               if (file) {
                                 // Validate file size (10MB limit)
                                 if (file.size > 10 * 1024 * 1024) {
-                                  toast.error(
-                                    "File size must be less than 10MB"
-                                  );
+                                  toast.error(t.fileSizeTooLarge);
                                   return;
                                 }
                                 // Validate file type
                                 if (!file.type.startsWith("image/")) {
-                                  toast.error(
-                                    "Please select a valid image file"
-                                  );
+                                  toast.error(t.selectValidImage);
                                   return;
                                 }
                                 setEditedImageFile(file);
@@ -576,8 +576,7 @@ function ViewPostContent() {
                           />
 
                           <p className="text-xs staff-text-secondary">
-                            Upload a new image to replace the current one
-                            (optional)
+                            {t.uploadNewImage}
                           </p>
                         </div>
                       </div>
@@ -585,12 +584,12 @@ function ViewPostContent() {
                       {/* Edit Content */}
                       <div className="staff-card p-6">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Content
+                          {t.contentLabel}
                         </label>
                         <MDXEditorWrapper
                           markdown={editedContent}
                           onChange={setEditedContent}
-                          placeholder="Write your post content..."
+                          placeholder={t.writeContentHere}
                         />
                       </div>
                     </>
@@ -599,7 +598,7 @@ function ViewPostContent() {
                       {/* View Content */}
                       <div className="staff-card p-6">
                         <h3 className="text-lg font-bold staff-text-primary mb-4">
-                          Content
+                          {t.content}
                         </h3>
                         <div className="prose max-w-none">
                           <ReactMarkdown>{post.content}</ReactMarkdown>
@@ -614,14 +613,14 @@ function ViewPostContent() {
                   {/* Post Information */}
                   <div className="staff-card p-6">
                     <h3 className="text-lg font-bold staff-text-primary mb-4">
-                      Post Information
+                      {t.postInformation}
                     </h3>
 
                     {isEditing ? (
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Status
+                            {t.statusLabel}
                           </label>
                           <select
                             value={editedStatus}
@@ -630,9 +629,13 @@ function ViewPostContent() {
                             }
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
-                            <option value="DRAFT">Draft</option>
-                            <option value="PUBLISHED">Published</option>
-                            <option value="ARCHIVED">Archived</option>
+                            <option value="DRAFT">{t.draftStatusPost}</option>
+                            <option value="PUBLISHED">
+                              {t.publishedStatusPost}
+                            </option>
+                            <option value="ARCHIVED">
+                              {t.archivedStatusPost}
+                            </option>
                           </select>
                         </div>
                       </div>
@@ -642,7 +645,7 @@ function ViewPostContent() {
                           <IconUser className="h-5 w-5 staff-text-secondary mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-medium staff-text-secondary">
-                              Author
+                              {t.author}
                             </p>
                             <p className="text-sm staff-text-primary font-semibold">
                               {post.creator.fullName}
@@ -654,7 +657,7 @@ function ViewPostContent() {
                           <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-medium staff-text-secondary">
-                              Created
+                              {t.created}
                             </p>
                             <p className="text-sm staff-text-primary font-semibold">
                               {formatDate(post.created_at)}
@@ -667,7 +670,7 @@ function ViewPostContent() {
                             <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                             <div className="flex-1">
                               <p className="text-sm font-medium staff-text-secondary">
-                                Published
+                                {t.publishedLabel}
                               </p>
                               <p className="text-sm staff-text-primary font-semibold">
                                 {formatDate(post.published_at)}
@@ -679,7 +682,7 @@ function ViewPostContent() {
                         <div className="flex items-start gap-3">
                           <div className="flex-1">
                             <p className="text-sm font-medium staff-text-secondary mb-2">
-                              Status
+                              {t.statusLabelDetail}
                             </p>
                             <span
                               className={`${getStatusBadgeColor(
@@ -698,7 +701,7 @@ function ViewPostContent() {
                   <div className="staff-card p-6">
                     <h3 className="text-lg font-bold staff-text-primary mb-4 flex items-center gap-2">
                       <IconTag className="h-5 w-5" />
-                      Tags
+                      {t.tagsLabel}
                     </h3>
 
                     {isEditing ? (
@@ -735,7 +738,7 @@ function ViewPostContent() {
                                 setShowTagDropdown(true);
                               }}
                               onFocus={() => setShowTagDropdown(true)}
-                              placeholder="Search or create tags..."
+                              placeholder={t.searchOrCreateTags}
                               className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                             />
                           </div>
@@ -744,7 +747,7 @@ function ViewPostContent() {
                             <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da] shadow-lg max-h-60 overflow-y-auto">
                               {isLoadingTags ? (
                                 <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                                  Loading tags...
+                                  {t.loadingTags}
                                 </div>
                               ) : (
                                 <>
@@ -768,11 +771,11 @@ function ViewPostContent() {
                                       ))
                                   ) : tagSearch.trim() ? (
                                     <div className="px-4 py-2 text-sm text-gray-500">
-                                      No tags found
+                                      {t.noTagsFound}
                                     </div>
                                   ) : (
                                     <div className="px-4 py-2 text-sm text-gray-500">
-                                      Start typing to search tags
+                                      {t.startTypingSearch}
                                     </div>
                                   )}
 
@@ -791,7 +794,7 @@ function ViewPostContent() {
                                         <IconPlus className="h-4 w-4" />
                                         {createTagMutation.isPending
                                           ? "Creating..."
-                                          : `Create "${tagSearch}"`}
+                                          : `${t.createTagWithName} "${tagSearch}"`}
                                       </button>
                                     )}
                                 </>
@@ -813,7 +816,7 @@ function ViewPostContent() {
                           ))
                         ) : (
                           <span className="text-sm staff-text-secondary">
-                            No tags
+                            {t.noTagsAssigned}
                           </span>
                         )}
                       </div>

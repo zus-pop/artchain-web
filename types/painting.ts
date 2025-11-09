@@ -47,5 +47,7 @@ export interface TopPainting {
 
 export interface Round2ImageRequest {
   paintingId: string;
-  image: File;
+  image?: File;
+  title?: string;
+  description?: string;
 }
