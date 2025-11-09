@@ -3,6 +3,7 @@
 import { WhoAmI } from "@/types";
 import Image from "next/image";
 import { useState } from "react";
+import { Lang } from "../../lib/i18n";
 
 // --- Dữ liệu giả lập cho các bài đã nộp ---
 // (Dựa trên hình ảnh của bạn)
@@ -31,12 +32,11 @@ const submittedArtworks = [
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
-  t: any; // Giữ prop 't' nhưng code này sẽ không dùng vì text trong ảnh là cố định
+  t: Lang; // Giữ prop 't' nhưng code này sẽ không dùng vì text trong ảnh là cố định
 }
 
 export default function CompetitorProfileScreen({
   authUser,
-  t,
 }: CompetitorProfileScreenProps) {
   // State để quản lý tab đang active
   const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
@@ -48,14 +48,16 @@ export default function CompetitorProfileScreen({
   const profile = {
     name: authUser?.fullName || "Việt Hoàng",
     school: authUser?.schoolName || "Trường Tiểu học Nha Trang",
-    class: (authUser as any)?.class || "Lớp 5", // Giả sử authUser có 'class'
+    class: authUser?.grade ? `Lớp ${authUser.grade}` : "Lớp 5", // Giả sử authUser có 'class'
     dob: authUser?.birthday
       ? new Date(authUser.birthday).toLocaleDateString("vi-VN")
       : "15/10/2004",
     ward: authUser?.ward || "Phường Sài Gòn",
     avatarUrl:
-      (authUser as any)?.avatarUrl || "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480", // <-- THAY BẰNG AVATAR THẬT
-    bannerUrl: "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022", // <-- THAY BẰNG BANNER THẬT
+      authUser?.avatarUrl ||
+      "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480", // <-- THAY BẰNG AVATAR THẬT
+    bannerUrl:
+      "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022", // <-- THAY BẰNG BANNER THẬT
   };
 
   return (
@@ -68,7 +70,7 @@ export default function CompetitorProfileScreen({
           alt="Banner"
           layout="fill"
           objectFit="cover"
-          className="bg-gradient-to-r from-blue-100 via-pink-100 to-orange-100" // Placeholder
+          className="bg-linear-to-r from-blue-100 via-pink-100 to-orange-100" // Placeholder
         />
       </div>
 
@@ -80,7 +82,7 @@ export default function CompetitorProfileScreen({
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 mt-[7vh]">
             {/* Left side: Avatar và Tên/Trường/Lớp */}
             <div className="flex items-end">
-              <div className="relative h-32 w-32 flex-shrink-0 sm:h-40 sm:w-40">
+              <div className="relative h-32 w-32 shrink-0 sm:h-40 sm:w-40">
                 <Image
                   src={profile.avatarUrl}
                   alt={profile.name}
@@ -107,12 +109,12 @@ export default function CompetitorProfileScreen({
                 </p>
               </div>
             </div>
-              <div className="mr-15">
-                <p className="text-sm font-medium text-gray-500">Phường</p>
-                <p className="mt-1 text-base font-semibold text-gray-900">
-                  {profile.ward}
-                </p>
-              </div>
+            <div className="mr-15">
+              <p className="text-sm font-medium text-gray-500">Phường</p>
+              <p className="mt-1 text-base font-semibold text-gray-900">
+                {profile.ward}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -160,10 +162,7 @@ export default function CompetitorProfileScreen({
           {activeTab === "submitted" && (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {submittedArtworks.map((art) => (
-                <div
-                  key={art.id}
-                  className="overflow-hidden"
-                >
+                <div key={art.id} className="overflow-hidden">
                   <div className="relative h-56 w-full">
                     <Image
                       src={art.imageUrl}

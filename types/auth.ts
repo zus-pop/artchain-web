@@ -20,6 +20,7 @@ export interface WhoAmI {
   fullName: string;
   email: string;
   role: UserRole;
+  avatarUrl?: string;
   phone?: string;
   birthday?: string;
   schoolName?: string;
