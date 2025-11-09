@@ -25,8 +25,8 @@ export function AnimatedRoleCard({
       className={cn(
         "relative h-32 w-full bg-white rounded-2xl overflow-hidden cursor-pointer group p-4 z-0 border-2 transition-all duration-300 bg-border border-gray-200 ",
         isSelected 
-          ? "border-red-500 shadow-lg" 
-          : "border-gray-200 hover:border-red-300 hover:shadow-md",
+          ? "border-orange-500 shadow-lg" 
+          : "border-gray-200 hover:border-orange-300 hover:shadow-md",
         className
       )}
       onClick={onClick}
@@ -34,11 +34,11 @@ export function AnimatedRoleCard({
       {/* Animated circle background */}
       <div
         className={cn(
-          "absolute h-20 w-20 -top-10 -right-10 rounded-full bg-red-500 transition-transform duration-500 z-[-1]",
-          isSelected || "group-hover:scale-[800%]"
+          "absolute h-20 w-20 -top-10 -right-10 rounded-full bg-orange-500 transition-transform duration-500 z-[-1]",
+          isSelected || "group-hover:scale-[850%]"
         )}
         style={{
-          transform: isSelected ? "scale(800%)" : undefined,
+          transform: isSelected ? "scale(850%)" : undefined,
         }}
       />
 
@@ -51,7 +51,7 @@ export function AnimatedRoleCard({
             : "border-gray-300 group-hover:border-white"
         )}>
           {isSelected && (
-            <div className="w-3 h-3 bg-red-500 rounded-full" />
+            <div className="w-3 h-3 bg-orange-500 rounded-full" />
           )}
         </div>
       </div> */}
@@ -62,7 +62,7 @@ export function AnimatedRoleCard({
           "text-xs absolute bottom-3 left-4 transition-all duration-500",
           isSelected 
             ? "text-white" 
-            : "text-red-600 group-hover:text-white"
+            : "text-orange-600 group-hover:text-white"
         )}
       >
         <span
@@ -70,7 +70,7 @@ export function AnimatedRoleCard({
             "relative before:h-[0.16em] before:absolute before:w-full before:content-[''] before:bottom-0 before:left-0 before:transition-colors before:duration-300",
             isSelected
               ? "before:bg-white"
-              : "before:bg-red-600 group-hover:before:bg-white"
+              : "before:bg-orange-600 group-hover:before:bg-white"
           )}
         >
         </span>
@@ -83,13 +83,13 @@ export function AnimatedRoleCard({
           "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-500 mt-1",
           isSelected 
             ? "bg-white/20" 
-            : "bg-red-100 group-hover:bg-white/20"
+            : "bg-orange-100 group-hover:bg-white/20"
         )}>
           <div className={cn(
             "transition-colors duration-500",
             isSelected 
               ? "text-white" 
-              : "text-red-600 group-hover:text-white"
+              : "text-orange-600 group-hover:text-white"
           )}>
             {icon}
           </div>

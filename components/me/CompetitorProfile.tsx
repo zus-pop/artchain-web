@@ -1,183 +1,199 @@
-import MySubmission from "@/components/tab/profile/MySubmission";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockArtPosts } from "@/store/mock/posts";
+"use client";
+
 import { WhoAmI } from "@/types";
 import Image from "next/image";
-import UserProfileCards from "../UserProfileCards";
+import { useState } from "react";
+
+// --- Dữ liệu giả lập cho các bài đã nộp ---
+// (Dựa trên hình ảnh của bạn)
+// Bạn sẽ thay thế phần này bằng dữ liệu thật từ API
+const submittedArtworks = [
+  {
+    id: 1,
+    imageUrl: "/images/art-example-1.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
+    submissionDate: "3/6/2025",
+    competitionName: "Vẽ tranh cho em",
+  },
+  {
+    id: 2,
+    imageUrl: "/images/art-example-2.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
+    submissionDate: "3/6/2025",
+    competitionName: "Vẽ tranh cho em",
+  },
+  {
+    id: 3,
+    imageUrl: "/images/art-example-3.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
+    submissionDate: "3/6/2025",
+    competitionName: "Vẽ tranh cho em",
+  },
+];
+// ------------------------------------------
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
-  t: {
-    galleryTab: string;
-    competitions: string;
-    mySubmissions: string;
-    aboutTab: string;
-    competitionsPlaceholder: string;
-    aboutPlaceholder: string;
-  };
+  t: any; // Giữ prop 't' nhưng code này sẽ không dùng vì text trong ảnh là cố định
 }
+
 export default function CompetitorProfileScreen({
   authUser,
   t,
 }: CompetitorProfileScreenProps) {
+  // State để quản lý tab đang active
+  const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
+    "submitted"
+  );
+
+  // Xử lý dữ liệu từ authUser, dùng fallback là dữ liệu trong ảnh
+  // LƯU Ý: Kiểu WhoAmI của bạn có thể không có 'class', bạn cần thêm vào nếu muốn dùng
+  const profile = {
+    name: authUser?.fullName || "Việt Hoàng",
+    school: authUser?.schoolName || "Trường Tiểu học Nha Trang",
+    class: (authUser as any)?.class || "Lớp 5", // Giả sử authUser có 'class'
+    dob: authUser?.birthday
+      ? new Date(authUser.birthday).toLocaleDateString("vi-VN")
+      : "15/10/2004",
+    ward: authUser?.ward || "Phường Sài Gòn",
+    avatarUrl:
+      (authUser as any)?.avatarUrl || "https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480", // <-- THAY BẰNG AVATAR THẬT
+    bannerUrl: "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022", // <-- THAY BẰNG BANNER THẬT
+  };
+
   return (
-    <>
-      <section className="relative block h-96">
-        <div
-          className="absolute top-0 w-full h-full bg-center bg-cover"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1597773150796-e5c14ebecbf5?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
-          }}
-        >
-          <span className="w-full h-full absolute opacity-40 bg-black"></span>
-        </div>
-      </section>
-      <section className="relative py-16 bg-transparent">
-        <div className="container mx-auto px-4">
-          <div className="relative flex flex-col min-w-0 wrap-break-word bg-white/90 backdrop-blur-sm w-full mb-6 shadow-xl -mt-64">
-            <div className="px-6">
-              <div className="flex flex-wrap justify-between items-start relative">
-                {/* Left side - Avatar and Name */}
-                <div className="w-full lg:w-6/12 px-4 flex items-start space-x-6">
-                  <div className="relative shrink-0">
-                    <Image
-                      alt="Profile"
-                      src="https://images.unsplash.com/photo-1727386245656-d6e2d264e6b8?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1057"
-                      width={150}
-                      height={150}
-                      className="shadow-xl rounded-full border-4 border-white absolute -top-16 max-w-[150px]"
-                    />
-                  </div>
-                  <div className="flex-1 pt-4 ml-40">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-3xl font-semibold leading-normal text-gray-800">
-                        {authUser ? authUser.fullName : "Loading..."}
-                      </h3>
-                      <button
-                        className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200"
-                        type="button"
-                        title="Edit Profile"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="text-sm leading-normal mt-0 mb-2 text-gray-500 font-bold uppercase">
-                      <i className="fas fa-university mr-2 text-lg text-blue-500"></i>
-                      {authUser ? authUser.schoolName : "School Name"}
-                    </div>
-                  </div>
-                </div>
+    <div className="min-h-screen bg-white">
+      {/* === Banner Section === */}
+      {/* Lấy banner có style giống ảnh (watercolor) */}
+      <div className="relative h-48 w-full sm:h-56">
+        <Image
+          src={profile.bannerUrl}
+          alt="Banner"
+          layout="fill"
+          objectFit="cover"
+          className="bg-gradient-to-r from-blue-100 via-pink-100 to-orange-100" // Placeholder
+        />
+      </div>
 
-                {/* Right side - Stats */}
-                <div className="w-full lg:w-6/12 px-4 mt-2">
-                  <div className="flex justify-center lg:justify-end items-center divide-x divide-gray-300">
-                    <UserProfileCards
-                      birthday={authUser?.birthday}
-                      ward={authUser?.ward}
-                    />
-                  </div>
-                </div>
+      {/* === Main Content Area === */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* === Profile Info Section === */}
+        {/* Dùng margin âm để kéo phần info này đè lên banner */}
+        <div className="relative -mt-24 sm:-mt-28">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 mt-[7vh]">
+            {/* Left side: Avatar và Tên/Trường/Lớp */}
+            <div className="flex items-end">
+              <div className="relative h-32 w-32 flex-shrink-0 sm:h-40 sm:w-40">
+                <Image
+                  src={profile.avatarUrl}
+                  alt={profile.name}
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-full border-4 border-white shadow-lg bg-gray-200"
+                />
               </div>
-
-              {/* Competitor Stats */}
-              <div className="py-10 border-t border-gray-200 text-center">
-                <div className="flex flex-wrap justify-center">
-                  <div className="w-full px-4">
-                    <div className="p-2 pt-3 pb-1.5 flex flex-col rounded-xl backdrop-blur-lg bg-gray-50/10 text-gray-200 w-full mx-auto mb-6">
-                      <div className="flex divide-x divide-neutral-800">
-                        <div className="flex-1 pr-6">
-                          <p className="text-xs font-medium text-neutral-500">
-                            Bài dự thi
-                          </p>
-                          <p className="text-xl font-semibold text-gray-800">
-                            50
-                          </p>
-                        </div>
-                        <div className="flex-1 pl-6">
-                          <p className="text-xs font-medium text-neutral-500">
-                            Giải thưởng
-                          </p>
-                          <p className="text-xl font-semibold text-gray-800">
-                            20
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div className="ml-4 sm:ml-6">
+                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                  {profile.name}
+                </h1>
+                <p className="mt-1 text-sm text-gray-600">{profile.school}</p>
+                <p className="text-sm text-gray-600">{profile.class}</p>
               </div>
-
-              {/* Competitor Tabs */}
-              <Tabs defaultValue="gallery" className="w-full">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="gallery">{t.galleryTab}</TabsTrigger>
-                  <TabsTrigger value="competitions">
-                    {t.competitions}
-                  </TabsTrigger>
-                  <TabsTrigger value="mySubmissions">
-                    {t.mySubmissions}
-                  </TabsTrigger>
-                  <TabsTrigger value="about">{t.aboutTab}</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="gallery" className="mb-8">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {mockArtPosts.map((post) => (
-                      <div
-                        key={post.id}
-                        className="rounded overflow-hidden shadow-lg bg-white"
-                      >
-                        <Image
-                          src={post.imageUrl}
-                          alt={post.title}
-                          width={300}
-                          height={192}
-                          className="w-full h-48 object-cover"
-                        />
-                        <div className="p-4">
-                          <h2 className="text-lg font-semibold">
-                            {post.title}
-                          </h2>
-                          <p className="text-sm text-gray-600">
-                            {post.category}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {new Date(post.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="competitions">
-                  <p>{t.competitionsPlaceholder}</p>
-                </TabsContent>
-                <TabsContent value="mySubmissions">
-                  <MySubmission />
-                </TabsContent>
-
-                <TabsContent value="about">
-                  <p>{t.aboutPlaceholder}</p>
-                </TabsContent>
-              </Tabs>
             </div>
+
+            {/* Right side: Thông tin Ngày sinh / Phường */}
+            <div className="flex w-full justify-start gap-8 sm:w-auto sm:justify-end">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Ngày sinh</p>
+                <p className="mt-1 text-base font-semibold text-gray-900">
+                  {profile.dob}
+                </p>
+              </div>
+            </div>
+              <div className="mr-15">
+                <p className="text-sm font-medium text-gray-500">Phường</p>
+                <p className="mt-1 text-base font-semibold text-gray-900">
+                  {profile.ward}
+                </p>
+              </div>
           </div>
         </div>
-      </section>
-    </>
+
+        {/* === Tabs Section === */}
+        {/* Thay thế Tabs của ShadCN bằng tab-nav đơn giản */}
+        <div className="mt-10">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              {/* Tab Đã nộp */}
+              <button
+                onClick={() => setActiveTab("submitted")}
+                className={`
+                  ${
+                    activeTab === "submitted"
+                      ? "border-black text-black"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  }
+                  whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Đã nộp
+              </button>
+
+              {/* Tab Giải thưởng */}
+              <button
+                onClick={() => setActiveTab("awards")}
+                className={`
+                  ${
+                    activeTab === "awards"
+                      ? "border-black text-black"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  }
+                  whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Giải thưởng
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* === Tab Content Section === */}
+        <div className="py-8">
+          {/* Nội dung tab "Đã nộp" */}
+          {activeTab === "submitted" && (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {submittedArtworks.map((art) => (
+                <div
+                  key={art.id}
+                  className="overflow-hidden"
+                >
+                  <div className="relative h-56 w-full">
+                    <Image
+                      src={art.imageUrl}
+                      alt={art.competitionName}
+                      layout="fill"
+                      objectFit="cover"
+                      className="bg-gray-200 rounded-md" // Placeholder
+                    />
+                  </div>
+                  <div className="py-2">
+                    <p className="text-sm text-gray-600">
+                      Ngày nộp: {art.submissionDate}
+                    </p>
+                    <p className="mt-1 font-medium text-gray-900">
+                      Cuộc thi: {art.competitionName}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Nội dung tab "Giải thưởng" (Placeholder) */}
+          {activeTab === "awards" && (
+            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+              <p className="text-gray-500">Chưa có giải thưởng nào.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 import React from 'react';
 
 const ClientLayout = ({
@@ -8,7 +7,7 @@ const ClientLayout = ({
 }>) => {
   return (
     <div>
-      <HeaderWrapper />
+      {/* <HeaderWrapper /> */}
       {children}
     </div>
   )
