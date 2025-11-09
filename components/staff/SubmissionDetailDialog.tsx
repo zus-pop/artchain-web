@@ -191,25 +191,6 @@ export function SubmissionDetailDialog({
     setRejectReason("");
   };
 
-  const handleRound2ImageUpload = () => {
-    if (round2Image && paintingId) {
-      const formData = new FormData();
-      formData.append("image", round2Image);
-
-      uploadRound2PaintingMutation.mutate(
-        {
-          paintingId,
-          image: round2Image,
-        },
-        {
-          onSuccess: () => {
-            onClose();
-          },
-        }
-      );
-    }
-  };
-
   const handleUpdatePaintingDetails = form.handleSubmit((data) => {
     const updateData: {
       paintingId: string;

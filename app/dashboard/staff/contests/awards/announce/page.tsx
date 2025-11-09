@@ -99,7 +99,7 @@ function AnnounceResultsPage() {
     useGetRound2TopByContestId(contestId);
 
   const contest = contestData?.data;
-  const paintings = (paintingsData?.data as TopPainting[]) || [];
+  const paintings = paintingsData?.data || [];
 
   // Create announcement post mutation
   const createPostMutation = createStaffPost();
@@ -261,18 +261,13 @@ function AnnounceResultsPage() {
       return;
     }
 
-    createPostMutation.mutate(
-      {
-        title: postTitle,
-        content: postContent,
-        file: selectedImage || undefined,
-        status: "DRAFT",
-        tag_ids: selectedTags.map((tag) => tag.tag_id),
-      },
-      {
-        onSuccess: (v) => {},
-      }
-    );
+    createPostMutation.mutate({
+      title: postTitle,
+      content: postContent,
+      file: selectedImage || undefined,
+      status: "DRAFT",
+      tag_ids: selectedTags.map((tag) => tag.tag_id),
+    });
   };
 
   if (isPublished) {

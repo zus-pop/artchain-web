@@ -1967,3 +1967,5 @@ export const translations = {
 export const useTranslation = (language: Language) => {
   return translations[language];
 };
+
+export type Lang = ReturnType<typeof useTranslation>;

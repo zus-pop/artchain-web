@@ -15,7 +15,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Award } from "@/types/award";
 import { TopPainting } from "@/types/painting";
 import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
+import { Lang, useTranslation } from "@/lib/i18n";
 import {
   IconArrowLeft,
   IconSpeakerphone,
@@ -47,7 +47,7 @@ function PaintingAwardRow({
   onRemove: (painting: TopPainting) => void;
   isProcessing: boolean;
   onImageClick: (imageUrl: string) => void;
-  t: any;
+  t: Lang;
 }) {
   const assignedAward = painting.award;
   return (

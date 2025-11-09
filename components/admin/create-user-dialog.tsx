@@ -10,16 +10,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRegisterMutation } from "@/hooks/useRegisterMutation";
+import { Lang, useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { RegisterRequest } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
 
 // Zod schema for create user form validation
-const createUserSchema = (t: any) =>
+const createUserSchema = (t: Lang) =>
   z.object({
     username: z
       .string()

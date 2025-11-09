@@ -23,7 +23,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { useAuth, useClientAuth } from "@/hooks";
+import { useClientAuth } from "@/hooks";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";

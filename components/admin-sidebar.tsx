@@ -4,7 +4,6 @@ import {
   IconChartBar,
   IconDashboard,
   IconReport,
-  IconSettings,
   IconShield,
   IconUsers,
 } from "@tabler/icons-react";
@@ -12,8 +11,8 @@ import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
 import { NavSettings } from "@/components/nav-settings";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -24,8 +23,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
-import { useAuth } from "../hooks";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../hooks";
 
 const data = {
   user: {

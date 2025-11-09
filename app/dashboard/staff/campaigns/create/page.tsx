@@ -20,11 +20,11 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CreateCampaignRequest } from "@/types/staff/campaign";
-import { useTranslation } from "@/lib/i18n";
+import { Lang, useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 
 // Zod schema for form validation
-const getCampaignSchema = (t: any) =>
+const getCampaignSchema = (t: Lang) =>
   z.object({
     title: z
       .string()
@@ -37,7 +37,7 @@ const getCampaignSchema = (t: any) =>
     goalAmount: z.number().min(1000, t.goalAmountMin),
     deadline: z.string().min(1, t.deadlineRequired),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
-    image: z.instanceof(File).refine((file) => file.size > 0, t.imageRequired),
+    image: z.any().refine((file) => file.size > 0, t.imageRequired),
   });
 
 type CampaignFormData = z.infer<ReturnType<typeof getCampaignSchema>>;
@@ -58,7 +58,7 @@ export default function CreateCampaignPage() {
       goalAmount: 0,
       deadline: "",
       status: "DRAFT",
-      image: undefined as any, // Will be set by file input
+      image: undefined, // Will be set by file input
     },
     mode: "all",
   });
@@ -285,7 +285,7 @@ export default function CreateCampaignPage() {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  form.setValue("image", undefined as any);
+                                  form.setValue("image", undefined);
                                   // Reset the file input
                                   const fileInput = document.getElementById(
                                     "campaign-image"
