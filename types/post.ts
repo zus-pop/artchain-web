@@ -2,6 +2,8 @@
  * Post DTOs for public posts API
  */
 
+import { PostStatus } from "./dashboard";
+
 export interface PostTag {
   post_id: number;
   tag_id: number;
@@ -30,7 +32,7 @@ export interface Post {
   title: string;
   content: string;
   image_url: string | null;
-  status: string;
+  status: PostStatus;
   published_at: string;
   created_at: string;
   updated_at: string;

@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
 import { useGetMySubmissions } from "@/apis/paintings";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatDate } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { Calendar, Eye, Loader2, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Trophy, Eye, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
 
 const statusColors = {
   PENDING: "bg-yellow-100 text-yellow-800 border-yellow-300",
@@ -25,16 +25,6 @@ const statusLabels = {
 
 const MySubmission = () => {
   const { data: submissions, isLoading, error } = useGetMySubmissions();
-
-  const formatDate = (dateString: string | Date) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   if (isLoading) {
     return (
@@ -174,7 +164,10 @@ const MySubmission = () => {
                 {/* Submission Date */}
                 <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Nộp lúc: {formatDate(submission.submissionDate)}</span>
+                  <span>
+                    Nộp lúc:{" "}
+                    {formatDate({ dateString: submission.submissionDate })}
+                  </span>
                 </div>
 
                 {/* Action Button */}

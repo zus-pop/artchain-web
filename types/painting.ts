@@ -24,10 +24,10 @@ export interface Painting {
   title: string;
   description?: string;
   imageUrl: string;
-  submissionDate: Date;
+  submissionDate: string;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TopPainting {

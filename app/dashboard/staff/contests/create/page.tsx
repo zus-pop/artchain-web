@@ -5,6 +5,8 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
@@ -19,127 +21,124 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-// Zod validation schema
-const createContestSchema = z
-  .object({
-    title: z.string().min(1, "Title is required").max(255, "Title is too long"),
-    description: z
-      .string()
-      .min(1, "Description is required")
-      .max(2000, "Description is too long"),
-    round2Quantity: z
-      .number()
-      .min(0, "Number of top competitors must be at least 0")
-      .max(100, "Number of top competitors is too high"),
-    numberOfTablesRound2: z
-      .number()
-      .min(0, "Number of tables must be at least 0")
-      .max(26, "Maximum of table round 2 is 26"),
-
-    startDate: z
-      .string()
-      .min(1, "Start date is required")
-      .refine((data) => new Date(data) > new Date(), {
-        message: "Start date must be in the future",
-        path: ["startDate"],
-      }),
-    endDate: z.string().min(1, "End date is required"),
-    banner: z
-      .instanceof(File)
-      .refine(
-        (file) => file.size <= 5 * 1024 * 1024, // 5MB
-        "Banner image must be less than 5MB"
-      )
-      .refine(
-        (file) =>
-          ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
-            file.type
-          ),
-        "Banner must be a valid image file (JPEG, PNG, WebP)"
-      ),
-    rule: z
-      .instanceof(File)
-      .refine(
-        (file) => file.size <= 20 * 1024 * 1024, // 10MB
-        "Rules file must be less than 10MB"
-      )
-      .refine(
-        (file) => file.type === "application/pdf",
-        "Rules file must be a PDF"
-      ),
-    roundStartDate: z.string().min(1, "Round start date is required"),
-    roundEndDate: z.string().min(1, "Round end date is required"),
-    roundSubmissionDeadline: z
-      .string()
-      .min(1, "Submission deadline is required"),
-    roundResultAnnounceDate: z
-      .string()
-      .min(1, "Result announcement date is required"),
-    roundSendOriginalDeadline: z
-      .string()
-      .min(1, "Original deadline is required"),
-  })
-
-  .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
-    message: "End date must be after start date",
-    path: ["endDate"],
-  })
-  .refine(
-    (data) => new Date(data.roundEndDate) > new Date(data.roundStartDate),
-    {
-      message: "Round end date must be after round start date",
-      path: ["roundEndDate"],
-    }
-  )
-  .refine(
-    (data) =>
-      new Date(data.roundSubmissionDeadline) >= new Date(data.roundStartDate),
-    {
-      message: "Submission deadline must be on or after round start date",
-      path: ["roundSubmissionDeadline"],
-    }
-  )
-  .refine(
-    (data) => {
-      // If round2Quantity is 0, numberOfTablesRound2 must also be 0
-      if (data.round2Quantity === 0) {
-        return data.numberOfTablesRound2 === 0;
+// Zod validation schema with translations
+const createContestSchema = (t: any) =>
+  z
+    .object({
+      title: z.string().min(1, t.titleRequired).max(255, t.titleTooLong),
+      description: z
+        .string()
+        .min(1, t.descriptionRequired)
+        .max(2000, t.descriptionTooLong),
+      round2Quantity: z
+        .number()
+        .min(0, t.topCompetitorsMin)
+        .max(100, t.topCompetitorsMax),
+      numberOfTablesRound2: z.number().min(0, t.tablesMin).max(26, t.tablesMax),
+      startDate: z
+        .string()
+        .min(1, t.startDateRequired)
+        .refine((data) => new Date(data) > new Date(), {
+          message: t.startDateMustBeFuture,
+        }),
+      endDate: z.string().min(1, t.endDateRequired),
+      banner: z
+        .any()
+        .refine((file) => file && file instanceof File, t.bannerRequired)
+        .refine(
+          (file) =>
+            file && file instanceof File && file.size <= 5 * 1024 * 1024, // 5MB
+          t.bannerTooLarge
+        )
+        .refine(
+          (file) =>
+            file &&
+            file instanceof File &&
+            ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
+              file.type
+            ),
+          t.bannerInvalidType
+        ),
+      rule: z
+        .any()
+        .refine((file) => file && file instanceof File, t.rulesRequired)
+        .refine(
+          (file) =>
+            file && file instanceof File && file.size <= 20 * 1024 * 1024, // 20MB
+          t.rulesTooLarge
+        )
+        .refine(
+          (file) =>
+            file && file instanceof File && file.type === "application/pdf",
+          t.rulesInvalidType
+        ),
+      roundStartDate: z.string().min(1, t.roundStartRequired),
+      roundEndDate: z.string().min(1, t.roundEndRequired),
+      roundSubmissionDeadline: z.string().min(1, t.submissionDeadlineRequired),
+      roundResultAnnounceDate: z.string().min(1, t.resultDateRequired),
+      roundSendOriginalDeadline: z.string().min(1, t.originalDeadlineRequired),
+    })
+    .refine((data) => new Date(data.endDate) > new Date(data.startDate), {
+      message: t.endDateAfterStart,
+      path: ["endDate"],
+    })
+    .refine(
+      (data) => new Date(data.roundEndDate) > new Date(data.roundStartDate),
+      {
+        message: t.roundEndAfterRoundStart,
+        path: ["roundEndDate"],
       }
-      // If round2Quantity > 0, numberOfTablesRound2 must be at least 1 and round2Quantity must be divisible by numberOfTablesRound2
-      return (
-        data.numberOfTablesRound2 >= 1 &&
-        data.round2Quantity % data.numberOfTablesRound2 === 0
-      );
-    },
-    {
-      message:
-        "Number of competitors must be evenly divisible by the number of tables",
-      path: ["numberOfTablesRound2"],
-    }
-  );
+    )
+    .refine(
+      (data) =>
+        new Date(data.roundSubmissionDeadline) >= new Date(data.roundStartDate),
+      {
+        message: t.submissionAfterRoundStart,
+        path: ["roundSubmissionDeadline"],
+      }
+    )
+    .refine(
+      (data) => {
+        // If round2Quantity is 0, numberOfTablesRound2 must also be 0
+        if (data.round2Quantity === 0) {
+          return data.numberOfTablesRound2 === 0;
+        }
+        // If round2Quantity > 0, numberOfTablesRound2 must be at least 1 and round2Quantity must be divisible by numberOfTablesRound2
+        return (
+          data.numberOfTablesRound2 >= 1 &&
+          data.round2Quantity % data.numberOfTablesRound2 === 0
+        );
+      },
+      {
+        message: t.competitorsEvenlyDivided,
+        path: ["numberOfTablesRound2"],
+      }
+    );
 
-type CreateContestFormData = z.infer<typeof createContestSchema>;
+type CreateContestFormData = z.infer<ReturnType<typeof createContestSchema>>;
 
 export default function CreateContestPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting, isValid, isDirty },
     setValue,
     watch,
     trigger,
   } = useForm<CreateContestFormData>({
-    mode: "all",
-    resolver: zodResolver(createContestSchema),
+    mode: "onChange",
+    resolver: zodResolver(createContestSchema(t)),
     defaultValues: {
       round2Quantity: 0,
       numberOfTablesRound2: 0,
@@ -151,6 +150,7 @@ export default function CreateContestPage() {
   // Watch date fields for interdependent validation
   const watchedStartDate = watch("startDate");
   const watchedRoundStartDate = watch("roundStartDate");
+  const watchedRule = watch("rule");
 
   // Cleanup banner preview URL on unmount
   React.useEffect(() => {
@@ -225,7 +225,8 @@ export default function CreateContestPage() {
   });
 
   const onSubmit = (data: CreateContestFormData) => {
-    createMutation.mutate(data);
+    console.log(data);
+    // createMutation.mutate(data);
   };
 
   const handleFileChange = (
@@ -234,7 +235,7 @@ export default function CreateContestPage() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      setValue(field, file);
+      setValue(field, file, { shouldValidate: true, shouldDirty: true });
       if (field === "banner") {
         const previewUrl = URL.createObjectURL(file);
         setBannerPreview(previewUrl);
@@ -253,16 +254,16 @@ export default function CreateContestPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Create Contest" />
+        <SiteHeader title={t.createContest} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
               items={[
                 {
-                  label: "Contest Management",
+                  label: t.contestManagement,
                   href: "/dashboard/staff/contests",
                 },
-                { label: "Create Contest" },
+                { label: t.createContest },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -279,10 +280,10 @@ export default function CreateContestPage() {
                   </Link>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      Create New Contest
+                      {t.createNewContest}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
-                      Set up a new art competition for young artists
+                      {t.setupNewArtCompetition}
                     </p>
                   </div>
                 </div>
@@ -294,19 +295,19 @@ export default function CreateContestPage() {
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconFileText className="h-5 w-5 " />
-                        Basic Information
+                        {t.basicInformation}
                       </h3>
 
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Contest Title *
+                            {t.contestTitle}
                           </label>
                           <input
                             type="text"
                             {...register("title")}
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Enter contest title"
+                            placeholder={t.enterContestTitle}
                           />
                           {errors.title && (
                             <p className="text-red-500 text-sm mt-1">
@@ -317,13 +318,13 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description *
+                            {t.description}
                           </label>
                           <textarea
                             {...register("description")}
                             rows={4}
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Describe the contest theme and objectives"
+                            placeholder={t.describeContestTheme}
                           />
                           {errors.description && (
                             <p className="text-red-500 text-sm mt-1">
@@ -337,14 +338,14 @@ export default function CreateContestPage() {
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconCalendar className="h-5 w-5 " />
-                        Contest Schedule & Round 2 Settings
+                        {t.contestScheduleRound2Settings}
                       </h3>
 
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Start Date *
+                              {t.startDate}
                             </label>
                             <Controller
                               name="startDate"
@@ -371,7 +372,7 @@ export default function CreateContestPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              End Date *
+                              {t.endDate}
                             </label>
                             <Controller
                               name="endDate"
@@ -400,7 +401,7 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Number of Top Competitors for Round 2 *
+                            {t.numberOfTopCompetitorsRound2}
                           </label>
                           <Controller
                             name="round2Quantity"
@@ -429,10 +430,10 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Number of Tables for Round 2 *
+                            {t.numberOfTablesRound2}
                             {watchedRound2Quantity === 0 && (
                               <span className="text-gray-500 text-xs ml-1">
-                                (Disabled when no competitors advance)
+                                {t.disabledWhenNoCompetitors}
                               </span>
                             )}
                           </label>
@@ -484,8 +485,8 @@ export default function CreateContestPage() {
                           )}
                           {watchedRound2Quantity > 0 && (
                             <p className="text-xs text-gray-600 mt-1">
-                              {watchedRound2Quantity} competitors ÷ tables =
-                              even distribution. Valid:{" "}
+                              {watchedRound2Quantity}{" "}
+                              {t.competitorsDivideTables}{" "}
                               {(() => {
                                 const divisors = [];
                                 for (
@@ -513,14 +514,14 @@ export default function CreateContestPage() {
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconTrophy className="h-5 w-5 text-yellow-600" />
-                        Round 1 Schedule
+                        {t.round1Schedule}
                       </h3>
 
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Round Start Date *
+                              {t.roundStartDate}
                             </label>
                             <Controller
                               name="roundStartDate"
@@ -547,7 +548,7 @@ export default function CreateContestPage() {
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Round End Date *
+                              {t.roundEndDate}
                             </label>
                             <Controller
                               name="roundEndDate"
@@ -576,7 +577,7 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Submission Deadline *
+                            {t.submissionDeadline}
                           </label>
                           <Controller
                             name="roundSubmissionDeadline"
@@ -604,7 +605,7 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Result Announcement Date *
+                            {t.resultAnnouncementDate}
                           </label>
                           <Controller
                             name="roundResultAnnounceDate"
@@ -632,7 +633,7 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Send Original Deadline *
+                            {t.sendOriginalDeadline}
                           </label>
                           <Controller
                             name="roundSendOriginalDeadline"
@@ -663,13 +664,13 @@ export default function CreateContestPage() {
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                         <IconUpload className="h-5 w-5" />
-                        Files
+                        {t.files}
                       </h3>
 
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Banner Image *
+                            {t.bannerImage}
                           </label>
                           <input
                             type="file"
@@ -679,7 +680,9 @@ export default function CreateContestPage() {
                           />
                           {errors.banner && (
                             <p className="text-red-500 text-sm mt-1">
-                              {errors.banner.message}
+                              {typeof errors.banner.message === "string"
+                                ? errors.banner.message
+                                : "Invalid banner file"}
                             </p>
                           )}
                           {bannerPreview && (
@@ -697,7 +700,7 @@ export default function CreateContestPage() {
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Rules File (PDF) *
+                            {t.rulesFilePDF}
                           </label>
                           <input
                             type="file"
@@ -707,12 +710,14 @@ export default function CreateContestPage() {
                           />
                           {errors.rule && (
                             <p className="text-red-500 text-sm mt-1">
-                              {errors.rule.message}
+                              {typeof errors.rule.message === "string"
+                                ? errors.rule.message
+                                : "Invalid rules file"}
                             </p>
                           )}
-                          {watch("rule") && (
+                          {watchedRule && (
                             <p className="text-sm text-gray-600 mt-1">
-                              Selected: {watch("rule")?.name}
+                              {t.selectedFile} {(watchedRule as File)?.name}
                             </p>
                           )}
                         </div>
@@ -726,7 +731,7 @@ export default function CreateContestPage() {
                     href="/dashboard/staff/contests"
                     className="px-6 py-2 border border-[#e6e2da] text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    Cancel
+                    {t.cancel}
                   </Link>
                   <button
                     type="submit"
@@ -737,8 +742,8 @@ export default function CreateContestPage() {
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
                     {isSubmitting || createMutation.isPending
-                      ? "Creating..."
-                      : "Create Contest"}
+                      ? t.creatingContest
+                      : t.createContest}
                   </button>
                 </div>
               </form>

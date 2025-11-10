@@ -27,35 +27,23 @@ import {
   type MDXEditorMethods,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import { forwardRef, useEffect } from "react";
+import { forwardRef } from "react";
 
 interface MDXEditorWrapperProps {
-  markdown: string;
-  onChange: (markdown: string) => void;
+  markdown?: string;
+  onChange?: (markdown: string) => void;
   placeholder?: string;
 }
 
 export const MDXEditorWrapper = forwardRef<
   MDXEditorMethods,
   MDXEditorWrapperProps
->(({ markdown, onChange, placeholder }, ref) => {
-  useEffect(() => {
-    if (ref && "current" in ref && ref.current && markdown) {
-      try {
-        // Try to set the markdown content programmatically
-        ref.current.setMarkdown(markdown);
-      } catch (error) {
-        console.log("Could not set markdown programmatically:", error);
-      }
-    }
-  }, [markdown, ref]);
-
+>(({ markdown = "", onChange, placeholder }, ref) => {
   return (
     <div className="mdx-editor-wrapper border border-[#e6e2da]">
       <MDXEditor
         ref={ref}
         markdown={markdown}
-        onChange={onChange}
         placeholder={placeholder}
         plugins={[
           headingsPlugin(),

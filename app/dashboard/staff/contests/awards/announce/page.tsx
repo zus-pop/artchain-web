@@ -10,8 +10,10 @@ import {
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
+import { MDXEditorWrapper } from "@/components/staff/MDXEditorWrapper";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { TopPainting } from "@/types/painting";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import {
   IconArrowLeft,
   IconCheck,
@@ -23,32 +25,36 @@ import {
   IconUsers,
   IconX,
 } from "@tabler/icons-react";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
 import { useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-
-const MDXEditorWrapper = dynamic(
-  () =>
-    import("@/components/staff/MDXEditorWrapper").then(
-      (mod) => mod.MDXEditorWrapper
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" />
-    ),
-  }
-);
+import { z } from "zod";
+import { useGetAwardsByContestId } from "@/apis/award";
+import type { MDXEditorMethods } from "@mdxeditor/editor";
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString("vi-VN");
 };
+
+const announcementSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .max(200, "Title must be less than 200 characters"),
+  content: z
+    .string()
+    .min(1, "Content is required")
+    .max(10000, "Content must be less than 10,000 characters"),
+  image: z.instanceof(File).optional(),
+  tag_ids: z.array(z.number()),
+});
+
+type AnnouncementFormData = z.infer<typeof announcementSchema>;
 
 interface Tag {
   tag_id: number;
@@ -69,10 +75,22 @@ function AnnounceResultsPage() {
   const router = useRouter();
   const contestId = searchParams.get("id") as string;
 
-  const [postTitle, setPostTitle] = useState("");
-  const [postContent, setPostContent] = useState(
-    "Loading announcement content..."
-  );
+  const editorRef = useRef<MDXEditorMethods>(null);
+
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+
+  // React Hook Form setup
+  const form = useForm<AnnouncementFormData>({
+    resolver: zodResolver(announcementSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      tag_ids: [],
+    },
+    mode: "all",
+  });
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
@@ -86,63 +104,62 @@ function AnnounceResultsPage() {
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  const { currentLanguage } = useLanguageStore();
-  const t = useTranslation(currentLanguage);
-
   const { data: contestData } = useQuery({
     queryKey: ["staff-contest", contestId],
     queryFn: () => getStaffContestById(Number(contestId)),
     enabled: !!contestId,
   });
 
-  const { data: paintingsData, isLoading: paintingsLoading } =
-    useGetRound2TopByContestId(contestId);
+  const { data: awardData, isLoading: paintingsLoading } =
+    useGetAwardsByContestId(contestId);
 
   const contest = contestData?.data;
-  const paintings = paintingsData?.data || [];
+  const awards = awardData?.data || [];
+  const paintings = awards.flatMap((award) =>
+    award.paintings.map((painting) => ({ ...painting, award }))
+  );
 
   // Create announcement post mutation
   const createPostMutation = createStaffPost();
 
   // Generate predefined content based on awarded paintings
-  const generateAnnouncementContent = () => {
-    if (!contest || paintings.length === 0) return "";
+  const generateAnnouncementContent = useCallback(() => {
+    if (!contest || awards.length === 0) return "";
 
-    let content = `🎉 **Contest Results Announced!** 🎉\n\n`;
-    content += `We're thrilled to announce the winners of **${contest.title}**!\n\n`;
-    content += `## 🏆 Winners\n\n`;
+    let num = 0;
+    let content = `🎉 **${t.contestResultsAnnounced}** 🎉\n\n`;
+    content += `${t.thrilledToAnnounceWinners} **${contest.title}**!\n\n`;
+    content += `## 🏆 ${t.winnersSection}\n\n`;
 
     // Sort by award rank
-    const sortedWinners = [...paintings].sort((a, b) => {
-      if (!a.award || !b.award) return 0;
-      return a.award.rank - b.award.rank;
+    const sortedAwards = [...awards].sort((a, b) => {
+      if (!a.rank || !b.rank) return 0;
+      return a.rank - b.rank;
     });
 
-    sortedWinners.forEach((painting, index) => {
-      if (painting.award) {
-        content += `**${index + 1}. ${painting.award.name}**\n`;
-        content += `- **Artwork:** "${painting.title}"\n`;
-        content += `- **Artist:** ${painting.competitorName}\n`;
-        content += `- **Prize:** ${formatCurrency(
-          parseFloat(painting.award.prize)
-        )} ₫\n`;
-        content += `- **Score:** ${painting.avgScoreRound2.toFixed(2)}\n\n`;
-      }
+    sortedAwards.forEach((award) => {
+      award.paintings.forEach((painting) => {
+        num++;
+        content += `**${num}. ${award.name}**\n`;
+        content += `- **${t.artworkLabel}** "${painting.title}"\n`;
+        content += `- **${t.artistLabel}** ${painting.competitorName}\n`;
+        content += `- **${t.prizeLabel}** ${formatCurrency(
+          parseFloat(award.prize)
+        )} ₫\n\n`;
+        content += `- **${t.scoreLabel}** ${painting.averageScore}\n`;
+      });
     });
 
-    content += `## 📊 Contest Summary\n`;
-    content += `- **Total Participants:** ${paintings.length}\n`;
-    content += `- **Winners Announced:** ${paintings.length}\n\n`;
+    content += `## 📊 ${t.contestSummary}\n`;
+    content += `- **${t.totalWinners}** ${num}\n\n`;
 
-    content += `Congratulations to all the winners! Your talent and creativity have truly shone through. `;
-    content += `Thank you to everyone who participated in this amazing contest.\n\n`;
-    content += `#ContestResults #${contest.title.replace(
+    content += `${t.congratulationsMessage}\n\n`;
+    content += `${t.contestResultsHashtag} #${contest.title.replace(
       /\s+/g,
       ""
-    )} #ArtCompetition`;
-
+    )} ${t.artCompetitionHashtag}`;
     return content;
-  };
+  }, [contest, awards, t]);
 
   // Handle tag selection
   const handleSelectTag = (tag: Tag) => {
@@ -181,14 +198,14 @@ function AnnounceResultsPage() {
 
   // Auto-generate content when contest and paintings data is loaded
   useEffect(() => {
-    if (contest && paintings.length > 0) {
+    if (contest && awards.length > 0) {
       const generatedTitle = `${contest.title} - Results Announced!`;
       const generatedContent = generateAnnouncementContent();
 
-      setPostTitle(generatedTitle);
-      setPostContent(generatedContent);
+      form.setValue("title", generatedTitle);
+      editorRef.current?.setMarkdown(generatedContent);
     }
-  }, [contest, paintings, generateAnnouncementContent]);
+  }, [contest, awards, generateAnnouncementContent, form]);
 
   // Fetch tags based on search query
   useEffect(() => {
@@ -230,20 +247,31 @@ function AnnounceResultsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handlePublish = async () => {
-    if (!postTitle.trim() || !postContent.trim()) {
-      toast.error(t.fillBothTitleContent);
+  // Sync selected tags with form
+  useEffect(() => {
+    form.setValue(
+      "tag_ids",
+      selectedTags.map((tag) => tag.tag_id)
+    );
+  }, [selectedTags, form]);
+
+  const handlePublish = form.handleSubmit(async (data) => {
+    const currentContent = editorRef.current?.getMarkdown() || "";
+
+    // Validate content separately since it's not in the form
+    if (!currentContent.trim()) {
+      form.setError("content", { message: "Content is required" });
       return;
     }
 
     setIsPublishing(true);
     createPostMutation.mutate(
       {
-        title: postTitle,
-        content: postContent,
+        title: data.title,
+        content: currentContent,
         file: selectedImage || undefined,
         status: "PUBLISHED",
-        tag_ids: selectedTags.map((tag) => tag.tag_id),
+        tag_ids: data.tag_ids,
       },
       {
         onSuccess: (v) => {
@@ -251,24 +279,37 @@ function AnnounceResultsPage() {
           setIsPublishing(false);
           router.push(`/dashboard/staff/posts/${v.data.post_id}`);
         },
+        onError: () => {
+          setIsPublishing(false);
+        },
       }
     );
-  };
+  });
 
-  const handleSaveDraft = async () => {
-    if (!postTitle.trim() || !postContent.trim()) {
-      toast.error(t.fillBothTitleContent);
+  const handleSaveDraft = form.handleSubmit(async (data) => {
+    const currentContent = editorRef.current?.getMarkdown() || "";
+
+    // Validate content separately since it's not in the form
+    if (!currentContent.trim()) {
+      form.setError("content", { message: "Content is required" });
       return;
     }
 
-    createPostMutation.mutate({
-      title: postTitle,
-      content: postContent,
-      file: selectedImage || undefined,
-      status: "DRAFT",
-      tag_ids: selectedTags.map((tag) => tag.tag_id),
-    });
-  };
+    createPostMutation.mutate(
+      {
+        title: data.title,
+        content: currentContent,
+        file: selectedImage || undefined,
+        status: "DRAFT",
+        tag_ids: data.tag_ids,
+      },
+      {
+        onSuccess: (v) => {
+          router.push(`/dashboard/staff/posts/${v.data.post_id}`);
+        },
+      }
+    );
+  });
 
   if (isPublished) {
     return (
@@ -311,10 +352,10 @@ function AnnounceResultsPage() {
                       <button
                         onClick={() => {
                           setIsPublished(false);
-                          setPostTitle("");
-                          setPostContent("");
+                          form.reset();
                           setSelectedImage(null);
                           setSelectedTags([]);
+                          editorRef.current?.setMarkdown("");
                         }}
                         className="border border-green-300 text-green-700 px-4 py-2 hover:bg-green-50 transition-colors"
                       >
@@ -398,7 +439,7 @@ function AnnounceResultsPage() {
                     {/* Upload Area */}
                     <div className="space-y-4">
                       <div
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
+                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#d9534f] transition-colors cursor-pointer"
                         onClick={() =>
                           document.getElementById("image-upload")?.click()
                         }
@@ -473,6 +514,7 @@ function AnnounceResultsPage() {
                         id="image-upload"
                         type="file"
                         accept="image/*"
+                        {...form.register("image")}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
@@ -487,6 +529,7 @@ function AnnounceResultsPage() {
                               return;
                             }
                             setSelectedImage(file);
+                            form.setValue("image", file);
                           }
                         }}
                         className="hidden"
@@ -513,11 +556,15 @@ function AnnounceResultsPage() {
                         </label>
                         <input
                           type="text"
-                          value={postTitle}
-                          onChange={(e) => setPostTitle(e.target.value)}
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Enter announcement title..."
+                          {...form.register("title")}
+                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                          placeholder={t.enterAnnouncementTitle}
                         />
+                        {form.formState.errors.title && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {form.formState.errors.title.message}
+                          </p>
+                        )}
                       </div>
 
                       {/* Content */}
@@ -526,12 +573,16 @@ function AnnounceResultsPage() {
                           {t.postContentRequired}
                         </label>
                         <MDXEditorWrapper
-                          markdown={postContent}
-                          onChange={(value) => setPostContent(value)}
+                          ref={editorRef}
                           placeholder={t.announcementContentAutoGenerated}
                         />
+                        {form.formState.errors.content && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {form.formState.errors.content.message}
+                          </p>
+                        )}
                         <p className="text-xs staff-text-secondary mt-2">
-                          Use the toolbar to format your content with Markdown
+                          {t.useToolbarFormatContent}
                         </p>
                       </div>
                     </div>
@@ -583,7 +634,7 @@ function AnnounceResultsPage() {
                             }}
                             onFocus={() => setShowTagDropdown(true)}
                             placeholder={t.searchOrCreateTags}
-                            className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                            className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f] text-sm"
                           />
                         </div>
 

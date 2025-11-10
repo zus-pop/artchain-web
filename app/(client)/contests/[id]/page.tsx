@@ -1,12 +1,13 @@
 "use client";
 
 import { useGetContestById } from "@/apis/contests";
+import { useAuth } from "@/hooks";
+import { formatDate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, Clock, Star, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useAuth } from "@/hooks";
 
 const statusColors = {
   UPCOMING: "bg-red-400",
@@ -33,17 +34,6 @@ export default function ContestDetailPage() {
   const params = useParams();
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const getTimeRemaining = (endDate: string) => {
     const now = new Date();
@@ -244,7 +234,7 @@ export default function ContestDetailPage() {
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-gray-800 font-medium">Bắt đầu</span>
               </div>
-              <p className="text-gray-600">{formatDate(contest.startDate)}</p>
+              <p className="text-gray-600">{formatDate({dateString: contest.startDate})}</p>
             </div>
           </div>
 
@@ -255,7 +245,7 @@ export default function ContestDetailPage() {
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-gray-800 font-medium">Kết thúc</span>
               </div>
-              <p className="text-gray-600">{formatDate(contest.endDate)}</p>
+              <p className="text-gray-600">{formatDate({dateString: contest.endDate})}</p>
             </div>
           </div>
         </div>

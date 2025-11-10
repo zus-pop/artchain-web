@@ -1,5 +1,6 @@
 "use client";
 
+import { getStaffContestById, updateStaffContest } from "@/apis/staff";
 import {
   Dialog,
   DialogContent,
@@ -7,12 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getStaffContestById, updateStaffContest } from "@/apis/staff";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { IconTrophy, IconCalendar, IconEdit } from "@tabler/icons-react";
-import Image from "next/image";
+import { formatDate } from "@/lib/utils";
 import { ContestStatus } from "@/types/contest";
+import { IconCalendar, IconEdit, IconTrophy } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
+import { useState } from "react";
+import { Contest } from "../../types";
 
 interface ContestDetailDialogProps {
   contestId: string | null;
@@ -36,7 +38,7 @@ export function ContestDetailDialog({
     staleTime: 1 * 60 * 1000,
   });
 
-  const contest = contestData?.data;
+  const contest: Contest = contestData?.data;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -56,7 +58,7 @@ export function ContestDetailDialog({
         title: contest.title,
         description: contest.description,
         bannerUrl: contest.bannerUrl || "",
-        numOfAward: contest.numOfAward,
+        numOfAward: contest.numOfAward ?? 0,
         startDate: contest.startDate,
         endDate: contest.endDate,
         status: contest.status,
@@ -83,16 +85,6 @@ export function ContestDetailDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate(formData);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -129,7 +121,7 @@ export function ContestDetailDialog({
                     title: contest.title,
                     description: contest.description,
                     bannerUrl: contest.bannerUrl || "",
-                    numOfAward: contest.numOfAward,
+                    numOfAward: contest.numOfAward ?? 0,
                     startDate: contest.startDate,
                     endDate: contest.endDate,
                     status: contest.status,
@@ -364,7 +356,7 @@ export function ContestDetailDialog({
                         Start Date
                       </div>
                       <div className="text-sm font-medium">
-                        {formatDate(contest.startDate)}
+                        {formatDate({ dateString: contest.startDate })}
                       </div>
                     </div>
                     <div>
@@ -373,7 +365,7 @@ export function ContestDetailDialog({
                         End Date
                       </div>
                       <div className="text-sm font-medium">
-                        {formatDate(contest.endDate)}
+                        {formatDate({ dateString: contest.endDate })}
                       </div>
                     </div>
                   </div>
@@ -431,11 +423,15 @@ export function ContestDetailDialog({
                                       <span className="font-medium">
                                         Start:
                                       </span>{" "}
-                                      {formatDate(round.startDate)}
+                                      {formatDate({
+                                        dateString: round.startDate,
+                                      })}
                                     </div>
                                     <div>
                                       <span className="font-medium">End:</span>{" "}
-                                      {formatDate(round.endDate)}
+                                      {formatDate({
+                                        dateString: round.endDate,
+                                      })}
                                     </div>
                                   </div>
                                 )}
@@ -445,7 +441,9 @@ export function ContestDetailDialog({
                                     <span className="font-medium">
                                       Submission Deadline:
                                     </span>{" "}
-                                    {formatDate(round.submissionDeadline)}
+                                    {formatDate({
+                                      dateString: round.submissionDeadline,
+                                    })}
                                   </div>
                                 )}
 
@@ -454,7 +452,9 @@ export function ContestDetailDialog({
                                     <span className="font-medium">
                                       Result Announce:
                                     </span>{" "}
-                                    {formatDate(round.resultAnnounceDate)}
+                                    {formatDate({
+                                      dateString: round.resultAnnounceDate,
+                                    })}
                                   </div>
                                 )}
                               </div>

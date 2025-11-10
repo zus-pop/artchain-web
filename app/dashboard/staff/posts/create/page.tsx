@@ -1,9 +1,14 @@
 "use client";
 
+import { createStaffTag, getStaffTags, updateStaffPost } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
+import { MDXEditorWrapper } from "@/components/staff/MDXEditorWrapper";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import myAxios from "@/lib/custom-axios";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { Post, PostStatus } from "@/types/dashboard";
 import {
   IconArrowLeft,
@@ -15,29 +20,11 @@ import {
   IconTag,
   IconX,
 } from "@tabler/icons-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState, useRef } from "react";
-import { getStaffTags, createStaffTag, updateStaffPost } from "@/apis/staff";
-import myAxios from "@/lib/custom-axios";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import dynamic from "next/dynamic";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
-
-const MDXEditorWrapper = dynamic(
-  () =>
-    import("@/components/staff/MDXEditorWrapper").then(
-      (mod) => mod.MDXEditorWrapper
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" />
-    ),
-  }
-);
 
 interface PostFormData {
   title: string;

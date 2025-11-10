@@ -1,3 +1,4 @@
+import { Language } from "@/store/language-store";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -24,4 +25,32 @@ export function formatCurrency(amount: number): string {
  */
 export function formatNumber(number: number): string {
   return new Intl.NumberFormat("vi-VN").format(number);
+}
+/**
+ * Format date to the specified locale
+ * @param dateString - The date string to format
+ * @param locale - The locale string (e.g., "vi-VN", "en-US")
+ * @param showTime - Whether to include time in the format
+ * @returns Formatted date string
+ */
+export function formatDate({
+  dateString,
+  locale = "vi-VN",
+  showTime = false,
+  language = "vi",
+}: {
+  dateString: string;
+  language?: Language;
+  locale?: string;
+  showTime?: boolean;
+}): string {
+  if (language === "en") {
+    locale = "en-US";
+  }
+  const date = new Date(dateString);
+  const options: Intl.DateTimeFormatOptions = {
+    dateStyle: "medium",
+    ...(showTime && { timeStyle: "short" }),
+  };
+  return date.toLocaleString(locale, options);
 }
