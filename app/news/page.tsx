@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import GlassSurface from "@/components/GlassSurface";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useGetContestsPaginated } from "@/apis/contests";
+import { getCampaigns } from "@/apis/campaign";
 import { getPosts } from "@/apis/post";
 import { Post } from "@/types/post";
 
@@ -110,10 +111,45 @@ export default function Page() {
   const navItems = [
     "Trang chủ",
     "Cuộc thi",
-    "Triển lãm",
-    "Bài viết",
+    "Tin tức",
     "Chiến dịch",
   ];
+
+  const sectionIds = ['hero', 'contest', 'news', 'campaigns'];
+
+  // Scroll to top state and function
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Active section state for header highlighting
+  const [activeSection, setActiveSection] = useState('hero');
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY + 200; // offset to detect section earlier
+      const sections = sectionIds.map(id => ({
+        id,
+        offset: document.getElementById(id)?.offsetTop || 0
+      }));
+      const current = sections.reverse().find(section => scrollY >= section.offset);
+      setActiveSection(current?.id || 'hero');
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Set initial active section
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Fetch active contest for contest info section
   const { data: activeContests, isLoading: isLoadingContest } = useGetContestsPaginated("ACTIVE", 1, 1);
@@ -122,6 +158,8 @@ export default function Page() {
   // News posts fetched to fill the NewsCardSmall components (do not change UI)
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState<boolean>(true);
 
   useEffect(() => {
     let mounted = true;
@@ -134,6 +172,30 @@ export default function Page() {
         console.error("Error fetching posts:", err);
       } finally {
         if (mounted) setLoadingPosts(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // fetch campaigns (limit = 3)
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingCampaigns(true);
+        const resp = await getCampaigns({ limit: 3 });
+        // resp shape may vary; try common properties
+  const anyResp: any = resp;
+  const items = anyResp?.data ?? anyResp?.campaigns ?? anyResp?.items ?? anyResp ?? [];
+  if (mounted) setCampaigns(Array.isArray(items) ? items.slice(0, 3) : []);
+      } catch (err) {
+        console.error("Error fetching campaigns:", err);
+        if (mounted) setCampaigns([]);
+      } finally {
+        if (mounted) setLoadingCampaigns(false);
       }
     })();
 
@@ -183,15 +245,16 @@ export default function Page() {
               alt="Artchain Logo"
               className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
             />
-            <nav className="hidden lg:flex gap-6">
+            <nav className="hidden lg:flex gap-9">
               {navItems.map((item, index) => (
-                <a
+                <button
                   key={item}
-                  href="#"
-                  className={`text-sm font-medium whitespace-nowrap ${index === 0 ? 'text-black border-b-2 border-black pb-1' : 'text-black hover:text-black'} transition-colors`}
+                  onClick={() => scrollToSection(sectionIds[index])}
+                  className={`relative text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${activeSection === sectionIds[index] ? 'transform -translate-y-0.5' : ''}`}
                 >
                   {item}
-                </a>
+                  <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-black transition-transform duration-300 ease-in-out origin-center ${activeSection === sectionIds[index] ? 'scale-x-100' : 'scale-x-0'}`}></span>
+                </button>
               ))}
             </nav>
 
@@ -221,7 +284,7 @@ export default function Page() {
 
       <main>
         {/* --- Hero Section --- */}
-        <section className="relative h-screen min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] flex items-center text-white pt-16 sm:pt-20">
+        <section id="hero" className="relative h-screen min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] flex items-center text-white pt-16 sm:pt-20">
           <div className="absolute inset-0">
             <img
               src="https://res.cloudinary.com/dbke1s5nm/image/upload/v1762177079/herosection_jznhnz.png"
@@ -270,6 +333,7 @@ export default function Page() {
 
         {/* --- Contest Info Section --- */}
         <AnimatedContainer
+          id="contest"
           className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden"
           animation="animate-fade-in-left"
         >
@@ -325,6 +389,7 @@ export default function Page() {
 
         {/* --- News Section with 3 Columns --- */}
         <AnimatedContainer
+          id="news"
           className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32"
           animation="animate-zoom-in"
         >
@@ -425,6 +490,7 @@ export default function Page() {
 
         {/* --- Campaigns Section --- */}
         <AnimatedContainer
+          id="campaigns"
           className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32"
           animation="animate-fade-in-right"
         >
@@ -436,25 +502,66 @@ export default function Page() {
               Chiến dịch đang diễn ra
             </AnimatedContainer>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
-              <CampaignCard
-                imgSrc="https://placehold.co/400x300/2ecc71/ffffff?text=Campaign+1"
-                title="Gieo Mầm Tài Năng Trẻ"
-                description="Mục tiêu gây quỹ để mua vật liệu vẽ<br />chất lượng và tổ chức các buổi<br />workshop miễn phí cho thí sinh."
-              />
-              <CampaignCard
-                imgSrc="https://placehold.co/400x300/f1c40f/ffffff?text=Campaign+2"
-                title="Tiếp Sức Nét Cọ"
-                description="Kêu gọi cộng đồng hỗ trợ kinh phí in<br />ấn, trưng bày tác phẩm tại triển lãm<br />cuối cuộc thi."
-              />
-              <CampaignCard
-                imgSrc="https://placehold.co/400x300/e74c3c/ffffff?text=Campaign+3"
-                title="Mơ Ước Màu Nước"
-                description="Mục tiêu gây quỹ nhỏ nhằm cung cấp<br />dụng cụ vẽ cho các thí sinh có hoàn<br />cảnh khó khăn tham gia."
-              />
+              {loadingCampaigns ? (
+                // show placeholders while loading
+                [1, 2, 3].map((i) => (
+                  <CampaignCard
+                    key={i}
+                    imgSrc={`https://placehold.co/400x300/cccccc/333333?text=Loading+${i}`}
+                    title={`Đang tải...`}
+                    description={""}
+                  />
+                ))
+              ) : campaigns.length > 0 ? (
+                campaigns.map((c, idx) => (
+                  <CampaignCard
+                    key={c.campaignId ?? c.id ?? idx}
+                    imgSrc={c.bannerUrl || c.image || c.thumb || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
+                    title={c.title || c.name || "Không có tiêu đề"}
+                    description={c.description || c.summary || ""}
+                  />
+                ))
+              ) : (
+                // fallback static content if no campaigns
+                [
+                  {
+                    imgSrc: "https://placehold.co/400x300/2ecc71/ffffff?text=Campaign+1",
+                    title: "Gieo Mầm Tài Năng Trẻ",
+                    description:
+                      "Mục tiêu gây quỹ để mua vật liệu vẽ<br />chất lượng và tổ chức các buổi<br />workshop miễn phí cho thí sinh.",
+                  },
+                  {
+                    imgSrc: "https://placehold.co/400x300/f1c40f/ffffff?text=Campaign+2",
+                    title: "Tiếp Sức Nét Cọ",
+                    description:
+                      "Kêu gọi cộng đồng hỗ trợ kinh phí in<br />ấn, trưng bày tác phẩm tại triển lãm<br />cuối cuộc thi.",
+                  },
+                  {
+                    imgSrc: "https://placehold.co/400x300/e74c3c/ffffff?text=Campaign+3",
+                    title: "Mơ Ước Màu Nước",
+                    description:
+                      "Mục tiêu gây quỹ nhỏ nhằm cung cấp<br />dụng cụ vẽ cho các thí sinh có hoàn<br />cảnh khó khăn tham gia.",
+                  },
+                ].map((item, i) => (
+                  <CampaignCard key={i} imgSrc={item.imgSrc} title={item.title} description={item.description} />
+                ))
+              )}
             </div>
           </div>
         </AnimatedContainer>
       </main>
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
 
       {/* --- Footer --- */}
       <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">

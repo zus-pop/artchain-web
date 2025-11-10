@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import Header from "./Header";
 
 // Định nghĩa các đường dẫn bạn muốn ẩn header
-const HIDDEN_PATHS = ["/"]; // Trang chủ
+const HIDDEN_PATHS = ["/","/auth"]; // Trang chủ
 
 // Định nghĩa các đường dẫn và giá trị defaultTab tương ứng
 // contest: 1, gallery: 2, prizes: 3

@@ -8,6 +8,36 @@
   height: auto;
   min-height: calc(var(--height, 200px) + 120px);
   overflow: visible; /* allow date and captions to show outside */
+  --width: 400px;
+  --height: 250px;
+}
+
+@media (max-width: 1024px) {
+  .slider {
+    --width: 350px;
+    --height: 220px;
+  }
+}
+
+@media (max-width: 768px) {
+  .slider {
+    --width: 300px;
+    --height: 200px;
+  }
+}
+
+@media (max-width: 640px) {
+  .slider {
+    --width: 250px;
+    --height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slider {
+    --width: 200px;
+    --height: 130px;
+  }
 }
 
 .slider .list {
@@ -43,7 +73,7 @@
 .slider .list .item .item-date {
   position: absolute;
   /* align with the top edge of the image (same row) and sit just outside to the right */
-  top: 11vh;                /* small margin from top of image */
+  top: 12vh;                /* small margin from top of image */
   right: -20px;            /* small offset to sit just outside the image frame */
   transform: rotate(90deg);
   transform-origin: top right;
@@ -53,6 +83,20 @@
   font-size: 0.95rem;
   letter-spacing: 0.5px;
   pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .slider .list .item .item-date {
+    font-size: 0.8rem;
+    right: -15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slider .list .item .item-date {
+    font-size: 0.7rem;
+    right: -10px;
+  }
 }
 
 .slider .list .item img {

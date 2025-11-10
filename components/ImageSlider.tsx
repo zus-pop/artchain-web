@@ -102,9 +102,9 @@ const images: ImageItem[] = [
 // ------------------------------------
 const ImageSlider: React.FC = () => {
   return (
-    <section className="py-10 px-6">
+    <section className="py-10 bg-[#EAE6E0] px-6">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-2xl font-semibold text-[#423137] mb-8">Bộ sưu tập</h2>
+        <h2 className="text-2xl font-semibold text-[#423137] mb-20">Bộ sưu tập</h2>
         <div
           className="slider"
           style={{

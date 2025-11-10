@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, Clock, Star, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks";
 
 const statusColors = {
@@ -42,6 +42,7 @@ const statusPillStyles: Record<string, string> = {
 export default function ContestDetailPage() {
   const { user } = useAuth();
   const params = useParams();
+  const router = useRouter();
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
 
@@ -105,10 +106,10 @@ export default function ContestDetailPage() {
   }
 
   return (
-    <div className="h-full bg-[#e8e3d9] pt-20 px-4 lg:px-8 text-black">
-      <div className="max-w-7xl mx-auto py-8">
+    <div className="min-h-screen bg-[#EAE6E0] pt-16 sm:pt-20 px-4 sm:px-6 lg:px-8 text-black">
+      <div className="max-w-7xl mx-auto py-6 sm:py-8">
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Left Column - Image */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -116,7 +117,7 @@ export default function ContestDetailPage() {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="relative h-[400px] overflow-hidden rounded-lg shadow-lg">
+            <div className="relative h-[500px] overflow-hidden rounded-lg shadow-lg">
               {contest.bannerUrl ? (
                 <Image
                   src={contest.bannerUrl}
@@ -155,22 +156,22 @@ export default function ContestDetailPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col justify-between h-[400px]"
+            className="flex flex-col justify-between h-[500px] space-y-4 sm:space-y-6"
           >
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <p className="text-base font-semibold text-black mb-2">
+                <p className="text-sm sm:text-base font-semibold text-black mb-2">
                   Chi tiết cuộc thi
                 </p>
-                <h1 className="text-4xl lg:text-4xl font-bold text-black mb-4 leading-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-3 sm:mb-4 leading-tight">
                   {contest.title}
                 </h1>
-                <p className="text-black text-base">
+                <p className="text-sm sm:text-base text-black">
                   {contest.description}
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex flex-wrap items-baseline gap-3">
                   <p className="text-base font-semibold text-black mb-0">
                     Thời gian:
@@ -195,13 +196,37 @@ export default function ContestDetailPage() {
                     Lưu ý:
                   </p>
                   <p className="text-black">
-                    Thí sinh cần nộp bản cứng tác phẩm trước ngày 30-4-1974
+                    Thí sinh cần nộp bản cứng tác phẩm trước ngày{" "}
+                    {(() => {
+                      const round1 = contest.rounds.find(
+                        (r) => r.name === "ROUND_1"
+                      );
+                      const deadline = round1?.sendOriginalDeadline;
+                      return deadline
+                        ? new Date(deadline).toLocaleDateString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })
+                        : "30-4-1974";
+                    })()}
                   </p>
                 </div>
               </div>
             </div>
 
-            {contest.status === "ACTIVE" && (
+            <div className="flex gap-4">
+              {/* Nút Tải quy định thi - chỉ hiển thị khi ACTIVE */}
+              {contest.status === "ACTIVE" && (
+                <Link
+                  href={"#"}
+                  className="flex items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#FF6E1A] text-[#FF6E1A] font-medium text-base hover:bg-[#FF6E1A] hover:text-white transition-colors duration-200 shadow-sm"
+                >
+                  Tải quy định thi ⬇
+                </Link>
+              )}
+
+              {/* Nút Tham gia cuộc thi - luôn hiển thị */}
               <Link
                 href={
                   user?.role === "COMPETITOR"
@@ -215,7 +240,8 @@ export default function ContestDetailPage() {
                           competitorId: user.userId,
                         },
                       }
-                    : {
+                    : user?.role === "GUARDIAN"
+                    ? {
                         pathname: "/children-participation",
                         query: {
                           contestId: contest.contestId,
@@ -224,12 +250,13 @@ export default function ContestDetailPage() {
                           )?.roundId,
                         },
                       }
+                    : "/auth"
                 }
-                className="inline-block w-full lg:w-auto bg-[#ff6b35] hover:bg-[#ff5722] text-white text-center px-8 py-3 font-medium transition-colors duration-200 shadow-md"
+                className="flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm"
               >
-                Tải quy định thi ⬇
+                Tham gia cuộc thi
               </Link>
-            )}
+            </div>
           </motion.div>
         </div>
 
@@ -238,17 +265,17 @@ export default function ContestDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-12"
+          className="mt-8 sm:mt-12"
         >
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
             Lịch trình vòng 1
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Bắt đầu */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-base">Bắt đầu</p>
-              <p className="text-black font-semibold text-lg">
+              <p className="text-black font-light text-sm sm:text-base">Bắt đầu</p>
+              <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.startDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
                   month: "numeric",
@@ -259,8 +286,8 @@ export default function ContestDetailPage() {
 
             {/* Hạn nộp bài */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-base">Hạn nộp bài</p>
-              <p className="text-black font-semibold text-lg">
+              <p className="text-black font-light text-sm sm:text-base">Hạn nộp bài</p>
+              <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.endDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
                   month: "numeric",
@@ -271,8 +298,8 @@ export default function ContestDetailPage() {
 
             {/* Công bố kết quả */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-base">Công bố kết quả</p>
-              <p className="text-black font-semibold text-lg">
+              <p className="text-black font-light text-sm sm:text-base">Công bố kết quả</p>
+              <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.endDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
                   month: "numeric",
@@ -283,8 +310,8 @@ export default function ContestDetailPage() {
 
             {/* Gửi bản gốc */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-base">Gửi bản gốc</p>
-              <p className="text-black font-semibold text-lg">
+              <p className="text-black font-light text-sm sm:text-base">Gửi bản gốc</p>
+              <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.endDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
                   month: "numeric",
@@ -300,25 +327,25 @@ export default function ContestDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-12"
+          className="mt-8 sm:mt-12"
         >
-          <h2 className="text-2xl font-bold text-black mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
             Lịch trình vòng 2
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Số lượng thí sinh */}
             <div className="space-y-1">
-              <p className="text-black font-semibold text-base">Số lượng thí sinh</p>
-              <p className="text-black font-light">
+              <p className="text-black font-semibold text-sm sm:text-base">Số lượng thí sinh</p>
+              <p className="text-black font-light text-sm sm:text-base">
                 20 thí sinh có bài thi tốt nhất sau vòng 1
               </p>
             </div>
 
             {/* Ngày thi dự kiến */}
             <div className="space-y-1">
-              <p className="text-black font-semibold text-base">Ngày thi dự kiến</p>
-              <p className="text-black font-light">11-12-2025</p>
+              <p className="text-black font-semibold text-sm sm:text-base">Ngày thi dự kiến</p>
+              <p className="text-black font-light text-sm sm:text-base">11-12-2025</p>
             </div>
           </div>
         </motion.div>

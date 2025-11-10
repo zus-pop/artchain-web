@@ -72,7 +72,7 @@ export default function ContestsPage() {
         <div className="mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-              Cuộc Thi <span className="text-red-500">Nghệ Thuật</span>
+              Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
             </h2>
           </div>
 
@@ -80,7 +80,7 @@ export default function ContestsPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="group m-5 flex flex-col justify-between gap-4 min-h-60 duration-500 relative rounded-lg p-5 bg-[hsl(2,68%,58%)] shadow-md animate-pulse"
+                className="group m-5 flex flex-col justify-between gap-4 min-h-60 duration-500 relative rounded-lg p-5 bg-[#FF6E1A] shadow-md animate-pulse"
               >
                 <div className="absolute duration-700 shadow-md -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
                 <div className="z-10">
@@ -99,19 +99,19 @@ export default function ContestsPage() {
 
   if (error) {
     return (
-      <div className="w-full py-20 px-4 bg-gray-50">
+      <div className="w-full py-25 px-4 bg-gray-50">
         <div className="mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-            Cuộc Thi <span className="text-red-500">Nghệ Thuật</span>
+            Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
           </h2>
-          <p className="text-red-600">Có lỗi xảy ra khi tải dữ liệu cuộc thi</p>
+          <p className="text-[#FF6E1A]">Có lỗi xảy ra khi tải dữ liệu cuộc thi</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full py-20 px-4 bg-gray-50">
+    <div className="w-full py-25 px-4 bg-gray-50">
       <div className="mx-auto">
         {/* Header */}
         {/* <motion.div 
@@ -121,7 +121,7 @@ export default function ContestsPage() {
           transition={{ duration: 0.6 }}
         >
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-            Cuộc Thi <span className="text-red-500">Nghệ Thuật</span>
+            Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
           </h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             Khám phá và tham gia các cuộc thi nghệ thuật hấp dẫn
@@ -148,7 +148,7 @@ export default function ContestsPage() {
                 onClick={() => setSelectedStatus(option.value)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   selectedStatus === option.value
-                    ? "bg-red-500 text-white shadow-md"
+                    ? "bg-[#FF6E1A] text-white shadow-md"
                     : "bg-white text-gray-700 hover:bg-gray-100 shadow-sm"
                 }`}
               >
@@ -177,7 +177,7 @@ export default function ContestsPage() {
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
                   <Link href={`/contests/${contest.contestId}`}>
-                    <div className="group m-5 flex flex-col justify-between gap-4 min-h-80 duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[hsl(2,68%,58%)] shadow-md">
+                    <div className="group m-5 flex flex-col justify-between gap-4 min-h-80 duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[#FF6E1A] shadow-md">
                       {/* Khối trang trí ở góc */}
                       <Image
                         src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}

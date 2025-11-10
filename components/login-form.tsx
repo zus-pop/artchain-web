@@ -6,6 +6,7 @@ import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
+import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image"; // Import Next.js Image
@@ -37,6 +38,8 @@ export function LoginForm({
 }: LoginFormProps) {
   const { currentLanguage } = useLanguageStore();
   const translations = useTranslation(currentLanguage);
+
+  const router = useRouter();
 
   const {
     control,
@@ -79,7 +82,7 @@ export function LoginForm({
           {/* Nút Quay lại (Gán onToggle vào đây) */}
           <button
             type="button"
-            onClick={onToggle}
+            onClick={() => router.push("/")}
             className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-6 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
           >
             <svg

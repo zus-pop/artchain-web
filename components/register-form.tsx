@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -98,6 +99,7 @@ export function RegisterForm({
 }) {
   const { currentLanguage } = useLanguageStore();
   const translations = useTranslation(currentLanguage);
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<'competitor' | 'guardian' | null>(null);
   const [showForm, setShowForm] = useState(false);
   const { wards } = useWards();
@@ -181,6 +183,12 @@ export function RegisterForm({
         <div className="w-full max-w-2xl">
           {/* Header */}
           <div className="text-center mb-10">
+            <img
+              src="/images/newlogo.png"
+              alt="Artchain Logo"
+              className="w-22 h-22 mx-auto mb-6 cursor-pointer"
+              onClick={() => router.push('/')}
+            />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               {translations.selectAccountType || "Tham gia với vai trò thí sinh hoặc người đại diện"}
             </h1>
@@ -300,7 +308,7 @@ export function RegisterForm({
       {...props}
     >
       {/* CỘT BÊN TRÁI (Biểu mẫu) */}
-      <div className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-auto min-h-screen">
+      <div className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-hidden min-h-screen">
         <div className="w-full max-w-sm mx-auto">
           {/* Back button */}
           <button
