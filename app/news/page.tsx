@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import GlassSurface from "@/components/GlassSurface";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useGetContestsPaginated } from "@/apis/contests";
+import { getPosts } from "@/apis/post";
+import { Post } from "@/types/post";
 
 const ArrowRightIcon = () => <span>&rarr;</span>;
 
@@ -116,6 +118,42 @@ export default function Page() {
   // Fetch active contest for contest info section
   const { data: activeContests, isLoading: isLoadingContest } = useGetContestsPaginated("ACTIVE", 1, 1);
   const activeContest = activeContests?.[0];
+
+  // News posts fetched to fill the NewsCardSmall components (do not change UI)
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoadingPosts(true);
+        const resp = await getPosts({ limit: 4 });
+        if (mounted) setPosts(resp.data || []);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+      } finally {
+        if (mounted) setLoadingPosts(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Deduplicate posts by post_id and pick spotlight + small unique posts
+  const uniquePostsMap = new Map<number | string, Post>();
+  for (const p of posts) {
+    if (p && p.post_id != null && !uniquePostsMap.has(p.post_id)) {
+      uniquePostsMap.set(p.post_id, p);
+    }
+  }
+  const uniquePosts = Array.from(uniquePostsMap.values());
+
+  const spotlightPost = uniquePosts.length > 0 ? uniquePosts[0] : null;
+  const remainingUnique = spotlightPost ? uniquePosts.slice(1) : uniquePosts;
+  const smallPosts = Array.from({ length: 4 }, (_, i) => remainingUnique[i] ?? null);
 
   return (
     <div className="min-h-screen bg-[#EAE6E0] text-black font-[family-name:var(--font-be-vietnam-pro)]">
@@ -257,7 +295,7 @@ export default function Page() {
                   }
                 </p>
                 <p>
-                  <strong>Lưu ý:</strong>{" "}
+                  <strong>Lưu ý:</strong><br />
                   {isLoadingContest 
                     ? "Đang tải..." 
                     : activeContest?.rounds?.[0]?.sendOriginalDeadline 
@@ -301,15 +339,15 @@ export default function Page() {
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
               <div className="flex flex-col justify-between gap-6 sm:gap-8">
                 <NewsCardSmall
-                  imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                  category="Digital & Contemparary Art"
-                  title="How Art Fairs Are Adapting to the<br />Digital Age"
+                  imgSrc={smallPosts[0]?.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"}
+                  category={smallPosts[0]?.postTags?.[0]?.tag?.tag_name || "Digital & Contemparary Art"}
+                  title={smallPosts[0]?.title || "How Art Fairs Are Adapting to the<br />Digital Age"}
                   darkBg={true}
                 />
                 <NewsCardSmall
-                  imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                  category="Digital & Contemparary Art"
-                  title="How Art Fairs Are Adapting to the<br />Digital Age"
+                  imgSrc={smallPosts[1]?.image_url || "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"}
+                  category={smallPosts[1]?.postTags?.[0]?.tag?.tag_name || "Digital & Contemparary Art"}
+                  title={smallPosts[1]?.title || "How Art Fairs Are Adapting to the<br />Digital Age"}
                   darkBg={true}
                 />
               </div>
@@ -318,8 +356,11 @@ export default function Page() {
 
               <div className="flex flex-col bg-[#EAE6E0] text-white">
                 <img
-                  src="https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
-                  alt="Spotlight To Emerging Artist"
+                  src={
+                    spotlightPost?.image_url ||
+                    "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
+                  }
+                  alt={spotlightPost?.title || "Spotlight To Emerging Artist"}
                   className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.backgroundColor =
@@ -337,18 +378,28 @@ export default function Page() {
                   animation="animate-fade-in-right"
                   delay={200}
                 >
-                  Spotlight To Emerging Artist: Ones 
-                  to watch in 2025
+                  {spotlightPost?.title || (
+                    <>
+                      Spotlight To Emerging Artist: Ones 
+                      to watch in 2025
+                    </>
+                  )}
                 </AnimatedContainer>
                 <AnimatedContainer
                   className="text-sm sm:text-base text-black leading-relaxed"
                   animation="animate-fade-in-up"
                   delay={400}
                 >
-                  &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh dành cho 
-                  học sinh từ lớp 1 đến lớp 9 đang học tập tại Thành phố 
-                  Hồ Chí Minh. Cuộc thi khuyến khích các em thể hiện góc 
-                  nhìn riêng về thành phố qua màu sắc, đường nét và trí...
+                  {spotlightPost?.content ? (
+                    <span dangerouslySetInnerHTML={{ __html: (spotlightPost.content.length > 250 ? spotlightPost.content.slice(0, 250) + '...' : spotlightPost.content) }} />
+                  ) : (
+                    <>
+                      &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh dành cho 
+                      học sinh từ lớp 1 đến lớp 9 đang học tập tại Thành phố 
+                      Hồ Chí Minh. Cuộc thi khuyến khích các em thể hiện góc 
+                      nhìn riêng về thành phố qua màu sắc, đường nét và trí...
+                    </>
+                  )}
                 </AnimatedContainer>
               </div>
 
@@ -356,15 +407,15 @@ export default function Page() {
 
               <div className="flex flex-col justify-between gap-6 sm:gap-8">
                 <NewsCardSmall
-                  imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                  category="Digital & Contemparary Art"
-                  title="How Art Fairs Are Adapting to the<br />Digital Age"
+                  imgSrc={smallPosts[2]?.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"}
+                  category={smallPosts[2]?.postTags?.[0]?.tag?.tag_name || "Digital & Contemparary Art"}
+                  title={smallPosts[2]?.title || "How Art Fairs Are Adapting to the<br />Digital Age"}
                   darkBg={true}
                 />
                 <NewsCardSmall
-                  imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                  category="Digital & Contemparary Art"
-                  title="How Art Fairs Are Adapting to the<br />Digital Age"
+                  imgSrc={smallPosts[3]?.image_url || "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"}
+                  category={smallPosts[3]?.postTags?.[0]?.tag?.tag_name || "Digital & Contemparary Art"}
+                  title={smallPosts[3]?.title || "How Art Fairs Are Adapting to the<br />Digital Age"}
                   darkBg={true}
                 />
               </div>
