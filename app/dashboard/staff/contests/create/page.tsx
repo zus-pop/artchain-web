@@ -5,7 +5,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useTranslation } from "@/lib/i18n";
+import { Lang, useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 // Zod validation schema with translations
-const createContestSchema = (t: any) =>
+const createContestSchema = (t: Lang) =>
   z
     .object({
       title: z.string().min(1, t.titleRequired).max(255, t.titleTooLong),
@@ -43,7 +43,7 @@ const createContestSchema = (t: any) =>
         .string()
         .min(1, t.startDateRequired)
         .refine((data) => new Date(data) > new Date(), {
-          message: t.startDateMustBeFuture,
+          message: t.startDateFuture,
         }),
       endDate: z.string().min(1, t.endDateRequired),
       banner: z
@@ -89,7 +89,7 @@ const createContestSchema = (t: any) =>
     .refine(
       (data) => new Date(data.roundEndDate) > new Date(data.roundStartDate),
       {
-        message: t.roundEndAfterRoundStart,
+        message: t.roundEndAfterStart,
         path: ["roundEndDate"],
       }
     )
@@ -132,7 +132,7 @@ export default function CreateContestPage() {
     register,
     handleSubmit,
     control,
-    formState: { errors, isSubmitting, isValid, isDirty },
+    formState: { errors, isSubmitting, isValid },
     setValue,
     watch,
     trigger,

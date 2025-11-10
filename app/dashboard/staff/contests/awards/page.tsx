@@ -224,7 +224,7 @@ function AwardsManagementPage() {
   // Voted paintings queries (for vote-results tab) - create all queries but only enable when needed
   const votedPaintingsQueries = useQueries({
     queries:
-      votedAwardsData?.data.awards?.map((award: any) => ({
+      votedAwardsData?.data.awards?.map((award) => ({
         queryKey: ["votes", contestId, award.awardId],
         queryFn: async () => {
           return getVotedPaintings({
@@ -242,12 +242,17 @@ function AwardsManagementPage() {
   const assignMutation = useAssignAward(currentPaintingId);
   const removeMutation = useRemoveAward(currentPaintingId);
 
-  const handleAssignAward = async (painting: TopPainting, award: Award) => {
+  const handleAssignAward = async (
+    painting: Pick<TopPainting, "paintingId">,
+    award: Award
+  ) => {
     setCurrentPaintingId(painting.paintingId);
     await assignMutation.mutateAsync({ awardId: award.awardId });
   };
 
-  const handleRemoveAward = async (painting: TopPainting) => {
+  const handleRemoveAward = async (
+    painting: Pick<TopPainting, "paintingId">
+  ) => {
     setCurrentPaintingId(painting.paintingId);
     await removeMutation.mutateAsync();
   };
@@ -637,9 +642,10 @@ function AwardsManagementPage() {
                                                         </div>
                                                         <button
                                                           onClick={() =>
-                                                            handleRemoveAward(
-                                                              painting as any
-                                                            )
+                                                            handleRemoveAward({
+                                                              paintingId:
+                                                                painting.paintingId,
+                                                            })
                                                           }
                                                           disabled={
                                                             isProcessing
@@ -662,7 +668,10 @@ function AwardsManagementPage() {
                                                       <button
                                                         onClick={() =>
                                                           handleAssignAward(
-                                                            painting as any,
+                                                            {
+                                                              paintingId:
+                                                                painting.paintingId,
+                                                            },
                                                             prizeAward
                                                           )
                                                         }

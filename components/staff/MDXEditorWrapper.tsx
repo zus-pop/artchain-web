@@ -38,7 +38,7 @@ interface MDXEditorWrapperProps {
 export const MDXEditorWrapper = forwardRef<
   MDXEditorMethods,
   MDXEditorWrapperProps
->(({ markdown = "", onChange, placeholder }, ref) => {
+>(({ markdown = "", placeholder }, ref) => {
   return (
     <div className="mdx-editor-wrapper border border-[#e6e2da]">
       <MDXEditor
