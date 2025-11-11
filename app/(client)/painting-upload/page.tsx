@@ -174,7 +174,7 @@ export function PaintingUpload() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6E1A] mx-auto mb-4"></div>
           <p className="text-muted-foreground">Đang tải thông tin...</p>
         </div>
       </div>
@@ -185,12 +185,12 @@ export function PaintingUpload() {
     <div className="min-h-screen bg-[#fdfcf9] py-8 px-6 relative overflow-hidden">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-[0.02]">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-red-500 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-[#FF6E1A] rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="container max-w-6xl mx-auto relative z-10">
+      <div className="container pt-25 max-w-7xl mx-auto relative z-10">
         {/* === START MODIFIED HEADER SECTION: Back Button | Title/Icon === */}
         <div className="mb-10 flex items-center justify-between relative border-b border-[#e6e2da] pb-4">
           {/* 1. Back Button (Left) - ĐÃ CẬP NHẬT STYLE */}
@@ -198,7 +198,7 @@ export function PaintingUpload() {
             type="button"
             variant="ghost"
             onClick={() => router.back()}
-            className="h-10 px-0 text-gray-700 hover:text-red-600 transition-all duration-200 cursor-pointer 
+            className="h-10 px-0 text-gray-700 hover:text-[#FF6E1A] transition-all duration-200 cursor-pointer 
                        flex items-center gap-1 font-semibold hover:underline bg-transparent hover:bg-transparent"
           >
             <IconChevronLeft className="h-5 w-5" />
@@ -226,9 +226,9 @@ export function PaintingUpload() {
                       htmlFor="title"
                       className="text-base font-bold flex items-center gap-3 text-gray-900"
                     >
-                      <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm"></div>
+                      <div className="w-2 h-2 bg-[#FF6E1A] rounded-full shadow-sm"></div>
                       Tiêu đề tác phẩm
-                      <span className="text-red-600">*</span>
+                      <span className="text-[#FF6E1A]">*</span>
                     </Label>
                     <Controller
                       control={control}
@@ -238,14 +238,14 @@ export function PaintingUpload() {
                           id="title"
                           placeholder="Ví dụ: 'Bức tranh về ước mơ tuổi thơ'..."
                           maxLength={100}
-                          className="text-base h-12 border border-[#e6e2da] focus:border-red-500 bg-white rounded-none shadow-sm transition-all duration-300"
+                          className="text-base h-12 border border-[#e6e2da] focus:border-[#FF6E1A] bg-white rounded-none shadow-sm transition-all duration-300"
                           {...field}
                         />
                       )}
                     />
                     {formState.errors.title && (
-                      <div className="text-sm text-red-600 flex items-center gap-2 mt-2">
-                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
+                      <div className="text-sm text-[#FF6E1A] flex items-center gap-2 mt-2">
+                        <div className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full"></div>
                         {formState.errors.title.message}
                       </div>
                     )}
@@ -261,7 +261,7 @@ export function PaintingUpload() {
                       htmlFor="description"
                       className="text-base font-bold flex items-center gap-3 text-gray-900"
                     >
-                      <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm"></div>
+                      <div className="w-2 h-2 bg-[#FF6E1A] rounded-full shadow-sm"></div>
                       Mô tả tác phẩm
                       <span className="text-gray-500 text-sm font-normal">
                         (tùy chọn)
@@ -276,14 +276,14 @@ export function PaintingUpload() {
                           placeholder="Kể về cảm hứng sáng tạo..."
                           maxLength={500}
                           rows={6}
-                          className="text-base border border-[#e6e2da] focus:border-red-500 bg-white rounded-none shadow-sm transition-all duration-300 resize-none"
+                          className="text-base border border-[#e6e2da] focus:border-[#FF6E1A] bg-white rounded-none shadow-sm transition-all duration-300 resize-none"
                           {...field}
                         />
                       )}
                     />
                     {formState.errors.description && (
-                      <p className="text-sm text-red-600 flex items-center gap-2 mt-2">
-                        <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
+                      <p className="text-sm text-[#FF6E1A] flex items-center gap-2 mt-2">
+                        <div className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full"></div>
                         {formState.errors.description.message}
                       </p>
                     )}
@@ -296,7 +296,7 @@ export function PaintingUpload() {
                 <Button
                   type="submit"
                   disabled={isPending || !formState.isValid || !watchedImage}
-                  className="w-full h-14 text-lg font-bold bg-linear-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white shadow-sm rounded-none transition-all duration-200"
+                  className="w-full h-14 text-lg font-bold bg-linear-to-r from-[#FF6E1A] to-[#FF6E1A] hover:from-[#FF6E1A] hover:to-[#FF6E1A] text-white shadow-sm rounded-none transition-all duration-200"
                 >
                   {isPending ? (
                     <div className="flex items-center gap-3">
@@ -312,16 +312,16 @@ export function PaintingUpload() {
                 </Button>
 
                 {/* Elegant Info Note */}
-                <div className="bg-red-50 border border-red-200 rounded-none p-4 shadow-sm">
+                <div className="bg-red-50 border border-[#FF6E1A] rounded-none p-4 shadow-sm">
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-red-500 rounded-none flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 bg-[#FF6E1A] rounded-none flex items-center justify-center shrink-0">
                       <span className="text-white text-sm font-bold">!</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-red-700 mb-1 text-sm">
+                      <h4 className="font-bold text-[#FF6E1A] mb-1 text-sm">
                         Lưu ý quan trọng
                       </h4>
-                      <p className="text-red-600 leading-relaxed text-sm">
+                      <p className="text-[#FF6E1A] leading-relaxed text-sm">
                         Sau khi gửi bài thi, bạn không thể chỉnh sửa hoặc thay
                         đổi. Vui lòng kiểm tra kỹ tất cả thông tin trước khi
                         gửi.
@@ -343,8 +343,8 @@ export function PaintingUpload() {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-transparent rounded-lg w-full">
                     {/* Thẻ Thí sinh */}
                     <div className="flex items-center gap-2 grow">
-                      <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                        <span className="text-red-600 font-bold text-sm">
+                      <div className="w-8 h-8 bg-[#FF6E1A] rounded-full flex items-center justify-center shrink-0">
+                        <span className="text-[#FF6E1A] font-bold text-sm">
                           {currentUser?.fullName?.charAt(0)?.toUpperCase()}
                         </span>
                       </div>
@@ -363,7 +363,7 @@ export function PaintingUpload() {
 
                     {/* Thẻ Trường học */}
                     <div className="flex items-center gap-2 grow">
-                      <School className="h-5 w-5 text-red-500 shrink-0" />
+                      <School className="h-5 w-5 text-[#FF6E1A] shrink-0" />
                       <div className="text-left">
                         <p className="text-xs text-gray-500 uppercase tracking-wider">
                           Lớp / Trường
@@ -385,16 +385,16 @@ export function PaintingUpload() {
                 <CardContent className="p-6 h-full">
                   <div className="space-y-4 h-full flex flex-col">
                     <Label className="text-base font-bold flex items-center gap-3 text-gray-900">
-                      <div className="w-2 h-2 bg-red-500 rounded-full shadow-sm"></div>
+                      <div className="w-2 h-2 bg-[#FF6E1A] rounded-full shadow-sm"></div>
                       Ảnh tác phẩm
-                      <span className="text-red-600">*</span>
+                      <span className="text-[#FF6E1A]">*</span>
                     </Label>
 
                     {!imagePreview ? (
                       <div className="relative group flex-1">
                         <div className="border-2 border-dashed border-[#e6e2da] rounded-none p-8 text-center bg-[#f8f6f0] hover:bg-[#f6f3ee] transition-all duration-500 cursor-pointer h-full flex flex-col justify-center">
                           <div className="flex flex-col items-center space-y-4">
-                            <div className="w-16 h-16 bg-red-500 rounded-none flex items-center justify-center shadow-sm">
+                            <div className="w-16 h-16 bg-[#FF6E1A] rounded-none flex items-center justify-center shadow-sm">
                               <IconUpload className="h-8 w-8 text-white" />
                             </div>
                             <div>
@@ -436,7 +436,7 @@ export function PaintingUpload() {
                               type="button"
                               variant="outline"
                               size="lg"
-                              className="pointer-events-none border border-[#e6e2da] hover:border-red-500 hover:bg-red-50 rounded-none shadow-sm px-6 py-3"
+                              className="pointer-events-none border border-[#e6e2da] hover:border-[#FF6E1A] hover:bg-red-50 rounded-none shadow-sm px-6 py-3"
                             >
                               Chọn ảnh
                             </Button>
@@ -456,7 +456,7 @@ export function PaintingUpload() {
                           </div>
                           {/* Elegant Overlay */}
                           <div className="absolute inset-0 bg-linear-to-t from-foreground/10 via-transparent to-foreground/10"></div>
-                          <div className="absolute inset-0 bg-linear-to-r from-red-500/5 via-transparent to-red-900/5"></div>
+                          <div className="absolute inset-0 bg-linear-to-r from-[#FF6E1A]/5 via-transparent to-[#FF6E1A]/5"></div>
 
                           {/* Artistic Corner Accents */}
                           <div className="absolute top-4 left-4 w-8 h-8 border-l-3 border-t-3 border-background/60 rounded-tl"></div>
@@ -471,7 +471,7 @@ export function PaintingUpload() {
                               size="sm"
                               variant="destructive"
                               onClick={removeImage}
-                              className="bg-red-500 hover:bg-red-600 shadow-sm h-10 w-10 p-0 rounded-none border border-[#e6e2da]"
+                              className="bg-[#FF6E1A] hover:bg-[#FF6E1A] shadow-sm h-10 w-10 p-0 rounded-none border border-[#e6e2da]"
                             >
                               <IconTrash className="h-4 w-4" />
                             </Button>
@@ -481,9 +481,9 @@ export function PaintingUpload() {
                     )}
 
                     {formState.errors.image && (
-                      <div className="bg-red-50 border border-red-200 rounded-none p-4 shadow-sm">
-                        <p className="text-sm text-red-600 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 bg-red-600 rounded-full"></div>
+                      <div className="bg-red-50 border border-[#FF6E1A] rounded-none p-4 shadow-sm">
+                        <p className="text-sm text-[#FF6E1A] flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full"></div>
                           {formState.errors.image.message}
                         </p>
                       </div>

@@ -26,13 +26,13 @@ export function useNotifyContest() {
       const response = await myAxios.post("/emails/notify-contest");
       return response.data;
     },
-    onError: (error) => {
-      let message = error.message;
-      if (error instanceof AxiosError) {
-        message = error.response?.data.message;
-      }
-      toast.error(message);
-    },
+    // onError: (error) => {
+    //   let message = error.message;
+    //   if (error instanceof AxiosError) {
+    //     message = error.response?.data.message;
+    //   }
+    //   toast.error(message);
+    // },
   });
 }
 
