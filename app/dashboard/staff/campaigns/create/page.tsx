@@ -6,6 +6,7 @@ import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  IconArrowLeft,
   IconCalendar,
   IconDeviceFloppy,
   IconFileText,
@@ -15,13 +16,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { CreateCampaignRequest } from "@/types/staff/campaign";
 import { Lang, useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
+import Link from "next/link";
 
 // Zod schema for form validation
 const getCampaignSchema = (t: Lang) =>
@@ -37,7 +39,9 @@ const getCampaignSchema = (t: Lang) =>
     goalAmount: z.number().min(1000, t.goalAmountMin),
     deadline: z.string().min(1, t.deadlineRequired),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
-    image: z.any().refine((file) => file.size > 0, t.imageRequired),
+    image: z
+      .any()
+      .refine((file) => file instanceof File && file.size > 0, t.imageRequired),
   });
 
 type CampaignFormData = z.infer<ReturnType<typeof getCampaignSchema>>;
@@ -45,9 +49,19 @@ type CampaignFormData = z.infer<ReturnType<typeof getCampaignSchema>>;
 export default function CreateCampaignPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+
+  // Cleanup image preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
 
   // React Hook Form setup
   const form = useForm<CampaignFormData>({
@@ -58,7 +72,6 @@ export default function CreateCampaignPage() {
       goalAmount: 0,
       deadline: "",
       status: "DRAFT",
-      image: undefined, // Will be set by file input
     },
     mode: "all",
   });
@@ -126,13 +139,22 @@ export default function CreateCampaignPage() {
           <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
             {/* Page Header */}
             <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold staff-text-primary">
-                  {t.createNewCampaign}
-                </h2>
-                <p className="text-sm staff-text-secondary mt-1">
-                  {t.setupNewCampaign}
-                </p>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/dashboard/staff/campaigns"
+                  className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                >
+                  <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
+                </Link>
+
+                <div>
+                  <h2 className="text-2xl font-bold staff-text-primary">
+                    {t.createNewCampaign}
+                  </h2>
+                  <p className="text-sm staff-text-secondary mt-1">
+                    {t.setupNewCampaign}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -217,6 +239,14 @@ export default function CreateCampaignPage() {
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
+                              // Clean up previous preview URL
+                              if (imagePreviewUrl) {
+                                URL.revokeObjectURL(imagePreviewUrl);
+                              }
+                              // Create new preview URL
+                              const previewUrl = URL.createObjectURL(file);
+                              setImagePreviewUrl(previewUrl);
+
                               form.setValue("image", file);
                               form.trigger("image"); // Trigger validation
                             }
@@ -231,7 +261,7 @@ export default function CreateCampaignPage() {
                           <label
                             htmlFor="campaign-image"
                             className={`flex flex-col items-center justify-center aspect-video border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 group ${
-                              watchedImage
+                              imagePreviewUrl
                                 ? "border-green-300 bg-green-50"
                                 : "border-gray-300 bg-gray-50 hover:bg-gray-100"
                             }`}
@@ -264,10 +294,10 @@ export default function CreateCampaignPage() {
                           </label>
 
                           {/* Preview overlay */}
-                          {watchedImage && (
+                          {imagePreviewUrl && (
                             <div className="absolute inset-0 rounded-lg overflow-hidden">
                               <Image
-                                src={URL.createObjectURL(watchedImage)}
+                                src={imagePreviewUrl}
                                 alt="Campaign preview"
                                 fill
                                 className="object-cover"
@@ -277,7 +307,9 @@ export default function CreateCampaignPage() {
                                   <p className="text-sm font-medium mb-1">
                                     {t.clickToChangeImage}
                                   </p>
-                                  <p className="text-xs">{watchedImage.name}</p>
+                                  <p className="text-xs">
+                                    {form.watch("image")?.name}
+                                  </p>
                                 </div>
                               </div>
                               <button
@@ -285,6 +317,12 @@ export default function CreateCampaignPage() {
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
+                                  // Clean up preview URL
+                                  if (imagePreviewUrl) {
+                                    URL.revokeObjectURL(imagePreviewUrl);
+                                    setImagePreviewUrl(null);
+                                  }
+                                  // Clear form value by creating a new FileList without the file
                                   form.setValue("image", undefined);
                                   // Reset the file input
                                   const fileInput = document.getElementById(

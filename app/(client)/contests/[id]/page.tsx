@@ -1,12 +1,12 @@
 "use client";
 
 import { useGetContestById } from "@/apis/contests";
+import { useAuth } from "@/hooks";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, Clock, Star, Trophy, Users } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/hooks";
 
 const statusColors = {
   UPCOMING: "bg-red-400",
@@ -45,17 +45,6 @@ export default function ContestDetailPage() {
   const router = useRouter();
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      weekday: "long",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const getTimeRemaining = (endDate: string) => {
     const now = new Date();
@@ -126,7 +115,7 @@ export default function ContestDetailPage() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-200 via-blue-100 to-blue-50 flex items-center justify-center">
+                <div className="w-full h-full bg-linear-to-br from-blue-200 via-blue-100 to-blue-50 flex items-center justify-center">
                   <Trophy className="h-32 w-32 text-blue-300" />
                 </div>
               )}
@@ -143,7 +132,8 @@ export default function ContestDetailPage() {
               <div
                 className={
                   "absolute top-6 right-6 rounded-full text-xs px-4 py-2 font-semibold shadow-sm border-2 " +
-                  (statusPillStyles[contest.status] || "bg-gray-50 text-gray-600 border-gray-600")
+                  (statusPillStyles[contest.status] ||
+                    "bg-gray-50 text-gray-600 border-gray-600")
                 }
               >
                 {statusLabels[contest.status]}
@@ -274,7 +264,9 @@ export default function ContestDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {/* Bắt đầu */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-sm sm:text-base">Bắt đầu</p>
+              <p className="text-black font-light text-sm sm:text-base">
+                Bắt đầu
+              </p>
               <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.startDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
@@ -286,7 +278,9 @@ export default function ContestDetailPage() {
 
             {/* Hạn nộp bài */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-sm sm:text-base">Hạn nộp bài</p>
+              <p className="text-black font-light text-sm sm:text-base">
+                Hạn nộp bài
+              </p>
               <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.endDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
@@ -298,7 +292,9 @@ export default function ContestDetailPage() {
 
             {/* Công bố kết quả */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-sm sm:text-base">Công bố kết quả</p>
+              <p className="text-black font-light text-sm sm:text-base">
+                Công bố kết quả
+              </p>
               <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.endDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
@@ -310,7 +306,9 @@ export default function ContestDetailPage() {
 
             {/* Gửi bản gốc */}
             <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-sm sm:text-base">Gửi bản gốc</p>
+              <p className="text-black font-light text-sm sm:text-base">
+                Gửi bản gốc
+              </p>
               <p className="text-black font-semibold text-base sm:text-lg">
                 {new Date(contest.endDate).toLocaleDateString("vi-VN", {
                   day: "numeric",
@@ -336,7 +334,9 @@ export default function ContestDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {/* Số lượng thí sinh */}
             <div className="space-y-1">
-              <p className="text-black font-semibold text-sm sm:text-base">Số lượng thí sinh</p>
+              <p className="text-black font-semibold text-sm sm:text-base">
+                Số lượng thí sinh
+              </p>
               <p className="text-black font-light text-sm sm:text-base">
                 20 thí sinh có bài thi tốt nhất sau vòng 1
               </p>
@@ -344,8 +344,12 @@ export default function ContestDetailPage() {
 
             {/* Ngày thi dự kiến */}
             <div className="space-y-1">
-              <p className="text-black font-semibold text-sm sm:text-base">Ngày thi dự kiến</p>
-              <p className="text-black font-light text-sm sm:text-base">11-12-2025</p>
+              <p className="text-black font-semibold text-sm sm:text-base">
+                Ngày thi dự kiến
+              </p>
+              <p className="text-black font-light text-sm sm:text-base">
+                11-12-2025
+              </p>
             </div>
           </div>
         </motion.div>

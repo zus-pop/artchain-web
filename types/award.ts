@@ -1,3 +1,4 @@
+import { PaintingStatus } from "./dashboard";
 import { Painting } from "./painting";
 
 export interface Award {
@@ -10,7 +11,24 @@ export interface Award {
   prize: string;
   createdAt: string;
   updatedAt: string;
-  paintings: Painting[];
+  paintings: {
+    paintingId: string;
+    roundId: string;
+    contestId: string;
+    competitorId: string;
+    competitorName: string;
+    competitorEmail: string;
+    averageScore: number;
+    description: string;
+    title: string;
+    imageUrl: string;
+    submissionDate: string | null;
+    isPassed: boolean | null;
+    status: PaintingStatus;
+    awardId: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
 }
 
 export interface AssignAwardRequest {

@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconCalendar,
@@ -158,16 +159,6 @@ export function SubmissionDetailDialog({
       default:
         return "staff-badge-neutral";
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const handleAccept = () => {
@@ -463,7 +454,7 @@ export function SubmissionDetailDialog({
                 </p>
               </div>
               <p className="text-sm staff-text-primary font-semibold">
-                {formatDate(submission.submissionDate)}
+                {formatDate({ dateString: submission.submissionDate })}
               </p>
             </div>
 
@@ -487,13 +478,13 @@ export function SubmissionDetailDialog({
             <div>
               <p className="text-xs staff-text-secondary mb-1">Created At</p>
               <p className="text-sm staff-text-primary">
-                {formatDate(submission.createdAt)}
+                {formatDate({ dateString: submission.createdAt })}
               </p>
             </div>
             <div>
               <p className="text-xs staff-text-secondary mb-1">Updated At</p>
               <p className="text-sm staff-text-primary">
-                {formatDate(submission.updatedAt)}
+                {formatDate({ dateString: submission.updatedAt })}
               </p>
             </div>
           </div>

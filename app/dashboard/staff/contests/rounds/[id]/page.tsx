@@ -11,6 +11,9 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SubmissionDetailDialog } from "@/components/staff/SubmissionDetailDialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { formatDate } from "@/lib/utils";
+import { useLanguageStore } from "@/store/language-store";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -24,8 +27,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -148,16 +149,6 @@ function RoundDetailContent() {
       default:
         return "staff-badge-neutral";
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getStatusCounts = () => {
@@ -481,7 +472,9 @@ function RoundDetailContent() {
                             </p>
                             <p className="text-xs staff-text-secondary mb-3">
                               {t.roundSubmitted}{" "}
-                              {formatDate(submission.submissionDate)}
+                              {formatDate({
+                                dateString: submission.submissionDate,
+                              })}
                             </p>
 
                             {/* Actions */}
@@ -592,7 +585,9 @@ function RoundDetailContent() {
                               </p>
                               <p className="text-xs staff-text-secondary mb-3">
                                 {t.roundSubmitted}{" "}
-                                {formatDate(submission.submissionDate)}
+                                {formatDate({
+                                  dateString: submission.submissionDate,
+                                })}
                               </p>
 
                               {/* Actions */}

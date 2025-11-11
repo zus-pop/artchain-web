@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStaffRoundById, updateStaffRound } from "@/apis/staff";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 // Bỏ IconX khỏi imports
+import { formatDate } from "@/lib/utils";
 import { IconCalendar, IconClock, IconEdit } from "@tabler/icons-react";
 
 interface RoundDetailDialogProps {
@@ -86,16 +87,6 @@ function RoundDetailDialog({
       default:
         return "staff-badge-neutral";
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const formatDateForInput = (dateString: string) => {
@@ -268,7 +259,7 @@ function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.startDate)}
+                    {formatDate({ dateString: round.startDate })}
                   </p>
                 </div>
               )}
@@ -282,7 +273,7 @@ function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.endDate)}
+                    {formatDate({ dateString: round.endDate })}
                   </p>
                 </div>
               )}
@@ -296,7 +287,7 @@ function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.submissionDeadline)}
+                    {formatDate({ dateString: round.submissionDeadline })}
                   </p>
                 </div>
               )}
@@ -310,7 +301,7 @@ function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.resultAnnounceDate)}
+                    {formatDate({ dateString: round.resultAnnounceDate })}
                   </p>
                 </div>
               )}
@@ -324,7 +315,7 @@ function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.sendOriginalDeadline)}
+                    {formatDate({ dateString: round.sendOriginalDeadline })}
                   </p>
                 </div>
               )}
@@ -335,13 +326,13 @@ function RoundDetailDialog({
               <div>
                 <p className="text-xs staff-text-secondary mb-1">Created At</p>
                 <p className="text-sm staff-text-primary">
-                  {formatDate(round.createdAt)}
+                  {formatDate({ dateString: round.createdAt })}
                 </p>
               </div>
               <div>
                 <p className="text-xs staff-text-secondary mb-1">Updated At</p>
                 <p className="text-sm staff-text-primary">
-                  {formatDate(round.updatedAt)}
+                  {formatDate({ dateString: round.updatedAt })}
                 </p>
               </div>
             </div>

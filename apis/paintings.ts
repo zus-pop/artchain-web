@@ -1,9 +1,9 @@
 import myAxios from "@/lib/custom-axios";
+import { ApiResponse } from "@/types";
 import { Painting, Round2ImageRequest, TopPainting } from "@/types/painting";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ApiResponse } from "../types";
-import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { toast } from "sonner";
 
 /**
  * Get all submissions of the current user

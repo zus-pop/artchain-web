@@ -12,7 +12,6 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { ExaminersDialog } from "@/components/staff/ExaminersDialog";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import {
   Dialog,
   DialogContent,
@@ -21,9 +20,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Contest } from "@/types/dashboard";
-import { useLanguageStore } from "@/store/language-store";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTranslation } from "@/lib/i18n";
+import { formatDate } from "@/lib/utils";
+import { useLanguageStore } from "@/store/language-store";
+import { Contest } from "@/types/dashboard";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -33,7 +34,6 @@ import {
   IconFileText,
   IconPlus,
   IconSettings,
-  IconTrash,
   IconTrophy,
   IconUsers,
   IconUsersGroup,
@@ -45,6 +45,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useNotifyContest } from "../../../../../apis/email";
 
 function ContestDetailContent() {
   const searchParams = useSearchParams();
@@ -74,6 +75,7 @@ function ContestDetailContent() {
     enabled: !!contestId,
     staleTime: 1 * 60 * 1000,
   });
+  const notifyContest = useNotifyContest();
 
   const contest = contestData?.data as Contest;
   const rounds = roundsData?.data || [];
@@ -182,16 +184,6 @@ function ContestDetailContent() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   if (!contestId) {
     return (
       <SidebarProvider
@@ -285,7 +277,6 @@ function ContestDetailContent() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Thay đổi: Bỏ rounded-full, dùng */}
                   <Link
                     href="/dashboard/staff/contests"
                     className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
@@ -365,7 +356,10 @@ function ContestDetailContent() {
                           {t.startDateDetail}
                         </p>
                         <p className="text-sm staff-text-primary font-semibold">
-                          {formatDate(contest.startDate)}
+                          {formatDate({
+                            dateString: contest.startDate,
+                            language: currentLanguage,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -377,7 +371,10 @@ function ContestDetailContent() {
                           {t.endDateDetail}
                         </p>
                         <p className="text-sm staff-text-primary font-semibold">
-                          {formatDate(contest.endDate)}
+                          {formatDate({
+                            dateString: contest.endDate,
+                            language: currentLanguage,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -701,7 +698,7 @@ function ContestDetailContent() {
                               >
                                 <IconEye className="h-4 w-4 staff-text-secondary" />
                               </Link>
-                              <button
+                              {/* <button
                                 onClick={() =>
                                   round.roundId &&
                                   handleDeleteRound(round.roundId)
@@ -713,7 +710,7 @@ function ContestDetailContent() {
                                 }
                               >
                                 <IconTrash className="h-4 w-4" />
-                              </button>
+                              </button> */}
                             </div>
                           )}
                         </div>
@@ -726,7 +723,10 @@ function ContestDetailContent() {
                                   {t.startDateDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
-                                  {formatDate(round.startDate)}
+                                  {formatDate({
+                                    dateString: round.startDate,
+                                    language: currentLanguage,
+                                  })}
                                 </p>
                               </div>
                             )}
@@ -734,7 +734,10 @@ function ContestDetailContent() {
                               <div>
                                 <p className="staff-text-secondary">End Date</p>
                                 <p className="staff-text-primary font-semibold">
-                                  {formatDate(round.endDate)}
+                                  {formatDate({
+                                    dateString: round.endDate,
+                                    language: currentLanguage,
+                                  })}
                                 </p>
                               </div>
                             )}
@@ -744,7 +747,10 @@ function ContestDetailContent() {
                                   {t.submissionDeadlineDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
-                                  {formatDate(round.submissionDeadline)}
+                                  {formatDate({
+                                    dateString: round.submissionDeadline,
+                                    language: currentLanguage,
+                                  })}
                                 </p>
                               </div>
                             )}
@@ -754,7 +760,10 @@ function ContestDetailContent() {
                                   {t.resultAnnounceDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
-                                  {formatDate(round.resultAnnounceDate)}
+                                  {formatDate({
+                                    dateString: round.resultAnnounceDate,
+                                    language: currentLanguage,
+                                  })}
                                 </p>
                               </div>
                             )}
@@ -764,7 +773,10 @@ function ContestDetailContent() {
                                   {t.originalDeadlineDetail}
                                 </p>
                                 <p className="staff-text-primary font-semibold">
-                                  {formatDate(round.sendOriginalDeadline)}
+                                  {formatDate({
+                                    dateString: round.sendOriginalDeadline,
+                                    language: currentLanguage,
+                                  })}
                                 </p>
                               </div>
                             )}
@@ -799,7 +811,7 @@ function ContestDetailContent() {
                                       >
                                         <IconEye className="h-3 w-3 staff-text-secondary" />
                                       </Link>
-                                      <button
+                                      {/* <button
                                         onClick={() =>
                                           handleDeleteRound(table.roundId)
                                         }
@@ -808,7 +820,7 @@ function ContestDetailContent() {
                                         disabled={deleteMutation.isPending}
                                       >
                                         <IconTrash className="h-3 w-3" />
-                                      </button>
+                                      </button> */}
                                     </div>
                                   </div>
                                   <div className="grid grid-cols-2 gap-2 text-xs mt-2">
@@ -818,7 +830,10 @@ function ContestDetailContent() {
                                           {t.startDetail}
                                         </p>
                                         <p className="staff-text-primary font-semibold">
-                                          {formatDate(table.startDate)}
+                                          {formatDate({
+                                            dateString: table.startDate,
+                                            language: currentLanguage,
+                                          })}
                                         </p>
                                       </div>
                                     )}
@@ -828,7 +843,10 @@ function ContestDetailContent() {
                                           {t.endDetail}
                                         </p>
                                         <p className="staff-text-primary font-semibold">
-                                          {formatDate(table.endDate)}
+                                          {formatDate({
+                                            dateString: table.endDate,
+                                            language: currentLanguage,
+                                          })}
                                         </p>
                                       </div>
                                     )}
@@ -880,7 +898,11 @@ function ContestDetailContent() {
             </button>
             <button
               onClick={() => {
-                publishContestMutation.mutate(contest.contestId.toString());
+                publishContestMutation.mutate(contest.contestId.toString(), {
+                  onSuccess: () => {
+                    notifyContest.mutate();
+                  },
+                });
                 setShowPublishConfirm(false);
               }}
               disabled={publishContestMutation.isPending}

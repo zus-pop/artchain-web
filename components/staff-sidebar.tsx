@@ -175,7 +175,6 @@ export function StaffSidebar({
   }, [isAuthenticated, user, router]);
 
   if (user) {
-    console.log(user);
     data.user.name = user.fullName;
     data.user.email = user.email;
   }

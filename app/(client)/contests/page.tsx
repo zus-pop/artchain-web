@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Trophy, Filter, Clock } from "lucide-react";
 import { useGetContests } from "@/apis/contests";
+import { formatDate } from "@/lib/utils";
 import { ContestStatus } from "@/types/contest";
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { Calendar, Clock, Filter, Trophy } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 const statusColors = {
   UPCOMING: "bg-blue-500",
@@ -45,13 +46,6 @@ export default function ContestsPage() {
     { label: "Hoàn thành", value: "COMPLETED" },
   ];
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
-  };
   const getTimeRemaining = (endDate: string) => {
     const now = new Date();
     const end = new Date(endDate);
@@ -210,8 +204,8 @@ export default function ContestsPage() {
                           <div className="flex items-center text-white/90">
                             <Calendar className="h-4 w-4 mr-2" />
                             <span>
-                              {formatDate(contest.startDate)} -{" "}
-                              {formatDate(contest.endDate)}
+                              {formatDate({ dateString: contest.startDate })} -{" "}
+                              {formatDate({ dateString: contest.endDate })}
                             </span>
                           </div>
 

@@ -1,40 +1,42 @@
 "use client";
 
+import {
+  createStaffTag,
+  deleteStaffPost,
+  getStaffPostById,
+  getStaffTags,
+  updateStaffPost,
+} from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { PostStatus } from "@/types/dashboard";
 import {
   IconArrowLeft,
   IconCalendar,
-  IconEdit,
-  IconShare,
-  IconTrash,
-  IconUser,
   IconDeviceFloppy,
-  IconX,
-  IconTag,
+  IconEdit,
   IconPlus,
   IconSearch,
+  IconShare,
+  IconTag,
+  IconTrash,
+  IconUser,
+  IconX,
 } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, useEffect, Suspense, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getStaffPostById,
-  updateStaffPost,
-  deleteStaffPost,
-  getStaffTags,
-  createStaffTag,
-} from "@/apis/staff";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
 
-import Image from "next/image";
+import { formatDate } from "@/lib/utils";
+import { Post } from "@/types/post";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 
 const MDXEditorWrapper = dynamic(
@@ -91,7 +93,7 @@ function ViewPostContent() {
     error: postError,
   } = useQuery({
     queryKey: ["staff-post", postId],
-    queryFn: () => getStaffPostById(postId).then((res) => res.data),
+    queryFn: () => getStaffPostById(postId).then((res) => res.data as Post),
     enabled: !!postId,
   });
 
@@ -249,16 +251,6 @@ function ViewPostContent() {
       default:
         return "staff-badge-neutral";
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   if (isLoadingPost) {
@@ -660,7 +652,7 @@ function ViewPostContent() {
                               {t.created}
                             </p>
                             <p className="text-sm staff-text-primary font-semibold">
-                              {formatDate(post.created_at)}
+                              {formatDate({ dateString: post.created_at })}
                             </p>
                           </div>
                         </div>
@@ -673,7 +665,7 @@ function ViewPostContent() {
                                 {t.publishedLabel}
                               </p>
                               <p className="text-sm staff-text-primary font-semibold">
-                                {formatDate(post.published_at)}
+                                {formatDate({ dateString: post.published_at })}
                               </p>
                             </div>
                           </div>
