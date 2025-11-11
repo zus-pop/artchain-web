@@ -589,16 +589,14 @@ function ContestDetailContent() {
               )}
 
               <div className="flex flex-col md:flex-row gap-4">
-                <button
+                {/* <button
                   type="button"
                   // onClick={() => setIsExaminersDialogOpen(true)} // Hàm mở dialog
                   className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
-                  {/* Icon Section */}
                   <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconUsers className="h-5 w-5 text-white" />
                   </div>
-                  {/* Text Section */}
                   <div>
                     <p className="text-sm font-bold staff-text-primary text-left">
                       {t.manageParticipantDetail}
@@ -607,7 +605,7 @@ function ContestDetailContent() {
                       {t.inviteJudgesDetail}
                     </p>
                   </div>
-                </button>
+                </button> */}
                 <button
                   type="button"
                   onClick={() => setIsExaminersDialogOpen(true)}
@@ -795,13 +793,13 @@ function ContestDetailContent() {
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                       <h5 className="font-semibold staff-text-primary">
-                                        Table {table.table}
+                                        {t.table} {table.table}
                                       </h5>
-                                      <span
+                                      {/* <span
                                         className={getStatusColor(table.status)}
                                       >
                                         {table.status}
-                                      </span>
+                                      </span> */}
                                     </div>
                                     <div className="flex items-center gap-2">
                                       <Link
