@@ -161,7 +161,17 @@ export default function Page() {
   const { isAuthenticated, user } = useAuth();
   const { data: userData } = useMeQuery();
   const logout = useAuthStore((state) => state.logout);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
 
+    // Redirect based on user role
+    if (user?.role === "ADMIN" || user?.role === "STAFF") {
+      router.replace("/dashboard");
+      return;
+    }
+  }, [isAuthenticated, user, router]);
   // Use userData from API if available, fallback to store user
   const displayUser = userData || user;
 
