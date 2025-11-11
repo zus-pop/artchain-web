@@ -232,10 +232,6 @@ const Header: React.FC<ArtistNavigationProps> = ({
           <div className="w-full px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
             <Link href="/" className="flex items-center shrink-0">
               <img src="/images/newlogo.png" alt="Artchain Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain mr-3" />
-              <div className="hidden sm:block">
-                <div className="font-bold text-gray-800">Artist</div>
-                <div className="text-xs text-gray-500">WORDPRESS THEME</div>
-              </div>
             </Link>
 
             <nav className="hidden lg:flex gap-6">

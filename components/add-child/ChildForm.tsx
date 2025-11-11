@@ -329,7 +329,7 @@ export function ChildForm({
               <Button
                 onClick={handleSubmit(handleFormSubmit)}
                 disabled={!isValid}
-                className="flex-1"
+                className="flex-1 bg-[#FF6E1A]"
               >
                 {isEditing ? "Cập nhật" : "Thêm con em"}
               </Button>
