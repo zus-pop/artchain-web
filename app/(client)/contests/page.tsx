@@ -12,11 +12,11 @@ import { useState } from "react";
 const statusColors = {
   UPCOMING: "bg-blue-500",
   ACTIVE: "bg-green-500",
-  DRAFT: "bg-gray-500",
+  DRAFT: "bg-[#EAE6E0]0",
   ENDED: "bg-orange-500",
   COMPLETED: "bg-purple-500",
   CANCELLED: "bg-gray-600",
-  ALL: "bg-gray-500",
+  ALL: "bg-[#EAE6E0]0",
 };
 
 const statusLabels = {
@@ -62,7 +62,7 @@ export default function ContestsPage() {
 
   if (isLoading) {
     return (
-      <div className="w-full py-10 px-4 bg-gray-50">
+      <div className="w-full py-10 px-4 bg-[#EAE6E0]">
         <div className="mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
@@ -93,7 +93,7 @@ export default function ContestsPage() {
 
   if (error) {
     return (
-      <div className="w-full py-25 px-4 bg-gray-50">
+      <div className="w-full py-25 px-4 bg-[#EAE6E0]">
         <div className="mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
             Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
@@ -105,7 +105,7 @@ export default function ContestsPage() {
   }
 
   return (
-    <div className="w-full py-25 px-4 bg-gray-50">
+    <div className="w-full py-25 px-4 bg-[#EAE6E0]">
       <div className="mx-auto">
         {/* Header */}
         {/* <motion.div 
@@ -143,7 +143,7 @@ export default function ContestsPage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   selectedStatus === option.value
                     ? "bg-[#FF6E1A] text-white shadow-md"
-                    : "bg-white text-gray-700 hover:bg-gray-100 shadow-sm"
+                    : "bg-[#EAE6E0] text-black border border-primary hover:bg-gray-100 shadow-sm"
                 }`}
               >
                 {option.label}
@@ -224,7 +224,7 @@ export default function ContestsPage() {
                       </div>
 
                       {/* Nút hành động */}
-                      <button className="z-10 w-fit text-gray-800 font-semibold rounded p-2 px-6 transition-colors duration-200 bg-white bg-opacity-20 hover:bg-opacity-40">
+                      <button className="z-10 w-fit text-gray-800 font-semibold rounded p-2 px-6 transition-colors duration-200 bg-[#EAE6E0] bg-opacity-20 hover:bg-opacity-40">
                         Xem Chi Tiết
                       </button>
                     </div>
