@@ -6,17 +6,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-
-const statusColors = {
-  UPCOMING: "bg-red-400",
-  ACTIVE: "bg-red-600",
-  DRAFT: "bg-neutral-400",
-  ENDED: "bg-orange-500",
-  COMPLETED: "bg-purple-600",
-  CANCELLED: "bg-black",
-  ALL: "bg-black",
-};
+import { useParams } from "next/navigation";
 
 const statusLabels = {
   UPCOMING: "Sắp diễn ra",
@@ -42,7 +32,6 @@ const statusPillStyles: Record<string, string> = {
 export default function ContestDetailPage() {
   const { user } = useAuth();
   const params = useParams();
-  const router = useRouter();
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
 

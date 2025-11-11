@@ -25,7 +25,7 @@
   --popover-foreground: hsl(0 0% 12%);
 
   /* Màu chủ đạo (Primary) */
-  --primary: hsl(2 68% 58%); /* Màu đỏ cam nút bấm #d9534f */
+  --primary: hsl(22 100% 55%); /* Màu đỏ cam nút bấm #d9534f */
   --primary-foreground: hsl(0 0% 100%); /* Chữ trắng trên nút */
 
   /* Màu phụ (Secondary) */
