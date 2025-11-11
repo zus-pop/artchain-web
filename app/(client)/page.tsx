@@ -88,7 +88,7 @@ const NewsCardSmall = ({
   darkBg?: boolean;
 }) => (
   <div
-    className={`flex flex-col overflow-hidden ${
+    className={`flex flex-col overflow-hidden hover:scale-105 transition-transform duration-300 ${
       darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
     }`}
   >
@@ -504,7 +504,7 @@ export default function Page() {
               >
                 <button
                   onClick={() => router.push("/gallery")}
-                  className="bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
+                  className="bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
                 >
                   Xem Triển Lãm <ArrowRightIcon />
                 </button>
@@ -565,7 +565,7 @@ export default function Page() {
                   activeContest?.contestId &&
                   router.push(`/contests/${activeContest.contestId}`)
                 }
-                className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
+                className="mt-6 sm:mt-10 bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
               >
                 Tham gia ngay <ArrowRightIcon />
               </button>
@@ -604,68 +604,114 @@ export default function Page() {
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
               <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[0]?.image_url ||
-                    "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                  }
-                  category={
-                    smallPosts[0]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[0]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[1]?.image_url ||
-                    "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                  }
-                  category={
-                    smallPosts[1]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[1]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
+                {smallPosts[0] ? (
+                  <Link href={`/posts/${smallPosts[0].post_id}`}>
+                    <NewsCardSmall
+                      imgSrc={
+                        smallPosts[0].image_url ||
+                        "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                      }
+                      category={
+                        smallPosts[0].postTags?.[0]?.tag?.tag_name ||
+                        "Digital & Contemparary Art"
+                      }
+                      title={
+                        smallPosts[0].title ||
+                        "How Art Fairs Are Adapting to the<br />Digital Age"
+                      }
+                      darkBg={true}
+                    />
+                  </Link>
+                ) : (
+                  <NewsCardSmall
+                    imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                    category="Digital & Contemparary Art"
+                    title="How Art Fairs Are Adapting to the<br />Digital Age"
+                    darkBg={true}
+                  />
+                )}
+                {smallPosts[1] ? (
+                  <Link href={`/posts/${smallPosts[1].post_id}`}>
+                    <NewsCardSmall
+                      imgSrc={
+                        smallPosts[1].image_url ||
+                        "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                      }
+                      category={
+                        smallPosts[1].postTags?.[0]?.tag?.tag_name ||
+                        "Digital & Contemparary Art"
+                      }
+                      title={
+                        smallPosts[1].title ||
+                        "How Art Fairs Are Adapting to the<br />Digital Age"
+                      }
+                      darkBg={true}
+                    />
+                  </Link>
+                ) : (
+                  <NewsCardSmall
+                    imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                    category="Digital & Contemparary Art"
+                    title="How Art Fairs Are Adapting to the<br />Digital Age"
+                    darkBg={true}
+                  />
+                )}
               </div>
 
               <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
 
-              <div className="flex flex-col bg-[#EAE6E0] text-white">
-                <img
-                  src={
-                    spotlightPost?.image_url ||
-                    "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
-                  }
-                  alt={spotlightPost?.title || "Spotlight To Emerging Artist"}
-                  className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.backgroundColor =
-                      "#FF5733";
-                  }}
-                />
+              <div className="flex flex-col bg-[#EAE6E0] text-white hover:scale-105 transition-transform duration-300">
+                {spotlightPost ? (
+                  <Link href={`/posts/${spotlightPost.post_id}`}>
+                    <img
+                      src={
+                        spotlightPost.image_url ||
+                        "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
+                      }
+                      alt={spotlightPost.title || "Spotlight To Emerging Artist"}
+                      className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6 cursor-pointer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.backgroundColor =
+                          "#FF5733";
+                      }}
+                    />
+                  </Link>
+                ) : (
+                  <img
+                    src="https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
+                    alt="Spotlight To Emerging Artist"
+                    className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.backgroundColor =
+                        "#FF5733";
+                    }}
+                  />
+                )}
                 <AnimatedContainer
                   className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
                   animation="animate-fade-in-left"
                 >
                   Artist Spotlight
                 </AnimatedContainer>
-                <AnimatedContainer
-                  className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
-                  animation="animate-fade-in-right"
-                  delay={200}
-                >
-                  {spotlightPost?.title || (
-                    <>Spotlight To Emerging Artist: Ones to watch in 2025</>
-                  )}
-                </AnimatedContainer>
+                {spotlightPost ? (
+                  <Link href={`/posts/${spotlightPost.post_id}`}>
+                    <AnimatedContainer
+                      className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4 cursor-pointer"
+                      animation="animate-fade-in-right"
+                      delay={200}
+                    >
+                      {spotlightPost.title}
+                    </AnimatedContainer>
+                  </Link>
+                ) : (
+                  <AnimatedContainer
+                    className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
+                    animation="animate-fade-in-right"
+                    delay={200}
+                  >
+                    Spotlight To Emerging Artist: Ones to watch in 2025
+                  </AnimatedContainer>
+                )}
                 <AnimatedContainer
                   className="text-sm sm:text-base text-black leading-relaxed"
                   animation="animate-fade-in-up"
@@ -695,36 +741,58 @@ export default function Page() {
               <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
 
               <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[2]?.image_url ||
-                    "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                  }
-                  category={
-                    smallPosts[2]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[2]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[3]?.image_url ||
-                    "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                  }
-                  category={
-                    smallPosts[3]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[3]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
+                {smallPosts[2] ? (
+                  <Link href={`/posts/${smallPosts[2].post_id}`}>
+                    <NewsCardSmall
+                      imgSrc={
+                        smallPosts[2].image_url ||
+                        "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                      }
+                      category={
+                        smallPosts[2].postTags?.[0]?.tag?.tag_name ||
+                        "Digital & Contemparary Art"
+                      }
+                      title={
+                        smallPosts[2].title ||
+                        "How Art Fairs Are Adapting to the<br />Digital Age"
+                      }
+                      darkBg={true}
+                    />
+                  </Link>
+                ) : (
+                  <NewsCardSmall
+                    imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                    category="Digital & Contemparary Art"
+                    title="How Art Fairs Are Adapting to the<br />Digital Age"
+                    darkBg={true}
+                  />
+                )}
+                {smallPosts[3] ? (
+                  <Link href={`/posts/${smallPosts[3].post_id}`}>
+                    <NewsCardSmall
+                      imgSrc={
+                        smallPosts[3].image_url ||
+                        "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                      }
+                      category={
+                        smallPosts[3].postTags?.[0]?.tag?.tag_name ||
+                        "Digital & Contemparary Art"
+                      }
+                      title={
+                        smallPosts[3].title ||
+                        "How Art Fairs Are Adapting to the<br />Digital Age"
+                      }
+                      darkBg={true}
+                    />
+                  </Link>
+                ) : (
+                  <NewsCardSmall
+                    imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                    category="Digital & Contemparary Art"
+                    title="How Art Fairs Are Adapting to the<br />Digital Age"
+                    darkBg={true}
+                  />
+                )}
               </div>
             </div>
           </div>

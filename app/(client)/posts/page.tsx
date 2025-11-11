@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar, Eye, Tag, ArrowRight, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { getPosts } from '@/apis/post';
 import { Post } from '@/types/post';
 
 const NewsCard = ({ news }: { news: Post }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-gray-100 dark:border-gray-700">
+    <div className="bg-[#EAE6E0] dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-[#FF6E1A] dark:border-gray-700">
 
       {/* Hình ảnh */}
       <div className="w-full mb-4 relative">
@@ -49,7 +50,7 @@ const NewsCard = ({ news }: { news: Post }) => {
       </div>
 
       {/* Footer/Metadata - luôn ở dưới cùng */}
-      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center border-t pt-3 border-gray-100 dark:border-gray-700 mt-auto">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center border-t pt-3 border-[#FF6E1A] dark:border-gray-700 mt-auto">
         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <span className="flex items-center">
             <Calendar className="w-4 h-4 mr-1 text-[#FF6E1A]" />
@@ -62,10 +63,12 @@ const NewsCard = ({ news }: { news: Post }) => {
         </div>
 
         {/* Read More Button */}
-        <button className="flex items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors text-sm">
-          Đọc Chi Tiết
-          <ArrowRight className="w-4 h-4 ml-1" />
-        </button>
+        <Link href={`/posts/${news.post_id}`}>
+          <button className="flex cursor-pointer items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors text-sm">
+            Đọc Chi Tiết
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+        </Link>
       </div>
     </div>
   );
