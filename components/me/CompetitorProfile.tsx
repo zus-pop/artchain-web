@@ -4,31 +4,7 @@ import { WhoAmI } from "@/types";
 import Image from "next/image";
 import { useState } from "react";
 import { Lang } from "../../lib/i18n";
-
-// --- Dữ liệu giả lập cho các bài đã nộp ---
-// (Dựa trên hình ảnh của bạn)
-// Bạn sẽ thay thế phần này bằng dữ liệu thật từ API
-const submittedArtworks = [
-  {
-    id: 1,
-    imageUrl: "/images/art-example-1.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
-    submissionDate: "3/6/2025",
-    competitionName: "Vẽ tranh cho em",
-  },
-  {
-    id: 2,
-    imageUrl: "/images/art-example-2.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
-    submissionDate: "3/6/2025",
-    competitionName: "Vẽ tranh cho em",
-  },
-  {
-    id: 3,
-    imageUrl: "/images/art-example-3.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
-    submissionDate: "3/6/2025",
-    competitionName: "Vẽ tranh cho em",
-  },
-];
-// ------------------------------------------
+import { useGetMySubmissions } from "@/apis/paintings";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -42,6 +18,17 @@ export default function CompetitorProfileScreen({
   const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
     "submitted"
   );
+
+  // Fetch submissions data
+  const { data: submissions } = useGetMySubmissions();
+
+  // Map submissions data to the required format
+  const submittedArtworks = submissions ? submissions.map(painting => ({
+    id: painting.paintingId,
+    imageUrl: painting.imageUrl,
+    submissionDate: painting.submissionDate,
+    competitionName: painting.contest.title,
+  })) : [];
 
   // Xử lý dữ liệu từ authUser, dùng fallback là dữ liệu trong ảnh
   // LƯU Ý: Kiểu WhoAmI của bạn có thể không có 'class', bạn cần thêm vào nếu muốn dùng
