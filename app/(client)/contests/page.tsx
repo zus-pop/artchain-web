@@ -1,10 +1,10 @@
 "use client";
 
-import { useGetContests } from "@/apis/contests";
+import { useGetContestsPaginated } from "@/apis/contests";
 import { formatDate } from "@/lib/utils";
 import { ContestStatus } from "@/types/contest";
 import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Clock, Filter, Trophy } from "lucide-react";
+import { Calendar, Clock, Filter, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -36,7 +36,17 @@ export default function ContestsPage() {
   const [selectedStatus, setSelectedStatus] = useState<
     ContestStatus | undefined
   >();
-  const { data: contests, isLoading, error } = useGetContests(selectedStatus);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  const { data: contests, isLoading, error } = useGetContestsPaginated(
+    selectedStatus,
+    currentPage,
+    itemsPerPage
+  );
+
+  // Calculate total pages (assuming we have all data, adjust if API returns total count)
+  const totalPages = contests && contests.length === itemsPerPage ? currentPage + 1 : currentPage;
 
   const filterOptions: { label: string; value: ContestStatus | undefined }[] = [
     { label: "Tất cả", value: undefined },
@@ -139,7 +149,10 @@ export default function ContestsPage() {
             {filterOptions.map((option) => (
               <button
                 key={option.label}
-                onClick={() => setSelectedStatus(option.value)}
+                onClick={() => {
+                  setSelectedStatus(option.value);
+                  setCurrentPage(1); // Reset to first page when filter changes
+                }}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   selectedStatus === option.value
                     ? "bg-[#FF6E1A] text-white shadow-md"
@@ -254,6 +267,72 @@ export default function ContestsPage() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Pagination */}
+        {contests && contests.length > 0 && (
+          <motion.div
+            className="flex justify-center items-center gap-2 mt-12 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
+              }`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Trước
+            </button>
+
+            <div className="flex items-center gap-2">
+              {/* Show page numbers */}
+              {[...Array(Math.min(5, totalPages))].map((_, idx) => {
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = idx + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = idx + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNumber = totalPages - 4 + idx;
+                } else {
+                  pageNumber = currentPage - 2 + idx;
+                }
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPage(pageNumber)}
+                    className={`w-10 h-10 rounded-lg font-medium transition-all duration-200 ${
+                      currentPage === pageNumber
+                        ? "bg-[#FF6E1A] text-white shadow-md"
+                        : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={contests.length < itemsPerPage}
+              className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                contests.length < itemsPerPage
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
+              }`}
+            >
+              Sau
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
       </div>
     </div>
   );

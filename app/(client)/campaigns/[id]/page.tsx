@@ -80,9 +80,9 @@ const CampaignDetailPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen pt-25 bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link href="/campaigns" className="flex items-center text-gray-600 hover:text-gray-900">
@@ -100,8 +100,8 @@ const CampaignDetailPage = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Become a Sponsor</h2>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-600 text-sm">{formError}</p>
+              <div className="mb-4 p-3 bg-[#FF6E1A] border border-bg-[#FF6E1A] rounded-md">
+                <p className="text-bg-[#FF6E1A] text-sm">{formError}</p>
               </div>
             )}
 
@@ -144,7 +144,7 @@ const CampaignDetailPage = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bg-[#FF6E1A] focus:border-transparent"
                   placeholder="Enter your organization or personal name"
                 />
               </div>
@@ -160,7 +160,7 @@ const CampaignDetailPage = () => {
                   name="contactInfo"
                   value={formData.contactInfo}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bg-[#FF6E1A] focus:border-transparent"
                   placeholder="Phone number or email"
                 />
               </div>
@@ -178,7 +178,7 @@ const CampaignDetailPage = () => {
                   onChange={handleInputChange}
                   required
                   min="1"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-bg-[#FF6E1A] focus:border-transparent"
                   placeholder="Enter amount in VND"
                 />
               </div>
@@ -187,7 +187,7 @@ const CampaignDetailPage = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center"
+                className="w-full bg-[#FF6E1A] hover:bg-[#FF833B] disabled:bg-[#FF833Bßßß] text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center"
               >
                 {submitting ? (
                   <>

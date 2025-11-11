@@ -824,15 +824,16 @@ export default function Page() {
                   ))
                 : campaigns.length > 0
                 ? campaigns.map((c, idx) => (
-                    <CampaignCard
-                      key={c.campaignId ?? idx}
-                      imgSrc={
-                        c.image ||
-                        "https://placehold.co/400x300/cccccc/333333?text=No+Image"
-                      }
-                      title={c.title || "Không có tiêu đề"}
-                      description={c.description || ""}
-                    />
+                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`}>
+                      <CampaignCard
+                        imgSrc={
+                          c.image ||
+                          "https://placehold.co/400x300/cccccc/333333?text=No+Image"
+                        }
+                        title={c.title || "Không có tiêu đề"}
+                        description={c.description || ""}
+                      />
+                    </Link>
                   ))
                 : // fallback static content if no campaigns
                   [

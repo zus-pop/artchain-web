@@ -41,7 +41,7 @@ export interface ExhibitionPainting {
     description: string;
     rank: number;
     prize: string;
-  };
+  } | null;
   competitor: {
     competitorId: string;
     fullName: string;

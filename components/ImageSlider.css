@@ -110,8 +110,16 @@
   to { left: calc(var(--width, 200px) * -2); }
 }
 
-.slider:hover .item { animation-play-state: paused !important; filter: grayscale(1); }
-.slider .item:hover { filter: grayscale(0); }
+.slider .item { 
+  filter: grayscale(1); 
+  transition: filter 0.3s ease; 
+}
+.slider .item:hover { 
+  filter: grayscale(0); 
+}
+.slider:hover .item { 
+  animation-play-state: paused !important; 
+}
 
 .slider[reverse="true"] .item { animation: reversePlay 20s linear infinite; }
 @keyframes reversePlay { from { left: calc(var(--width, 200px) * -2); } to { left: 100%; } }

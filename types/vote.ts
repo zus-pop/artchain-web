@@ -11,7 +11,7 @@ export interface VotedPaining {
     paintingId: string;
     title: string;
     description: string;
-    imageUrl: string;
+    imageUrl: string | null;
     competitorId: string;
     competitorName: string;
     email: string;
@@ -38,4 +38,28 @@ export interface VotedAward {
     quantity: number;
     totalVotes: number;
   }[];
+}
+
+export interface VoteRequest {
+  accountId: string;
+  paintingId: string;
+  awardId: string;
+  contestId: string;
+}
+
+export interface VoteSubmitResponse {
+  success: boolean;
+  message: string;
+  data: {
+    voteId: number;
+    painting: {
+      paintingId: string;
+      title: string;
+    };
+    award: {
+      awardId: number;
+      name: string;
+    };
+    currentVoteCount: number;
+  };
 }
