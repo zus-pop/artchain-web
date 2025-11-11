@@ -14,6 +14,7 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import GlassSurface from "@/components/GlassSurface";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store";
@@ -209,54 +210,73 @@ const Header: React.FC<ArtistNavigationProps> = ({
   return (
     <>
       <style>{styles}</style>
-      <nav className="bg-white shadow-sm border-t border-gray-200 sticky top-0 z-50">
-        <div className="mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center flex-shrink-0 cursor-pointer"
-            >
-              {/* Thêm cursor-pointer để hiển thị đây là một liên kết */}
-              <div className="text-red-500 text-2xl font-bold mr-2">✓</div>
-              <div>
+      {/* Header styled as GlassSurface (from news page) but keeping header logic */}
+      <div className="fixed top-2 sm:top-5 left-2 sm:left-4 right-2 sm:right-4 lg:left-0 lg:right-0 z-50 flex justify-center">
+        <GlassSurface
+          width="100%"
+          height="auto"
+          borderRadius={50}
+          backgroundOpacity={0.58}
+          blur={5}
+          saturation={3}
+          brightness={54}
+          opacity={1}
+          displace={0.5}
+          distortionScale={-180}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
+          className="max-w-7xl w-full overflow-visible"
+          style={{ justifyContent: "flex-start" }}
+        >
+          <div className="w-full px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
+            <Link href="/" className="flex items-center shrink-0">
+              <img src="/images/newlogo.png" alt="Artchain Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain mr-3" />
+              <div className="hidden sm:block">
                 <div className="font-bold text-gray-800">Artist</div>
                 <div className="text-xs text-gray-500">WORDPRESS THEME</div>
               </div>
             </Link>
 
-            {/* New Navigation Menu */}
-            <div className="nav-wrap">
+            <nav className="hidden lg:flex gap-6">
               {navItems.map((item, index) => (
-                <React.Fragment key={item.label}>
-                  <input
-                    checked={activeTab === index}
-                    onChange={() => handleTabChange(index, item.href)}
-                    type="radio"
-                    id={`rd-${index + 1}`}
-                    name="radio"
-                    className={`rd-${index + 1}`}
-                    hidden
-                  />
-                  <Link
-                    href={item.href}
-                    onClick={(e) => handleNavClick(item.href, e)}
-                  >
-                    <label
-                      htmlFor={`rd-${index + 1}`}
-                      className="nav-label cursor-pointer"
-                    >
-                      <span>{item.label}</span>
-                    </label>
-                  </Link>
-                </React.Fragment>
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavClick(item.href, e as unknown as React.MouseEvent<HTMLAnchorElement>);
+                  }}
+                  className={`text-sm font-medium whitespace-nowrap ${
+                    activeTab === index
+                      ? 'text-black border-b-2 border-black pb-1'
+                      : 'text-black hover:text-black'
+                  } transition-colors`}
+                >
+                  {item.label}
+                </a>
               ))}
-              <div className="slidebar" />
-            </div>
+            </nav>
 
-            {/* Right side actions */}
+            {/* Mobile menu button */}
+            <button className="lg:hidden p-2 text-black hover:text-black">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+
             <div className="flex items-center space-x-2">
-              {/* User Auth Section */}
+              {/* Keep existing right-side actions (auth + language) */}
               {isAuthenticated ? (
                 <div className="relative" ref={userDropdownRef}>
                   <button
@@ -272,9 +292,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     >
                       {getAvatarInitial()}
                     </div>
-                    <span className="max-w-32 truncate">
-                      {getDisplayName()}
-                    </span>
+                    <span className="max-w-32 truncate">{getDisplayName()}</span>
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
                         isUserDropdownOpen ? "rotate-180" : ""
@@ -293,7 +311,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                           stiffness: 400,
                           damping: 25,
                         }}
-                        className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+                        className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-[60]"
                       >
                         <div className="p-4 border-b border-gray-100">
                           <div className="flex items-center space-x-3">
@@ -334,7 +352,6 @@ const Header: React.FC<ArtistNavigationProps> = ({
 
                           <button
                             onClick={() => {
-                              // TODO: Add settings navigation
                               setIsUserDropdownOpen(false);
                             }}
                             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
@@ -364,19 +381,16 @@ const Header: React.FC<ArtistNavigationProps> = ({
                 <Link
                   href="/auth"
                   onClick={(e) => handleNavClick("/auth", e)}
-                  className="bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 inline-flex items-center space-x-2 rounded-lg px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-200"
+                  className="bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] inline-flex items-center space-x-2 rounded-sm transition-all duration-200"
                 >
                   <span>{t.join}</span>
-                  <ArrowRight className="h-4 w-4" />
                 </Link>
               )}
 
               {/* Language Dropdown */}
-              <div className="relative" ref={languageDropdownRef}>
+              {/* <div className="relative" ref={languageDropdownRef}>
                 <button
-                  onClick={() =>
-                    setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
-                  }
+                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
                   className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                 >
                   <Globe className="h-4 w-4" />
@@ -426,11 +440,11 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </div> */}
             </div>
           </div>
-        </div>
-      </nav>
+        </GlassSurface>
+      </div>
 
       {/* Content area for active tab */}
       {activeContent && <div className="w-full">{activeContent}</div>}

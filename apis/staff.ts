@@ -1,6 +1,16 @@
 import myAxios from "@/lib/custom-axios";
 import { ContestStatus } from "@/types/contest";
-import { ContestResponseDTO, GetStaffRoundsResponse } from "@/types/staff/contest-dto";
+import {
+  ContestResponseDTO,
+  CreateContestRequest,
+  GetStaffRoundsResponse,
+  UpdateContestRequest,
+} from "@/types/staff/contest-dto";
+import { CreatePostRequest } from "@/types/staff/post-dto";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
+import { CreateCampaignRequest } from "../types/staff/campaign";
 
 /**
  * Staff Contest Management APIs
@@ -18,24 +28,29 @@ export const getAllStaffContests = async (params?: {
 };
 
 // POST /api/staff/contests - Create a new contest
-export const createStaffContest = async (data: {
-  title: string;
-  description: string;
-  bannerUrl?: string;
-  numOfAward: number;
-  startDate: string;
-  endDate: string;
-  status?: ContestStatus;
-  rounds?: Array<{
-    name: string;
-    table: string;
-    startDate: string;
-    endDate: string;
-    submissionDeadline?: string;
-    status?: "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-  }>;
-}) => {
-  const response = await myAxios.post("/staff/contests", data);
+export const createStaffContest = async (data: CreateContestRequest) => {
+  const formData = new FormData();
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("round2Quantity", data.round2Quantity.toString());
+  formData.append("numberOfTablesRound2", data.numberOfTablesRound2.toString());
+  formData.append("startDate", data.startDate);
+  formData.append("endDate", data.endDate);
+  formData.append("banner", data.banner);
+  formData.append("rule", data.rule);
+  formData.append("roundStartDate", data.roundStartDate);
+  formData.append("roundEndDate", data.roundEndDate);
+  formData.append("roundSubmissionDeadline", data.roundSubmissionDeadline);
+  formData.append("roundResultAnnounceDate", data.roundResultAnnounceDate);
+  formData.append("roundSendOriginalDeadline", data.roundSendOriginalDeadline);
+  formData.append("numOfAward", "0");
+  formData.append("roundName", "ROUND_1");
+  formData.append("roundTable", "paintings");
+  const response = await myAxios.post("/staff/contests", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
@@ -52,20 +67,68 @@ export const getStaffContests = async (params?: {
 
 // PUT /api/staff/contests/{id} - Update a contest
 export const updateStaffContest = async (
-  id: number,
-  data: {
-    title?: string;
-    description?: string;
-    bannerUrl?: string;
-    numOfAward?: number;
-    startDate?: string;
-    endDate?: string;
-    status?: ContestStatus;
-  }
+  updateContestRequest: UpdateContestRequest
 ) => {
-  const response = await myAxios.put(`/staff/contests/${id}`, data);
+  const { contestId, ...data } = updateContestRequest;
+  const formData = new FormData();
+  if (data.title) formData.append("title", data.title);
+  if (data.description) formData.append("description", data.description);
+  if (data.round2Quantity !== undefined)
+    formData.append("round2Quantity", data.round2Quantity.toString());
+  if (data.startDate) formData.append("startDate", data.startDate);
+  if (data.endDate) formData.append("endDate", data.endDate);
+  if (data.banner) formData.append("banner", data.banner);
+  if (data.rule) formData.append("rule", data.rule);
+  if (data.roundStartDate)
+    formData.append("roundStartDate", data.roundStartDate);
+  if (data.roundEndDate) formData.append("roundEndDate", data.roundEndDate);
+  if (data.roundSubmissionDeadline)
+    formData.append("roundSubmissionDeadline", data.roundSubmissionDeadline);
+  if (data.roundResultAnnounceDate)
+    formData.append("roundResultAnnounceDate", data.roundResultAnnounceDate);
+  if (data.roundSendOriginalDeadline)
+    formData.append(
+      "roundSendOriginalDeadline",
+      data.roundSendOriginalDeadline
+    );
+  const response = await myAxios.put(
+    `/staff/contests/${updateContestRequest.contestId}`,
+    data,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
+
+export function toggleExaminerScheduleEnforcement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (contestId: string) => {
+      const response = await myAxios.patch(
+        `/staff/contests/${contestId}/schedule-enforcement`
+      );
+      return response.data;
+    },
+    onSuccess: (value: { data: { isScheduleEnforced: boolean } }) => {
+      queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
+      if (value.data.isScheduleEnforced) {
+        toast.success("Bật ràng buộc lịch chấm thành công");
+      } else {
+        toast.success("Tắt ràng buộc lịch chấm thành công");
+      }
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+}
 
 // GET /api/staff/contests/{id} - Get contest by ID (staff view)
 export const getStaffContestById = async (id: number) => {
@@ -74,7 +137,7 @@ export const getStaffContestById = async (id: number) => {
 };
 
 // PATCH /api/staff/contests/{id}/publish - Publish a contest
-export const publishStaffContest = async (id: number) => {
+export const publishStaffContest = async (id: string) => {
   const response = await myAxios.patch(`/staff/contests/${id}/publish`);
   return response.data;
 };
@@ -97,7 +160,10 @@ export const createStaffRound = async (
     status?: string;
   }
 ) => {
-  const response = await myAxios.post(`/staff/contests/${contestId}/rounds`, data);
+  const response = await myAxios.post(
+    `/staff/contests/${contestId}/rounds`,
+    data
+  );
   return response.data;
 };
 
@@ -109,13 +175,17 @@ export const getStaffRounds = async (
     limit?: number;
   }
 ): Promise<GetStaffRoundsResponse> => {
-  const response = await myAxios.get(`/staff/contests/${contestId}/rounds`, { params });
+  const response = await myAxios.get(`/staff/contests/${contestId}/rounds`, {
+    params,
+  });
   return response.data;
 };
 
 // GET /api/staff/contests/{contestId}/rounds/{roundId} - Get round by ID
 export const getStaffRoundById = async (contestId: number, roundId: string) => {
-  const response = await myAxios.get(`/staff/contests/${contestId}/rounds/${roundId}`);
+  const response = await myAxios.get(
+    `/staff/contests/${contestId}/rounds/${roundId}`
+  );
   return response.data;
 };
 
@@ -134,19 +204,30 @@ export const updateStaffRound = async (
     status?: string;
   }
 ) => {
-  const response = await myAxios.patch(`/staff/contests/${contestId}/rounds/${roundId}`, data);
+  const response = await myAxios.patch(
+    `/staff/contests/${contestId}/rounds/${roundId}`,
+    data
+  );
   return response.data;
 };
 
 // DELETE /api/staff/contests/{contestId}/rounds/{roundId} - Delete a round
 export const deleteStaffRound = async (contestId: number, roundId: string) => {
-  const response = await myAxios.delete(`/staff/contests/${contestId}/rounds/${roundId}`);
+  const response = await myAxios.delete(
+    `/staff/contests/${contestId}/rounds/${roundId}`
+  );
   return response.data;
 };
 
 // POST /api/staff/contests/{id}/create-round2 - Create round 2
-export const createStaffRound2 = async (contestId: number, data: { date: string }) => {
-  const response = await myAxios.post(`/staff/contests/${contestId}/create-round2`, data);
+export const createStaffRound2 = async (
+  contestId: number,
+  data: { date: string; numberOfTables: number }
+) => {
+  const response = await myAxios.post(
+    `/staff/contests/${contestId}/create-round2`,
+    data
+  );
   return response.data;
 };
 
@@ -173,19 +254,25 @@ export const getStaffPendingSubmissions = async (params?: {
   contestId?: number;
   roundId?: number;
 }) => {
-  const response = await myAxios.get("/staff/contests/submissions/pending", { params });
+  const response = await myAxios.get("/staff/contests/submissions/pending", {
+    params,
+  });
   return response.data;
 };
 
 // GET /api/staff/contests/submissions/{paintingId} - Get submission by ID
 export const getStaffSubmissionById = async (paintingId: string) => {
-  const response = await myAxios.get(`/staff/contests/submissions/${paintingId}`);
+  const response = await myAxios.get(
+    `/staff/contests/submissions/${paintingId}`
+  );
   return response.data;
 };
 
 // PATCH /api/staff/contests/submissions/{paintingId}/accept - Accept a submission
 export const acceptStaffSubmission = async (paintingId: string) => {
-  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/accept`);
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/${paintingId}/accept`
+  );
   return response.data;
 };
 
@@ -196,7 +283,10 @@ export const rejectStaffSubmission = async (
     reason?: string;
   }
 ) => {
-  const response = await myAxios.patch(`/staff/contests/submissions/${paintingId}/reject`, data);
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/${paintingId}/reject`,
+    data
+  );
   return response.data;
 };
 
@@ -217,15 +307,37 @@ export const getStaffPosts = async (params?: {
 };
 
 // POST /api/staff/posts - Create a new post
-export const createStaffPost = async (data: {
-  title: string;
-  content: string;
-  image_url?: string;
-  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  tag_ids: number[];
-}) => {
-  const response = await myAxios.post("/staff/posts", data);
-  return response.data;
+export const createStaffPost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: CreatePostRequest) => {
+      const formData = new FormData();
+      formData.append("title", data.title);
+      formData.append("content", data.content);
+      formData.append("status", data.status);
+      formData.append("tag_ids", JSON.stringify(data.tag_ids));
+      if (data.file) {
+        formData.append("file", data.file);
+      }
+      const response = await myAxios.post("/staff/posts", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/staff/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/posts"] });
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
 };
 
 // GET /api/staff/posts/{id} - Get post by ID
@@ -282,9 +394,7 @@ export const getStaffTags = async (params?: {
 };
 
 // POST /api/staff/tags - Create a new tag
-export const createStaffTag = async (data: {
-  tag_name: string;
-}) => {
+export const createStaffTag = async (data: { tag_name: string }) => {
   const response = await myAxios.post("/staff/tags", data);
   return response.data;
 };
@@ -310,21 +420,32 @@ export const getAllStaffExaminers = async (params?: {
 };
 
 // POST /api/staff/contests/{contestId}/examiners - Add examiner to contest
-export const addStaffContestExaminer = async (contestId: number, data: {
-  examinerId: string;
-  role: string;
-}) => {
+export const addStaffContestExaminer = async (
+  contestId: number,
+  data: {
+    examinerId: string;
+    role: string;
+  }
+) => {
   const requestBody = {
     examiner_id: data.examinerId,
-    role: data.role
+    role: data.role,
   };
-  const response = await myAxios.post(`/staff/contests/${contestId}/examiners`, requestBody);
+  const response = await myAxios.post(
+    `/staff/contests/${contestId}/examiners`,
+    requestBody
+  );
   return response.data;
 };
 
 // DELETE /api/staff/contests/{contestId}/examiners/{examinerId} - Remove examiner from contest
-export const deleteStaffContestExaminer = async (contestId: number, examinerId: string) => {
-  const response = await myAxios.delete(`/staff/contests/${contestId}/examiners/${examinerId}`);
+export const deleteStaffContestExaminer = async (
+  contestId: number,
+  examinerId: string
+) => {
+  const response = await myAxios.delete(
+    `/staff/contests/${contestId}/examiners/${examinerId}`
+  );
   return response.data;
 };
 
@@ -351,13 +472,16 @@ export const getStaffSchedulesByExaminer = async (examinerId: string) => {
 };
 
 // PUT /api/staff/schedules/{scheduleId} - Update a schedule
-export const updateStaffSchedule = async (scheduleId: number, data: {
-  contestId: number;
-  examinerId: string;
-  task: string;
-  date: string;
-  status: string;
-}) => {
+export const updateStaffSchedule = async (
+  scheduleId: number,
+  data: {
+    contestId: number;
+    examinerId: string;
+    task: string;
+    date: string;
+    status: string;
+  }
+) => {
   const response = await myAxios.put(`/staff/schedules/${scheduleId}`, data);
   return response.data;
 };
@@ -373,14 +497,20 @@ export const deleteStaffSchedule = async (scheduleId: number) => {
  */
 
 // POST /api/staff/campaign - Create a new campaign
-export const createStaffCampaign = async (data: {
-  title: string;
-  description: string;
-  goalAmount: number;
-  deadline: string;
-  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
-}) => {
-  const response = await myAxios.post("/staff/campaign", data);
+export const createStaffCampaign = async (data: CreateCampaignRequest) => {
+  const formData = new FormData();
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("goalAmount", data.goalAmount.toString());
+  formData.append("deadline", data.deadline);
+  formData.append("status", data.status);
+  formData.append("image", data.image);
+
+  const response = await myAxios.post("/staff/campaign", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data;
 };
 
@@ -388,7 +518,13 @@ export const createStaffCampaign = async (data: {
 export const getStaffCampaigns = async (params?: {
   page?: number;
   limit?: number;
-  status?: "ACTIVE" | "CLOSED" | "COMPLETED" | "DRAFT" | "CANCELLED";
+  status?:
+    | "ACTIVE"
+    | "CLOSED"
+    | "COMPLETED"
+    | "DRAFT"
+    | "CANCELLED"
+    | undefined;
 }) => {
   const response = await myAxios.get("/campaigns", { params });
   return response.data;
@@ -403,6 +539,8 @@ export const getCampaignSponsors = async (
     status?: "PENDING" | "PAID";
   }
 ) => {
-  const response = await myAxios.get(`/campaigns/${campaignId}/sponsors`, { params });
+  const response = await myAxios.get(`/campaigns/${campaignId}/sponsors`, {
+    params,
+  });
   return response.data;
 };

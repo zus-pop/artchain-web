@@ -4,7 +4,6 @@ import {
   IconChartBar,
   IconDashboard,
   IconReport,
-  IconSettings,
   IconShield,
   IconUsers,
 } from "@tabler/icons-react";
@@ -12,6 +11,7 @@ import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
+import { NavSettings } from "@/components/nav-settings";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -23,6 +23,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../hooks";
 
 const data = {
   user: {
@@ -102,18 +104,28 @@ const data = {
       ],
     },
   ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/dashboard/admin/settings",
-      icon: IconSettings,
-    },
-  ],
+  navSecondary: [],
 };
 
 export function AdminSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter();
+  const { isAuthenticated, user } = useAuth();
+
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      // Redirect to auth page if not authenticated
+      router.push("/auth");
+      return;
+    }
+  }, [isAuthenticated, user, router]);
+
+  if (user) {
+    data.user.name = user.fullName;
+    data.user.email = user.email;
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -134,6 +146,7 @@ export function AdminSidebar({
       <SidebarContent>
         <NavMain items={data.navMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSettings />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

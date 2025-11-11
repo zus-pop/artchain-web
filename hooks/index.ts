@@ -8,3 +8,4 @@ export { useLogoutMutation } from "./useLogoutMutation";
 
 // Other Hooks
 export { useWards } from "./useWards";
+export { useIntersectionObserver } from "./useIntersectionObserver";

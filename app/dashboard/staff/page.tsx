@@ -1,10 +1,15 @@
+"use client";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";
-
 export default function StaffDashboardPage() {
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+
   return (
     <SidebarProvider
       style={
@@ -16,7 +21,7 @@ export default function StaffDashboardPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Staff Dashboard" />
+        <SiteHeader title={t.staffDashboard} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb items={[]} homeHref="/dashboard/staff" />
@@ -24,12 +29,12 @@ export default function StaffDashboardPage() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
               {/* Staff Dashboard Content */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div className="staff-card staff-stat-info p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Total Competitors
+                        {t.totalCompetitors}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">
                         1,234
@@ -52,38 +57,7 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    +8.2% from last month
-                  </p>
-                </div>
-
-                <div className="staff-card staff-stat-secondary p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium staff-text-secondary">
-                        Pending Paintings
-                      </p>
-                      <p className="text-3xl font-bold staff-text-primary">
-                        67
-                      </p>
-                    </div>
-                    <div className="stat-icon">
-                      <svg
-                        className="h-6 w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-sm staff-text-secondary">
-                    Awaiting review
+                    {t.newThisMonth}
                   </p>
                 </div>
 
@@ -91,7 +65,7 @@ export default function StaffDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Active Contests
+                        {t.activeContests}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">8</p>
                     </div>
@@ -112,7 +86,7 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    Currently running
+                    {t.currentlyRunning}
                   </p>
                 </div>
 
@@ -120,7 +94,7 @@ export default function StaffDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium staff-text-secondary">
-                        Active Sponsors
+                        {t.activeSponsors}
                       </p>
                       <p className="text-3xl font-bold staff-text-primary">
                         15
@@ -143,20 +117,20 @@ export default function StaffDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm staff-text-secondary">
-                    2 new this month
+                    {t.newThisMonth}
                   </p>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="staff-card p-6">
-                <h2 className="staff-heading mb-6">Quick Actions</h2>
+                <h2 className="staff-heading mb-6">{t.quickActions}</h2>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <Link
-                    href="/dashboard/staff/competitors/paintings/pending"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
+                    href="/dashboard/staff/exhibitions/create"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                   >
-                    <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -167,15 +141,46 @@ export default function StaffDashboardPage() {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                         />
                       </svg>
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Review Paintings
+                        {t.createExhibition}
                       </p>
-                      <p className="text-xs staff-text-secondary">67 pending</p>
+                      <p className="text-xs staff-text-secondary">
+                        {t.setupNewExhibition}
+                      </p>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/dashboard/staff/campaigns/create"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                  >
+                    <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                      <svg
+                        className="h-5 w-5 text-white"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold staff-text-primary">
+                        {t.createCampaign}
+                      </p>
+                      <p className="text-xs staff-text-secondary">
+                        {t.setupNewCampaign}
+                      </p>
                     </div>
                   </Link>
 
@@ -200,46 +205,19 @@ export default function StaffDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Create Contest
-                      </p>
-                      <p className="text-xs staff-text-secondary">Start new</p>
-                    </div>
-                  </Link>
-
-                  <Link
-                    href="/dashboard/staff/contests/examiners/invite"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
-                  >
-                    <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
-                      <svg
-                        className="h-5 w-5 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold staff-text-primary">
-                        Invite Examiner
+                        {t.createContest}
                       </p>
                       <p className="text-xs staff-text-secondary">
-                        Send invitation
+                        {t.startNew}
                       </p>
                     </div>
                   </Link>
 
                   <Link
                     href="/dashboard/staff/posts/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-200 transition-all duration-300 group"
                   >
-                    <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className="bg-linear-to-br from-purple-500 to-violet-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -256,10 +234,10 @@ export default function StaffDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold staff-text-primary">
-                        Create Post
+                        {t.createPost}
                       </p>
                       <p className="text-xs staff-text-secondary">
-                        New announcement
+                        {t.newAnnouncement}
                       </p>
                     </div>
                   </Link>
@@ -269,7 +247,7 @@ export default function StaffDashboardPage() {
               {/* Recent Activity */}
               <div className="staff-card p-6">
                 <h2 className="text-lg font-semibold staff-text-primary mb-4">
-                  Recent Activity
+                  {t.recentActivity}
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-gray-100 pb-4">
@@ -291,7 +269,7 @@ export default function StaffDashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          Painting approved
+                          {t.paintingApproved}
                         </p>
                         <p className="text-xs staff-text-secondary">
                           &ldquo;Sunset Dreams&rdquo; by Alice Chen
@@ -299,7 +277,7 @@ export default function StaffDashboardPage() {
                       </div>
                     </div>
                     <span className="text-xs staff-text-secondary">
-                      10 min ago
+                      10 {t.minAgo}
                     </span>
                   </div>
 
@@ -322,7 +300,7 @@ export default function StaffDashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          New contest started
+                          {t.newContestStarted}
                         </p>
                         <p className="text-xs staff-text-secondary">
                           Spring Art Competition 2025
@@ -330,7 +308,7 @@ export default function StaffDashboardPage() {
                       </div>
                     </div>
                     <span className="text-xs staff-text-secondary">
-                      2 hours ago
+                      2 {t.hoursAgo}
                     </span>
                   </div>
 
@@ -353,15 +331,15 @@ export default function StaffDashboardPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium staff-text-primary">
-                          New post published
+                          {t.newPostPublished}
                         </p>
                         <p className="text-xs staff-text-secondary">
-                          Contest guidelines update
+                          {t.contestGuidelinesUpdate}
                         </p>
                       </div>
                     </div>
                     <span className="text-xs staff-text-secondary">
-                      5 hours ago
+                      5 {t.hoursAgo}
                     </span>
                   </div>
                 </div>

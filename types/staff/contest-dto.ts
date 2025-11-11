@@ -44,7 +44,11 @@ export interface ContestDTO {
   title: string;
   description: string;
   bannerUrl: string;
+  ruleUrl: string;
+  isScheduleEnforcement: boolean;
   numOfAward: number;
+  round2Quantity: number;
+  numberOfTablesRound2: number;
   startDate: string;
   endDate: string;
   status: string;
@@ -99,7 +103,7 @@ export interface RoundResponseItem {
   submissionDeadline?: string;
   resultAnnounceDate?: string;
   sendOriginalDeadline?: string;
-  status?: string;
+  status: string;
   table?: string;
   tables?: RoundTableDTO[];
   totalTables?: number;
@@ -121,4 +125,36 @@ export interface GetStaffRoundsResponse {
   success: boolean;
   data: RoundResponseItem[];
   meta: RoundsMetaDTO;
+}
+
+export interface CreateContestRequest {
+  title: string;
+  description: string;
+  round2Quantity: number;
+  numberOfTablesRound2: number;
+  startDate: string;
+  endDate: string;
+  banner: File;
+  rule: File;
+  roundStartDate: string;
+  roundEndDate: string;
+  roundSubmissionDeadline: string;
+  roundResultAnnounceDate: string;
+  roundSendOriginalDeadline: string;
+}
+
+export interface UpdateContestRequest {
+  contestId: string;
+  title?: string;
+  description?: string;
+  round2Quantity?: number;
+  startDate?: string;
+  endDate?: string;
+  banner?: File;
+  rule?: File;
+  roundStartDate?: string;
+  roundEndDate?: string;
+  roundSubmissionDeadline?: string;
+  roundResultAnnounceDate?: string;
+  roundSendOriginalDeadline?: string;
 }

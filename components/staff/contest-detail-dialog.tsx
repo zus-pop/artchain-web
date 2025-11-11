@@ -1,5 +1,6 @@
 "use client";
 
+import { getStaffContestById, updateStaffContest } from "@/apis/staff";
 import {
   Dialog,
   DialogContent,
@@ -7,12 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getStaffContestById, updateStaffContest } from "@/apis/staff";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { IconTrophy, IconCalendar, IconEdit } from "@tabler/icons-react";
-import Image from "next/image";
+import { formatDate } from "@/lib/utils";
 import { ContestStatus } from "@/types/contest";
+import { IconCalendar, IconEdit, IconTrophy } from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Image from "next/image";
+import { useState } from "react";
+import { Contest } from "../../types";
 
 interface ContestDetailDialogProps {
   contestId: string | null;
@@ -36,7 +38,7 @@ export function ContestDetailDialog({
     staleTime: 1 * 60 * 1000,
   });
 
-  const contest = contestData?.data;
+  const contest: Contest = contestData?.data;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -56,7 +58,7 @@ export function ContestDetailDialog({
         title: contest.title,
         description: contest.description,
         bannerUrl: contest.bannerUrl || "",
-        numOfAward: contest.numOfAward,
+        numOfAward: contest.numOfAward ?? 0,
         startDate: contest.startDate,
         endDate: contest.endDate,
         status: contest.status,
@@ -67,10 +69,15 @@ export function ContestDetailDialog({
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: (data: typeof formData) =>
-      updateStaffContest(Number(contestId), data),
+      updateStaffContest({
+        contestId: contestId!,
+        ...data,
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-contests"] });
-      queryClient.invalidateQueries({ queryKey: ["contest-detail", contestId] });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", contestId],
+      });
       setIsEditing(false);
     },
   });
@@ -78,16 +85,6 @@ export function ContestDetailDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate(formData);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -124,7 +121,7 @@ export function ContestDetailDialog({
                     title: contest.title,
                     description: contest.description,
                     bannerUrl: contest.bannerUrl || "",
-                    numOfAward: contest.numOfAward,
+                    numOfAward: contest.numOfAward ?? 0,
                     startDate: contest.startDate,
                     endDate: contest.endDate,
                     status: contest.status,
@@ -137,21 +134,29 @@ export function ContestDetailDialog({
             )}
           </DialogTitle>
           <DialogDescription>
-            {isEditing ? "Edit contest information" : "View contest information and rounds"}
+            {isEditing
+              ? "Edit contest information"
+              : "View contest information and rounds"}
           </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
-          <div className="py-8 text-center text-gray-500">Loading contest details...</div>
+          <div className="py-8 text-center text-gray-500">
+            Loading contest details...
+          </div>
         ) : !contest ? (
-          <div className="py-8 text-center text-red-500">Failed to load contest details</div>
+          <div className="py-8 text-center text-red-500">
+            Failed to load contest details
+          </div>
         ) : (
           <div className="space-y-6">
             {isEditing ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Banner URL */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Banner URL</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Banner URL
+                  </label>
                   <input
                     type="text"
                     value={formData.bannerUrl}
@@ -175,7 +180,9 @@ export function ContestDetailDialog({
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Title *</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Title *
+                  </label>
                   <input
                     type="text"
                     value={formData.title}
@@ -189,7 +196,9 @@ export function ContestDetailDialog({
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description *</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Description *
+                  </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) =>
@@ -203,12 +212,17 @@ export function ContestDetailDialog({
 
                 {/* Number of Awards */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Number of Awards *</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Number of Awards *
+                  </label>
                   <input
                     type="number"
                     value={formData.numOfAward}
                     onChange={(e) =>
-                      setFormData({ ...formData, numOfAward: Number(e.target.value) })
+                      setFormData({
+                        ...formData,
+                        numOfAward: Number(e.target.value),
+                      })
                     }
                     required
                     min="1"
@@ -219,7 +233,9 @@ export function ContestDetailDialog({
                 {/* Dates */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Start Date *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Start Date *
+                    </label>
                     <input
                       type="datetime-local"
                       value={formData.startDate.slice(0, 16)}
@@ -231,7 +247,9 @@ export function ContestDetailDialog({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">End Date *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      End Date *
+                    </label>
                     <input
                       type="datetime-local"
                       value={formData.endDate.slice(0, 16)}
@@ -246,11 +264,16 @@ export function ContestDetailDialog({
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Status *</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Status *
+                  </label>
                   <select
                     value={formData.status}
                     onChange={(e) =>
-                      setFormData({ ...formData, status: e.target.value as ContestStatus })
+                      setFormData({
+                        ...formData,
+                        status: e.target.value as ContestStatus,
+                      })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
@@ -302,7 +325,9 @@ export function ContestDetailDialog({
                 {/* Contest Info */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">{contest.title}</h3>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {contest.title}
+                    </h3>
                     <p className="text-gray-600 mt-2">{contest.description}</p>
                   </div>
 
@@ -330,14 +355,18 @@ export function ContestDetailDialog({
                         <IconCalendar className="h-4 w-4" />
                         Start Date
                       </div>
-                      <div className="text-sm font-medium">{formatDate(contest.startDate)}</div>
+                      <div className="text-sm font-medium">
+                        {formatDate({ dateString: contest.startDate })}
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
                         <IconCalendar className="h-4 w-4" />
                         End Date
                       </div>
-                      <div className="text-sm font-medium">{formatDate(contest.endDate)}</div>
+                      <div className="text-sm font-medium">
+                        {formatDate({ dateString: contest.endDate })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -349,74 +378,90 @@ export function ContestDetailDialog({
                       Rounds ({contest.rounds.length})
                     </h4>
                     <div className="space-y-3">
-                      {contest.rounds.map((round: {
-                        roundId: number;
-                        contestId: number;
-                        table: string | null;
-                        name: string;
-                        startDate: string | null;
-                        endDate: string | null;
-                        submissionDeadline: string | null;
-                        resultAnnounceDate: string | null;
-                        sendOriginalDeadline: string | null;
-                        status: string;
-                        createdAt: string;
-                        updatedAt: string;
-                      }) => (
-                        <div
-                          key={round.roundId}
-                          className="border rounded-lg p-4 hover:bg-gray-50"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <h5 className="font-semibold text-gray-900">
-                                  {round.name}
-                                  {round.table && (
-                                    <span className="ml-2 text-sm text-gray-500">
-                                      (Table {round.table})
-                                    </span>
-                                  )}
-                                </h5>
-                                <span
-                                  className={`px-2 py-1 rounded text-xs font-medium ${getRoundStatusBadge(
-                                    round.status
-                                  )}`}
-                                >
-                                  {round.status}
-                                </span>
+                      {contest.rounds.map(
+                        (round: {
+                          roundId: number;
+                          contestId: number;
+                          table: string | null;
+                          name: string;
+                          startDate: string | null;
+                          endDate: string | null;
+                          submissionDeadline: string | null;
+                          resultAnnounceDate: string | null;
+                          sendOriginalDeadline: string | null;
+                          status: string;
+                          createdAt: string;
+                          updatedAt: string;
+                        }) => (
+                          <div
+                            key={round.roundId}
+                            className="border rounded-lg p-4 hover:bg-gray-50"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h5 className="font-semibold text-gray-900">
+                                    {round.name}
+                                    {round.table && (
+                                      <span className="ml-2 text-sm text-gray-500">
+                                        (Table {round.table})
+                                      </span>
+                                    )}
+                                  </h5>
+                                  <span
+                                    className={`px-2 py-1 rounded text-xs font-medium ${getRoundStatusBadge(
+                                      round.status
+                                    )}`}
+                                  >
+                                    {round.status}
+                                  </span>
+                                </div>
+
+                                {round.startDate && round.endDate && (
+                                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mt-2">
+                                    <div>
+                                      <span className="font-medium">
+                                        Start:
+                                      </span>{" "}
+                                      {formatDate({
+                                        dateString: round.startDate,
+                                      })}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">End:</span>{" "}
+                                      {formatDate({
+                                        dateString: round.endDate,
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {round.submissionDeadline && (
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    <span className="font-medium">
+                                      Submission Deadline:
+                                    </span>{" "}
+                                    {formatDate({
+                                      dateString: round.submissionDeadline,
+                                    })}
+                                  </div>
+                                )}
+
+                                {round.resultAnnounceDate && (
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    <span className="font-medium">
+                                      Result Announce:
+                                    </span>{" "}
+                                    {formatDate({
+                                      dateString: round.resultAnnounceDate,
+                                    })}
+                                  </div>
+                                )}
                               </div>
-
-                              {round.startDate && round.endDate && (
-                                <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mt-2">
-                                  <div>
-                                    <span className="font-medium">Start:</span>{" "}
-                                    {formatDate(round.startDate)}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">End:</span>{" "}
-                                    {formatDate(round.endDate)}
-                                  </div>
-                                </div>
-                              )}
-
-                              {round.submissionDeadline && (
-                                <div className="text-xs text-gray-600 mt-1">
-                                  <span className="font-medium">Submission Deadline:</span>{" "}
-                                  {formatDate(round.submissionDeadline)}
-                                </div>
-                              )}
-
-                              {round.resultAnnounceDate && (
-                                <div className="text-xs text-gray-600 mt-1">
-                                  <span className="font-medium">Result Announce:</span>{" "}
-                                  {formatDate(round.resultAnnounceDate)}
-                                </div>
-                              )}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
                 )}

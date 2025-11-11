@@ -122,32 +122,21 @@ export interface Painting {
 // Contest Management Types
 export type ContestStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCELLED";
 
-export type ContestCategory =
-  | "LANDSCAPE"
-  | "PORTRAIT"
-  | "ABSTRACT"
-  | "STILL_LIFE"
-  | "FIGURE"
-  | "GENRE"
-  | "OTHER";
-
 export interface Contest {
-  id: string;
+  contestId: string;
   title: string;
   description: string;
-  category: string;
   status: ContestStatus;
   startDate: string;
   endDate: string;
-  maxParticipants: number;
-  currentParticipants: number;
-  prizePool: string;
-  examinersCount: number;
-  submissionsCount: number;
   createdAt: string;
   createdBy: string;
+  isScheduleEnforced: boolean;
   bannerUrl?: string;
+  ruleUrl: string | null;
   numOfAward?: number;
+  round2Quantity: number;
+  numberOfTablesRound2: number;
   rounds?: Array<{
     roundId: number;
     contestId: number;
@@ -162,103 +151,7 @@ export interface Contest {
     createdAt: string;
     updatedAt: string;
   }>;
-}
-
-export interface ActiveContest {
-  id: string;
-  title: string;
-  description: string;
-  category: ContestCategory;
-  endDate: string;
-  participants: number;
-  maxParticipants: number;
-  prizePool: number;
-  daysLeft: number;
-}
-
-// Examiner Management Types
-export type ExaminerStatus = "ACTIVE" | "INACTIVE" | "PENDING";
-
-export type Specialization =
-  | "LANDSCAPE"
-  | "PORTRAIT"
-  | "ABSTRACT"
-  | "STILL_LIFE"
-  | "FIGURE"
-  | "GENRE"
-  | "TECHNICAL"
-  | "COMPOSITION"
-  | "COLOR_THEORY";
-
-export interface Examiner {
-  id: string;
-  name: string;
-  email: string;
-  specialization: Specialization[];
-  status: ExaminerStatus;
-  joinedDate: string;
-  totalReviews: number;
-  averageRating: number;
-  bio: string;
-  avatar?: string;
-}
-
-export interface InviteForm {
-  email: string;
-  name: string;
-  specialization: Specialization[];
-  message: string;
-}
-
-// Awards Management Types
-export type AwardType =
-  | "GOLD"
-  | "SILVER"
-  | "BRONZE"
-  | "HONORABLE_MENTION"
-  | "SPECIAL";
-
-export type AwardTemplateType =
-  | "CERTIFICATE"
-  | "TROPHY"
-  | "MEDAL"
-  | "RIBBON"
-  | "PLAQUE"
-  | "OTHER";
-
-export interface Award {
-  id: string;
-  contestId: string;
-  contestTitle: string;
-  winnerId: string;
-  winnerName: string;
-  type: AwardType;
-  title: string;
-  description: string;
-  prize: number;
-  awardedAt: string;
-  certificateUrl?: string;
-}
-
-export interface AwardTemplate {
-  id: string;
-  name: string;
-  type: AwardTemplateType;
-  description: string;
-  templateUrl: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
-export interface Winner {
-  id: string;
-  name: string;
-  email: string;
-  paintingId: string;
-  paintingTitle: string;
-  awardType: AwardType;
-  prize: number;
-  rank: number;
+  examiners?: [];
 }
 
 // Form Data Types

@@ -1,16 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStaffRoundById, updateStaffRound } from "@/apis/staff";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 // Bỏ IconX khỏi imports
+import { formatDate } from "@/lib/utils";
 import { IconCalendar, IconClock, IconEdit } from "@tabler/icons-react";
 
 interface RoundDetailDialogProps {
@@ -20,7 +21,7 @@ interface RoundDetailDialogProps {
   roundId: number;
 }
 
-export function RoundDetailDialog({
+function RoundDetailDialog({
   isOpen,
   onClose,
   contestId,
@@ -63,8 +64,12 @@ export function RoundDetailDialog({
       status?: string;
     }) => updateStaffRound(contestId, String(roundId), data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["round-detail", contestId, roundId] });
-      queryClient.invalidateQueries({ queryKey: ["contest-detail", String(contestId)] });
+      queryClient.invalidateQueries({
+        queryKey: ["round-detail", contestId, roundId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", String(contestId)],
+      });
       setIsEditing(false);
     },
   });
@@ -82,16 +87,6 @@ export function RoundDetailDialog({
       default:
         return "staff-badge-neutral";
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const formatDateForInput = (dateString: string) => {
@@ -132,7 +127,7 @@ export function RoundDetailDialog({
       sendOriginalDeadline?: string;
       status?: string;
     } = {};
-    
+
     // So sánh và chỉ gửi những trường thay đổi
     if (formData.name && formData.name !== round?.name) {
       updateData.name = formData.name;
@@ -141,20 +136,44 @@ export function RoundDetailDialog({
       updateData.table = formData.table || null;
     }
     // Chuyển đổi datetime-local string sang ISO string cho backend (chỉ khi giá trị thay đổi)
-    if (formData.startDate && formatDateForInput(round?.startDate || "") !== formData.startDate) {
+    if (
+      formData.startDate &&
+      formatDateForInput(round?.startDate || "") !== formData.startDate
+    ) {
       updateData.startDate = new Date(formData.startDate).toISOString();
     }
-    if (formData.endDate && formatDateForInput(round?.endDate || "") !== formData.endDate) {
+    if (
+      formData.endDate &&
+      formatDateForInput(round?.endDate || "") !== formData.endDate
+    ) {
       updateData.endDate = new Date(formData.endDate).toISOString();
     }
-    if (formData.submissionDeadline && formatDateForInput(round?.submissionDeadline || "") !== formData.submissionDeadline) {
-      updateData.submissionDeadline = new Date(formData.submissionDeadline).toISOString();
+    if (
+      formData.submissionDeadline &&
+      formatDateForInput(round?.submissionDeadline || "") !==
+        formData.submissionDeadline
+    ) {
+      updateData.submissionDeadline = new Date(
+        formData.submissionDeadline
+      ).toISOString();
     }
-    if (formData.resultAnnounceDate && formatDateForInput(round?.resultAnnounceDate || "") !== formData.resultAnnounceDate) {
-      updateData.resultAnnounceDate = new Date(formData.resultAnnounceDate).toISOString();
+    if (
+      formData.resultAnnounceDate &&
+      formatDateForInput(round?.resultAnnounceDate || "") !==
+        formData.resultAnnounceDate
+    ) {
+      updateData.resultAnnounceDate = new Date(
+        formData.resultAnnounceDate
+      ).toISOString();
     }
-    if (formData.sendOriginalDeadline && formatDateForInput(round?.sendOriginalDeadline || "") !== formData.sendOriginalDeadline) {
-      updateData.sendOriginalDeadline = new Date(formData.sendOriginalDeadline).toISOString();
+    if (
+      formData.sendOriginalDeadline &&
+      formatDateForInput(round?.sendOriginalDeadline || "") !==
+        formData.sendOriginalDeadline
+    ) {
+      updateData.sendOriginalDeadline = new Date(
+        formData.sendOriginalDeadline
+      ).toISOString();
     }
     if (formData.status && formData.status !== round?.status) {
       updateData.status = formData.status;
@@ -171,6 +190,7 @@ export function RoundDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px]">
+          <DialogTitle className="sr-only">Loading Round Details</DialogTitle>
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
           </div>
@@ -183,6 +203,7 @@ export function RoundDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px]">
+          <DialogTitle className="sr-only">Round Not Found</DialogTitle>
           <div className="text-center py-8 staff-text-secondary">
             Round not found
           </div>
@@ -202,9 +223,7 @@ export function RoundDetailDialog({
 
         {!isEditing ? (
           <div className="space-y-4">
-            
             <div className="flex items-start justify-between pb-4 border-b border-[#e6e2da]">
-              
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold staff-text-primary">
                   {round.name}
@@ -214,9 +233,11 @@ export function RoundDetailDialog({
                     </span>
                   )}
                 </h3>
-                <span className={getStatusColor(round.status)}>{round.status}</span>
+                <span className={getStatusColor(round.status)}>
+                  {round.status}
+                </span>
               </div>
-              
+
               {/* Cột 2: Nút Edit (Icon) */}
               <button
                 onClick={handleEdit}
@@ -238,7 +259,7 @@ export function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.startDate)}
+                    {formatDate({ dateString: round.startDate })}
                   </p>
                 </div>
               )}
@@ -252,7 +273,7 @@ export function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.endDate)}
+                    {formatDate({ dateString: round.endDate })}
                   </p>
                 </div>
               )}
@@ -266,7 +287,7 @@ export function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.submissionDeadline)}
+                    {formatDate({ dateString: round.submissionDeadline })}
                   </p>
                 </div>
               )}
@@ -280,7 +301,7 @@ export function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.resultAnnounceDate)}
+                    {formatDate({ dateString: round.resultAnnounceDate })}
                   </p>
                 </div>
               )}
@@ -294,7 +315,7 @@ export function RoundDetailDialog({
                     </p>
                   </div>
                   <p className="text-sm staff-text-primary font-semibold">
-                    {formatDate(round.sendOriginalDeadline)}
+                    {formatDate({ dateString: round.sendOriginalDeadline })}
                   </p>
                 </div>
               )}
@@ -305,13 +326,13 @@ export function RoundDetailDialog({
               <div>
                 <p className="text-xs staff-text-secondary mb-1">Created At</p>
                 <p className="text-sm staff-text-primary">
-                  {formatDate(round.createdAt)}
+                  {formatDate({ dateString: round.createdAt })}
                 </p>
               </div>
               <div>
                 <p className="text-xs staff-text-secondary mb-1">Updated At</p>
                 <p className="text-sm staff-text-primary">
-                  {formatDate(round.updatedAt)}
+                  {formatDate({ dateString: round.updatedAt })}
                 </p>
               </div>
             </div>

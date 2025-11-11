@@ -1,4 +1,6 @@
+import { Award } from "./award";
 import { Contest } from "./contest";
+import { PaintingStatus } from "./dashboard";
 
 export interface PaintingUploadRequest {
   title: string;
@@ -22,8 +24,30 @@ export interface Painting {
   title: string;
   description?: string;
   imageUrl: string;
-  submissionDate: Date;
+  submissionDate: string;
   status: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TopPainting {
+  paintingId: string;
+  title: string;
+  imageUrl: string;
+  competitorId: string;
+  competitorName: string;
+  avgScoreRound2: number;
+  evaluationCount: number;
+  status: PaintingStatus;
+  table: string;
+  roundId: string;
+  createdAt: string;
+  award: Award | null;
+}
+
+export interface Round2ImageRequest {
+  paintingId: string;
+  image?: File;
+  title?: string;
+  description?: string;
 }

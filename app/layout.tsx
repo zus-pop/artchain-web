@@ -2,7 +2,7 @@ import { AuthInitializer } from "@/components/AuthInitializer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import ReactQueryProvider from "@/components/react-query-provider";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -18,6 +18,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
   display: "swap",
   fallback: ["monospace"],
+});
+
+const beVietnamPro = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam-pro",
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -56,8 +64,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} antialiased`}
       >
         <ReactQueryProvider>
           <AuthInitializer>

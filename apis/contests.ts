@@ -1,7 +1,7 @@
 import myAxios from "@/lib/custom-axios";
 import { useQuery } from "@tanstack/react-query";
 import { Contest, ContestStatus } from "@/types/contest";
-
+import { ApiResponse } from "@/types";
 
 // Get all contests with optional status filter
 export function useGetContests(status?: ContestStatus) {
@@ -10,11 +10,39 @@ export function useGetContests(status?: ContestStatus) {
     queryFn: async () => {
       try {
         const params = status ? { status } : {};
-        const response = await myAxios.get("/contests", { params });
-        // API /contests trả về array trực tiếp
-        return response.data as Contest[] || [];
+        const response = await myAxios.get<ApiResponse<Contest[]>>(
+          "/contests",
+          { params }
+        );
+        return response.data.data || [];
       } catch (error) {
         console.error("Error fetching contests:", error);
+        return [];
+      }
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnWindowFocus: false,
+  });
+}
+
+// Get contests with pagination and status filter
+export function useGetContestsPaginated(status?: ContestStatus, page?: number, limit?: number) {
+  return useQuery({
+    queryKey: ["contests-paginated", status, page, limit],
+    queryFn: async () => {
+      try {
+        const params: any = {};
+        if (status) params.status = status;
+        if (page) params.page = page;
+        if (limit) params.limit = limit;
+        
+        const response = await myAxios.get<ApiResponse<Contest[]>>(
+          "/contests",
+          { params }
+        );
+        return response.data.data || [];
+      } catch (error) {
+        console.error("Error fetching contests with pagination:", error);
         return [];
       }
     },
@@ -41,3 +69,115 @@ export function useGetContestById(id: number) {
     refetchOnWindowFocus: false,
   });
 }
+
+/**
+ * Staff Contest Management APIs
+ */
+
+// POST /api/staff/contests - Create a new contest
+export const createStaffContest = async (data: {
+  title: string;
+  description: string;
+  bannerUrl?: string;
+  numOfAward: number;
+  startDate: string;
+  endDate: string;
+  status?: ContestStatus;
+}) => {
+  const response = await myAxios.post("/staff/contests", data);
+  return response.data;
+};
+
+// GET /api/staff/contests - Get all contests (staff view)
+export const getStaffContests = async (params?: {
+  page?: number;
+  limit?: number;
+  status?: ContestStatus;
+  search?: string;
+}) => {
+  const response = await myAxios.get("/staff/contests", { params });
+  return response.data;
+};
+
+// PUT /api/staff/contests/{id} - Update a contest
+export const updateStaffContest = async (
+  id: number,
+  data: {
+    title?: string;
+    description?: string;
+    bannerUrl?: string;
+    numOfAward?: number;
+    startDate?: string;
+    endDate?: string;
+    status?: ContestStatus;
+  }
+) => {
+  const response = await myAxios.put(`/staff/contests/${id}`, data);
+  return response.data;
+};
+
+// GET /api/staff/contests/{id} - Get contest by ID (staff view)
+export const getStaffContestById = async (id: number) => {
+  const response = await myAxios.get(`/staff/contests/${id}`);
+  return response.data;
+};
+
+// PATCH /api/staff/contests/{id}/publish - Publish a contest
+export const publishStaffContest = async (id: number) => {
+  const response = await myAxios.patch(`/staff/contests/${id}/publish`);
+  return response.data;
+};
+
+/**
+ * Staff Rounds Management APIs
+ */
+
+// POST /api/staff/contests/{contestId}/rounds - Create a new round
+export const createStaffRound = async (
+  contestId: number,
+  data: {
+    roundNumber: number;
+    title: string;
+    description?: string;
+    startDate: string;
+    endDate: string;
+    maxSubmissions?: number;
+  }
+) => {
+  const response = await myAxios.post(`/staff/contests/${contestId}/rounds`, data);
+  return response.data;
+};
+
+// GET /api/staff/contests/{contestId}/rounds - Get all rounds for a contest
+export const getStaffRounds = async (contestId: number) => {
+  const response = await myAxios.get(`/staff/contests/${contestId}/rounds`);
+  return response.data;
+};
+
+// GET /api/staff/contests/{contestId}/rounds/{roundId} - Get round by ID
+export const getStaffRoundById = async (contestId: number, roundId: string) => {
+  const response = await myAxios.get(`/staff/contests/${contestId}/rounds/${roundId}`);
+  return response.data;
+};
+
+// PATCH /api/staff/contests/{contestId}/rounds/{roundId} - Update a round
+export const updateStaffRound = async (
+  contestId: number,
+  roundId: string,
+  data: {
+    title?: string;
+    description?: string;
+    startDate?: string;
+    endDate?: string;
+    maxSubmissions?: number;
+  }
+) => {
+  const response = await myAxios.patch(`/staff/contests/${contestId}/rounds/${roundId}`, data);
+  return response.data;
+};
+
+// DELETE /api/staff/contests/{contestId}/rounds/{roundId} - Delete a round
+export const deleteStaffRound = async (contestId: number, roundId: string) => {
+  const response = await myAxios.delete(`/staff/contests/${contestId}/rounds/${roundId}`);
+  return response.data;
+};

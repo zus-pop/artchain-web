@@ -1,105 +1,117 @@
-/* Container chính */
-.image-slider-container {
-    position: relative;
-    /* Giống màu nền hơi xám của video mẫu */
-    background-color: #2c2f33; 
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
+/* Cleaned ImageSlider CSS: only styles used by ImageSlider.tsx
+   - slider layout & animation
+   - item container, caption area, external rotated date
+*/
+
+.slider {
+  width: 100%;
+  height: auto;
+  min-height: calc(var(--height, 200px) + 120px);
+  overflow: visible; /* allow date and captions to show outside */
+  --width: 400px;
+  --height: 250px;
 }
 
-/* ------------------- ẢNH LỚN ------------------- */
-.main-image-wrapper {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
+@media (max-width: 1024px) {
+  .slider {
+    --width: 350px;
+    --height: 220px;
+  }
 }
 
-.main-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Đảm bảo ảnh luôn cover hết khu vực */
-    display: block;
-    
-    /* Thuộc tính quan trọng nhất cho hiệu ứng mượt mà */
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; 
-    transform: scale(1); /* Trạng thái mặc định */
+@media (max-width: 768px) {
+  .slider {
+    --width: 300px;
+    --height: 200px;
+  }
 }
 
-/* Class kích hoạt hiệu ứng scale */
-.main-image.scaling {
-    transform: scale(1.02); /* Phóng to nhẹ khi chuyển ảnh */
-    opacity: 0.8; /* Làm mờ đi một chút để tạo cảm giác chuyển cảnh */
+@media (max-width: 640px) {
+  .slider {
+    --width: 250px;
+    --height: 160px;
+  }
 }
 
-.main-image-text {
-    position: absolute;
-    bottom: 20%;
-    left: 5%;
-    color: white;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    z-index: 10;
+@media (max-width: 480px) {
+  .slider {
+    --width: 200px;
+    --height: 130px;
+  }
 }
 
-.location-name {
-    font-size: 5rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0;
+.slider .list {
+  display: flex;
+  width: 100%;
+  min-width: calc(var(--width, 200px) * var(--quantity, 9));
+  position: relative;
+  height: auto;
+  min-height: calc(var(--height, 200px) + 120px);
 }
 
-/* ------------------- THUMBNAILS ------------------- */
-.thumbnails-wrapper {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%); /* Căn giữa */
-    display: flex;
-    gap: 15px;
-    padding-bottom: 20px;
-    z-index: 20;
-    /* Tạo hiệu ứng mờ viền dưới */
-    /* backdrop-filter: blur(5px); */ 
+.slider .list .item {
+  width: var(--width, 200px);
+  height: auto;
+  min-height: calc(var(--height, 200px) + 120px);
+  position: absolute;
+  left: 100%;
+  animation: autoRun 20s linear infinite;
+  transition: filter 0.5s;
+  animation-delay: calc((20s / var(--quantity, 9)) * (var(--position, 1) - 1) - 20s) !important;
+  overflow: visible; /* allow date to sit outside */
 }
 
-.thumbnail-card {
-    position: relative;
-    width: 250px;
-    height: 300px;
-    overflow: hidden;
-    cursor: pointer;
-    border-radius: 8px;
-    opacity: 0.8;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+.slider .list .item .item-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
-.thumbnail-card:hover {
-    opacity: 1;
-    transform: translateY(-5px); /* Hiệu ứng hover nhẹ */
+/* Rotated date positioned outside the right edge of the item */
+.slider .list .item .item-date {
+  position: absolute;
+  /* align with the top edge of the image (same row) and sit just outside to the right */
+  top: 12vh;                /* small margin from top of image */
+  right: -20px;            /* small offset to sit just outside the image frame */
+  transform: rotate(90deg);
+  transform-origin: top right;
+  white-space: nowrap;
+  z-index: 2;
+  color: #111827;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  pointer-events: none;
 }
 
-.thumbnail-card.active {
-    opacity: 1;
-    /* Hiệu ứng nổi bật cho card đang được chọn */
-    border: 3px solid #ffcc00; 
+@media (max-width: 768px) {
+  .slider .list .item .item-date {
+    font-size: 0.8rem;
+    right: -15px;
+  }
 }
 
-.thumbnail-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+@media (max-width: 480px) {
+  .slider .list .item .item-date {
+    font-size: 0.7rem;
+    right: -10px;
+  }
 }
 
-.thumbnail-title {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    color: white;
-    font-weight: 600;
-    font-size: 1.2rem;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+.slider .list .item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
+
+@keyframes autoRun {
+  from { left: 100%; }
+  to { left: calc(var(--width, 200px) * -2); }
+}
+
+.slider:hover .item { animation-play-state: paused !important; filter: grayscale(1); }
+.slider .item:hover { filter: grayscale(0); }
+
+.slider[reverse="true"] .item { animation: reversePlay 20s linear infinite; }
+@keyframes reversePlay { from { left: calc(var(--width, 200px) * -2); } to { left: 100%; } }

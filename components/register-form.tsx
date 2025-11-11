@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { FloatingInput } from "@/components/ui/floating-input";
-import { FloatingSelect } from "@/components/ui/floating-select";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +10,10 @@ import { useRegisterMutation } from "@/hooks/useRegisterMutation";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { useWards } from "@/hooks/useWards";
-import { AnimatedRoleCard } from "@/components/ui/animated-role-card";
-import { AnimatedNavButton } from "@/components/ui/animated-nav-button";
+// Import các icon từ @tabler/icons-react
+import { IconSchool, IconUsers } from "@tabler/icons-react";
+import Checkbox from "./Checkbox";
+import Image from "next/image";
 
 // Schema for Guardian (Người đại diện)
 const guardianSchema = z
@@ -98,6 +99,7 @@ export function RegisterForm({
 }) {
   const { currentLanguage } = useLanguageStore();
   const translations = useTranslation(currentLanguage);
+  const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<'competitor' | 'guardian' | null>(null);
   const [showForm, setShowForm] = useState(false);
   const { wards } = useWards();
@@ -175,353 +177,576 @@ export function RegisterForm({
   if (!showForm) {
     return (
       <div
-        className={cn("flex flex-col gap-6 w-full mx-auto max-w-2xl", className)}
+        className={cn("h-screen overflow-hidden flex items-center justify-center bg-[#EAE6E0] p-8", className)}
         {...props}
       >
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {translations.signUp}
-          </h1>
-          <p className="text-lg text-gray-600">
-            {translations.selectAccountType}
-          </p>
-        </div>
+        <div className="w-full max-w-2xl">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <img
+              src="/images/newlogo.png"
+              alt="Artchain Logo"
+              className="w-22 h-22 mx-auto mb-6 cursor-pointer"
+              onClick={() => router.push('/')}
+            />
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">
+              {translations.selectAccountType || "Tham gia với vai trò thí sinh hoặc người đại diện"}
+            </h1>
+          </div>
 
-        {/* Role Selection Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Competitor Card */}
-          <AnimatedRoleCard
-            title={translations.iAmCompetitor}
-            description={translations.competitorDesc}
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          {/* Role Selection Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            {/* Competitor Card - ĐÃ CẬP NHẬT CẤU TRÚC */}
+            <div
+              className={cn(
+                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-[160px] cursor-pointer",
+                selectedRole === 'competitor' ? "border-2 border-orange-500 shadow-md" : "border border-gray-200 hover:border-gray-300"
+              )}
+              onClick={() => setSelectedRole('competitor')}
+            >
+              <div className="w-full">
+                {/* Hàng 1: Icon và Checkbox */}
+                <div className="flex justify-between items-center w-full mb-4">
+                  <IconSchool
+                    className="w-12 h-10 text-gray-700"
+                    stroke={1.5}
+                  />
+                  <Checkbox
+                    checked={selectedRole === 'competitor'}
+                    onChange={(checked) => setSelectedRole(checked ? 'competitor' : null)}
+                    id="competitor-checkbox"
+                  />
+                </div>
+                
+                {/* Hàng 2: Text */}
+                <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
+                  {translations.iAmCompetitor || "Tôi là thí sinh tự do"}
+                </h3>
+              </div>
+            </div>
+
+            {/* Guardian Card - ĐÃ CẬP NHẬT CẤU TRÚC */}
+            <div
+              className={cn(
+                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-[160px] cursor-pointer",
+                selectedRole === 'guardian' ? "border-2 border-orange-500 shadow-md" : "border border-gray-200 hover:border-gray-300"
+              )}
+              onClick={() => setSelectedRole('guardian')}
+            >
+              <div className="w-full">
+                {/* Hàng 1: Icon và Checkbox */}
+                <div className="flex justify-between items-center w-full mb-4">
+                  <IconUsers
+                    className="w-12 h-10 text-gray-700"
+                    stroke={1.5}
+                  />
+                  <Checkbox
+                    checked={selectedRole === 'guardian'}
+                    onChange={(checked) => setSelectedRole(checked ? 'guardian' : null)}
+                    id="guardian-checkbox"
+                  />
+                </div>
+                
+                {/* Hàng 2: Text */}
+                <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
+                  {translations.iAmGuardian || "Tôi là người giám hộ"}
+                </h3>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col items-center gap-4">
+            {/* Continue Button */}
+            <button
+              onClick={() => {
+                if (selectedRole) {
+                  setShowForm(true); // Proceed to the next step
+                }
+              }}
+              disabled={!selectedRole}
+              className="flex items-center justify-center gap-2 w-full max-w-[300px] px-12 h-10 bg-orange-500 text-white text-lg font-semibold rounded-sm shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {translations.continue || "Đăng kí"}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
-            }
-            isSelected={selectedRole === 'competitor'}
-            onClick={() => {
-              setSelectedRole('competitor');
-            }}
-          />
+            </button>
 
-          {/* Guardian Card */}
-          <AnimatedRoleCard
-            title={translations.iAmGuardian}
-            description={translations.guardianDesc}
-            icon={
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 414 0zM7 10a2 2 0 11-4 0 2 2 0 414 0z" />
-              </svg>
-            }
-            isSelected={selectedRole === 'guardian'}
-            onClick={() => {
-              setSelectedRole('guardian');
-            }}
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-col items-center gap-4">
-          {/* Animated Continue Button */}
-          <AnimatedNavButton
-            direction="continue"
-            onClick={() => {
-              if (selectedRole) {
-                setShowForm(true);
-              }
-            }}
-            disabled={!selectedRole}
-            className="mb-2"
-          >
-            {translations.continue}
-          </AnimatedNavButton>
-          
-          <span className="text-sm font-semibold uppercase text-gray-500">
-            {translations.alreadyHaveAccount}
-          </span>
-          
-          <button
-            onClick={onToggle}
-            className="cursor-pointer text-sm font-semibold uppercase underline-offset-4 hover:underline text-gray-900"
-          >
-            {translations.signInNow}
-          </button>
+            <div className="text-base text-gray-700 mt-2">
+              {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
+              <span
+                onClick={onToggle}
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+              >
+                {translations.signInNow || "Đăng nhập"}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Form screen
+  // Form screen (giữ nguyên)
   return (
-    <div className={cn("flex flex-col gap-6 w-full mx-auto max-w-3xl", className)} {...props}>
-      {/* Back button and header */}
-      <div className="flex items-center justify-between w-full">
-        <AnimatedNavButton
-          direction="back"
-          onClick={() => setShowForm(false)}
-          className="w-40 h-12 text-base"
-        >
-          {translations.back}
-        </AnimatedNavButton>
-        <div className="text-right">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {selectedRole === 'competitor' ? translations.registerCompetitor : translations.registerGuardian}
+    <div 
+      className={cn(
+        "h-screen overflow-hidden grid grid-cols-1 md:grid-cols-2",
+        className
+      )} 
+      {...props}
+    >
+      {/* CỘT BÊN TRÁI (Biểu mẫu) */}
+      <div className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-hidden min-h-screen">
+        <div className="w-full max-w-sm mx-auto">
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => setShowForm(false)}
+            className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-4 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            {translations.back || "Quay lại"}
+          </button>
+          {/* Title */}
+          <h1 className="text-5xl text-black mb-6">
+            {selectedRole === 'competitor' ? translations.registerCompetitor || "Đăng ký thí sinh" : translations.registerGuardian || "Đăng ký người giám hộ"}
           </h1>
+
+          {/* Guardian Form */}
+          {selectedRole === 'guardian' && (
+            <form onSubmit={guardianHandleSubmit(handleGuardianRegister)} className="flex flex-col">
+              {/* Full Name and Email - 2 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-fullName">
+                    {translations.fullName || "Họ và tên"}
+                  </label>
+                  <Controller
+                    control={guardianControl}
+                    name="fullName"
+                    render={({ field }) => (
+                      <input
+                        id="guardian-fullName"
+                        type="text"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.fullName?.message}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-email">
+                    {translations.email || "Email"}
+                  </label>
+                  <Controller
+                    control={guardianControl}
+                    name="email"
+                    render={({ field }) => (
+                      <input
+                        id="guardian-email"
+                        type="email"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.email?.message}
+                  </p>
+                </div>
+              </div>
+
+              {/* Username and Password - 2 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-username">
+                    {translations.username || "Tên đăng nhập"}
+                  </label>
+                  <Controller
+                    control={guardianControl}
+                    name="username"
+                    render={({ field }) => (
+                      <input
+                        id="guardian-username"
+                        type="text"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.username?.message}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="guardian-password">
+                    {translations.password || "Mật khẩu"}
+                  </label>
+                  <Controller
+                    control={guardianControl}
+                    name="password"
+                    render={({ field }) => (
+                      <input
+                        id="guardian-password"
+                        type="password"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {guardianErrors.password?.message}
+                  </p>
+                </div>
+              </div>
+
+              {/* Confirm Password - Full width */}
+              <div className="grid gap-2 mt-2">
+                <label className="text-base font-medium text-black" htmlFor="guardian-confirmPassword">
+                  {translations.confirmPassword || "Xác nhận mật khẩu"}
+                </label>
+                <Controller
+                  control={guardianControl}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <input
+                      id="guardian-confirmPassword"
+                      type="password"
+                      className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                      {...field}
+                    />
+                  )}
+                />
+                <p className="text-sm text-red-500 min-h-5">
+                  {guardianErrors.confirmPassword?.message}
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={!guardianIsValid || isPending}
+                className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
+              >
+                {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </form>
+          )}
+
+          {/* Link to login */}
+          {selectedRole === 'guardian' && (
+            <div className="text-base text-black mt-4 ml-14">
+              {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
+              <span
+                onClick={onToggle}
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+              >
+                {translations.signInNow || "Đăng nhập"}
+              </span>
+            </div>
+          )}
+
+          {/* Competitor Form */}
+          {selectedRole === 'competitor' && (
+            <form onSubmit={competitorHandleSubmit(handleCompetitorRegister)} className="flex flex-col">
+              {/* Full Name and Email - 2 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-fullName">
+                    {translations.fullName || "Họ và tên"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="fullName"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-fullName"
+                        type="text"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.fullName?.message}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-email">
+                    {translations.email || "Email"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="email"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-email"
+                        type="email"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.email?.message}
+                  </p>
+                </div>
+              </div>
+
+              {/* Username and Password - 2 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-username">
+                    {translations.username || "Tên đăng nhập"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="username"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-username"
+                        type="text"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.username?.message}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-password">
+                    {translations.password || "Mật khẩu"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="password"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-password"
+                        type="password"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.password?.message}
+                  </p>
+                </div>
+              </div>
+
+              {/* Confirm Password and Birthday - 2 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-confirmPassword">
+                    {translations.confirmPassword || "Xác nhận mật khẩu"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-confirmPassword"
+                        type="password"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.confirmPassword?.message}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-birthday">
+                    {translations.birthday || "Ngày sinh"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="birthday"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-birthday"
+                        type="date"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.birthday?.message}
+                  </p>
+                </div>
+              </div>
+
+              {/* School Name - Full width */}
+              <div className="grid gap-2 mt-2">
+                <label className="text-base font-medium text-black" htmlFor="competitor-schoolName">
+                  {translations.schoolName || "Tên trường"}
+                </label>
+                <Controller
+                  control={competitorControl}
+                  name="schoolName"
+                  render={({ field }) => (
+                    <input
+                      id="competitor-schoolName"
+                      type="text"
+                      className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                      {...field}
+                    />
+                  )}
+                />
+                <p className="text-sm text-red-500 min-h-5">
+                  {competitorErrors.schoolName?.message}
+                </p>
+              </div>
+
+              {/* Ward and Grade - 2 columns */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-ward">
+                    {translations.ward || "Phường/Xã"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="ward"
+                    render={({ field }) => (
+                      <select
+                        id="competitor-ward"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      >
+                        <option value="">Chọn phường/xã</option>
+                        {wardOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.ward?.message}
+                  </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <label className="text-base font-medium text-black" htmlFor="competitor-grade">
+                    {translations.grade || "Lớp"}
+                  </label>
+                  <Controller
+                    control={competitorControl}
+                    name="grade"
+                    render={({ field }) => (
+                      <input
+                        id="competitor-grade"
+                        type="text"
+                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <p className="text-sm text-red-500 min-h-5">
+                    {competitorErrors.grade?.message}
+                  </p>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={!competitorIsValid || isPending}
+                className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
+              >
+                {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            </form>
+          )}
+
+          {/* Link to login */}
+          {selectedRole === 'competitor' && (
+            <div className="text-base text-black mt-4 ml-14">
+              {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
+              <span
+                onClick={onToggle}
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+              >
+                {translations.signInNow || "Đăng nhập"}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Guardian Form */}
-      {selectedRole === 'guardian' && (
-        <form onSubmit={guardianHandleSubmit(handleGuardianRegister)} className="space-y-6">
-          {/* Full Name - Full width */}
-          <div className="w-full">
-            <Controller
-              control={guardianControl}
-              name="fullName"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.fullName}
-                  error={guardianErrors.fullName?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Email - Full width */}
-          <div className="w-full">
-            <Controller
-              control={guardianControl}
-              name="email"
-              render={({ field }) => (
-                <FloatingInput
-                  type="email"
-                  label={translations.email}
-                  error={guardianErrors.email?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Username and Password - 2 columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Controller
-              control={guardianControl}
-              name="username"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.username}
-                  error={guardianErrors.username?.message}
-                  {...field}
-                />
-              )}
-            />
-
-            <Controller
-              control={guardianControl}
-              name="password"
-              render={({ field }) => (
-                <FloatingInput
-                  type="password"
-                  label={translations.password}
-                  error={guardianErrors.password?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Confirm Password - Full width */}
-          <div className="w-full">
-            <Controller
-              control={guardianControl}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FloatingInput
-                  type="password"
-                  label={translations.confirmPassword}
-                  error={guardianErrors.confirmPassword?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-center pt-6">
-            <button
-              type="submit"
-              disabled={!guardianIsValid || isPending}
-              className="cursor-pointer relative after:content-[attr(data-label)] after:text-white after:absolute after:text-nowrap after:scale-0 hover:after:scale-100 after:duration-200 w-12 h-12 rounded-full border-3 border-blue-200 bg-black flex items-center justify-center duration-300 hover:rounded-[40px] hover:w-36 group/button overflow-hidden active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              data-label={isPending ? translations.processing : translations.register}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="w-6 h-6 fill-white delay-50 duration-200 group-hover/button:translate-x-30"
-              >
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path>
-              </svg>
-            </button>
-          </div>
-        </form>
-      )}
-
-      {/* Competitor Form */}
-      {selectedRole === 'competitor' && (
-        <form onSubmit={competitorHandleSubmit(handleCompetitorRegister)} className="space-y-6">
-          {/* Full Name - Full width */}
-          <div className="w-full">
-            <Controller
-              control={competitorControl}
-              name="fullName"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.fullName}
-                  error={competitorErrors.fullName?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Email - Full width */}
-          <div className="w-full">
-            <Controller
-              control={competitorControl}
-              name="email"
-              render={({ field }) => (
-                <FloatingInput
-                  type="email"
-                  label={translations.email}
-                  error={competitorErrors.email?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Username and Password - 2 columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Controller
-              control={competitorControl}
-              name="username"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.username}
-                  error={competitorErrors.username?.message}
-                  {...field}
-                />
-              )}
-            />
-
-            <Controller
-              control={competitorControl}
-              name="password"
-              render={({ field }) => (
-                <FloatingInput
-                  type="password"
-                  label={translations.password}
-                  error={competitorErrors.password?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Confirm Password and Birthday - 2 columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Controller
-              control={competitorControl}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FloatingInput
-                  type="password"
-                  label={translations.confirmPassword}
-                  error={competitorErrors.confirmPassword?.message}
-                  {...field}
-                />
-              )}
-            />
-
-            <Controller
-              control={competitorControl}
-              name="birthday"
-              render={({ field }) => (
-                <FloatingInput
-                  type="date"
-                  label={translations.birthday}
-                  error={competitorErrors.birthday?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* School Name - Full width */}
-          <div className="w-full">
-            <Controller
-              control={competitorControl}
-              name="schoolName"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.schoolName}
-                  error={competitorErrors.schoolName?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Ward and Grade - 2 columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Controller
-              control={competitorControl}
-              name="ward"
-              render={({ field }) => (
-                <FloatingSelect
-                  label={translations.ward}
-                  error={competitorErrors.ward?.message}
-                  options={wardOptions}
-                  {...field}
-                />
-              )}
-            />
-
-            <Controller
-              control={competitorControl}
-              name="grade"
-              render={({ field }) => (
-                <FloatingInput
-                  label={translations.grade}
-                  error={competitorErrors.grade?.message}
-                  {...field}
-                />
-              )}
-            />
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-center pt-6">
-            <button
-              type="submit"
-              disabled={!competitorIsValid || isPending}
-              className="cursor-pointer relative after:content-[attr(data-label)] after:text-white after:absolute after:text-nowrap after:scale-0 hover:after:scale-100 after:duration-200 w-12 h-12 rounded-full border-3 border-red-200 bg-black flex items-center justify-center duration-300 hover:rounded-[40px] hover:w-36 group/button overflow-hidden active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              data-label={isPending ? translations.processing : translations.register}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="w-6 h-6 fill-white delay-50 duration-200 group-hover/button:translate-x-30"
-              >
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"></path>
-              </svg>
-            </button>
-          </div>
-        </form>
-      )}
+      {/* CỘT BÊN PHẢI (Hình ảnh) */}
+      <div className="hidden md:block relative w-full h-full overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1548811579-017cf2a4268b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%D&auto=format&fit=crop&q=80&w=1289"
+          alt="Statue"
+          fill
+          className="object-cover"
+        />
+      </div>
     </div>
   );
 }

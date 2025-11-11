@@ -27,25 +27,23 @@ import {
   type MDXEditorMethods,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import "./mdx-editor.css";
 import { forwardRef } from "react";
 
 interface MDXEditorWrapperProps {
-  markdown: string;
-  onChange: (markdown: string) => void;
+  markdown?: string;
+  onChange?: (markdown: string) => void;
   placeholder?: string;
 }
 
 export const MDXEditorWrapper = forwardRef<
   MDXEditorMethods,
   MDXEditorWrapperProps
->(({ markdown, onChange, placeholder }, ref) => {
+>(({ markdown = "", placeholder }, ref) => {
   return (
     <div className="mdx-editor-wrapper border border-[#e6e2da]">
       <MDXEditor
         ref={ref}
         markdown={markdown}
-        onChange={onChange}
         placeholder={placeholder}
         plugins={[
           headingsPlugin(),

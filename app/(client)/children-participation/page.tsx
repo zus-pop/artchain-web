@@ -35,9 +35,9 @@ function ChildrenParticipation() {
 
   if (isLoadingContest || isLoadingChildren) {
     return (
-      <div className="min-h-screen bg-[#faf7f2] pt-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf7f2] pt-25 px-4 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6E1A] mx-auto mb-4"></div>
           <p className="text-gray-700">Đang tải thông tin...</p>
         </div>
       </div>
@@ -46,9 +46,9 @@ function ChildrenParticipation() {
 
   if (!contest) {
     return (
-      <div className="min-h-screen bg-[#faf7f2] pt-20 px-4 flex items-center justify-center">
+      <div className="min-h-screen bg-[#faf7f2] pt-25 px-4 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 text-lg font-medium">
+          <p className="text-[#FF6E1A] text-lg font-medium">
             Không tìm thấy cuộc thi
           </p>
           <p className="text-gray-500 mt-2">
@@ -56,7 +56,7 @@ function ChildrenParticipation() {
           </p>
           <Link
             href="/contests"
-            className="mt-4 inline-block bg-red-600 text-white px-6 py-2 hover:bg-red-700 transition-colors"
+            className="mt-4 inline-block bg-[#FF6E1A] text-white px-6 py-2 hover:bg-[#FF6E1A] transition-colors"
           >
             Quay về danh sách cuộc thi
           </Link>
@@ -66,7 +66,7 @@ function ChildrenParticipation() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fdfcf9] pt-20 px-8 text-gray-800">
+    <div className="min-h-screen bg-[#fdfcf9] pt-25 px-8 text-gray-800">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ function ChildrenParticipation() {
             </h1>
             <p className="text-gray-700">
               Chọn con em để nộp bài dự thi cho cuộc thi{" "}
-              <span className="font-semibold text-red-600">
+              <span className="font-semibold text-[#FF6E1A]">
                 {contest.title}
               </span>
             </p>
@@ -107,8 +107,8 @@ function ChildrenParticipation() {
                   className="object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-linear-to-br from-red-200 to-red-100 flex items-center justify-center">
-                  <User className="h-8 w-8 text-red-400" />
+                <div className="w-full h-full bg-linear-to-br from-[#FF6E1A] to-[#FF6E1A] flex items-center justify-center">
+                  <User className="h-8 w-8 text-[#FF6E1A]" />
                 </div>
               )}
             </div>
@@ -147,7 +147,7 @@ function ChildrenParticipation() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white p-6 border border-[#e6e2da] shadow-sm hover:shadow-md transition-all duration-200"
+                className="bg-[#faf7f2] p-6 border border-[#e6e2da] shadow-sm hover:shadow-md transition-all duration-200"
               >
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
@@ -199,7 +199,7 @@ function ChildrenParticipation() {
                       competitorId: child.userId,
                     },
                   }}
-                  className="w-full bg-linear-to-r from-red-600 to-red-500 text-white text-center py-3 px-4 font-medium hover:from-red-700 hover:to-red-600 transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+                  className="w-full bg-[#FF6E1A] text-white text-center py-3 px-4 font-medium hover:from-[#FF6E1A] hover:to-[#FF6E1A] transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
                 >
                   <Upload className="h-4 w-4" />
                   <span>Nộp bài cho {child.fullName}</span>
@@ -218,7 +218,7 @@ function ChildrenParticipation() {
             </p>
             <Link
               href="/me"
-              className="inline-block bg-red-600 text-white px-6 py-2 hover:bg-red-700 transition-colors font-medium"
+              className="inline-block bg-[#FF6E1A] text-white px-6 py-2 hover:bg-[#FF6E1A] transition-colors font-medium"
             >
               Quản lý con em
             </Link>
