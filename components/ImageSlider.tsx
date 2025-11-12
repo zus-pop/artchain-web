@@ -19,6 +19,11 @@ interface ImageItem {
   date?: string;
   school?: string;
   award?: string;
+  addedAt?: string;
+  description?: string;
+  competitor?: { fullName?: string; schoolName?: string; grade?: string } | null;
+  awardObj?: { awardId?: number | string; name?: string; prize?: string; rank?: number } | null;
+  paintingTitle?: string;
 }
 
 // ------------------------------------
@@ -40,9 +45,18 @@ const ImageSlider: React.FC = () => {
     full: painting.imageUrl || "",
     thumb: painting.imageUrl || "",
     title: painting.competitor.fullName,
-    date: new Date(painting.addedAt).toLocaleDateString("vi-VN"),
+    paintingTitle: painting.title,
+    date: painting.addedAt ? new Date(painting.addedAt).toLocaleDateString("vi-VN") : undefined,
+    addedAt: painting.addedAt,
     school: painting.competitor.schoolName,
+    description: painting.description,
+    competitor: {
+      fullName: painting.competitor.fullName,
+      schoolName: painting.competitor.schoolName,
+      grade: painting.competitor.grade,
+    },
     award: painting.award?.name,
+    awardObj: painting.award || null,
   })) || [];
 
   const handleImageClick = (image: ImageItem) => {

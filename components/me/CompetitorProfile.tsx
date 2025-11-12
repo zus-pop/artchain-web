@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Lang } from "../../lib/i18n";
 import { useGetMySubmissions } from "@/apis/paintings";
+import { useGetUserAchievements } from "@/apis/achievements";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -21,6 +22,12 @@ export default function CompetitorProfileScreen({
 
   // Fetch submissions data
   const { data: submissions } = useGetMySubmissions();
+
+  // Fetch achievements for this competitor only when awards tab is active
+  const { data: achievementsResp, isLoading: isLoadingAchievements } = useGetUserAchievements(
+    authUser?.userId,
+    activeTab === "awards"
+  );
 
   // Map submissions data to the required format
   const submittedArtworks = submissions ? submissions.map(painting => ({
@@ -172,10 +179,53 @@ export default function CompetitorProfileScreen({
             </div>
           )}
 
-          {/* Nội dung tab "Giải thưởng" (Placeholder) */}
+          {/* Nội dung tab "Giải thưởng" */}
           {activeTab === "awards" && (
-            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
-              <p className="text-black">Chưa có giải thưởng nào.</p>
+            <div>
+              {isLoadingAchievements ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                  <p className="text-[#423137] mt-2">Đang tải giải thưởng...</p>
+                </div>
+              ) : (
+                <div>
+                  {achievementsResp && achievementsResp.data.achievements.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {achievementsResp.data.achievements.map((a) => (
+                        <div key={a.paintingId} className="overflow-hidden">
+                          <div className="relative h-56 w-full">
+                            <Image
+                              src={a.paintingImage || ""}
+                              alt={a.paintingTitle}
+                              layout="fill"
+                              objectFit="cover"
+                              className="bg-black rounded-md"
+                            />
+                          </div>
+                          <div className="py-2">
+                            <p className="text-sm text-black">
+                              Cuộc thi: {a.contest?.title || "-"}
+                            </p>
+                            <p className="mt-1 font-medium text-black">
+                              {a.paintingTitle}
+                            </p>
+                            <p className="text-sm text-black">
+                              Giải: {a.award?.name || "-"}
+                            </p>
+                            <p className="text-sm text-black">
+                              Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
+                      <p className="text-black">Chưa có giải thưởng nào.</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

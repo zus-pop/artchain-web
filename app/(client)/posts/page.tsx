@@ -6,6 +6,7 @@ import { Calendar, Eye, Tag, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { getPosts } from '@/apis/post';
 import { Post } from '@/types/post';
+import Loader from '@/components/Loaders';
 
 const NewsCard = ({ news }: { news: Post }) => {
   return (
@@ -100,18 +101,7 @@ export default function PostsPage() {
     return (
       <div className="min-h-screen pt-20 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-              Tin Tức & Sự Kiện
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Cập nhật những thông tin mới nhất về cuộc thi, sự kiện và câu chuyện từ cộng đồng nghệ sĩ ArtChain
-            </p>
-          </div>
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#FF6E1A]" />
-            <span className="ml-2 text-gray-600">Loading posts...</span>
-          </div>
+          <Loader />
         </div>
       </div>
     );
@@ -121,14 +111,6 @@ export default function PostsPage() {
     return (
       <div className="min-h-screen pt-20 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-              Tin Tức & Sự Kiện
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Cập nhật những thông tin mới nhất về cuộc thi, sự kiện và câu chuyện từ cộng đồng nghệ sĩ ArtChain
-            </p>
-          </div>
           <div className="text-center py-12">
             <p className="text-[#FF6E1A]">{error}</p>
           </div>
