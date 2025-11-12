@@ -22,6 +22,8 @@ import { use, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { formatDate, formatDateForInput } from "@/lib/utils";
+
 // Validation schema
 const exhibitionSchema = z
   .object({
@@ -87,8 +89,8 @@ export default function EditExhibitionPage({
       reset({
         name: exhibition.name,
         description: exhibition.description,
-        startDate: new Date(exhibition.startDate).toISOString().split("T")[0],
-        endDate: new Date(exhibition.endDate).toISOString().split("T")[0],
+        startDate: formatDateForInput(exhibition.startDate),
+        endDate: formatDateForInput(exhibition.endDate),
         status: exhibition.status,
       });
     }
@@ -412,11 +414,15 @@ export default function EditExhibitionPage({
                             {t.duration}
                           </span>
                           <span className="text-sm font-medium staff-text-primary">
-                            {new Date(
-                              exhibition.startDate
-                            ).toLocaleDateString()}{" "}
+                            {formatDate({
+                              dateString: exhibition.startDate,
+                              language: currentLanguage,
+                            })}{" "}
                             -{" "}
-                            {new Date(exhibition.endDate).toLocaleDateString()}
+                            {formatDate({
+                              dateString: exhibition.endDate,
+                              language: currentLanguage,
+                            })}
                           </span>
                         </div>
                       </div>

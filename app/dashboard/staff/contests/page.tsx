@@ -383,13 +383,13 @@ export default function ContestsManagementPage() {
                                 >
                                   <IconEye className="h-4 w-4" />
                                 </Link>
-                                <Link
+                                {/* <Link
                                   href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
                                   className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors mr-2 inline-block"
                                   title="Edit Contest"
                                 >
                                   <IconEdit className="h-4 w-4" />
-                                </Link>
+                                </Link> */}
                                 {/* <button
                                   className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors mr-2 inline-block"
                                   title="Delete Contest"
@@ -407,79 +407,74 @@ export default function ContestsManagementPage() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm staff-text-secondary">
-                    <span>{t.show}</span>
-                    <select
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setCurrentPage(1);
-                      }}
-                      className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </select>
-                    <span>{t.entriesPerPage}</span>
-                  </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm staff-text-secondary">
+                  <span>{t.show}</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <span>{t.entriesPerPage}</span>
+                </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm staff-text-secondary">
-                      {t.showingEntries}{" "}
-                      {contests.length > 0
-                        ? (currentPage - 1) * pageSize + 1
-                        : 0}{" "}
-                      {t.toText}{" "}
-                      {Math.min(currentPage * pageSize, totalFromAPI)}{" "}
-                      {t.ofText} {totalFromAPI} {t.entriesText}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm staff-text-secondary">
+                    {t.showingEntries}{" "}
+                    {contests.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
+                    {t.toText} {Math.min(currentPage * pageSize, totalFromAPI)}{" "}
+                    {t.ofText} {totalFromAPI} {t.entriesText}
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="First page"
+                    >
+                      <IconChevronsLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Previous page"
+                    >
+                      <IconChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    <span className="px-3 py-1 text-sm staff-text-primary">
+                      {t.pageText} {currentPage} {t.ofText} {totalPages}
                     </span>
 
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setCurrentPage(1)}
-                        disabled={currentPage === 1}
-                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="First page"
-                      >
-                        <IconChevronsLeft className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Previous page"
-                      >
-                        <IconChevronLeft className="h-4 w-4" />
-                      </button>
-
-                      <span className="px-3 py-1 text-sm staff-text-primary">
-                        {t.pageText} {currentPage} {t.ofText} {totalPages}
-                      </span>
-
-                      <button
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Next page"
-                      >
-                        <IconChevronRight className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage(totalPages)}
-                        disabled={currentPage === totalPages}
-                        className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Last page"
-                      >
-                        <IconChevronsRight className="h-4 w-4" />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Next page"
+                    >
+                      <IconChevronRight className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Last page"
+                    >
+                      <IconChevronsRight className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

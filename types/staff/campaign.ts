@@ -1,3 +1,5 @@
+import { CampaignStatus } from "../dashboard";
+
 export interface CampaignAPIResponse {
   campaignId: number;
   title: string;
@@ -17,7 +19,7 @@ export interface CreateCampaignRequest {
   description: string;
   goalAmount: number;
   deadline: string;
-  status: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED";
+  status: CampaignStatus;
   image: File;
 }
 

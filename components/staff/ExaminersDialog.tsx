@@ -2,12 +2,29 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { IconX, IconUser, IconMail, IconCalendar, IconTag, IconSearch, IconPlus, IconTrash } from "@tabler/icons-react";
+import {
+  IconX,
+  IconUser,
+  IconMail,
+  IconCalendar,
+  IconTag,
+  IconSearch,
+  IconPlus,
+  IconTrash,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { ExaminerDTO, AvailableExaminerDTO } from "@/types/staff/examiner-dto";
 import { ScheduleDTO } from "@/types/staff/schedule-dto";
-import { getStaffContestExaminers, getAllStaffExaminers, addStaffContestExaminer, deleteStaffContestExaminer, getStaffSchedulesByExaminer, createStaffSchedule, updateStaffSchedule } from "@/apis/staff";
+import {
+  getStaffContestExaminers,
+  getAllStaffExaminers,
+  addStaffContestExaminer,
+  deleteStaffContestExaminer,
+  getStaffSchedulesByExaminer,
+  createStaffSchedule,
+  updateStaffSchedule,
+} from "@/apis/staff";
 
 interface ExaminersDialogProps {
   isOpen: boolean;
@@ -15,7 +32,11 @@ interface ExaminersDialogProps {
   contestId: number;
 }
 
-export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogProps) {
+export function ExaminersDialog({
+  isOpen,
+  onClose,
+  contestId,
+}: ExaminersDialogProps) {
   const queryClient = useQueryClient();
 
   // State for adding new examiner
@@ -25,24 +46,35 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
   const [showExaminerDropdown, setShowExaminerDropdown] = useState(false);
 
   // State for schedule management
-  const [examinerSchedules, setExaminerSchedules] = useState<Record<string, ScheduleDTO[]>>({});
-  const [showScheduleDropdown, setShowScheduleDropdown] = useState<string | null>(null);
+  const [examinerSchedules, setExaminerSchedules] = useState<
+    Record<string, ScheduleDTO[]>
+  >({});
+  const [showScheduleDropdown, setShowScheduleDropdown] = useState<
+    string | null
+  >(null);
 
   // Fetch examiners for this contest
-  const { data: examinersData, isLoading: isLoadingContestExaminers } = useQuery({
-    queryKey: ["contest-examiners", contestId],
-    queryFn: () => getStaffContestExaminers(contestId),
-    enabled: isOpen && !!contestId,
-  });
+  const { data: examinersData, isLoading: isLoadingContestExaminers } =
+    useQuery({
+      queryKey: ["contest-examiners", contestId],
+      queryFn: () => getStaffContestExaminers(contestId),
+      enabled: isOpen && !!contestId,
+    });
 
   // Fetch all available examiners for name mapping and search
-  const { data: availableExaminersData, isLoading: isLoadingAvailableExaminers } = useQuery({
+  const {
+    data: availableExaminersData,
+    isLoading: isLoadingAvailableExaminers,
+  } = useQuery({
     queryKey: ["available-examiners", examinerSearch],
     queryFn: () => getAllStaffExaminers({ search: examinerSearch, limit: 20 }),
     enabled: isOpen,
   });
 
-  const contestExaminers = useMemo(() => examinersData?.data || [], [examinersData?.data]);
+  const contestExaminers = useMemo(
+    () => examinersData?.data || [],
+    [examinersData?.data]
+  );
   const availableExaminers = availableExaminersData?.data || [];
 
   // Add examiner mutation
@@ -50,8 +82,12 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
     mutationFn: (data: { examinerId: string; role: string }) =>
       addStaffContestExaminer(contestId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contest-examiners", contestId] });
-      queryClient.invalidateQueries({ queryKey: ["contest-detail", contestId.toString()] });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-examiners", contestId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", contestId.toString()],
+      });
       setSelectedExaminerId("");
       setSelectedRole("ROUND_1");
       setExaminerSearch("");
@@ -68,8 +104,12 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
     mutationFn: (examinerId: string) =>
       deleteStaffContestExaminer(contestId, examinerId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contest-examiners", contestId] });
-      queryClient.invalidateQueries({ queryKey: ["contest-detail", contestId.toString()] });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-examiners", contestId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-detail", contestId.toString()],
+      });
       toast.success("Examiner removed successfully!");
     },
     onError: (error) => {
@@ -99,7 +139,11 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
   }, [contestExaminers]);
 
   const handleDeleteExaminer = (examinerId: string, examinerName: string) => {
-    if (window.confirm(`Are you sure you want to remove ${examinerName} from this contest?`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to remove ${examinerName} from this contest?`
+      )
+    ) {
       deleteExaminerMutation.mutate(examinerId);
     }
   };
@@ -109,8 +153,6 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
     switch (role) {
       case "ROUND_1":
         return "Chấm bài vòng sơ khảo";
-      case "REVIEW_ROUND_1":
-        return "Xem xét vòng sơ khảo";
       case "ROUND_2":
         return "Chấm bài vòng chung kết";
       default:
@@ -121,19 +163,24 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
   const loadExaminerSchedules = async (examinerId: string) => {
     try {
       const response = await getStaffSchedulesByExaminer(examinerId);
-      setExaminerSchedules(prev => ({
+      setExaminerSchedules((prev) => ({
         ...prev,
-        [examinerId]: response.data || []
+        [examinerId]: response.data || [],
       }));
     } catch (error) {
       console.error("Error loading schedules:", error);
     }
   };
 
-  const handleScheduleDateChange = async (examiner: ExaminerDTO, newDate: string) => {
+  const handleScheduleDateChange = async (
+    examiner: ExaminerDTO,
+    newDate: string
+  ) => {
     try {
       const existingSchedules = examinerSchedules[examiner.examinerId] || [];
-      const existingSchedule = existingSchedules.find(s => s.contestId === contestId);
+      const existingSchedule = existingSchedules.find(
+        (s) => s.contestId === contestId
+      );
 
       if (existingSchedule) {
         // Update existing schedule
@@ -142,7 +189,7 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
           examinerId: examiner.examinerId,
           task: getTaskByRole(examiner.role),
           date: newDate,
-          status: "ACTIVE"
+          status: "ACTIVE",
         });
       } else {
         // Create new schedule
@@ -151,7 +198,7 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
           examinerId: examiner.examinerId,
           task: getTaskByRole(examiner.role),
           date: newDate,
-          status: "ACTIVE"
+          status: "ACTIVE",
         });
       }
 
@@ -170,8 +217,6 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
         return "bg-blue-100 text-blue-800";
       case "ROUND_2":
         return "bg-purple-100 text-purple-800";
-      case "REVIEW_ROUND_1":
-        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -188,7 +233,10 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
       toast.error("Please select an examiner and role");
       return;
     }
-    addExaminerMutation.mutate({ examinerId: selectedExaminerId, role: selectedRole });
+    addExaminerMutation.mutate({
+      examinerId: selectedExaminerId,
+      role: selectedRole,
+    });
   };
 
   if (!isOpen) return null;
@@ -214,7 +262,9 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
           {/* Add Examiner Section */}
           <div className="mb-6 p-4 border border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add New Examiner</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Add New Examiner
+              </h3>
               <button
                 onClick={handleAddExaminer}
                 disabled={addExaminerMutation.isPending || !selectedExaminerId}
@@ -258,8 +308,12 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                           </div>
                         ) : availableExaminers.length > 0 ? (
                           availableExaminers
-                            .filter((examiner: AvailableExaminerDTO) =>
-                              !contestExaminers.some((e: ExaminerDTO) => e.examinerId === examiner.examinerId)
+                            .filter(
+                              (examiner: AvailableExaminerDTO) =>
+                                !contestExaminers.some(
+                                  (e: ExaminerDTO) =>
+                                    e.examinerId === examiner.examinerId
+                                )
                             )
                             .map((examiner: AvailableExaminerDTO) => (
                               <button
@@ -268,10 +322,16 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                                 onClick={() => handleSelectExaminer(examiner)}
                                 className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
                               >
-                                <div className="font-medium">{examiner.fullName}</div>
-                                <div className="text-gray-500 text-xs">{examiner.email}</div>
+                                <div className="font-medium">
+                                  {examiner.fullName}
+                                </div>
+                                <div className="text-gray-500 text-xs">
+                                  {examiner.email}
+                                </div>
                                 {examiner.specialization && (
-                                  <div className="text-blue-600 text-xs">{examiner.specialization}</div>
+                                  <div className="text-blue-600 text-xs">
+                                    {examiner.specialization}
+                                  </div>
                                 )}
                               </button>
                             ))
@@ -294,7 +354,6 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                       onChange={(e) => setSelectedRole(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     >
-                      <option value="REVIEW_ROUND_1">Review Round 1</option>
                       <option value="ROUND_1">Round 1</option>
                       <option value="ROUND_2">Round 2</option>
                     </select>
@@ -318,7 +377,9 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
             ) : contestExaminers.length === 0 ? (
               <div className="text-center py-8">
                 <IconUser className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No examiners assigned to this contest yet.</p>
+                <p className="text-gray-500">
+                  No examiners assigned to this contest yet.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -334,7 +395,11 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                           <h3 className="text-lg font-semibold text-gray-900">
                             {examiner.examinerName}
                           </h3>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(examiner.role)}`}>
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(
+                              examiner.role
+                            )}`}
+                          >
                             {examiner.role}
                           </span>
                         </div>
@@ -344,11 +409,14 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                             <IconMail className="h-4 w-4" />
                             <span>{examiner.examinerEmail}</span>
                           </div>
-                        
+
                           {examiner.examiner.specialization && (
                             <div className="flex items-center gap-2">
                               <IconTag className="h-4 w-4" />
-                              <span>Specialization: {examiner.examiner.specialization}</span>
+                              <span>
+                                Specialization:{" "}
+                                {examiner.examiner.specialization}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -358,16 +426,25 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                       <div className="flex justify-center">
                         <div className="relative">
                           <button
-                            onClick={() => setShowScheduleDropdown(
-                              showScheduleDropdown === examiner.examinerId ? null : examiner.examinerId
-                            )}
+                            onClick={() =>
+                              setShowScheduleDropdown(
+                                showScheduleDropdown === examiner.examinerId
+                                  ? null
+                                  : examiner.examinerId
+                              )
+                            }
                             className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 transition-colors text-sm font-medium flex items-center gap-2"
                           >
                             <IconCalendar className="h-4 w-4" />
-                            {examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)
-                              ? `Scheduled: ${new Date(examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId)?.date || '').toLocaleDateString()}`
-                              : "+ Schedule"
-                            }
+                            {examinerSchedules[examiner.examinerId]?.find(
+                              (s) => s.contestId === contestId
+                            )
+                              ? `Scheduled: ${new Date(
+                                  examinerSchedules[examiner.examinerId]?.find(
+                                    (s) => s.contestId === contestId
+                                  )?.date || ""
+                                ).toLocaleDateString()}`
+                              : "+ Schedule"}
                           </button>
 
                           {showScheduleDropdown === examiner.examinerId && (
@@ -376,7 +453,9 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                                 <button
                                   onClick={() => {
                                     // Toggle calendar visibility
-                                    setShowScheduleDropdown(examiner.examinerId + '_calendar');
+                                    setShowScheduleDropdown(
+                                      examiner.examinerId + "_calendar"
+                                    );
                                   }}
                                   className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors rounded flex items-center gap-2"
                                 >
@@ -387,20 +466,28 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                             </div>
                           )}
 
-                          {showScheduleDropdown === examiner.examinerId + '_calendar' && (
+                          {showScheduleDropdown ===
+                            examiner.examinerId + "_calendar" && (
                             <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
                               <Calendar
                                 mode="single"
-                                selected={
-                                  (() => {
-                                    const schedule = examinerSchedules[examiner.examinerId]?.find(s => s.contestId === contestId);
-                                    return schedule?.date ? new Date(schedule.date) : undefined;
-                                  })()
-                                }
+                                selected={(() => {
+                                  const schedule = examinerSchedules[
+                                    examiner.examinerId
+                                  ]?.find((s) => s.contestId === contestId);
+                                  return schedule?.date
+                                    ? new Date(schedule.date)
+                                    : undefined;
+                                })()}
                                 onSelect={(date) => {
                                   if (date) {
-                                    const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-                                    handleScheduleDateChange(examiner, dateString);
+                                    const dateString = date
+                                      .toISOString()
+                                      .split("T")[0]; // YYYY-MM-DD format
+                                    handleScheduleDateChange(
+                                      examiner,
+                                      dateString
+                                    );
                                     setShowScheduleDropdown(null); // Close dropdown after selection
                                   }
                                 }}
@@ -415,7 +502,12 @@ export function ExaminersDialog({ isOpen, onClose, contestId }: ExaminersDialogP
                       {/* Column 3: Delete Icon */}
                       <div className="flex justify-end">
                         <button
-                          onClick={() => handleDeleteExaminer(examiner.examinerId, examiner.examinerName)}
+                          onClick={() =>
+                            handleDeleteExaminer(
+                              examiner.examinerId,
+                              examiner.examinerName
+                            )
+                          }
                           disabled={deleteExaminerMutation.isPending}
                           className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Remove examiner"

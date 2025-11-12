@@ -289,7 +289,7 @@ export function RegisterForm({
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
-                {translations.signInNow || "Đăng nhập"}
+                 Đăng nhập
               </span>
             </div>
           </div>
@@ -477,13 +477,13 @@ export function RegisterForm({
 
           {/* Link to login */}
           {selectedRole === 'guardian' && (
-            <div className="text-base text-black mt-4 ml-14">
+            <div className="text-base text-black mt-4 ml-20">
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
-                {translations.signInNow || "Đăng nhập"}
+                Đăng nhập
               </span>
             </div>
           )}
@@ -493,8 +493,8 @@ export function RegisterForm({
             <form onSubmit={competitorHandleSubmit(handleCompetitorRegister)} className="flex flex-col">
               {/* Full Name and Email - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-fullName">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-fullName">
                     {translations.fullName || "Họ và tên"}
                   </label>
                   <Controller
@@ -504,7 +504,7 @@ export function RegisterForm({
                       <input
                         id="competitor-fullName"
                         type="text"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
@@ -514,8 +514,8 @@ export function RegisterForm({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-email">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-email">
                     {translations.email || "Email"}
                   </label>
                   <Controller
@@ -525,7 +525,7 @@ export function RegisterForm({
                       <input
                         id="competitor-email"
                         type="email"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
@@ -537,9 +537,9 @@ export function RegisterForm({
               </div>
 
               {/* Username and Password - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-username">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-username">
                     {translations.username || "Tên đăng nhập"}
                   </label>
                   <Controller
@@ -549,7 +549,7 @@ export function RegisterForm({
                       <input
                         id="competitor-username"
                         type="text"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
@@ -559,8 +559,8 @@ export function RegisterForm({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-password">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-password">
                     {translations.password || "Mật khẩu"}
                   </label>
                   <Controller
@@ -570,7 +570,7 @@ export function RegisterForm({
                       <input
                         id="competitor-password"
                         type="password"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
@@ -582,9 +582,9 @@ export function RegisterForm({
               </div>
 
               {/* Confirm Password and Birthday - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-confirmPassword">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-confirmPassword">
                     {translations.confirmPassword || "Xác nhận mật khẩu"}
                   </label>
                   <Controller
@@ -594,7 +594,7 @@ export function RegisterForm({
                       <input
                         id="competitor-confirmPassword"
                         type="password"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
@@ -604,8 +604,8 @@ export function RegisterForm({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-birthday">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-birthday">
                     {translations.birthday || "Ngày sinh"}
                   </label>
                   <Controller
@@ -615,7 +615,7 @@ export function RegisterForm({
                       <input
                         id="competitor-birthday"
                         type="date"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
                     )}
@@ -627,8 +627,8 @@ export function RegisterForm({
               </div>
 
               {/* School Name - Full width */}
-              <div className="grid gap-2 mt-2">
-                <label className="text-base font-medium text-black" htmlFor="competitor-schoolName">
+              <div className="grid ">
+                <label className="text-sm font-medium text-black" htmlFor="competitor-schoolName">
                   {translations.schoolName || "Tên trường"}
                 </label>
                 <Controller
@@ -638,7 +638,7 @@ export function RegisterForm({
                     <input
                       id="competitor-schoolName"
                       type="text"
-                      className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                      className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                       {...field}
                     />
                   )}
@@ -649,9 +649,9 @@ export function RegisterForm({
               </div>
 
               {/* Ward and Grade - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-ward">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-ward">
                     {translations.ward || "Phường/Xã"}
                   </label>
                   <Controller
@@ -660,7 +660,7 @@ export function RegisterForm({
                     render={({ field }) => (
                       <select
                         id="competitor-ward"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       >
                         <option value="">Chọn phường/xã</option>
@@ -677,8 +677,8 @@ export function RegisterForm({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="competitor-grade">
+                <div className="grid">
+                  <label className="text-sm font-medium text-black" htmlFor="competitor-grade">
                     {translations.grade || "Lớp"}
                   </label>
                   <Controller
@@ -725,13 +725,13 @@ export function RegisterForm({
 
           {/* Link to login */}
           {selectedRole === 'competitor' && (
-            <div className="text-base text-black mt-4 ml-14">
+            <div className="text-sm text-black mt-4 ml-20">
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
-                {translations.signInNow || "Đăng nhập"}
+               Đăng nhập
               </span>
             </div>
           )}

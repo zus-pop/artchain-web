@@ -1,7 +1,6 @@
 "use client";
 
 import { IconSettings } from "@tabler/icons-react";
-import * as React from "react";
 
 import {
   DropdownMenu,
@@ -14,10 +13,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 
 export function NavSettings() {
   const { currentLanguage, setLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   return (
     <SidebarMenu>
@@ -26,7 +27,7 @@ export function NavSettings() {
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton>
               <IconSettings className="size-4" />
-              <span>Settings</span>
+              <span>{t.settings}</span>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start" sideOffset={4}>

@@ -37,10 +37,10 @@ export default function PostDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen pt-25 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-[#FF6E1A]" />
             <span className="ml-2 text-gray-600">Loading post...</span>
           </div>
         </div>
@@ -50,12 +50,12 @@ export default function PostDetailPage() {
 
   if (error || !post) {
     return (
-      <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen pt-25 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-4xl mx-auto">
           <div className="text-center py-12">
             <p className="text-red-500 mb-4">{error || 'Post not found'}</p>
             <Link href="/posts">
-              <button className="flex items-center text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+              <button className="flex cursor-pointer items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Quay lại danh sách bài viết
               </button>
@@ -67,12 +67,12 @@ export default function PostDetailPage() {
   }
 
   return (
-    <div className="min-h-screen pt-20 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen pt-25 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <div className="mb-6">
           <Link href="/posts">
-            <button className="flex items-center text-indigo-600 dark:text-indigo-400 font-medium hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
+            <button className="flex cursor-pointer items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Quay lại danh sách bài viết
             </button>
@@ -100,7 +100,7 @@ export default function PostDetailPage() {
             {post.postTags && post.postTags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {post.postTags.map((postTag) => (
-                  <span key={postTag.tag_id} className="inline-flex items-center px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
+                  <span key={postTag.tag_id} className="inline-flex items-center px-3 py-1 text-sm font-medium bg-[#FF6E1A]/20 text-[#FF6E1A] dark:bg-[#FF6E1A] dark:text-[#FF6E1A]">
                     <Tag className="w-3 h-3 mr-1" />
                     {postTag.tag.tag_name}
                   </span>
@@ -117,7 +117,7 @@ export default function PostDetailPage() {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
                 <span className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-1 text-indigo-500" />
+                  <Calendar className="w-4 h-4 mr-1 text-[#FF6E1A]" />
                   {new Date(post.published_at).toLocaleDateString('vi-VN', {
                     year: 'numeric',
                     month: 'long',
@@ -127,7 +127,7 @@ export default function PostDetailPage() {
                   })}
                 </span>
                 <span className="flex items-center">
-                  <User className="w-4 h-4 mr-1 text-indigo-500" />
+                  <User className="w-4 h-4 mr-1 text-[#FF6E1A]" />
                   {post.creator.fullName}
                 </span>
               </div>
@@ -145,13 +145,13 @@ export default function PostDetailPage() {
         <div className="bg-white dark:bg-gray-800 shadow-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Thông tin tác giả</h3>
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center">
-              <User className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <div className="w-12 h-12 bg-[#FF6E1A]/20 dark:bg-[#FF6E1A] flex items-center justify-center">
+              <User className="w-6 h-6 text-[#FF6E1A] dark:text-[#FF6E1A]" />
             </div>
             <div>
               <p className="font-medium text-gray-900 dark:text-white">{post.creator.fullName}</p>
               <p className="text-sm text-gray-500 dark:text-gray-400">{post.creator.email}</p>
-              <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{post.creator.role}</p>
+              <p className="text-sm text-[#FF6E1A] dark:text-[#FF6E1A] font-medium">{post.creator.role}</p>
             </div>
           </div>
         </div>

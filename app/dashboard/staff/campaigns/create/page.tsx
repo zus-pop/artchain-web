@@ -83,7 +83,7 @@ export default function CreateCampaignPage() {
       return createStaffCampaign(data);
     },
     onSuccess: () => {
-      toast.success(t.campaignCreatedSuccess);
+      toast.success(t.campaignCreatedSuccessMessage);
       queryClient.invalidateQueries({ queryKey: ["staff-campaigns"] });
       router.push("/dashboard/staff/campaigns");
     },

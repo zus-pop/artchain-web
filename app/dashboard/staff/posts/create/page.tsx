@@ -50,7 +50,7 @@ export default function CreatePostSuspense() {
   );
 }
 
-export function CreatePostPage() {
+function CreatePostPage() {
   const searchParams = useSearchParams();
   const postId = searchParams.get("id");
   const isEditing = !!postId;

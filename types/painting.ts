@@ -51,3 +51,25 @@ export interface Round2ImageRequest {
   title?: string;
   description?: string;
 }
+
+export interface Submission {
+  paintingId: string;
+  roundId: string;
+  awardId: string | null;
+  contestId: number;
+  competitorId: string;
+  description: string;
+  title: string;
+  imageUrl: string;
+  submissionDate: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  createdAt: string;
+  updatedAt: string;
+  competitor: {
+    competitorId: string;
+    fullName: string;
+    email: string;
+    phone: string | null;
+    username: string;
+  };
+}

@@ -13,7 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslation } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
+import { useLanguageStore } from "@/store/language-store";
+import { Submission } from "@/types/painting";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconCalendar,
@@ -62,7 +65,8 @@ export function SubmissionDetailDialog({
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
   // React Hook Form setup
   const form = useForm<PaintingDetailsForm>({
     resolver: zodResolver(paintingDetailsSchema),
@@ -81,7 +85,7 @@ export function SubmissionDetailDialog({
     enabled: isOpen && !!paintingId,
   });
 
-  const submission = submissionData?.data;
+  const submission: Submission = submissionData?.data;
   const round2Image = form.watch("round2Image");
 
   // Create preview URL when round2Image changes
@@ -216,9 +220,7 @@ export function SubmissionDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <DialogTitle className="sr-only">
-            Loading Submission Details
-          </DialogTitle>
+          <DialogTitle className="sr-only">{t.loading}</DialogTitle>
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
           </div>
@@ -231,9 +233,9 @@ export function SubmissionDetailDialog({
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[800px]">
-          <DialogTitle className="sr-only">Submission Not Found</DialogTitle>
+          <DialogTitle className="sr-only">{t.noSubmissionsFound}</DialogTitle>
           <div className="text-center py-8 staff-text-secondary">
-            Submission not found
+            {t.noSubmissionsFound}
           </div>
         </DialogContent>
       </Dialog>
@@ -245,7 +247,7 @@ export function SubmissionDetailDialog({
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold staff-text-primary">
-            Submission Details
+            {t.submissionDetail}
           </DialogTitle>
           <div className="flex items-center justify-between mt-2">
             <span className={getStatusColor(submission.status)}>
@@ -268,7 +270,7 @@ export function SubmissionDetailDialog({
               <div className="flex items-center justify-center h-full text-gray-400">
                 <div className="text-center">
                   <IconPhoto className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">No image available</p>
+                  <p className="text-lg">{t.noImageAvailable}</p>
                 </div>
               </div>
             )}
@@ -278,7 +280,7 @@ export function SubmissionDetailDialog({
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium staff-text-primary mb-2">
-                Title
+                {t.titleLabel}
               </label>
               <input
                 {...form.register("title")}
@@ -293,7 +295,7 @@ export function SubmissionDetailDialog({
             </div>
             <div>
               <label className="block text-sm font-medium staff-text-primary mb-2">
-                Description
+                {t.descriptionLabel}
               </label>
               <textarea
                 {...form.register("description")}
@@ -318,17 +320,17 @@ export function SubmissionDetailDialog({
                   <div className="flex items-center gap-2 mb-3">
                     <IconPhoto className="h-5 w-5 staff-text-secondary" />
                     <h4 className="font-semibold staff-text-primary">
-                      Round 2 Image
+                      {t.image} {t.rounds} 2
                     </h4>
                   </div>
                   <p className="text-sm staff-text-secondary mb-4">
-                    Upload the final artwork image for round 2 evaluation.
+                    {t.submissionRound2ImageUpload}
                   </p>
 
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium staff-text-primary mb-2 block">
-                        Select Image File
+                        {t.selectValidImage}
                       </label>
                       <input
                         type="file"
@@ -341,7 +343,7 @@ export function SubmissionDetailDialog({
                       />
                       {round2Image && (
                         <p className="text-xs staff-text-secondary mt-1">
-                          Selected: {round2Image.name}
+                          {t.selectedFile}: {round2Image.name}
                         </p>
                       )}
                       {form.formState.errors.round2Image && (
@@ -358,7 +360,7 @@ export function SubmissionDetailDialog({
                     {round2Image && previewUrl && (
                       <div className="border border-[#e6e2da] rounded-lg p-4 bg-white">
                         <h5 className="text-sm font-medium staff-text-primary mb-3">
-                          Preview
+                          {t.previewMode}
                         </h5>
                         <div className="relative w-full h-48 bg-white rounded border">
                           <Image
@@ -370,10 +372,12 @@ export function SubmissionDetailDialog({
                         </div>
                         <div className="mt-2 text-xs staff-text-secondary">
                           <p>
-                            File size:{" "}
+                            {t.fileSize}:{" "}
                             {(round2Image.size / 1024 / 1024).toFixed(2)} MB
                           </p>
-                          <p>Type: {round2Image.type}</p>
+                          <p>
+                            {t.fileType}: {round2Image.type}
+                          </p>
                         </div>
                       </div>
                     )}
@@ -401,9 +405,7 @@ export function SubmissionDetailDialog({
                 className="staff-btn-primary disabled:opacity-50 flex items-center gap-2"
               >
                 <IconCheck className="h-4 w-4" />
-                {uploadRound2PaintingMutation.isPending
-                  ? "Updating..."
-                  : "Update Details"}
+                {uploadRound2PaintingMutation.isPending ? t.updating : t.update}
               </button>
             </div>
           </div>
@@ -414,11 +416,11 @@ export function SubmissionDetailDialog({
               <div className="flex items-center gap-2 mb-2">
                 <IconUser className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
-                  Competitor ID
+                  {t.artistLabel}
                 </p>
               </div>
               <p className="text-sm staff-text-primary font-semibold break-all">
-                {submission.competitorId}
+                {submission.competitor.fullName}
               </p>
             </div>
 
@@ -426,7 +428,7 @@ export function SubmissionDetailDialog({
               <div className="flex items-center gap-2 mb-2">
                 <IconTrophy className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
-                  Contest ID
+                  {t.contest} ID
                 </p>
               </div>
               <p className="text-sm staff-text-primary font-semibold">
@@ -438,7 +440,7 @@ export function SubmissionDetailDialog({
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
-                  Round ID
+                  {t.rounds} ID
                 </p>
               </div>
               <p className="text-sm staff-text-primary font-semibold">
@@ -450,12 +452,14 @@ export function SubmissionDetailDialog({
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
-                  Submission Date
+                  {t.submissionDate}
                 </p>
               </div>
-              <p className="text-sm staff-text-primary font-semibold">
-                {formatDate({ dateString: submission.submissionDate })}
-              </p>
+              {submission.submissionDate && (
+                <p className="text-sm staff-text-primary font-semibold">
+                  {formatDate({ dateString: submission.submissionDate })}
+                </p>
+              )}
             </div>
 
             {submission.awardId && (
@@ -463,7 +467,7 @@ export function SubmissionDetailDialog({
                 <div className="flex items-center gap-2 mb-2">
                   <IconTrophy className="h-5 w-5 staff-text-secondary" />
                   <p className="text-sm font-medium staff-text-secondary">
-                    Award ID
+                    {t.awards} ID
                   </p>
                 </div>
                 <p className="text-sm staff-text-primary font-semibold">
@@ -476,13 +480,13 @@ export function SubmissionDetailDialog({
           {/* Metadata */}
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#e6e2da]">
             <div>
-              <p className="text-xs staff-text-secondary mb-1">Created At</p>
+              <p className="text-xs staff-text-secondary mb-1">{t.created}</p>
               <p className="text-sm staff-text-primary">
                 {formatDate({ dateString: submission.createdAt })}
               </p>
             </div>
             <div>
-              <p className="text-xs staff-text-secondary mb-1">Updated At</p>
+              <p className="text-xs staff-text-secondary mb-1">{t.updated}</p>
               <p className="text-sm staff-text-primary">
                 {formatDate({ dateString: submission.updatedAt })}
               </p>
@@ -516,7 +520,7 @@ export function SubmissionDetailDialog({
                   className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
                   disabled={rejectMutation.isPending}
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   onClick={handleReject}
@@ -533,7 +537,7 @@ export function SubmissionDetailDialog({
                   onClick={onClose}
                   className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
                 >
-                  Close
+                  {t.close}
                 </button>
                 <button
                   onClick={handleReject}
@@ -541,7 +545,7 @@ export function SubmissionDetailDialog({
                   disabled={acceptMutation.isPending}
                 >
                   <IconX className="h-4 w-4 inline mr-2" />
-                  Reject
+                  {t.reject}
                 </button>
                 <button
                   onClick={handleAccept}
@@ -562,7 +566,7 @@ export function SubmissionDetailDialog({
               onClick={onClose}
               className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
             >
-              Close
+              {t.close}
             </button>
           </DialogFooter>
         )}

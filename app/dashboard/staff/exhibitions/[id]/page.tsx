@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { use } from "react";
+import { formatDate } from "../../../../../lib/utils";
 
 export default function ExhibitionDetailPage({
   params,
@@ -197,11 +198,15 @@ export default function ExhibitionDetailPage({
                           </span>
                           <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconCalendar className="h-4 w-4" />
-                            {new Date(
-                              exhibition.startDate
-                            ).toLocaleDateString()}{" "}
+                            {formatDate({
+                              dateString: exhibition.startDate,
+                              language: currentLanguage,
+                            })}{" "}
                             -{" "}
-                            {new Date(exhibition.endDate).toLocaleDateString()}
+                            {formatDate({
+                              dateString: exhibition.endDate,
+                              language: currentLanguage,
+                            })}
                           </div>
                           <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconPhoto className="h-4 w-4" />
@@ -283,7 +288,7 @@ export default function ExhibitionDetailPage({
                           {new Date(exhibition.startDate).toLocaleDateString()}
                         </p>
                         <p className="text-sm staff-text-secondary">
-                          {t.startDate}
+                          {t.exhibitionStarts}
                         </p>
                       </div>
                     </div>
@@ -299,7 +304,7 @@ export default function ExhibitionDetailPage({
                           {new Date(exhibition.endDate).toLocaleDateString()}
                         </p>
                         <p className="text-sm staff-text-secondary">
-                          {t.endDate}
+                          {t.exhibitionEnds}
                         </p>
                       </div>
                     </div>
@@ -367,7 +372,7 @@ export default function ExhibitionDetailPage({
                                   <div className="absolute top-3 right-3">
                                     <span
                                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                        exhibitionPainting.status === "APPROVED"
+                                        exhibitionPainting.status === "ACCEPTED"
                                           ? "bg-green-100 text-green-800"
                                           : exhibitionPainting.status ===
                                             "PENDING"
@@ -398,9 +403,10 @@ export default function ExhibitionDetailPage({
                                   <div className="flex items-center justify-between text-xs">
                                     <span className="staff-text-secondary">
                                       {t.added}{" "}
-                                      {new Date(
-                                        exhibitionPainting.createdAt
-                                      ).toLocaleDateString()}
+                                      {formatDate({
+                                        dateString: exhibitionPainting.addedAt,
+                                        language: currentLanguage,
+                                      })}
                                     </span>
                                     <span className="text-blue-600 hover:text-blue-800 font-medium">
                                       {t.viewPainting}
@@ -450,7 +456,13 @@ export default function ExhibitionDetailPage({
                       <div className="space-y-6">
                         <div className="flex items-start gap-4">
                           <div className="flex flex-col items-center">
-                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <div
+                              className={`w-3 h-3 rounded-full ${
+                                new Date() >= new Date(exhibition.startDate)
+                                  ? "bg-blue-500"
+                                  : "bg-gray-300"
+                              }`}
+                            ></div>
                             <div className="w-0.5 h-16 bg-blue-200 mt-2"></div>
                           </div>
                           <div className="flex-1 pb-6">
@@ -458,17 +470,15 @@ export default function ExhibitionDetailPage({
                               {t.exhibitionStarts}
                             </h4>
                             <p className="text-sm staff-text-secondary mt-1">
-                              {new Date(
-                                exhibition.startDate
-                              ).toLocaleDateString("en-US", {
-                                weekday: "long",
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
+                              {formatDate({
+                                dateString: exhibition.startDate,
+                                language: currentLanguage,
                               })}
                             </p>
                             <p className="text-xs text-blue-600 mt-1">
-                              {t.openingDayPreparations}
+                              {new Date() < new Date(exhibition.startDate)
+                                ? t.openingDayPreparations
+                                : t.currentlyRunning}
                             </p>
                           </div>
                         </div>
@@ -488,15 +498,10 @@ export default function ExhibitionDetailPage({
                               {t.exhibitionEnds}
                             </h4>
                             <p className="text-sm staff-text-secondary mt-1">
-                              {new Date(exhibition.endDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                }
-                              )}
+                              {formatDate({
+                                dateString: exhibition.endDate,
+                                language: currentLanguage,
+                              })}
                             </p>
                             <p className="text-xs text-green-600 mt-1">
                               {new Date() > new Date(exhibition.endDate)

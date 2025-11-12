@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useGetUserAchievements } from "@/apis/achievements";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -21,6 +22,14 @@ export default function GuardianProfileScreen({
   const [activeTab, setActiveTab] = useState<
     "children" | "competitions" | "progress" | "about"
   >("children");
+  const [selectedChild, setSelectedChild] = useState<GuardianChild | null>(
+    null
+  );
+
+  // Fetch achievements for selected child (hook is safe to call with undefined)
+  const { data: childAchievementsResp, isLoading: isLoadingChildAchievements } = useGetUserAchievements(
+    selectedChild?.userId
+  );
 
   // Xử lý dữ liệu từ authUser, dùng fallback
   const profile = {
@@ -93,6 +102,57 @@ export default function GuardianProfileScreen({
             </div>
           </div>
         </div>
+
+        {/* Child achievements modal */}
+        {selectedChild && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setSelectedChild(null)}
+            />
+            <div className="relative z-10 w-full max-w-3xl rounded bg-white p-6 shadow-lg">
+              <div className="flex items-start justify-between">
+                <h3 className="text-lg font-semibold text-black">
+                  Giải thưởng của {selectedChild.fullName}
+                </h3>
+                <button
+                  className="text-black"
+                  onClick={() => setSelectedChild(null)}
+                >
+                  Đóng
+                </button>
+              </div>
+
+              <div className="mt-4">
+                {isLoadingChildAchievements ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                    <p className="text-[#423137] mt-2">Đang tải giải thưởng...</p>
+                  </div>
+                ) : childAchievementsResp && childAchievementsResp.data.achievements.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {childAchievementsResp.data.achievements.map((a) => (
+                      <div key={a.paintingId} className="flex items-center gap-4">
+                        <div className="h-20 w-20 relative flex-shrink-0">
+                          <Image src={a.paintingImage || ""} alt={a.paintingTitle} layout="fill" objectFit="cover" className="rounded" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-black">{a.paintingTitle}</div>
+                          <div className="text-sm text-[#423137]">Giải: {a.award?.name || "-"}</div>
+                          <div className="text-sm text-[#423137]">Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-black">Chưa có giải thưởng nào.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Guardian Stats
         <div className="py-10 border-black text-center">
@@ -220,7 +280,8 @@ export default function GuardianProfileScreen({
                   {guardianChildren.map((child) => (
                     <div
                       key={child.userId}
-                      className="p-8 border border-[#423137] rounded-sm bg-[#F2F2F2] overflow-hidden aspect-video lg:aspect-[487/251]"
+                      className="p-8 border border-[#423137] rounded-sm bg-[#F2F2F2] overflow-hidden aspect-video lg:aspect-[487/251] cursor-pointer"
+                      onClick={() => setSelectedChild(child)}
                     >
                       <div className="flex items-center space-x-3 mb-3">
                         <div>

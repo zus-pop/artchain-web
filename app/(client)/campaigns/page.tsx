@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Target, ArrowRight, Loader2 } from 'lucide-react';
+import { Calendar, Target, ArrowRight } from 'lucide-react';
+import Loader from '@/components/Loaders';
 import { getCampaigns } from '@/apis/campaign';
 import { CampaignAPIResponse } from '@/types/campaign';
 
 const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full border border-gray-100 dark:border-gray-700">
+    <div className="border border-[#b8aaaa] dark:bg-gray-800 transition-all duration-300 hover:shadow-md hover:border-[#FF6E1A]/50 overflow-hidden flex flex-col h-full dark:border-gray-700">
 
       {/* Header with Status Badge */}
       <div className="p-4 pb-2">
@@ -49,7 +50,7 @@ const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
               className={`h-2 rounded-full transition-all duration-500 ${
                 progress >= 100 ? 'bg-green-500' :
                 progress >= 75 ? 'bg-blue-500' :
-                progress >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                progress >= 50 ? 'bg-yellow-500' : 'bg-[#FF6E1A]0'
               }`}
               style={{ width: `${Math.min(progress, 100)}%` }}
             ></div>
@@ -66,14 +67,14 @@ const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
       <div className="px-4 pb-4 mt-auto">
         <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
           <span className="flex items-center">
-            <Calendar className="w-4 h-4 mr-1 text-red-500" />
+            <Calendar className="w-4 h-4 mr-1 text-[#FF6E1A]0" />
             Deadline: {new Date(campaign.deadline).toLocaleDateString('vi-VN')}
           </span>
         </div>
 
         {/* Action Button */}
         <Link href={`/campaigns/${campaign.campaignId}`}>
-          <button className="w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+          <button className="w-full flex items-center justify-center bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
             Support Campaign
             <ArrowRight className="w-4 h-4 ml-2" />
           </button>
@@ -109,21 +110,9 @@ const CampaignPage = () => {
 
   if (loading) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Supporting Art & Culture
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Discover amazing campaigns that bring art and culture to life. Support creative projects and make a difference.
-            </p>
-          </div>
-
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-            <span className="ml-2 text-gray-600 dark:text-gray-300">Loading campaigns...</span>
-          </div>
+          <Loader />
         </div>
       </section>
     );
@@ -131,23 +120,14 @@ const CampaignPage = () => {
 
   if (error) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Supporting Art & Culture
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Discover amazing campaigns that bring art and culture to life. Support creative projects and make a difference.
-            </p>
-          </div>
-
           <div className="text-center py-12">
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md mx-auto">
-              <p className="text-red-600 dark:text-red-400 font-medium">{error}</p>
+            <div className="bg-[#FF6E1A] dark:bg-[#FF6E1A]/20 border border-[#FF6E1A] dark:border-[#FF6E1A] rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-[#FF6E1A] dark:text-[#FF6E1A] font-medium">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="mt-4 bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white px-4 py-2 rounded-lg transition-colors"
               >
                 Try Again
               </button>
@@ -159,17 +139,17 @@ const CampaignPage = () => {
   }
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <section className="min-h-screen pt-25 w-full bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        {/* <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Supporting Art & Culture
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             Discover amazing campaigns that bring art and culture to life. Support creative projects and make a difference in our creative community.
           </p>
-        </div>
+        </div> */}
 
         {/* Campaigns Grid */}
         {campaigns.length > 0 ? (
@@ -194,7 +174,7 @@ const CampaignPage = () => {
         {/* {campaigns.length > 0 && (
           <div className="text-center">
             <Link href="/campaigns">
-              <button className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200">
+              <button className="inline-flex items-center bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200">
                 View All Campaigns
                 <ArrowRight className="w-5 h-5 ml-2" />
               </button>
