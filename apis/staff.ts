@@ -544,3 +544,24 @@ export const getCampaignSponsors = async (
   });
   return response.data;
 };
+
+export const updateStaffCampaign = async (
+  id: string,
+  data: Partial<CreateCampaignRequest>
+) => {
+  const formData = new FormData();
+  if (data.title) formData.append("title", data.title);
+  if (data.description) formData.append("description", data.description);
+  if (data.goalAmount)
+    formData.append("goalAmount", data.goalAmount.toString());
+  if (data.deadline) formData.append("deadline", data.deadline);
+  if (data.status) formData.append("status", data.status);
+  if (data.image) formData.append("image", data.image);
+
+  const response = await myAxios.put(`/staff/campaign/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};

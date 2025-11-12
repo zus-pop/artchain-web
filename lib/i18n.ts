@@ -526,6 +526,35 @@ export const translations = {
     showingSponsors: "Hiển thị",
     sponsors: "nhà tài trợ",
 
+    // Edit Campaign
+    editCampaignTitle: "Chỉnh Sửa Chiến Dịch",
+    updateCampaignDetails: "Cập nhật chi tiết và cài đặt chiến dịch",
+    campaignTitleRequiredEdit: "Tiêu đề chiến dịch *",
+    descriptionRequiredEdit: "Mô tả *",
+    describeCampaignEdit: "Mô tả chiến dịch của bạn...",
+    goalAmountRequiredEdit: "Số Tiền Mục Tiêu (VND) *",
+    goalAmountPlaceholderEdit: "1000000",
+    deadlineRequiredEdit: "Hạn Cuối *",
+    statusRequiredEdit: "Trạng Thái *",
+    clickToUploadImageEdit: "Nhấn để tải lên hình ảnh",
+    currentImageEdit: "Hình ảnh hiện tại",
+    uploadCampaignImageOptionalEdit:
+      "Tải lên hình ảnh để đại diện cho chiến dịch của bạn (tùy chọn)",
+    updateCampaignBtn: "Cập Nhật Chiến Dịch",
+    updatingCampaign: "Đang cập nhật...",
+    deadlineRequired: "Hạn cuối là bắt buộc",
+    deadlineMustBeFutureEdit: "Hạn cuối phải ở tương lai",
+
+    // Campaign Status Options
+    draftStatusEdit: "Bản Nháp",
+    activeStatusEdit: "Đang Hoạt Động",
+    pausedStatusEdit: "Tạm Dừng",
+    completedStatusEdit: "Hoàn Thành",
+
+    // Campaign Success/Error Messages
+    campaignUpdatedSuccessMessage: "Chiến dịch đã được cập nhật thành công!",
+    failedUpdateCampaignMessage: "Không thể cập nhật chiến dịch",
+
     // Create Campaign
     createSponsorshipCampaign: "Tạo Chiến Dịch Tài Trợ",
     createNewCampaign: "Tạo Chiến Dịch Mới",
@@ -534,7 +563,7 @@ export const translations = {
     saveDraft: "Lưu Bản Nháp",
     createCampaignBtn: "Tạo Chiến Dịch",
     creatingCampaign: "Đang tạo...",
-    campaignCreatedSuccess: "Chiến dịch đã được tạo thành công!",
+    campaignCreatedSuccessMessage: "Chiến dịch đã được tạo thành công!",
     basicInformationSection: "Thông Tin Cơ Bản",
     campaignTitleLabel: "Tiêu Đề Chiến Dịch",
     enterCampaignTitle: "Nhập tiêu đề chiến dịch",
@@ -559,7 +588,6 @@ export const translations = {
     campaignDescriptionRequired: "Mô tả là bắt buộc",
     campaignDescriptionMaxLength: "Mô tả phải ít hơn 1000 ký tự",
     goalAmountMin: "Số tiền mục tiêu phải lớn hơn 1000",
-    deadlineRequired: "Hạn cuối là bắt buộc",
     imageRequired: "Hình ảnh là bắt buộc",
     exhibitionsManagement: "Quản Lý Triển Lãm",
     manageExhibitions:
@@ -690,12 +718,12 @@ export const translations = {
     info: "Thông Tin",
 
     // Posts Management
-    postDeletedSuccess: "Bài viết đã được xóa thành công!",
-    postDeletedError: "Không thể xóa bài viết. Vui lòng thử lại.",
-    postUpdatedError: "Không thể cập nhật bài viết. Vui lòng thử lại.",
-    postStatusUpdatedSuccess:
+    postDeletedSuccessMessage: "Bài viết đã được xóa thành công!",
+    postDeletedErrorMessage: "Không thể xóa bài viết. Vui lòng thử lại.",
+    postUpdatedErrorMessage: "Không thể cập nhật bài viết. Vui lòng thử lại.",
+    postStatusUpdatedSuccessMessage:
       "Trạng thái bài viết đã được cập nhật thành công!",
-    postStatusUpdatedError:
+    postStatusUpdatedErrorMessage:
       "Không thể cập nhật trạng thái bài viết. Vui lòng thử lại.",
     confirmDeletePost: "Bạn có chắc chắn muốn xóa bài viết này?",
     archivedDescription:
@@ -763,7 +791,6 @@ export const translations = {
     share: "Chia Sẻ",
     deletePost: "Xóa Bài Viết",
     editPostBtn: "Chỉnh Sửa",
-    cancelEdit: "Hủy",
     saveChanges: "Lưu Thay Đổi",
     saving: "Đang lưu...",
     postUrlCopied: "URL bài viết đã được sao chép vào clipboard!",
@@ -1581,6 +1608,36 @@ export const translations = {
     showingSponsors: "Showing",
     sponsors: "sponsors",
 
+    // Edit Campaign
+    editCampaignTitle: "Edit Campaign",
+    updateCampaignDetails: "Update campaign details and settings",
+    campaignTitleRequiredEdit: "Campaign Title *",
+    descriptionRequiredEdit: "Description *",
+    describeCampaignEdit: "Describe your campaign...",
+    goalAmountRequiredEdit: "Goal Amount (VND) *",
+    goalAmountPlaceholderEdit: "1000000",
+    deadlineRequiredEdit: "Deadline *",
+    statusRequiredEdit: "Status *",
+    clickToUploadImageEdit: "Click to upload image",
+    currentImageEdit: "Current image",
+    uploadCampaignImageOptionalEdit:
+      "Upload an image to represent your campaign (optional)",
+    cancelEdit: "Cancel",
+    updateCampaignBtn: "Update Campaign",
+    updatingCampaign: "Updating...",
+    deadlineRequiredEditMessage: "Deadline is required",
+    deadlineMustBeFutureEdit: "Deadline must be in the future",
+
+    // Campaign Status Options
+    draftStatusEdit: "Draft",
+    activeStatusEdit: "Active",
+    pausedStatusEdit: "Paused",
+    completedStatusEdit: "Completed",
+
+    // Campaign Success/Error Messages
+    campaignUpdatedSuccessMessage: "Campaign updated successfully!",
+    failedUpdateCampaignMessage: "Failed to update campaign",
+
     // Create Campaign
     createSponsorshipCampaign: "Create Sponsorship Campaign",
     createNewCampaign: "Create New Campaign",
@@ -1589,7 +1646,7 @@ export const translations = {
     saveDraft: "Save Draft",
     createCampaignBtn: "Create Campaign",
     creatingCampaign: "Creating...",
-    campaignCreatedSuccess: "Campaign created successfully!",
+    campaignCreatedSuccessMessage: "Campaign created successfully!",
     basicInformationSection: "Basic Information",
     campaignTitleLabel: "Campaign Title",
     enterCampaignTitle: "Enter campaign title",
@@ -1744,11 +1801,12 @@ export const translations = {
     info: "Info",
 
     // Posts Management
-    postDeletedSuccess: "Post deleted successfully!",
-    postDeletedError: "Could not delete post. Please try again.",
-    postUpdatedError: "Could not update post. Please try again.",
-    postStatusUpdatedSuccess: "Post status updated successfully!",
-    postStatusUpdatedError: "Could not update post status. Please try again.",
+    postDeletedSuccessMessage: "Post deleted successfully!",
+    postDeletedErrorMessage: "Could not delete post. Please try again.",
+    postUpdatedErrorMessage: "Could not update post. Please try again.",
+    postStatusUpdatedSuccessMessage: "Post status updated successfully!",
+    postStatusUpdatedErrorMessage:
+      "Could not update post status. Please try again.",
     confirmDeletePost: "Are you sure you want to delete this post?",
     archivedDescription:
       "archived for better organization and hidden from main list",
@@ -1814,7 +1872,6 @@ export const translations = {
     share: "Share",
     deletePost: "Delete Post",
     editPostBtn: "Edit",
-    cancelEdit: "Cancel",
     saveChanges: "Save Changes",
     saving: "Saving...",
     postUrlCopied: "Post URL copied to clipboard!",

@@ -405,12 +405,13 @@ export default function CampaignsPage() {
                                             >
                                               <IconEye className="h-4 w-4" />
                                             </Link>
-                                            <button
+                                            <Link
+                                              href={`/dashboard/staff/campaigns/${campaign.campaignId}/edit`}
                                               className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
                                               title="Edit"
                                             >
                                               <IconEdit className="h-4 w-4" />
-                                            </button>
+                                            </Link>
                                             <button
                                               className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                                               title="Delete"
