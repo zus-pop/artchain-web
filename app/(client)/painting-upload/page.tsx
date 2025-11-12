@@ -65,7 +65,7 @@ export default function PaintingUploadSuspense() {
   );
 }
 
-export function PaintingUpload() {
+function PaintingUpload() {
   const router = useRouter();
   const params = useSearchParams();
   const contestId = params.get("contestId");

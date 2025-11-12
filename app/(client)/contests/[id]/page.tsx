@@ -10,6 +10,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { VotedPaining } from "@/types/vote";
+
+type VotedPainting = VotedPaining['paintings'][0];
 
 const statusLabels = {
   UPCOMING: "Sắp diễn ra",
@@ -40,10 +43,10 @@ export default function ContestDetailPage() {
 
   // Vote states
   const [selectedAwardId, setSelectedAwardId] = useState<string | null>(null);
-  const [votePaintings, setVotePaintings] = useState<any[]>([]);
+  const [votePaintings, setVotePaintings] = useState<VotedPainting[]>([]);
   const [loadingPaintings, setLoadingPaintings] = useState(false);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
-  const [selectedPainting, setSelectedPainting] = useState<any>(null);
+  const [selectedPainting, setSelectedPainting] = useState<VotedPainting | null>(null);
 
   // Get awards for voting
   const { data: votedAwardData } = getVotedAward(contestId.toString());
@@ -78,7 +81,7 @@ export default function ContestDetailPage() {
     fetchPaintings();
   }, [selectedAwardId, contestId, user?.userId]);
 
-  const handleVoteClick = (painting: any) => {
+  const handleVoteClick = (painting: VotedPainting) => {
     if (!isAuthenticated) {
       alert('Vui lòng đăng nhập để vote!');
       return;
@@ -110,7 +113,7 @@ export default function ContestDetailPage() {
     setVotePaintings(paintingsData);
   };
 
-  const handleRemoveVote = async (painting: any) => {
+  const handleRemoveVote = async (painting: VotedPainting) => {
     if (!user?.userId || !selectedAwardId) return;
 
     await removeVoteMutation.mutateAsync({
