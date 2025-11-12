@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getPost } from '@/apis/post';
 import { Post } from '@/types/post';
+import Loader from '@/components/Loaders';
+import ReactMarkdown from 'react-markdown';
 
 export default function PostDetailPage() {
   const params = useParams();
@@ -39,10 +41,7 @@ export default function PostDetailPage() {
     return (
       <div className="min-h-screen pt-25 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-4xl mx-auto">
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#FF6E1A]" />
-            <span className="ml-2 text-gray-600">Loading post...</span>
-          </div>
+          <Loader />
         </div>
       </div>
     );
@@ -134,8 +133,10 @@ export default function PostDetailPage() {
             </div>
             {/* Content */}
             <div className="prose prose-lg dark:prose-invert max-w-none">
-              <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                {post.content}
+              <div className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                <ReactMarkdown>
+                  {post.content}
+                </ReactMarkdown>
               </div>
             </div>
           </div>
