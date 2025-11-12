@@ -14,6 +14,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTranslation } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
 import { useLanguageStore } from "@/store/language-store";
+import { Submission } from "@/types/painting";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -29,21 +30,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-
-interface Submission {
-  paintingId: string;
-  roundId: string;
-  awardId: string | null;
-  contestId: number;
-  competitorId: string;
-  description: string;
-  title: string;
-  imageUrl: string;
-  submissionDate: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  createdAt: string;
-  updatedAt: string;
-}
 
 function RoundDetailContent() {
   const params = useParams();
@@ -277,7 +263,7 @@ function RoundDetailContent() {
                         {round.name}
                         {round.table && (
                           <span className="ml-2 text-lg font-normal staff-text-secondary">
-                            (Table {round.table})
+                            ({t.table} {round.table})
                           </span>
                         )}
                       </h2>
@@ -470,12 +456,17 @@ function RoundDetailContent() {
                             <p className="text-sm staff-text-secondary mb-3 line-clamp-2">
                               {submission.description}
                             </p>
-                            <p className="text-xs staff-text-secondary mb-3">
-                              {t.roundSubmitted}{" "}
-                              {formatDate({
-                                dateString: submission.submissionDate,
-                              })}
+                            <p className="text-sm staff-text-secondary mb-3 line-clamp-2">
+                              {t.artistLabel} {submission.competitor.fullName}
                             </p>
+                            {submission.submissionDate && (
+                              <p className="text-xs staff-text-secondary mb-3">
+                                {t.roundSubmitted}{" "}
+                                {formatDate({
+                                  dateString: submission.submissionDate,
+                                })}
+                              </p>
+                            )}
 
                             {/* Actions */}
                             <div className="flex gap-2">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useNotifyContest } from "@/apis/email";
 import {
   createStaffRound2,
   deleteStaffRound,
@@ -45,7 +46,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useNotifyContest } from "../../../../../apis/email";
 
 function ContestDetailContent() {
   const searchParams = useSearchParams();
