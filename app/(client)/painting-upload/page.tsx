@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAuth } from "../../../hooks";
+import Loader from "@/components/Loaders";
 
 const SIZE = 10;
 //                     B      KB    MB
@@ -64,7 +65,7 @@ export default function PaintingUploadSuspense() {
   );
 }
 
-export function PaintingUpload() {
+function PaintingUpload() {
   const router = useRouter();
   const params = useSearchParams();
   const contestId = params.get("contestId");
@@ -173,10 +174,7 @@ export function PaintingUpload() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6E1A] mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Đang tải thông tin...</p>
-        </div>
+        <Loader />
       </div>
     );
   }

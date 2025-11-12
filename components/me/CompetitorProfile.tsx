@@ -4,31 +4,8 @@ import { WhoAmI } from "@/types";
 import Image from "next/image";
 import { useState } from "react";
 import { Lang } from "../../lib/i18n";
-
-// --- Dữ liệu giả lập cho các bài đã nộp ---
-// (Dựa trên hình ảnh của bạn)
-// Bạn sẽ thay thế phần này bằng dữ liệu thật từ API
-const submittedArtworks = [
-  {
-    id: 1,
-    imageUrl: "/images/art-example-1.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
-    submissionDate: "3/6/2025",
-    competitionName: "Vẽ tranh cho em",
-  },
-  {
-    id: 2,
-    imageUrl: "/images/art-example-2.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
-    submissionDate: "3/6/2025",
-    competitionName: "Vẽ tranh cho em",
-  },
-  {
-    id: 3,
-    imageUrl: "/images/art-example-3.jpg", // <-- THAY BẰNG ĐƯỜNG DẪN ẢNH THẬT
-    submissionDate: "3/6/2025",
-    competitionName: "Vẽ tranh cho em",
-  },
-];
-// ------------------------------------------
+import { useGetMySubmissions } from "@/apis/paintings";
+import { useGetUserAchievements } from "@/apis/achievements";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -42,6 +19,23 @@ export default function CompetitorProfileScreen({
   const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
     "submitted"
   );
+
+  // Fetch submissions data
+  const { data: submissions } = useGetMySubmissions();
+
+  // Fetch achievements for this competitor only when awards tab is active
+  const { data: achievementsResp, isLoading: isLoadingAchievements } = useGetUserAchievements(
+    authUser?.userId,
+    activeTab === "awards"
+  );
+
+  // Map submissions data to the required format
+  const submittedArtworks = submissions ? submissions.map(painting => ({
+    id: painting.paintingId,
+    imageUrl: painting.imageUrl,
+    submissionDate: painting.submissionDate,
+    competitionName: painting.contest.title,
+  })) : [];
 
   // Xử lý dữ liệu từ authUser, dùng fallback là dữ liệu trong ảnh
   // LƯU Ý: Kiểu WhoAmI của bạn có thể không có 'class', bạn cần thêm vào nếu muốn dùng
@@ -185,10 +179,53 @@ export default function CompetitorProfileScreen({
             </div>
           )}
 
-          {/* Nội dung tab "Giải thưởng" (Placeholder) */}
+          {/* Nội dung tab "Giải thưởng" */}
           {activeTab === "awards" && (
-            <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
-              <p className="text-black">Chưa có giải thưởng nào.</p>
+            <div>
+              {isLoadingAchievements ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                  <p className="text-[#423137] mt-2">Đang tải giải thưởng...</p>
+                </div>
+              ) : (
+                <div>
+                  {achievementsResp && achievementsResp.data.achievements.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {achievementsResp.data.achievements.map((a) => (
+                        <div key={a.paintingId} className="overflow-hidden">
+                          <div className="relative h-56 w-full">
+                            <Image
+                              src={a.paintingImage || ""}
+                              alt={a.paintingTitle}
+                              layout="fill"
+                              objectFit="cover"
+                              className="bg-black rounded-md"
+                            />
+                          </div>
+                          <div className="py-2">
+                            <p className="text-sm text-black">
+                              Cuộc thi: {a.contest?.title || "-"}
+                            </p>
+                            <p className="mt-1 font-medium text-black">
+                              {a.paintingTitle}
+                            </p>
+                            <p className="text-sm text-black">
+                              Giải: {a.award?.name || "-"}
+                            </p>
+                            <p className="text-sm text-black">
+                              Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-black bg-gray-50">
+                      <p className="text-black">Chưa có giải thưởng nào.</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

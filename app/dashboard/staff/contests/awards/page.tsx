@@ -230,6 +230,7 @@ function AwardsManagementPage() {
           return getVotedPaintings({
             contestId: contestId,
             awardId: award.awardId,
+            accountId: '',
           });
         },
         enabled: !!contestId && !!award.awardId,

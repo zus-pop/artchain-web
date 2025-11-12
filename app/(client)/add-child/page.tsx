@@ -81,7 +81,7 @@ export default function AddChildPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-20 px-8 text-foreground">
+    <div className="min-h-screen bg-background pt-25 px-8 text-foreground">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -112,7 +112,7 @@ export default function AddChildPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-5 w-5 text-primary" />
+                <User className="h-5 w-5 text-[#FF6E1A]" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">
@@ -125,7 +125,7 @@ export default function AddChildPage() {
             </div>
             <button
               onClick={handleAddChild}
-              className="bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90 transition-colors flex items-center space-x-2 font-medium"
+              className="bg-[#FF6E1A] text-[#FF6E1A]-foreground px-4 py-2 hover:bg-[#FF6E1A]/90 transition-colors flex items-center space-x-2 font-medium"
             >
               <Plus className="h-4 w-4" />
               <span>Thêm con em</span>
@@ -239,7 +239,7 @@ export default function AddChildPage() {
             </p>
             <button
               onClick={handleAddChild}
-              className="bg-primary text-primary-foreground px-6 py-2 hover:bg-primary/90 transition-colors font-medium flex items-center space-x-2 mx-auto"
+              className="bg-[#FF6E1A] text-[#FF6E1A]-foreground px-6 py-2 hover:bg-[#FF6E1A]/90 transition-colors font-medium flex items-center space-x-2 mx-auto"
             >
               <Plus className="h-4 w-4" />
               <span>Thêm con em đầu tiên</span>

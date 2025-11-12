@@ -1,6 +1,7 @@
 export interface LoginRequest {
   username: string;
   password: string;
+  staySignedIn?: boolean;
 }
 
 export interface RegisterRequest {

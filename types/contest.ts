@@ -18,6 +18,7 @@ export interface Contest {
   status: ContestStatus;
   createdBy: string;
   rounds: Rounds[];
+  sendOriginalDeadline?: string;
 }
 
 export interface Rounds {

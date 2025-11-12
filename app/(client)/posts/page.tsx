@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Calendar, Eye, Tag, ArrowRight, Loader2 } from 'lucide-react';
+import Link from 'next/link';
 import { getPosts } from '@/apis/post';
 import { Post } from '@/types/post';
+import Loader from '@/components/Loaders';
 
 const NewsCard = ({ news }: { news: Post }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-gray-100 dark:border-gray-700">
+    <div className="bg-[#EAE6E0] dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full p-4 border border-[#FF6E1A] dark:border-gray-700">
 
       {/* Hình ảnh */}
       <div className="w-full mb-4 relative">
@@ -49,7 +51,7 @@ const NewsCard = ({ news }: { news: Post }) => {
       </div>
 
       {/* Footer/Metadata - luôn ở dưới cùng */}
-      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center border-t pt-3 border-gray-100 dark:border-gray-700 mt-auto">
+      <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center border-t pt-3 border-[#FF6E1A] dark:border-gray-700 mt-auto">
         <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
           <span className="flex items-center">
             <Calendar className="w-4 h-4 mr-1 text-[#FF6E1A]" />
@@ -62,10 +64,12 @@ const NewsCard = ({ news }: { news: Post }) => {
         </div>
 
         {/* Read More Button */}
-        <button className="flex items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors text-sm">
-          Đọc Chi Tiết
-          <ArrowRight className="w-4 h-4 ml-1" />
-        </button>
+        <Link href={`/posts/${news.post_id}`}>
+          <button className="flex cursor-pointer items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors text-sm">
+            Đọc Chi Tiết
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </button>
+        </Link>
       </div>
     </div>
   );
@@ -97,18 +101,7 @@ export default function PostsPage() {
     return (
       <div className="min-h-screen pt-20 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-              Tin Tức & Sự Kiện
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Cập nhật những thông tin mới nhất về cuộc thi, sự kiện và câu chuyện từ cộng đồng nghệ sĩ ArtChain
-            </p>
-          </div>
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#FF6E1A]" />
-            <span className="ml-2 text-gray-600">Loading posts...</span>
-          </div>
+          <Loader />
         </div>
       </div>
     );
@@ -118,14 +111,6 @@ export default function PostsPage() {
     return (
       <div className="min-h-screen pt-20 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-              Tin Tức & Sự Kiện
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Cập nhật những thông tin mới nhất về cuộc thi, sự kiện và câu chuyện từ cộng đồng nghệ sĩ ArtChain
-            </p>
-          </div>
           <div className="text-center py-12">
             <p className="text-[#FF6E1A]">{error}</p>
           </div>

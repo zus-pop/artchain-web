@@ -69,9 +69,66 @@ const CampaignCard = ({
       className="text-black text-sm leading-relaxed mb-6 text-center"
       dangerouslySetInnerHTML={{ __html: description }}
     />
-    <button className="w-full bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
+    <button className="w-full cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
       Đăng kí tài trợ <ArrowRightIcon />
     </button>
+  </div>
+);
+
+// Skeleton component for CampaignCard
+const SkeletonCampaignCard = () => (
+  <div className="flex flex-col animate-pulse">
+    <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
+    <div className="h-6 bg-gray-300 mb-2 rounded text-center"></div>
+    <div className="space-y-2 mb-6">
+      <div className="h-4 bg-gray-300 rounded"></div>
+      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+    </div>
+    <div className="w-full h-10 bg-gray-300 rounded-sm"></div>
+  </div>
+);
+
+// Skeleton component for Contest Info
+const SkeletonContestInfo = () => (
+  <div className="max-w-lg animate-pulse">
+    <div className="h-4 bg-gray-300 mb-2 rounded w-1/2"></div>
+    <div className="h-12 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
+    <div className="space-y-3 mb-4 sm:mb-6">
+      <div className="h-4 bg-gray-300 rounded"></div>
+      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
+      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+    </div>
+    <div className="space-y-2 sm:space-y-3">
+      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+      <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+    </div>
+    <div className="mt-6 sm:mt-10 h-12 bg-gray-300 rounded-sm"></div>
+  </div>
+);
+
+// Skeleton component for NewsCardSmall
+const SkeletonNewsCardSmall = () => (
+  <div className="flex flex-col overflow-hidden animate-pulse">
+    <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
+    <div className="p-3 sm:p-4">
+      <div className="h-3 bg-gray-300 rounded mb-1 w-1/2"></div>
+      <div className="h-4 bg-gray-300 rounded"></div>
+    </div>
+  </div>
+);
+
+// Skeleton component for Spotlight Post
+const SkeletonSpotlightPost = () => (
+  <div className="flex flex-col bg-[#EAE6E0] text-white animate-pulse">
+    <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-300 mb-4 sm:mb-6"></div>
+    <div className="h-4 bg-gray-300 rounded mb-2 w-1/3"></div>
+    <div className="h-8 bg-gray-300 rounded mb-3 sm:mb-4"></div>
+    <div className="space-y-2">
+      <div className="h-4 bg-gray-300 rounded"></div>
+      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
+      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+    </div>
   </div>
 );
 
@@ -88,7 +145,7 @@ const NewsCardSmall = ({
   darkBg?: boolean;
 }) => (
   <div
-    className={`flex flex-col overflow-hidden ${
+    className={`flex flex-col overflow-hidden hover:scale-105 transition-transform duration-300 ${
       darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
     }`}
   >
@@ -225,7 +282,7 @@ export default function Page() {
     (async () => {
       try {
         setLoadingPosts(true);
-        const resp = await getPosts({ limit: 4 });
+        const resp = await getPosts({ limit: 5 });
         if (mounted) setPosts(resp.data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -300,7 +357,7 @@ export default function Page() {
           className="max-w-7xl w-full overflow-visible"
           style={{ justifyContent: "flex-start" }}
         >
-          <div className="w-full px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
+          <div className="w-full cursor-pointer px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
             <img
               src="/images/newlogo.png"
               alt="Artchain Logo"
@@ -311,7 +368,7 @@ export default function Page() {
                 <button
                   key={item}
                   onClick={() => scrollToSection(sectionIds[index])}
-                  className={`relative text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${
+                  className={`relative cursor-pointer text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${
                     activeSection === sectionIds[index]
                       ? "transform -translate-y-0.5"
                       : ""
@@ -436,7 +493,7 @@ export default function Page() {
                             handleLogout();
                             setIsUserDropdownOpen(false);
                           }}
-                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
                         >
                           <LogOut className="h-4 w-4" />
                           <span>Đăng xuất</span>
@@ -449,7 +506,7 @@ export default function Page() {
             ) : (
               <button
                 onClick={() => router.push("/auth")}
-                className="hidden rounded-sm sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] transition-colors whitespace-nowrap"
+                className="hidden cursor-pointer rounded-sm sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] transition-colors whitespace-nowrap"
               >
                 Tham gia ngay
               </button>
@@ -504,7 +561,7 @@ export default function Page() {
               >
                 <button
                   onClick={() => router.push("/gallery")}
-                  className="bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
+                  className="bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
                 >
                   Xem Triển Lãm <ArrowRightIcon />
                 </button>
@@ -520,71 +577,81 @@ export default function Page() {
           animation="animate-fade-in-left"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
-            <div className="max-w-lg">
-              <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
-                Cuộc thi đang diễn ra
-              </h2>
-              <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-                {isLoadingContest
-                  ? "Đang tải..."
-                  : activeContest?.title || "Thành Phố Trong Mắt Em"}
-              </h3>
-              <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
-                {isLoadingContest
-                  ? "Đang tải thông tin cuộc thi..."
-                  : activeContest?.description ||
-                    '"Thành Phố Trong Mắt Em" là cuộc thi vẽ tranh dành cho học sinh lớp 1–9 tại TP.HCM, nơi các em thể hiện góc nhìn và ước mơ về thành phố bằng màu sắc sáng tạo.'}
-              </p>
-              <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
-                <p>
-                  <strong>Thời gian:</strong>{" "}
-                  {isLoadingContest
-                    ? "Đang tải..."
-                    : activeContest
-                    ? `${new Date(activeContest.startDate).toLocaleDateString(
-                        "vi-VN"
-                      )} đến ${new Date(
-                        activeContest.endDate
-                      ).toLocaleDateString("vi-VN")}`
-                    : "21-10-2025 đến 12-12-2025"}
-                </p>
-                <p>
-                  <strong>Lưu ý:</strong>
-                  <br />
-                  {isLoadingContest
-                    ? "Đang tải..."
-                    : activeContest?.rounds?.[0]?.sendOriginalDeadline
-                    ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${new Date(
-                        activeContest.rounds[0].sendOriginalDeadline
-                      ).toLocaleDateString("vi-VN")}`
-                    : "Thí sinh cần nộp bản cứng tác phẩm trước ngày 30-04-1974"}
-                </p>
+            {isLoadingContest ? (
+              // Combined skeleton wrapper so text + image animate in sync
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-pulse">
+                <div>
+                  {/* reuse existing skeleton for left column */}
+                  <SkeletonContestInfo />
+                </div>
+                <div className="h-64 rounded-xl sm:h-80 md:h-full bg-gray-300 md:-mr-[calc((100vw-72rem)/2+2rem)] overflow-hidden" />
               </div>
-              <button
-                onClick={() =>
-                  activeContest?.contestId &&
-                  router.push(`/contests/${activeContest.contestId}`)
-                }
-                className="mt-6 sm:mt-10 bg-[#FF6E1A] text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
-              >
-                Tham gia ngay <ArrowRightIcon />
-              </button>
-            </div>
+            ) : (
+              <>
+                <div className="max-w-lg">
+                  <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
+                    Cuộc thi đang diễn ra
+                  </h2>
+                  <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+                    {activeContest?.title || "Thành Phố Trong Mắt Em"}
+                  </h3>
+                  <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
+                    {activeContest?.description ||
+                      '"Thành Phố Trong Mắt Em" là cuộc thi vẽ tranh dành cho học sinh lớp 1–9 tại TP.HCM, nơi các em thể hiện góc nhìn và ước mơ về thành phố bằng màu sắc sáng tạo.'}
+                  </p>
+                  <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
+                    <p>
+                      <strong>Thời gian:</strong>{" "}
+                      {activeContest
+                        ? `${new Date(activeContest.startDate).toLocaleDateString(
+                            "vi-VN"
+                          )} đến ${new Date(
+                            activeContest.endDate
+                          ).toLocaleDateString("vi-VN")}`
+                        : "21-10-2025 đến 12-12-2025"}
+                    </p>
+                    <p>
+                      <strong>Lưu ý:</strong>
+                      <br />
+                      { activeContest?.rounds?.[0]?.sendOriginalDeadline
+                        ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${(() => {
+                            const deadline = activeContest.rounds[0].sendOriginalDeadline;
+                            const date = new Date(deadline);
+                            const day = date.getUTCDate().toString().padStart(2, '0');
+                            const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                            const year = date.getUTCFullYear();
+                            return `${day}/${month}/${year}`;
+                          })()}`
+                        : "Thí sinh cần nộp bản cứng tác phẩm trước ngày quy định."}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      activeContest?.contestId &&
+                      router.push(`/contests/${activeContest.contestId}`)
+                    }
+                    className="mt-6 sm:mt-10 bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
+                  >
+                    Tham gia ngay <ArrowRightIcon />
+                  </button>
+                </div>
 
-            <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
-              <img
-                src={
-                  activeContest?.bannerUrl ||
-                  "https://plus.unsplash.com/premium_vector-1697729767007-36c5a80b5782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2910"
-                }
-                alt="Minh họa thành phố"
-                className="h-full w-full object-cover md:w-[50vw] max-w-none "
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.backgroundColor =
-                    "#89c4f4";
-                }}
-              />
-            </div>
+                <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
+                  <img
+                    src={
+                      activeContest?.bannerUrl ||
+                      "https://plus.unsplash.com/premium_vector-1697729767007-36c5a80b5782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2910"
+                    }
+                    alt="Minh họa thành phố"
+                    className="h-full w-full object-cover md:w-[50vw] max-w-none "
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.backgroundColor =
+                        "#89c4f4";
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </AnimatedContainer>
 
@@ -603,129 +670,230 @@ export default function Page() {
             </AnimatedContainer>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
-              <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[0]?.image_url ||
-                    "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                  }
-                  category={
-                    smallPosts[0]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[0]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[1]?.image_url ||
-                    "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                  }
-                  category={
-                    smallPosts[1]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[1]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
-              </div>
+              {loadingPosts ? (
+                // Combined news skeleton: left column, spotlight, right column
+                <>
+                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
+                    <SkeletonNewsCardSmall />
+                    {/* make the second small card slightly shorter */}
+                    <div className="flex flex-col overflow-hidden animate-pulse">
+                      <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
+                      <div className="p-3 sm:p-4">
+                        <div className="h-3 bg-gray-300 rounded mb-1 w-2/3"></div>
+                        <div className="h-4 bg-gray-300 rounded w-5/6"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  <SkeletonSpotlightPost />
+                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
+                    {/* mirror with slight variation */}
+                    <div className="flex flex-col overflow-hidden animate-pulse">
+                      <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
+                      <div className="p-3 sm:p-4">
+                        <div className="h-3 bg-gray-300 rounded mb-1 w-1/3"></div>
+                        <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+                      </div>
+                    </div>
+                    <SkeletonNewsCardSmall />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
+                    {smallPosts[0] ? (
+                      <Link href={`/posts/${smallPosts[0].post_id}`}>
+                        <NewsCardSmall
+                          imgSrc={
+                            smallPosts[0].image_url ||
+                            "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                          }
+                          category={
+                            smallPosts[0].postTags?.[0]?.tag?.tag_name ||
+                            "Digital & Contemparary Art"
+                          }
+                          title={
+                            smallPosts[0].title ||
+                            "How Art Fairs Are Adapting to the<br />Digital Age"
+                          }
+                          darkBg={true}
+                        />
+                      </Link>
+                    ) : (
+                      <NewsCardSmall
+                        imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                        category="Digital & Contemparary Art"
+                        title="How Art Fairs Are Adapting to the<br />Digital Age"
+                        darkBg={true}
+                      />
+                    )}
+                    {smallPosts[1] ? (
+                      <Link href={`/posts/${smallPosts[1].post_id}`}>
+                        <NewsCardSmall
+                          imgSrc={
+                            smallPosts[1].image_url ||
+                            "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                          }
+                          category={
+                            smallPosts[1].postTags?.[0]?.tag?.tag_name ||
+                            "Digital & Contemparary Art"
+                          }
+                          title={
+                            smallPosts[1].title ||
+                            "How Art Fairs Are Adapting to the<br />Digital Age"
+                          }
+                          darkBg={true}
+                        />
+                      </Link>
+                    ) : (
+                      <NewsCardSmall
+                        imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                        category="Digital & Contemparary Art"
+                        title="How Art Fairs Are Adapting to the<br />Digital Age"
+                        darkBg={true}
+                      />
+                    )}
+                  </div>
 
-              <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
 
-              <div className="flex flex-col bg-[#EAE6E0] text-white">
-                <img
-                  src={
-                    spotlightPost?.image_url ||
-                    "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
-                  }
-                  alt={spotlightPost?.title || "Spotlight To Emerging Artist"}
-                  className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.backgroundColor =
-                      "#FF5733";
-                  }}
-                />
-                <AnimatedContainer
-                  className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
-                  animation="animate-fade-in-left"
-                >
-                  Artist Spotlight
-                </AnimatedContainer>
-                <AnimatedContainer
-                  className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
-                  animation="animate-fade-in-right"
-                  delay={200}
-                >
-                  {spotlightPost?.title || (
-                    <>Spotlight To Emerging Artist: Ones to watch in 2025</>
-                  )}
-                </AnimatedContainer>
-                <AnimatedContainer
-                  className="text-sm sm:text-base text-black leading-relaxed"
-                  animation="animate-fade-in-up"
-                  delay={400}
-                >
-                  {spotlightPost?.content ? (
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          spotlightPost.content.length > 250
-                            ? spotlightPost.content.slice(0, 250) + "..."
-                            : spotlightPost.content,
-                      }}
-                    />
-                  ) : (
-                    <>
-                      &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh
-                      dành cho học sinh từ lớp 1 đến lớp 9 đang học tập tại
-                      Thành phố Hồ Chí Minh. Cuộc thi khuyến khích các em thể
-                      hiện góc nhìn riêng về thành phố qua màu sắc, đường nét và
-                      trí...
-                    </>
-                  )}
-                </AnimatedContainer>
-              </div>
+                  <div className="flex flex-col bg-[#EAE6E0] text-white hover:scale-105 transition-transform duration-300">
+                    {spotlightPost ? (
+                      <Link href={`/posts/${spotlightPost.post_id}`}>
+                        <img
+                          src={
+                            spotlightPost.image_url ||
+                            "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
+                          }
+                          alt={spotlightPost.title || "Spotlight To Emerging Artist"}
+                          className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6 cursor-pointer"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.backgroundColor =
+                              "#FF5733";
+                          }}
+                        />
+                      </Link>
+                    ) : (
+                      <img
+                        src="https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
+                        alt="Spotlight To Emerging Artist"
+                        className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.backgroundColor =
+                            "#FF5733";
+                        }}
+                      />
+                    )}
+                    <AnimatedContainer
+                      className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
+                      animation="animate-fade-in-left"
+                    >
+                      Artist Spotlight
+                    </AnimatedContainer>
+                    {spotlightPost ? (
+                      <Link href={`/posts/${spotlightPost.post_id}`}>
+                        <AnimatedContainer
+                          className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4 cursor-pointer"
+                          animation="animate-fade-in-right"
+                          delay={200}
+                        >
+                          {spotlightPost.title}
+                        </AnimatedContainer>
+                      </Link>
+                    ) : (
+                      <AnimatedContainer
+                        className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
+                        animation="animate-fade-in-right"
+                        delay={200}
+                      >
+                        Spotlight To Emerging Artist: Ones to watch in 2025
+                      </AnimatedContainer>
+                    )}
+                    <AnimatedContainer
+                      className="text-sm sm:text-base text-black leading-relaxed"
+                      animation="animate-fade-in-up"
+                      delay={400}
+                    >
+                      {spotlightPost?.content ? (
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              spotlightPost.content.length > 250
+                                ? spotlightPost.content.slice(0, 250) + "..."
+                                : spotlightPost.content,
+                          }}
+                        />
+                      ) : (
+                        <>
+                          &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh
+                          dành cho học sinh từ lớp 1 đến lớp 9 đang học tập tại
+                          Thành phố Hồ Chí Minh. Cuộc thi khuyến khích các em thể
+                          hiện góc nhìn riêng về thành phố qua màu sắc, đường nét và
+                          trí...
+                        </>
+                      )}
+                    </AnimatedContainer>
+                  </div>
 
-              <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
 
-              <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[2]?.image_url ||
-                    "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                  }
-                  category={
-                    smallPosts[2]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[2]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
-                <NewsCardSmall
-                  imgSrc={
-                    smallPosts[3]?.image_url ||
-                    "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                  }
-                  category={
-                    smallPosts[3]?.postTags?.[0]?.tag?.tag_name ||
-                    "Digital & Contemparary Art"
-                  }
-                  title={
-                    smallPosts[3]?.title ||
-                    "How Art Fairs Are Adapting to the<br />Digital Age"
-                  }
-                  darkBg={true}
-                />
-              </div>
+                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
+                    {smallPosts[2] ? (
+                      <Link href={`/posts/${smallPosts[2].post_id}`}>
+                        <NewsCardSmall
+                          imgSrc={
+                            smallPosts[2].image_url ||
+                            "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                          }
+                          category={
+                            smallPosts[2].postTags?.[0]?.tag?.tag_name ||
+                            "Digital & Contemparary Art"
+                          }
+                          title={
+                            smallPosts[2].title ||
+                            "How Art Fairs Are Adapting to the<br />Digital Age"
+                          }
+                          darkBg={true}
+                        />
+                      </Link>
+                    ) : (
+                      <NewsCardSmall
+                        imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
+                        category="Digital & Contemparary Art"
+                        title="How Art Fairs Are Adapting to the<br />Digital Age"
+                        darkBg={true}
+                      />
+                    )}
+                    {smallPosts[3] ? (
+                      <Link href={`/posts/${smallPosts[3].post_id}`}>
+                        <NewsCardSmall
+                          imgSrc={
+                            smallPosts[3].image_url ||
+                            "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                          }
+                          category={
+                            smallPosts[3].postTags?.[0]?.tag?.tag_name ||
+                            "Digital & Contemparary Art"
+                          }
+                          title={
+                            smallPosts[3].title ||
+                            "How Art Fairs Are Adapting to the<br />Digital Age"
+                          }
+                          darkBg={true}
+                        />
+                      </Link>
+                    ) : (
+                      <NewsCardSmall
+                        imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
+                        category="Digital & Contemparary Art"
+                        title="How Art Fairs Are Adapting to the<br />Digital Age"
+                        darkBg={true}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </AnimatedContainer>
@@ -745,26 +913,32 @@ export default function Page() {
             </AnimatedContainer>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
               {loadingCampaigns
-                ? // show placeholders while loading
-                  [1, 2, 3].map((i) => (
-                    <CampaignCard
-                      key={i}
-                      imgSrc={`https://placehold.co/400x300/cccccc/333333?text=Loading+${i}`}
-                      title={`Đang tải...`}
-                      description={""}
-                    />
+                ? // show varied skeletons while loading
+                  [0, 1, 2].map((i) => (
+                    <div key={i} className="p-2">
+                      <div className="flex flex-col animate-pulse">
+                        <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded" />
+                        <div className={`h-6 bg-gray-300 mb-2 rounded ${i === 0 ? 'w-3/4' : i === 1 ? 'w-2/3' : 'w-1/2'}`} />
+                        <div className="space-y-2 mb-6">
+                          <div className={`h-4 bg-gray-300 rounded ${i === 2 ? 'w-4/6' : 'w-full'}`}></div>
+                          <div className={`h-4 bg-gray-300 rounded ${i === 1 ? 'w-3/4' : 'w-5/6'}`}></div>
+                        </div>
+                        <div className={`w-full h-10 bg-gray-300 rounded-sm ${i === 0 ? '' : 'w-11/12'}`} />
+                      </div>
+                    </div>
                   ))
                 : campaigns.length > 0
                 ? campaigns.map((c, idx) => (
-                    <CampaignCard
-                      key={c.campaignId ?? idx}
-                      imgSrc={
-                        c.image ||
-                        "https://placehold.co/400x300/cccccc/333333?text=No+Image"
-                      }
-                      title={c.title || "Không có tiêu đề"}
-                      description={c.description || ""}
-                    />
+                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`}>
+                      <CampaignCard
+                        imgSrc={
+                          c.image ||
+                          "https://placehold.co/400x300/cccccc/333333?text=No+Image"
+                        }
+                        title={c.title || "Không có tiêu đề"}
+                        description={c.description || ""}
+                      />
+                    </Link>
                   ))
                 : // fallback static content if no campaigns
                   [
@@ -806,7 +980,7 @@ export default function Page() {
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
+          className="fixed cursor-pointer bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
         >
           <svg
             className="w-6 h-6"
@@ -825,7 +999,7 @@ export default function Page() {
       )}
 
       {/* --- Footer --- */}
-      <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">
+      {/* <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">
@@ -914,7 +1088,7 @@ export default function Page() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12 border-t border-[#FF833B] rounded-sm pt-6 sm:pt-8 text-center text-xs sm:text-sm">
           <p>&copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.</p>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }

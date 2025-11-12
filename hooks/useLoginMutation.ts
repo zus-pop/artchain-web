@@ -10,12 +10,13 @@ import { LoginRequest, AuthResponse } from "@/types";
 export function useLoginMutation() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { setAccessToken, setUser } = useAuthStore();
+  const { setAccessToken, setUser, setStaySignedIn } = useAuthStore();
 
   return useMutation<AuthResponse, Error, LoginRequest>({
     mutationFn: loginApi,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setAccessToken(data.access_token);
+      setStaySignedIn(variables.staySignedIn || false);
 
       if (data.user) {
         setUser(data.user);
@@ -32,6 +33,7 @@ export function useLoginMutation() {
       
       setAccessToken(null);
       setUser(null);
+      setStaySignedIn(false);
     },
   });
 }
