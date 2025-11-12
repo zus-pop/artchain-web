@@ -41,7 +41,13 @@ export interface Sponsor {
 }
 
 // Campaign Management Types
-export type CampaignStatus = "ACTIVE" | "COMPLETED" | "PAUSED" | "DRAFT";
+export type CampaignStatus =
+  | "ACTIVE"
+  | "COMPLETED"
+  | "PAUSED"
+  | "DRAFT"
+  | "CLOSED"
+  | "CANCELLED";
 
 export interface Campaign {
   id: string;

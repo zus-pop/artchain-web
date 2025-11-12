@@ -5,12 +5,19 @@ export interface CampaignAPIResponse {
   goalAmount: string;
   currentAmount: string;
   deadline: string;
-  status: "DRAFT" | "ACTIVE" | "CLOSED" | "COMPLETED" | "CANCELLED";
+  status: CampaignStatus;
   staffId: string;
   createdAt: string;
   updatedAt: string;
   image: string | null;
 }
+
+export type CampaignStatus =
+  | "ACTIVE"
+  | "CLOSED"
+  | "COMPLETED"
+  | "DRAFT"
+  | "CANCELLED";
 
 export interface CampaignsAPIResponse {
   data: CampaignAPIResponse[];

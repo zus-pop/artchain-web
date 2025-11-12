@@ -1,25 +1,26 @@
 "use client";
 
+import { getCampaign } from "@/apis/campaign";
+import { updateStaffCampaign } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
+import { CampaignStatus } from "@/types";
+import { CreateCampaignRequest } from "@/types/staff/campaign";
 import {
   IconArrowLeft,
+  IconCheck,
   IconUpload,
   IconX,
-  IconCheck,
 } from "@tabler/icons-react";
-import { useState, use, useEffect } from "react";
-import { updateStaffCampaign } from "@/apis/staff";
-import { getCampaign } from "@/apis/campaign";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CreateCampaignRequest } from "@/types/staff/campaign";
 
 export default function EditCampaignPage({
   params,
@@ -34,7 +35,7 @@ export default function EditCampaignPage({
     description: "",
     goalAmount: "",
     deadline: "",
-    status: "DRAFT" as "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED",
+    status: "DRAFT",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -62,7 +63,7 @@ export default function EditCampaignPage({
         description: campaignData.description,
         goalAmount: campaignData.goalAmount,
         deadline: campaignData.deadline.split("T")[0], // Format for date input
-        status: campaignData.status as any,
+        status: campaignData.status,
       });
       setImagePreview(campaignData.image);
     }
@@ -77,7 +78,7 @@ export default function EditCampaignPage({
       queryClient.invalidateQueries({ queryKey: ["campaign", id] });
       router.push(`/dashboard/staff/campaigns/${id}`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast.error(error.message || t.failedUpdateCampaignMessage);
       setIsSubmitting(false);
     },
@@ -144,7 +145,7 @@ export default function EditCampaignPage({
       description: formData.description.trim(),
       goalAmount: parseFloat(formData.goalAmount),
       deadline: formData.deadline,
-      status: formData.status,
+      status: formData.status as CampaignStatus,
       ...(selectedImage && { image: selectedImage }),
     };
 

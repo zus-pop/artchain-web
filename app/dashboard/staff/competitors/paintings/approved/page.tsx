@@ -28,7 +28,7 @@ export default function ApprovedPaintingsPage() {
       imageUrl: "/paintings/approved1.jpg",
       competitionName: "Summer Art Festival",
       category: "Landscape",
-      status: "APPROVED",
+      status: "ACCEPTED",
       description: "Beautiful sunset with vibrant orange and purple hues",
       approvedBy: "Staff User",
     },
@@ -42,7 +42,7 @@ export default function ApprovedPaintingsPage() {
       imageUrl: "/paintings/approved2.jpg",
       competitionName: "Nature Art Competition",
       category: "Wildlife",
-      status: "APPROVED",
+      status: "ACCEPTED",
       description: "A majestic lion in its natural habitat",
       approvedBy: "Staff User",
     },
@@ -56,7 +56,7 @@ export default function ApprovedPaintingsPage() {
       imageUrl: "/paintings/approved3.jpg",
       competitionName: "Modern Art Showcase",
       category: "Abstract",
-      status: "APPROVED",
+      status: "ACCEPTED",
       description: "Geometric shapes creating a harmonious composition",
       approvedBy: "Staff User",
     },
@@ -70,7 +70,7 @@ export default function ApprovedPaintingsPage() {
       imageUrl: "/paintings/approved4.jpg",
       competitionName: "Spring Art Competition 2025",
       category: "Nature",
-      status: "APPROVED",
+      status: "ACCEPTED",
       description: "A colorful garden full of blooming flowers",
       approvedBy: "Staff User",
     },
@@ -84,7 +84,7 @@ export default function ApprovedPaintingsPage() {
       imageUrl: "/paintings/approved5.jpg",
       competitionName: "Imagination Competition",
       category: "Fantasy",
-      status: "APPROVED",
+      status: "ACCEPTED",
       description: "A creative depiction of space exploration",
       approvedBy: "Staff User",
     },
@@ -298,7 +298,9 @@ export default function ApprovedPaintingsPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium staff-text-secondary">Age</p>
+                    <p className="text-sm font-medium staff-text-secondary">
+                      Age
+                    </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.competitorAge} years
                     </p>
