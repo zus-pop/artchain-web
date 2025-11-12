@@ -470,7 +470,7 @@ export default function ContestDetailPage() {
                     className={`p-4 sm:p-5 border-2 text-left transition-all hover:shadow-md ${
                       selectedAwardId === award.awardId
                         ? 'border-[#FF6E1A] bg-[#FF6E1A]/10'
-                        : 'border-gray-300 hover:border-[#FF6E1A]/50'
+                        : 'border-[#b8aaaa] hover:border-[#FF6E1A]/50'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -512,7 +512,7 @@ export default function ContestDetailPage() {
                       return votePaintings.map((painting) => (
                       <div
                         key={painting.paintingId}
-                        className="border border-gray-300 overflow-hidden hover:shadow-lg transition-all hover:scale-105 duration-300"
+                        className="border border-[#b8aaaa] overflow-hidden hover:shadow-lg transition-all hover:scale-105 duration-300"
                       >
                         <div className="relative h-48 sm:h-56 w-full bg-gray-100">
                           {painting.imageUrl ? (
@@ -626,7 +626,7 @@ export default function ContestDetailPage() {
                     setShowVoteDialog(false);
                     setSelectedPainting(null);
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-[#b8aaaa] text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                 >
                   Hủy
                 </button>

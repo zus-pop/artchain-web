@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Target, ArrowRight, Loader2 } from 'lucide-react';
+import { Calendar, Target, ArrowRight } from 'lucide-react';
+import Loader from '@/components/Loaders';
 import { getCampaigns } from '@/apis/campaign';
 import { CampaignAPIResponse } from '@/types/campaign';
 
 const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-lg transition-all duration-300 hover:shadow-2xl overflow-hidden flex flex-col h-full border border-gray-100 dark:border-gray-700">
+    <div className="border border-[#b8aaaa] dark:bg-gray-800 transition-all duration-300 hover:shadow-md hover:border-[#FF6E1A]/50 overflow-hidden flex flex-col h-full dark:border-gray-700">
 
       {/* Header with Status Badge */}
       <div className="p-4 pb-2">
@@ -109,21 +110,9 @@ const CampaignPage = () => {
 
   if (loading) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Supporting Art & Culture
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Discover amazing campaigns that bring art and culture to life. Support creative projects and make a difference.
-            </p>
-          </div>
-
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-[#FF6E1A]" />
-            <span className="ml-2 text-gray-600 dark:text-gray-300">Loading campaigns...</span>
-          </div>
+          <Loader />
         </div>
       </section>
     );
@@ -131,17 +120,8 @@ const CampaignPage = () => {
 
   if (error) {
     return (
-      <section className="py-16 px-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Supporting Art & Culture
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Discover amazing campaigns that bring art and culture to life. Support creative projects and make a difference.
-            </p>
-          </div>
-
           <div className="text-center py-12">
             <div className="bg-[#FF6E1A] dark:bg-[#FF6E1A]/20 border border-[#FF6E1A] dark:border-[#FF6E1A] rounded-lg p-6 max-w-md mx-auto">
               <p className="text-[#FF6E1A] dark:text-[#FF6E1A] font-medium">{error}</p>
@@ -159,7 +139,7 @@ const CampaignPage = () => {
   }
 
   return (
-    <section className="py-16 px-4 pt-25 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <section className="min-h-screen pt-25 w-full bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         {/* <div className="text-center mb-12">
