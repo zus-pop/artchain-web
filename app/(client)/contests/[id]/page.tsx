@@ -2,6 +2,7 @@
 
 import { useGetContestById } from "@/apis/contests";
 import { getVotedAward, getVotedPaintings, useSubmitVote, useRemoveVote } from "@/apis/vote";
+import Loader from "@/components/Loaders";
 import { useAuth } from "@/hooks";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, ThumbsUp, Loader2 } from "lucide-react";
@@ -150,10 +151,7 @@ export default function ContestDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#faf7f2] pt-20 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
-          <p className="text-black">Đang tải thông tin cuộc thi...</p>
-        </div>
+        <Loader />
       </div>
     );
   }
@@ -272,19 +270,11 @@ export default function ContestDetailPage() {
                   </p>
                   <p className="text-black">
                     Thí sinh cần nộp bản cứng tác phẩm trước ngày{" "}
-                    {(() => {
-                      const round1 = contest.rounds.find(
-                        (r) => r.name === "ROUND_1"
-                      );
-                      const deadline = round1?.sendOriginalDeadline;
-                      return deadline
-                        ? new Date(deadline).toLocaleDateString("vi-VN", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
-                        : "30-4-1974";
-                    })()}
+                    {new Date("2025-11-12").toLocaleDateString("vi-VN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })}
                   </p>
                 </div>
               </div>
@@ -295,7 +285,7 @@ export default function ContestDetailPage() {
               {contest.status === "ACTIVE" && (
                 <Link
                   href={"#"}
-                  className="flex items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#FF6E1A] text-[#FF6E1A] font-medium text-base hover:bg-[#FF6E1A] hover:text-white transition-colors duration-200 shadow-sm"
+                  className="flex items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#b8aaaa] text-black font-medium text-base hover:bg-[#FF6E1A]/10 hover:border-[#FF6E1A] transition-colors duration-200 shadow-sm"
                 >
                   Tải quy định thi ⬇
                 </Link>
@@ -395,9 +385,9 @@ export default function ContestDetailPage() {
                 Gửi bản gốc
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.endDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
+                {new Date("2025-11-12").toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
                   year: "numeric",
                 })}
               </p>
@@ -462,35 +452,41 @@ export default function ContestDetailPage() {
               <label className="block text-base font-semibold text-black mb-3">
                 Chọn giải thưởng:
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {votedAwardData.data.awards.map((award) => (
-                  <button
-                    key={award.awardId}
-                    onClick={() => setSelectedAwardId(award.awardId)}
-                    className={`p-4 sm:p-5 border-2 text-left transition-all hover:shadow-md ${
-                      selectedAwardId === award.awardId
-                        ? 'border-[#FF6E1A] bg-[#FF6E1A]/10'
-                        : 'border-[#b8aaaa] hover:border-[#FF6E1A]/50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-black text-base sm:text-lg">
-                        {award.name}
-                      </h4>
-                      <Trophy className={`w-5 h-5 ${
-                        selectedAwardId === award.awardId ? 'text-[#FF6E1A]' : 'text-gray-400'
-                      }`} />
-                    </div>
-                    <p className="text-sm text-gray-700 mb-2">
-                      {award.description}
-                    </p>
-                    <div className="flex items-center justify-between text-xs text-gray-600">
-                      <span>Giải: {award.prize}</span>
-                      <span className="font-medium">{award.totalVotes} votes</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {votedAwardData.data.awards.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {votedAwardData.data.awards.map((award) => (
+                    <button
+                      key={award.awardId}
+                      onClick={() => setSelectedAwardId(award.awardId)}
+                      className={`p-4 sm:p-5 border-2 text-left transition-all hover:shadow-md ${
+                        selectedAwardId === award.awardId
+                          ? 'border-[#FF6E1A] bg-[#FF6E1A]/10'
+                          : 'border-[#b8aaaa] hover:border-[#FF6E1A]/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-black text-base sm:text-lg">
+                          {award.name}
+                        </h4>
+                        <Trophy className={`w-5 h-5 ${
+                          selectedAwardId === award.awardId ? 'text-[#FF6E1A]' : 'text-gray-400'
+                        }`} />
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">
+                        {award.description}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-600">
+                        <span>Giải: {award.prize}</span>
+                        <span className="font-medium">{award.totalVotes} votes</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-600 py-8">
+                  Không có giải thưởng nào được tạo
+                </p>
+              )}
             </div>
 
             {/* Paintings Grid */}
