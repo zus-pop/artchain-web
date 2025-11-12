@@ -4,7 +4,12 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { IconArrowLeft, IconFilter, IconSearch } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconFilter,
+  IconSearch,
+  IconEdit,
+} from "@tabler/icons-react";
 import { useState, use } from "react";
 import { getCampaignSponsors } from "@/apis/staff";
 import { getCampaign } from "@/apis/campaign";
@@ -151,7 +156,7 @@ export default function CampaignDetailPage({
                   </Link>
                   <div>
                     <h2 className="text-2xl font-bold staff-text-primary">
-                      {campaignData?.title || `Campaign ${id}`} | Sponsors (
+                      {campaignData?.title || `Campaign ${id}`} | {t.sponsor} (
                       {filteredSponsors.length})
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
@@ -159,6 +164,15 @@ export default function CampaignDetailPage({
                     </p>
                   </div>
                 </div>
+                {campaignData && (
+                  <Link
+                    href={`/dashboard/staff/campaigns/${id}/edit`}
+                    className="staff-btn-primary flex items-center gap-2"
+                  >
+                    <IconEdit className="h-4 w-4" />
+                    {t.editCampaignTitle}
+                  </Link>
+                )}
               </div>
 
               {/* Campaign Information */}

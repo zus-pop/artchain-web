@@ -41,7 +41,13 @@ export interface Sponsor {
 }
 
 // Campaign Management Types
-export type CampaignStatus = "ACTIVE" | "COMPLETED" | "PAUSED" | "DRAFT";
+export type CampaignStatus =
+  | "ACTIVE"
+  | "COMPLETED"
+  | "PAUSED"
+  | "DRAFT"
+  | "CLOSED"
+  | "CANCELLED";
 
 export interface Campaign {
   id: string;
@@ -99,7 +105,7 @@ export interface Competitor {
 }
 
 // Painting Management Types
-export type PaintingStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type PaintingStatus = "PENDING" | "ACCEPTED" | "REJECTED";
 
 export interface Painting {
   id: string;

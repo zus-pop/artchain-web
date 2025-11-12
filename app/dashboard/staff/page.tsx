@@ -208,7 +208,7 @@ export default function StaffDashboardPage() {
                         {t.createContest}
                       </p>
                       <p className="text-xs staff-text-secondary">
-                        {t.startNew}
+                        {t.setupNewArtCompetition}
                       </p>
                     </div>
                   </Link>
@@ -237,111 +237,10 @@ export default function StaffDashboardPage() {
                         {t.createPost}
                       </p>
                       <p className="text-xs staff-text-secondary">
-                        {t.newAnnouncement}
+                        {t.writePublishContent}
                       </p>
                     </div>
                   </Link>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="staff-card p-6">
-                <h2 className="text-lg font-semibold staff-text-primary mb-4">
-                  {t.recentActivity}
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className=" bg-green-50 p-2">
-                        <svg
-                          className="h-5 w-5 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium staff-text-primary">
-                          {t.paintingApproved}
-                        </p>
-                        <p className="text-xs staff-text-secondary">
-                          &ldquo;Sunset Dreams&rdquo; by Alice Chen
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs staff-text-secondary">
-                      10 {t.minAgo}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className=" bg-blue-50 p-2">
-                        <svg
-                          className="h-5 w-5 text-blue-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium staff-text-primary">
-                          {t.newContestStarted}
-                        </p>
-                        <p className="text-xs staff-text-secondary">
-                          Spring Art Competition 2025
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs staff-text-secondary">
-                      2 {t.hoursAgo}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className=" bg-purple-50 p-2">
-                        <svg
-                          className="h-5 w-5 text-purple-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium staff-text-primary">
-                          {t.newPostPublished}
-                        </p>
-                        <p className="text-xs staff-text-secondary">
-                          {t.contestGuidelinesUpdate}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs staff-text-secondary">
-                      5 {t.hoursAgo}
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>

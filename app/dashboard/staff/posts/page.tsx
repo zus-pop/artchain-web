@@ -98,11 +98,11 @@ export default function PostsPage() {
     mutationFn: (postId: number) => deleteStaffPost(String(postId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-posts"] });
-      toast.success(t.postDeletedSuccess);
+      toast.success(t.postDeletedSuccessMessage);
     },
     onError: (error) => {
       console.error("Error deleting post:", error);
-      toast.error(t.postDeletedError);
+      toast.error(t.postDeletedErrorMessage);
     },
   });
 
@@ -112,11 +112,11 @@ export default function PostsPage() {
       updateStaffPost(String(postId), { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["staff-posts"] });
-      toast.success(t.postStatusUpdatedSuccess);
+      toast.success(t.postStatusUpdatedSuccessMessage);
     },
     onError: (error) => {
       console.error("Error updating post status:", error);
-      toast.error(t.postStatusUpdatedError);
+      toast.error(t.postStatusUpdatedErrorMessage);
     },
   });
 
@@ -455,80 +455,78 @@ export default function PostsPage() {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm staff-text-secondary">
-                        {t.show} {t.perPage}:
-                      </span>
-                      <select
-                        value={pageSize}
-                        onChange={(e) => {
-                          setPageSize(Number(e.target.value));
-                          setCurrentPage(1); // Reset to first page when changing page size
-                        }}
-                        className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                      >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={50}>50</option>
-                      </select>
-                    </div>
-                    <div className="text-sm staff-text-secondary">
-                      {t.showing}{" "}
-                      {posts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
-                      {t.to} {Math.min(currentPage * pageSize, totalPosts)}{" "}
-                      {t.of} {totalPosts} {t.entries.toLowerCase()}
-                    </div>
-                  </div>
-
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="First page"
-                    >
-                      <IconChevronsLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Previous page"
-                    >
-                      <IconChevronLeft className="h-4 w-4" />
-                    </button>
-
-                    <span className="px-3 py-1 text-sm staff-text-primary">
-                      {t.pageText} {currentPage} {t.ofText} {totalPages}
+                    <span className="text-sm staff-text-secondary">
+                      {t.show} {t.perPage}:
                     </span>
-
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Next page"
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1); // Reset to first page when changing page size
+                      }}
+                      className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     >
-                      <IconChevronRight className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(totalPages)}
-                      disabled={currentPage === totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Last page"
-                    >
-                      <IconChevronsRight className="h-4 w-4" />
-                    </button>
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </div>
+                  <div className="text-sm staff-text-secondary">
+                    {t.showing}{" "}
+                    {posts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
+                    {t.to} {Math.min(currentPage * pageSize, totalPosts)} {t.of}{" "}
+                    {totalPosts} {t.entries.toLowerCase()}
                   </div>
                 </div>
-              )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="First page"
+                  >
+                    <IconChevronsLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                    }
+                    disabled={currentPage === 1}
+                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Previous page"
+                  >
+                    <IconChevronLeft className="h-4 w-4" />
+                  </button>
+
+                  <span className="px-3 py-1 text-sm staff-text-primary">
+                    {t.pageText} {currentPage} {t.ofText} {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Next page"
+                  >
+                    <IconChevronRight className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Last page"
+                  >
+                    <IconChevronsRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

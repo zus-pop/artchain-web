@@ -120,7 +120,7 @@ function ViewPostContent() {
     },
     onError: (error) => {
       console.error("Error updating post:", error);
-      toast.error(t.postUpdatedError);
+      toast.error(t.postUpdatedErrorMessage);
     },
   });
 
@@ -128,12 +128,12 @@ function ViewPostContent() {
   const deletePostMutation = useMutation({
     mutationFn: () => deleteStaffPost(postId),
     onSuccess: () => {
-      toast.success(t.postDeletedSuccess);
+      toast.success(t.postDeletedSuccessMessage);
       window.location.href = "/dashboard/staff/posts";
     },
     onError: (error) => {
       console.error("Error deleting post:", error);
-      toast.error(t.postDeletedError);
+      toast.error(t.postDeletedErrorMessage);
     },
   });
 
@@ -381,7 +381,7 @@ function ViewPostContent() {
                         className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2 disabled:opacity-50"
                       >
                         <IconX className="h-4 w-4" />
-                        {t.cancelEdit}
+                        {t.cancelDetail}
                       </button>
                       <button
                         onClick={handleSave}
