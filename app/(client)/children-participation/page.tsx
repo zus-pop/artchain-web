@@ -2,6 +2,7 @@
 
 import { useGetContestById } from "@/apis/contests";
 import { useGuardianChildren } from "@/apis/guardian";
+import Loader from "@/components/Loaders";
 import { useAuth } from "@/hooks";
 import { motion } from "framer-motion";
 import { ArrowLeft, Upload, User } from "lucide-react";
@@ -36,10 +37,7 @@ function ChildrenParticipation() {
   if (isLoadingContest || isLoadingChildren) {
     return (
       <div className="min-h-screen bg-[#faf7f2] pt-25 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6E1A] mx-auto mb-4"></div>
-          <p className="text-gray-700">Đang tải thông tin...</p>
-        </div>
+        <Loader />
       </div>
     );
   }
@@ -75,7 +73,14 @@ function ChildrenParticipation() {
         className="bg-[#fffdf9] p-8 border border-[#e6e2da] shadow-md mb-8"
       >
         <div className="flex items-center justify-between mb-6">
-          <div>
+          <Link
+            href={`/contests/${contestId}`}
+            className="bg-[#f9f5ef] hover:bg-[#f9f5ef]/90 text-gray-800 flex items-center space-x-2 px-4 py-2 rounded-full transition-all border border-[#e6e2da]"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Quay lại</span>
+          </Link>
+          <div className="text-end">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Chọn con em tham gia
             </h1>
@@ -86,13 +91,6 @@ function ChildrenParticipation() {
               </span>
             </p>
           </div>
-          <Link
-            href={`/contests/${contestId}`}
-            className="bg-[#f9f5ef] hover:bg-[#f9f5ef]/90 text-gray-800 flex items-center space-x-2 px-4 py-2 rounded-full transition-all border border-[#e6e2da]"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-medium">Quay lại</span>
-          </Link>
         </div>
 
         {/* Contest Info */}
