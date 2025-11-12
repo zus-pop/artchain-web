@@ -207,7 +207,7 @@ export default function ContestDetailPage() {
               )}
 
               <Link
-                href="/#"
+                href="/contests"
                 className="absolute top-4 left-4 bg-[#f9f5ef]/70 hover:bg-[#f9f5ef]/90 text-gray-800 flex items-center space-x-2 px-4 py-2 rounded-full backdrop-blur-md transition-all"
               >
                 <ArrowLeft className="h-5 w-5" />

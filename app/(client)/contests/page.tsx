@@ -74,21 +74,31 @@ export default function ContestsPage() {
     return (
       <div className="w-full pt-25 min-h-screen bg-[#EAE6E0]">
         <div className="mx-auto">
-          
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="group m-5 flex flex-col justify-between gap-4 min-h-60 duration-500 relative rounded-lg p-5 bg-[#FF6E1A] shadow-md animate-pulse"
+                className="group relative rounded-md overflow-hidden shadow-xl flex flex-col animate-pulse bg-white"
               >
-                <div className="absolute duration-700 shadow-md -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]" />
-                <div className="z-10">
-                  <div className="h-6 w-3/4 bg-white/30 rounded mb-4"></div>
-                  <div className="h-4 w-full bg-white/20 rounded mb-2"></div>
-                  <div className="h-3 w-5/6 bg-white/20 rounded mb-4"></div>
+                {/* Banner skeleton with date/status placeholders */}
+                <div className="relative w-full h-48 md:h-56 lg:h-44 bg-gray-200">
+                  <div className="absolute left-4 top-4 h-4 w-28 bg-gray-300 rounded" />
+                  <div className="absolute right-4 top-4 h-3 w-16 bg-gray-300 rounded-full" />
                 </div>
-                <div className="h-10 w-32 bg-white/30 rounded z-10"></div>
+
+                {/* Content skeleton */}
+                <div className="p-4 flex flex-col flex-1">
+                  <div className="h-5 md:h-6 w-3/4 bg-gray-300 rounded mb-2" />
+                  <div className="h-4 w-full bg-gray-200 rounded mb-4" />
+
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="h-10 w-28 bg-gray-300 rounded" />
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-14 bg-gray-300 rounded" />
+                      <div className="h-5 w-5 bg-gray-300 rounded-full" />
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -180,62 +190,51 @@ export default function ContestsPage() {
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
                   <Link href={`/contests/${contest.contestId}`}>
-                    <div className="group m-5 flex flex-col justify-between gap-4 min-h-80 duration-500 relative rounded-lg p-5 hover:-translate-y-2 hover:shadow-xl bg-[#FF6E1A] shadow-md">
-                      {/* Khối trang trí ở góc */}
-                      <Image
-                        src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
-                        alt={contest.title}
-                        width={200}
-                        height={100}
-                        className="absolute duration-700 shadow-md group-hover:-translate-y-4 group-hover:-translate-x-4 -bottom-10 -right-10 w-1/2 h-1/2 rounded-lg bg-[hsl(2,68%,88%)]"
-                      />
+                    <div className="group min-h-80 relative rounded-md overflow-hidden shadow-xl flex flex-col">
+                      {/* Banner image */}
+                      <div className="relative w-full h-48 md:h-56 lg:h-44">
+                        <Image
+                          src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
+                          alt={contest.title}
+                          fill
+                          className="object-cover w-full h-full"
+                        />
 
-                      {/* Status Badge */}
-                      <div
-                        className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${
-                          statusColors[contest.status]
-                        }`}
-                      >
-                        {statusLabels[contest.status]}
+                        {/* Date pill (top-left) */}
+                        <div className="absolute left-4 top-4 bg-white/95 text-gray-800 rounded-md px-3 py-1 flex items-center gap-2 text-sm shadow">
+                          <Calendar className="h-4 w-4" />
+                          <span>{formatDate({ dateString: contest.startDate })}</span>
+                        </div>
+
+                        {/* Status badge (top-right) */}
+                        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${statusColors[contest.status]}`}>
+                          {statusLabels[contest.status]}
+                        </div>
+
+                        {/* Dark gradient overlay (kept for visual) */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                       </div>
 
-                      {/* Nội dung thẻ */}
-                      <div className="z-10">
-                        <h3 className="text-2xl font-bold mb-2 text-white">
-                          {contest.title}
+                      {/* Content moved below the banner image and anchored to bottom */}
+                      <div className="p-4 bg-transparent text-gray-800 flex flex-col flex-1">
+                        {/* Title area: reserve space even if title is empty */}
+                        <h3 className="text-xl md:text-2xl font-bold leading-tight min-h-[3rem]">
+                          {contest.title ?? ""}
                         </h3>
-                        <p className="text-gray-100 line-clamp-3 mb-4">
-                          {contest.description}
-                        </p>
 
-                        {/* Contest Details */}
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center text-white/90">
-                            <Calendar className="h-4 w-4 mr-2" />
-                            <span>
-                              {formatDate({ dateString: contest.startDate })} -{" "}
-                              {formatDate({ dateString: contest.endDate })}
-                            </span>
+                        {/* Bottom actions always stay at the bottom */}
+                        <div className="mt-auto flex items-center justify-between gap-3">
+                          <button className="flex items-center gap-2 bg-[#FF6E1A] hover:bg-[#ff7f35] text-white px-4 py-2 rounded-lg font-semibold shadow">
+                            Chi tiết
+                            <span className="sr-only">Chi tiết {contest.title}</span>
+                          </button>
+
+                          <div className="flex items-center gap-2">
+                            <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{contest.numOfAward} giải</span>
+                            {/* <Trophy className="h-4 w-4 text-gray-600" /> */}
                           </div>
-
-                          <div className="flex items-center text-white/90">
-                            <Trophy className="h-4 w-4 mr-2" />
-                            <span>{contest.numOfAward} giải thưởng</span>
-                          </div>
-
-                          {contest.status === "ACTIVE" && (
-                            <div className="flex items-center text-green-200 font-semibold">
-                              <Clock className="h-4 w-4 mr-2" />
-                              <span>{getTimeRemaining(contest.endDate)}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
-
-                      {/* Nút hành động */}
-                      <button className="z-10 cursor-pointer w-fit text-gray-800 font-semibold rounded p-2 px-6 transition-colors duration-200 bg-[#EAE6E0] bg-opacity-20 hover:bg-opacity-40">
-                        Xem Chi Tiết
-                      </button>
                     </div>
                   </Link>
                 </motion.div>
