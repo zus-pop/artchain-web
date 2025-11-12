@@ -69,7 +69,7 @@ const CampaignCard = ({
       className="text-black text-sm leading-relaxed mb-6 text-center"
       dangerouslySetInnerHTML={{ __html: description }}
     />
-    <button className="w-full bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
+    <button className="w-full cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
       Đăng kí tài trợ <ArrowRightIcon />
     </button>
   </div>
@@ -282,7 +282,7 @@ export default function Page() {
     (async () => {
       try {
         setLoadingPosts(true);
-        const resp = await getPosts({ limit: 4 });
+        const resp = await getPosts({ limit: 5 });
         if (mounted) setPosts(resp.data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -357,7 +357,7 @@ export default function Page() {
           className="max-w-7xl w-full overflow-visible"
           style={{ justifyContent: "flex-start" }}
         >
-          <div className="w-full px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
+          <div className="w-full cursor-pointer px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
             <img
               src="/images/newlogo.png"
               alt="Artchain Logo"
@@ -368,7 +368,7 @@ export default function Page() {
                 <button
                   key={item}
                   onClick={() => scrollToSection(sectionIds[index])}
-                  className={`relative text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${
+                  className={`relative cursor-pointer text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${
                     activeSection === sectionIds[index]
                       ? "transform -translate-y-0.5"
                       : ""
@@ -493,7 +493,7 @@ export default function Page() {
                             handleLogout();
                             setIsUserDropdownOpen(false);
                           }}
-                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
                         >
                           <LogOut className="h-4 w-4" />
                           <span>Đăng xuất</span>
@@ -506,7 +506,7 @@ export default function Page() {
             ) : (
               <button
                 onClick={() => router.push("/auth")}
-                className="hidden rounded-sm sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] transition-colors whitespace-nowrap"
+                className="hidden cursor-pointer rounded-sm sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] transition-colors whitespace-nowrap"
               >
                 Tham gia ngay
               </button>
@@ -613,11 +613,16 @@ export default function Page() {
                     <p>
                       <strong>Lưu ý:</strong>
                       <br />
-                      {activeContest?.rounds?.[0]?.sendOriginalDeadline
-                        ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${new Date(
-                            activeContest.rounds[0].sendOriginalDeadline
-                          ).toLocaleDateString("vi-VN")}`
-                        : "Thí sinh cần nộp bản cứng tác phẩm trước ngày 30-04-1974"}
+                      { activeContest?.rounds?.[0]?.sendOriginalDeadline
+                        ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${(() => {
+                            const deadline = activeContest.rounds[0].sendOriginalDeadline;
+                            const date = new Date(deadline);
+                            const day = date.getUTCDate().toString().padStart(2, '0');
+                            const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                            const year = date.getUTCFullYear();
+                            return `${day}/${month}/${year}`;
+                          })()}`
+                        : "Thí sinh cần nộp bản cứng tác phẩm trước ngày quy định."}
                     </p>
                   </div>
                   <button
@@ -975,7 +980,7 @@ export default function Page() {
       {showScrollTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
+          className="fixed cursor-pointer bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
         >
           <svg
             className="w-6 h-6"
@@ -994,7 +999,7 @@ export default function Page() {
       )}
 
       {/* --- Footer --- */}
-      <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">
+      {/* <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div>
             <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">
@@ -1083,7 +1088,7 @@ export default function Page() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12 border-t border-[#FF833B] rounded-sm pt-6 sm:pt-8 text-center text-xs sm:text-sm">
           <p>&copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.</p>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }

@@ -1,10 +1,11 @@
 // File: ImageSlider.tsx
 "use client"; // Đảm bảo component chạy phía Client để sử dụng Hooks
 
-import React from "react";
+import React, { useState } from "react";
 import "./ImageSlider.css";
 import Image from "next/image";
 import { useGetExhibitionById } from "@/apis/exhibition";
+import ImageDialog from "./ImageDialog";
 
 // ------------------------------------
 // 1. Định nghĩa Type (Interface)
@@ -25,6 +26,8 @@ interface ImageItem {
 // ------------------------------------
 const ImageSlider: React.FC = () => {
   const { data: exhibitionData, isLoading } = useGetExhibitionById("1");
+  const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Map exhibition paintings to ImageItem format
   const images: ImageItem[] = exhibitionData?.data?.exhibitionPaintings?.map((painting, index) => ({
@@ -36,6 +39,16 @@ const ImageSlider: React.FC = () => {
     school: painting.competitor.schoolName,
     award: painting.award?.name,
   })) || [];
+
+  const handleImageClick = (image: ImageItem) => {
+    setSelectedImage(image);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedImage(null);
+  };
 
   if (isLoading) {
     return (
@@ -85,7 +98,11 @@ const ImageSlider: React.FC = () => {
                 } as React.CSSProperties}
               >
                 <div className="item-content">
-                  <div className="relative w-full overflow-hidden border border-[#e6e0da]" style={{ height: 'var(--height)' } as React.CSSProperties}>
+                  <div
+                    className="relative w-full overflow-hidden border border-[#e6e0da] cursor-pointer"
+                    style={{ height: 'var(--height)' } as React.CSSProperties}
+                    onClick={() => handleImageClick(img)}
+                  >
                     <Image src={img.full} alt={img.title} fill className="object-cover" />
                   </div>
                   
@@ -106,6 +123,12 @@ const ImageSlider: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ImageDialog
+        isOpen={isDialogOpen}
+        onClose={handleCloseDialog}
+        image={selectedImage}
+      />
     </section>
   );
 };

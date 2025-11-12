@@ -61,6 +61,7 @@ export function LoginForm({
     mutate({
       username: data.username,
       password: data.password,
+      staySignedIn: data.staySignedIn,
     });
   };
 

@@ -363,7 +363,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                               handleLogout();
                               setIsUserDropdownOpen(false);
                             }}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
                           >
                             <LogOut className="h-4 w-4" />
                             <span>Đăng xuất</span>

@@ -289,7 +289,7 @@ export function RegisterForm({
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
-                {translations.signInNow || "Đăng nhập"}
+                 Đăng nhập
               </span>
             </div>
           </div>
@@ -483,7 +483,7 @@ export function RegisterForm({
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
-                {translations.signInNow || "Đăng nhập"}
+                Đăng nhập
               </span>
             </div>
           )}
@@ -731,7 +731,7 @@ export function RegisterForm({
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
               >
-                {translations.signInNow || "Đăng nhập"}
+               Đăng nhập
               </span>
             </div>
           )}

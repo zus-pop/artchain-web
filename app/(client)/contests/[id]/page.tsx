@@ -55,14 +55,14 @@ export default function ContestDetailPage() {
   // Fetch paintings when award is selected
   useEffect(() => {
     const fetchPaintings = async () => {
-      if (!selectedAwardId || !contestId || !user?.userId) return;
+      if (!selectedAwardId || !contestId) return;
 
       try {
         setLoadingPaintings(true);
         const response = await getVotedPaintings({
           contestId: contestId.toString(),
           awardId: selectedAwardId,
-          accountId: user.userId,
+          accountId: user?.userId || '',
         });
         // response.data is now a single VotedPaining object, not an array
         const paintingsData = response.data?.paintings || [];
@@ -104,7 +104,7 @@ export default function ContestDetailPage() {
     const response = await getVotedPaintings({
       contestId: contestId.toString(),
       awardId: selectedAwardId,
-      accountId: user.userId,
+      accountId: user?.userId || '',
     });
     const paintingsData = response.data?.paintings || [];
     setVotePaintings(paintingsData);
@@ -125,7 +125,7 @@ export default function ContestDetailPage() {
       const response = await getVotedPaintings({
         contestId: contestId.toString(),
         awardId: selectedAwardId,
-        accountId: user.userId,
+        accountId: user?.userId || '',
       });
       const paintingsData = response.data?.paintings || [];
       setVotePaintings(paintingsData);
@@ -204,7 +204,7 @@ export default function ContestDetailPage() {
               )}
 
               <Link
-                href="/contests"
+                href="/#"
                 className="absolute top-4 left-4 bg-[#f9f5ef]/70 hover:bg-[#f9f5ef]/90 text-gray-800 flex items-center space-x-2 px-4 py-2 rounded-full backdrop-blur-md transition-all"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -270,11 +270,16 @@ export default function ContestDetailPage() {
                   </p>
                   <p className="text-black">
                     Thí sinh cần nộp bản cứng tác phẩm trước ngày{" "}
-                    {new Date("2025-11-12").toLocaleDateString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+                    { contest.rounds?.[0]?.sendOriginalDeadline
+                      ? (() => {
+                          const deadline = contest.rounds[0].sendOriginalDeadline;
+                          const date = new Date(deadline);
+                          const day = date.getUTCDate().toString().padStart(2, '0');
+                          const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                          const year = date.getUTCFullYear();
+                          return `${day}/${month}/${year}`;
+                        })()
+                      : "quy định."}
                   </p>
                 </div>
               </div>
@@ -385,11 +390,16 @@ export default function ContestDetailPage() {
                 Gửi bản gốc
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date("2025-11-12").toLocaleDateString("vi-VN", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                })}
+                { contest.rounds?.[0]?.sendOriginalDeadline
+                  ? (() => {
+                      const deadline = contest.rounds[0].sendOriginalDeadline;
+                      const date = new Date(deadline);
+                      const day = date.getUTCDate().toString().padStart(2, '0');
+                      const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                      const year = date.getUTCFullYear();
+                      return `${day}/${month}/${year}`;
+                    })()
+                  : "Chưa xác định"}
               </p>
             </div>
           </div>
@@ -458,7 +468,7 @@ export default function ContestDetailPage() {
                     <button
                       key={award.awardId}
                       onClick={() => setSelectedAwardId(award.awardId)}
-                      className={`p-4 sm:p-5 border-2 text-left transition-all hover:shadow-md ${
+                      className={`p-4 cursor-pointer sm:p-5 border-2 text-left transition-all hover:shadow-md ${
                         selectedAwardId === award.awardId
                           ? 'border-[#FF6E1A] bg-[#FF6E1A]/10'
                           : 'border-[#b8aaaa] hover:border-[#FF6E1A]/50'
