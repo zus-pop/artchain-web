@@ -2,12 +2,13 @@
 
 import { getCampaigns } from "@/apis/campaign";
 import { useGetContestsPaginated } from "@/apis/contests";
-import { getPosts } from "@/apis/post";
+import { getPosts, getPost } from "@/apis/post";
 import GlassSurface from "@/components/GlassSurface";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { CampaignAPIResponse } from "@/types/campaign";
 import { Post } from "@/types/post";
 import React, { useEffect, useState } from "react";
+import ReactMarkdown from 'react-markdown';
 
 const ArrowRightIcon = () => <span>&rarr;</span>;
 
@@ -73,38 +74,71 @@ const NewsCardSmall = ({
   imgSrc,
   category,
   title,
+  content,
   darkBg = false,
 }: {
   imgSrc: string;
   category: string;
   title: string;
+  content?: string;
   darkBg?: boolean;
-}) => (
-  <div
-    className={`flex flex-col overflow-hidden ${
-      darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
-    }`}
-  >
-    <img
-      src={imgSrc}
-      alt={title}
-      className="w-full h-32 sm:h-40 object-cover"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src =
-          "https://placehold.co/300x160/cccccc/333333?text=Image";
-      }}
-    />
-    <div className="p-3 sm:p-4">
-      <p className="text-[10px] sm:text-xs font-semibold text-black uppercase mb-1">
-        {category}
-      </p>
-      <h4
-        className="text-sm sm:text-base font-semibold"
-        dangerouslySetInnerHTML={{ __html: title }}
+}) => {
+  // Remove markdown formatting and truncate content for small card
+  const cleanContent = content 
+    ? content.replace(/[#*_~`\[\]]/g, '').replace(/\n/g, ' ').trim()
+    : "";
+  const displayContent = cleanContent.length > 120 
+    ? cleanContent.substring(0, 120) + "..." 
+    : cleanContent;
+
+  return (
+    <div
+      className={`flex flex-col overflow-hidden ${
+        darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
+      }`}
+    >
+      <img
+        src={imgSrc}
+        alt={title}
+        className="w-full h-32 sm:h-40 object-cover"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src =
+            "https://placehold.co/300x160/cccccc/333333?text=Image";
+        }}
       />
+      <div className="p-3 sm:p-4 flex flex-col gap-2">
+        <p className="text-[10px] sm:text-xs font-semibold text-black uppercase">
+          {category}
+        </p>
+        <h4
+          className="text-sm sm:text-base font-semibold"
+          dangerouslySetInnerHTML={{ __html: title }}
+        />
+        {/* Debug: Always show this to check if div renders */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="text-[10px] bg-yellow-200 p-1 border border-yellow-600">
+            <div>Has content: {content ? "YES" : "NO"}</div>
+            <div>Content length: {content?.length || 0}</div>
+            <div>Display content: {displayContent?.length || 0} chars</div>
+          </div>
+        )}
+        {displayContent ? (
+          <p className="text-xs sm:text-sm text-gray-900 font-medium leading-relaxed bg-blue-50 p-2 border border-blue-300">
+            {displayContent}
+          </p>
+        ) : content ? (
+          <p className="text-xs sm:text-sm text-orange-500 font-bold italic bg-orange-100 p-2">
+            [Content có nhưng không hiển thị - Length: {content.length}]
+          </p>
+        ) : (
+          <p className="text-xs text-red-500 bg-red-100 p-2">
+            [Không có content]
+          </p>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // --- Component Chính Của Trang ---
 export default function Page() {
@@ -164,8 +198,11 @@ export default function Page() {
     (async () => {
       try {
         setLoadingPosts(true);
-        const resp = await getPosts({ limit: 4 });
-        if (mounted) setPosts(resp.data || []);
+        const resp = await getPosts({ limit: 5 });
+        if (mounted) {
+          const list = resp.data || [];
+          setPosts(list);
+        }
       } catch (err) {
         console.error("Error fetching posts:", err);
       } finally {
@@ -217,6 +254,11 @@ export default function Page() {
     { length: 4 },
     (_, i) => remainingUnique[i] ?? null
   );
+
+  // Debug logging
+  console.log("[page] posts:", posts.length);
+  console.log("[page] uniquePosts:", uniquePosts.length);
+  console.log("[page] smallPosts:", smallPosts.map(p => p ? {id: p.post_id, hasContent: !!p.content, contentLen: p.content?.length} : null));
 
   return (
     <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro)">
@@ -427,8 +469,8 @@ export default function Page() {
               Tin tức nổi bật
             </AnimatedContainer>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
-              <div className="flex flex-col justify-between gap-6 sm:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-4 sm:gap-6">
+              <div className="flex flex-col justify-between gap-4 sm:gap-6">
                 <NewsCardSmall
                   imgSrc={
                     smallPosts[0]?.image_url ||
@@ -442,6 +484,7 @@ export default function Page() {
                     smallPosts[0]?.title ||
                     "How Art Fairs Are Adapting to the<br />Digital Age"
                   }
+                  content={smallPosts[0]?.content}
                   darkBg={true}
                 />
                 <NewsCardSmall
@@ -457,6 +500,7 @@ export default function Page() {
                     smallPosts[1]?.title ||
                     "How Art Fairs Are Adapting to the<br />Digital Age"
                   }
+                  content={smallPosts[1]?.content}
                   darkBg={true}
                 />
               </div>
@@ -497,14 +541,13 @@ export default function Page() {
                   delay={400}
                 >
                   {spotlightPost?.content ? (
-                    <span
-                      dangerouslySetInnerHTML={{
-                        __html:
-                          spotlightPost.content.length > 250
-                            ? spotlightPost.content.slice(0, 250) + "..."
-                            : spotlightPost.content,
-                      }}
-                    />
+                    <div className="prose prose-sm prose-headings:text-black prose-p:text-gray-800 prose-strong:text-black prose-li:text-gray-800 max-w-none line-clamp-6">
+                      <ReactMarkdown>
+                        {spotlightPost.content.length > 300
+                          ? spotlightPost.content.substring(0, 300) + "..."
+                          : spotlightPost.content}
+                      </ReactMarkdown>
+                    </div>
                   ) : (
                     <>
                       &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh
@@ -519,7 +562,7 @@ export default function Page() {
 
               <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
 
-              <div className="flex flex-col justify-between gap-6 sm:gap-8">
+              <div className="flex flex-col justify-between gap-4 sm:gap-6">
                 <NewsCardSmall
                   imgSrc={
                     smallPosts[2]?.image_url ||
@@ -533,6 +576,7 @@ export default function Page() {
                     smallPosts[2]?.title ||
                     "How Art Fairs Are Adapting to the<br />Digital Age"
                   }
+                  content={smallPosts[2]?.content}
                   darkBg={true}
                 />
                 <NewsCardSmall
@@ -548,6 +592,7 @@ export default function Page() {
                     smallPosts[3]?.title ||
                     "How Art Fairs Are Adapting to the<br />Digital Age"
                   }
+                  content={smallPosts[3]?.content}
                   darkBg={true}
                 />
               </div>

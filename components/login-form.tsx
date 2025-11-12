@@ -84,7 +84,7 @@ export function LoginForm({
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-6 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
+            className="flex cursor-pointer items-center gap-2 text-base font-medium text-black mb-6 hover:text-orange-500 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -198,7 +198,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={!isValid || isPending}
-              className="flex items-center justify-center gap-2 w-full h-14 rounded-sm px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
+              className="flex cursor-pointer items-center justify-center gap-2 w-full h-14 rounded-sm px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
             >
               {translations.login || "Đăng nhập"}
               <svg

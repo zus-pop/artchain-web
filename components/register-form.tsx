@@ -265,7 +265,7 @@ export function RegisterForm({
                 }
               }}
               disabled={!selectedRole}
-              className="flex items-center justify-center gap-2 w-full max-w-[300px] px-12 h-10 bg-orange-500 text-white text-lg font-semibold rounded-sm shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex cursor-pointer items-center justify-center gap-2 w-full max-w-[300px] px-12 h-10 bg-orange-500 text-white text-lg font-semibold rounded-sm shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {translations.continue || "Đăng kí"}
               <svg
@@ -287,7 +287,7 @@ export function RegisterForm({
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
-                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-8"
               >
                  Đăng nhập
               </span>
@@ -314,7 +314,7 @@ export function RegisterForm({
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-4 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
+            className="flex cursor-pointer items-center gap-2 text-base font-medium text-black mb-6 hover:text-orange-500 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -332,8 +332,8 @@ export function RegisterForm({
             {translations.back || "Quay lại"}
           </button>
           {/* Title */}
-          <h1 className="text-5xl text-black mb-6">
-            {selectedRole === 'competitor' ? translations.registerCompetitor || "Đăng ký thí sinh" : translations.registerGuardian || "Đăng ký người giám hộ"}
+          <h1 className="text-5xl text-black leading-tight mb-6 ">
+            {selectedRole === 'competitor' ? "Đăng ký thí sinh" :  "Đăng ký người giám hộ"}
           </h1>
 
           {/* Guardian Form */}
@@ -481,7 +481,7 @@ export function RegisterForm({
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
-                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-8"
               >
                 Đăng nhập
               </span>
@@ -606,18 +606,24 @@ export function RegisterForm({
 
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-birthday">
-                    {translations.birthday || "Ngày sinh"}
+                    {translations.birthday || "Tuổi"}
                   </label>
                   <Controller
                     control={competitorControl}
                     name="birthday"
                     render={({ field }) => (
-                      <input
+                      <select
                         id="competitor-birthday"
-                        type="date"
                         className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
-                      />
+                      >
+                        <option value="">Chọn tuổi</option>
+                        {Array.from({ length: 10 }, (_, i) => i + 6).map((age) => (
+                          <option key={age} value={age.toString()}>
+                            {age} tuổi
+                          </option>
+                        ))}
+                      </select>
                     )}
                   />
                   <p className="text-sm text-red-500 min-h-5">
@@ -658,18 +664,20 @@ export function RegisterForm({
                     control={competitorControl}
                     name="ward"
                     render={({ field }) => (
-                      <select
-                        id="competitor-ward"
-                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                        {...field}
-                      >
-                        <option value="">Chọn phường/xã</option>
-                        {wardOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+                      <>
+                        <input
+                          id="competitor-ward"
+                          type="text"
+                          list="ward-options"
+                          className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                          {...field}
+                        />
+                        <datalist id="ward-options">
+                          {wardOptions.map((option) => (
+                            <option key={option.value} value={option.value} />
+                          ))}
+                        </datalist>
+                      </>
                     )}
                   />
                   <p className="text-sm text-red-500 min-h-5">
@@ -685,12 +693,18 @@ export function RegisterForm({
                     control={competitorControl}
                     name="grade"
                     render={({ field }) => (
-                      <input
+                      <select
                         id="competitor-grade"
-                        type="text"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
-                      />
+                      >
+                        <option value="">Chọn lớp</option>
+                        {Array.from({ length: 9 }, (_, i) => i + 1).map((grade) => (
+                          <option key={grade} value={grade.toString()}>
+                            Lớp {grade}
+                          </option>
+                        ))}
+                      </select>
                     )}
                   />
                   <p className="text-sm text-red-500 min-h-5">
@@ -729,7 +743,7 @@ export function RegisterForm({
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
-                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-4"
+                className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-8"
               >
                Đăng nhập
               </span>

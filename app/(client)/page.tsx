@@ -14,6 +14,7 @@ import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { CampaignAPIResponse } from "../../types/campaign";
 
 const ArrowRightIcon = () => <span>&rarr;</span>;
@@ -65,10 +66,9 @@ const CampaignCard = ({
       }}
     />
     <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
-    <p
-      className="text-black text-sm leading-relaxed mb-6 text-center"
-      dangerouslySetInnerHTML={{ __html: description }}
-    />
+    <div className="text-black text-sm leading-relaxed mb-6 text-center">
+      <ReactMarkdown>{description}</ReactMarkdown>
+    </div>
     <button className="w-full cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
       Đăng kí tài trợ <ArrowRightIcon />
     </button>
@@ -137,11 +137,13 @@ const NewsCardSmall = ({
   imgSrc,
   category,
   title,
+  content,
   darkBg = false,
 }: {
   imgSrc: string;
   category: string;
   title: string;
+  content?: string;
   darkBg?: boolean;
 }) => (
   <div
@@ -158,14 +160,18 @@ const NewsCardSmall = ({
           "https://placehold.co/300x160/cccccc/333333?text=Image";
       }}
     />
-    <div className="p-3 sm:p-4">
-      <p className="text-[10px] sm:text-xs font-semibold text-black uppercase mb-1">
+    <div className="pt-2">
+      <p className="text-3xl sm:text-sm font-semibold text-black uppercase mb-1">
         {category}
       </p>
-      <h4
-        className="text-sm sm:text-base font-semibold"
-        dangerouslySetInnerHTML={{ __html: title }}
-      />
+            <div className="text-sm sm:text-base font-semibold">
+        <ReactMarkdown>{title}</ReactMarkdown>
+      </div>
+      {content && (
+        <div className="text-base text-gray-600 mt-2 line-clamp-2">
+          <ReactMarkdown>{content.slice(0, 100) + '...'}</ReactMarkdown>
+        </div>
+      )}
     </div>
   </div>
 );
@@ -283,6 +289,7 @@ export default function Page() {
       try {
         setLoadingPosts(true);
         const resp = await getPosts({ limit: 5 });
+        console.log('Fetched posts:', resp.data);
         if (mounted) setPosts(resp.data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -717,6 +724,7 @@ export default function Page() {
                             smallPosts[0].title ||
                             "How Art Fairs Are Adapting to the<br />Digital Age"
                           }
+                          content={smallPosts[0].content}
                           darkBg={true}
                         />
                       </Link>
@@ -743,6 +751,7 @@ export default function Page() {
                             smallPosts[1].title ||
                             "How Art Fairs Are Adapting to the<br />Digital Age"
                           }
+                          content={smallPosts[1].content}
                           darkBg={true}
                         />
                       </Link>
@@ -798,7 +807,7 @@ export default function Page() {
                           animation="animate-fade-in-right"
                           delay={200}
                         >
-                          {spotlightPost.title}
+                          <ReactMarkdown>{spotlightPost.title}</ReactMarkdown>
                         </AnimatedContainer>
                       </Link>
                     ) : (
@@ -816,14 +825,13 @@ export default function Page() {
                       delay={400}
                     >
                       {spotlightPost?.content ? (
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              spotlightPost.content.length > 250
-                                ? spotlightPost.content.slice(0, 250) + "..."
-                                : spotlightPost.content,
-                          }}
-                        />
+                        <div>
+                          <ReactMarkdown>
+                            {spotlightPost.content.length > 250
+                              ? spotlightPost.content.slice(0, 250) + "..."
+                              : spotlightPost.content}
+                          </ReactMarkdown>
+                        </div>
                       ) : (
                         <>
                           &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh
@@ -854,6 +862,7 @@ export default function Page() {
                             smallPosts[2].title ||
                             "How Art Fairs Are Adapting to the<br />Digital Age"
                           }
+                          content={smallPosts[2].content}
                           darkBg={true}
                         />
                       </Link>
@@ -880,6 +889,7 @@ export default function Page() {
                             smallPosts[3].title ||
                             "How Art Fairs Are Adapting to the<br />Digital Age"
                           }
+                          content={smallPosts[3].content}
                           darkBg={true}
                         />
                       </Link>
