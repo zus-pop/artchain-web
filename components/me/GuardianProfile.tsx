@@ -4,7 +4,7 @@ import { GuardianChild, WhoAmI } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGetUserAchievements } from "@/apis/achievements";
 import { useGetMySubmissions, useGetUserSubmissions } from "@/apis/paintings";
 
@@ -12,6 +12,37 @@ interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
   guardianChildren: GuardianChild[] | undefined;
   isLoadingChildren: boolean;
+}
+
+interface Submission {
+  paintingId: string;
+  roundId: string;
+  contestId: number;
+  competitorId: string;
+  description: string;
+  title: string;
+  imageUrl: string;
+  submissionDate: string;
+  isPassed: boolean | null;
+  status: string;
+  awardId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  contest: {
+    contestId: number;
+    title: string;
+    description: string;
+    bannerUrl: string;
+    numOfAward: number;
+    round2Quantity: number;
+    numberOfTablesRound2: number;
+    isScheduleEnforced: boolean;
+    ruleUrl: string | null;
+    startDate: string;
+    endDate: string;
+    status: string;
+    createdBy: string;
+  };
 }
 
 // GUARDIAN PROFILE SCREEN COMPONENT
@@ -29,6 +60,8 @@ export default function GuardianProfileScreen({
   const [modalActiveTab, setModalActiveTab] = useState<"submitted" | "awards">(
     "submitted"
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 2;
 
   // Fetch achievements for selected child (hook is safe to call with undefined)
   const { data: childAchievementsResp, isLoading: isLoadingChildAchievements } = useGetUserAchievements(
@@ -36,9 +69,14 @@ export default function GuardianProfileScreen({
     modalActiveTab === "awards"
   );
 
-  // Fetch submissions for selected child
+  // Reset page when child or tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedChild, modalActiveTab]);
+
+  // Fetch submissions for selected child (guardian API expects competitor UUID)
   const { data: childSubmissions, isLoading: isLoadingChildSubmissions } = useGetUserSubmissions(
-    selectedChild?.userId ? Number(selectedChild.userId) : undefined
+    selectedChild?.userId
   );
 
   // Xử lý dữ liệu từ authUser, dùng fallback
@@ -54,6 +92,54 @@ export default function GuardianProfileScreen({
     bannerUrl:
       "https://plus.unsplash.com/premium_photo-1667502842264-9cdcdac36086?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2022",
   };
+
+  // Child component that renders submission directly (no need for detail fetch since API returns full data)
+  function SubmissionItem({ submission }: { submission: Submission }) {
+    const imageUrl = submission.imageUrl;
+    const contestTitle = submission.contest?.title || "N/A";
+
+    return (
+      <div className="overflow-hidden border border-gray-200 rounded-lg">
+        <div className="relative h-48 w-full bg-gray-200">
+          {imageUrl ? (
+            // Use the imageUrl directly from the submission
+            <Image
+              src={imageUrl}
+              alt={submission.title || "Tranh"}
+              layout="fill"
+              objectFit="cover"
+              className="rounded-t"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+                  🎨
+                </div>
+                <p className="text-sm">Hình ảnh</p>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="p-4">
+          <p className="text-sm text-black">
+            Ngày nộp: {submission.submissionDate ? new Date(submission.submissionDate).toLocaleDateString("vi-VN") : "-"}
+          </p>
+          <p className="mt-1 font-medium text-black">Cuộc thi: {contestTitle}</p>
+          <p className="text-sm text-gray-600 mt-1">{submission.title}</p>
+          <div className="flex justify-between items-center mt-2">
+            <span className={`text-xs px-2 py-1 rounded ${
+              submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+              submission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+              'bg-red-100 text-red-800'
+            }`}>
+              {submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'Đã duyệt' : submission.status === 'PENDING' ? 'Chờ duyệt' : submission.status}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#EAE6E0]">
@@ -126,7 +212,7 @@ export default function GuardianProfileScreen({
                   {selectedChild.fullName}
                 </h3>
                 <button
-                  className="text-black hover:text-gray-600"
+                  className="text-black cursor-pointer hover:text-gray-600"
                   onClick={() => setSelectedChild(null)}
                 >
                   ✕
@@ -144,7 +230,7 @@ export default function GuardianProfileScreen({
                           ? "border-black text-black"
                           : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }
-                      whitespace-nowrap border-b-2 px-6 py-4 text-sm font-medium
+                      whitespace-nowrap cursor-pointer border-b-2 px-6 py-4 text-sm font-medium
                     `}
                   >
                     Tranh đã nộp
@@ -157,7 +243,7 @@ export default function GuardianProfileScreen({
                           ? "border-black text-black"
                           : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }
-                      whitespace-nowrap border-b-2 px-6 py-4 text-sm font-medium
+                      whitespace-nowrap cursor-pointer border-b-2 px-6 py-4 text-sm font-medium
                     `}
                   >
                     Giải thưởng
@@ -175,47 +261,37 @@ export default function GuardianProfileScreen({
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
                         <p className="text-[#423137] mt-2">Đang tải tranh đã nộp...</p>
                       </div>
-                    ) : childSubmissions?.data?.submissions && childSubmissions.data.submissions.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {childSubmissions.data.submissions.map((submission) => (
-                          <div key={submission.paintingId} className="overflow-hidden border border-gray-200 rounded-lg">
-                            <div className="relative h-48 w-full bg-gray-200">
-                              {/* Placeholder for image - API doesn't provide imageUrl */}
-                              <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                                <div className="text-center">
-                                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
-                                    🎨
-                                  </div>
-                                  <p className="text-sm">Hình ảnh</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="p-4">
-                              <p className="text-sm text-black">
-                                Ngày nộp: {submission.submissionDate ? new Date(submission.submissionDate).toLocaleDateString("vi-VN") : "-"}
-                              </p>
-                              <p className="mt-1 font-medium text-black">
-                                Cuộc thi: {submission.contestTitle}
-                              </p>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {submission.title}
-                              </p>
-                              <div className="flex justify-between items-center mt-2">
-                                <span className={`text-xs px-2 py-1 rounded ${
-                                  submission.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
-                                  submission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-red-100 text-red-800'
-                                }`}>
-                                  {submission.status === 'APPROVED' ? 'Đã duyệt' :
-                                   submission.status === 'PENDING' ? 'Chờ duyệt' : submission.status}
-                                </span>
-                                <span className="text-sm font-medium text-black">
-                                  Điểm: {submission.averageScore}/100
-                                </span>
-                              </div>
-                            </div>
+                    ) : Array.isArray(childSubmissions) && childSubmissions.length > 0 ? (
+                      <div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                          {childSubmissions
+                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .map((submission: Submission) => (
+                              <SubmissionItem key={submission.paintingId} submission={submission} />
+                            ))}
+                        </div>
+                        {/* Pagination */}
+                        {childSubmissions.length > itemsPerPage && (
+                          <div className="flex justify-center items-center space-x-2">
+                            <button
+                              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                              disabled={currentPage === 1}
+                              className="px-3 cursor-pointer py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
+                            >
+                              Trước
+                            </button>
+                            <span className="text-sm text-gray-600">
+                              Trang {currentPage} / {Math.ceil(childSubmissions.length / itemsPerPage)}
+                            </span>
+                            <button
+                              onClick={() => setCurrentPage(Math.min(Math.ceil(childSubmissions.length / itemsPerPage), currentPage + 1))}
+                              disabled={currentPage === Math.ceil(childSubmissions.length / itemsPerPage)}
+                              className="px-3 cursor-pointer py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
+                            >
+                              Sau
+                            </button>
                           </div>
-                        ))}
+                        )}
                       </div>
                     ) : (
                       <div className="text-center py-8">
