@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useGetUserAchievements } from "@/apis/achievements";
+import { useGetMySubmissions, useGetUserSubmissions } from "@/apis/paintings";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -25,10 +26,19 @@ export default function GuardianProfileScreen({
   const [selectedChild, setSelectedChild] = useState<GuardianChild | null>(
     null
   );
+  const [modalActiveTab, setModalActiveTab] = useState<"submitted" | "awards">(
+    "submitted"
+  );
 
   // Fetch achievements for selected child (hook is safe to call with undefined)
   const { data: childAchievementsResp, isLoading: isLoadingChildAchievements } = useGetUserAchievements(
-    selectedChild?.userId
+    selectedChild?.userId,
+    modalActiveTab === "awards"
+  );
+
+  // Fetch submissions for selected child
+  const { data: childSubmissions, isLoading: isLoadingChildSubmissions } = useGetUserSubmissions(
+    selectedChild?.userId ? Number(selectedChild.userId) : undefined
   );
 
   // Xử lý dữ liệu từ authUser, dùng fallback
@@ -103,50 +113,147 @@ export default function GuardianProfileScreen({
           </div>
         </div>
 
-        {/* Child achievements modal */}
+        {/* Child modal with tabs */}
         {selectedChild && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
               className="absolute inset-0 bg-black/40"
               onClick={() => setSelectedChild(null)}
             />
-            <div className="relative z-10 w-full max-w-3xl rounded bg-white p-6 shadow-lg">
-              <div className="flex items-start justify-between">
+            <div className="relative z-10 w-full max-w-4xl rounded bg-white shadow-lg max-h-[90vh] overflow-hidden">
+              <div className="flex items-start justify-between p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-black">
-                  Giải thưởng của {selectedChild.fullName}
+                  {selectedChild.fullName}
                 </h3>
                 <button
-                  className="text-black"
+                  className="text-black hover:text-gray-600"
                   onClick={() => setSelectedChild(null)}
                 >
-                  Đóng
+                  ✕
                 </button>
               </div>
 
-              <div className="mt-4">
-                {isLoadingChildAchievements ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
-                    <p className="text-[#423137] mt-2">Đang tải giải thưởng...</p>
-                  </div>
-                ) : childAchievementsResp && childAchievementsResp.data.achievements.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4">
-                    {childAchievementsResp.data.achievements.map((a) => (
-                      <div key={a.paintingId} className="flex items-center gap-4">
-                        <div className="h-20 w-20 relative flex-shrink-0">
-                          <Image src={a.paintingImage || ""} alt={a.paintingTitle} layout="fill" objectFit="cover" className="rounded" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-black">{a.paintingTitle}</div>
-                          <div className="text-sm text-[#423137]">Giải: {a.award?.name || "-"}</div>
-                          <div className="text-sm text-[#423137]">Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}</div>
-                        </div>
+              {/* Tabs Navigation */}
+              <div className="border-b border-gray-200">
+                <nav className="-mb-px flex">
+                  <button
+                    onClick={() => setModalActiveTab("submitted")}
+                    className={`
+                      ${
+                        modalActiveTab === "submitted"
+                          ? "border-black text-black"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }
+                      whitespace-nowrap border-b-2 px-6 py-4 text-sm font-medium
+                    `}
+                  >
+                    Tranh đã nộp
+                  </button>
+                  <button
+                    onClick={() => setModalActiveTab("awards")}
+                    className={`
+                      ${
+                        modalActiveTab === "awards"
+                          ? "border-black text-black"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      }
+                      whitespace-nowrap border-b-2 px-6 py-4 text-sm font-medium
+                    `}
+                  >
+                    Giải thưởng
+                  </button>
+                </nav>
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                {/* Tab "Tranh đã nộp" */}
+                {modalActiveTab === "submitted" && (
+                  <div>
+                    {isLoadingChildSubmissions ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                        <p className="text-[#423137] mt-2">Đang tải tranh đã nộp...</p>
                       </div>
-                    ))}
+                    ) : childSubmissions?.data?.submissions && childSubmissions.data.submissions.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {childSubmissions.data.submissions.map((submission) => (
+                          <div key={submission.paintingId} className="overflow-hidden border border-gray-200 rounded-lg">
+                            <div className="relative h-48 w-full bg-gray-200">
+                              {/* Placeholder for image - API doesn't provide imageUrl */}
+                              <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+                                <div className="text-center">
+                                  <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+                                    🎨
+                                  </div>
+                                  <p className="text-sm">Hình ảnh</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="p-4">
+                              <p className="text-sm text-black">
+                                Ngày nộp: {submission.submissionDate ? new Date(submission.submissionDate).toLocaleDateString("vi-VN") : "-"}
+                              </p>
+                              <p className="mt-1 font-medium text-black">
+                                Cuộc thi: {submission.contestTitle}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {submission.title}
+                              </p>
+                              <div className="flex justify-between items-center mt-2">
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  submission.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                                  submission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-red-100 text-red-800'
+                                }`}>
+                                  {submission.status === 'APPROVED' ? 'Đã duyệt' :
+                                   submission.status === 'PENDING' ? 'Chờ duyệt' : submission.status}
+                                </span>
+                                <span className="text-sm font-medium text-black">
+                                  Điểm: {submission.averageScore}/100
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-black">Chưa có tranh nào được nộp.</p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-black">Chưa có giải thưởng nào.</p>
+                )}
+
+                {/* Tab "Giải thưởng" */}
+                {modalActiveTab === "awards" && (
+                  <div>
+                    {isLoadingChildAchievements ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                        <p className="text-[#423137] mt-2">Đang tải giải thưởng...</p>
+                      </div>
+                    ) : childAchievementsResp && childAchievementsResp.data.achievements.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-4">
+                        {childAchievementsResp.data.achievements.map((a) => (
+                          <div key={a.paintingId} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                            <div className="h-20 w-20 relative flex-shrink-0">
+                              <Image src={a.paintingImage || ""} alt={a.paintingTitle} layout="fill" objectFit="cover" className="rounded" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-black">{a.paintingTitle}</div>
+                              <div className="text-sm text-[#423137]">Cuộc thi: {a.contest?.title || "-"}</div>
+                              <div className="text-sm text-[#423137]">Giải: {a.award?.name || "-"}</div>
+                              <div className="text-sm text-[#423137]">Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-black">Chưa có giải thưởng nào.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

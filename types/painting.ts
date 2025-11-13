@@ -52,6 +52,26 @@ export interface Round2ImageRequest {
   description?: string;
 }
 
+export interface CompetitorSubmission {
+  paintingId: string;
+  title: string;
+  contestId: number;
+  contestTitle: string;
+  roundId: string;
+  submissionDate: string;
+  status: string;
+  averageScore: number;
+}
+
+export interface CompetitorSubmissionsResponse {
+  success: boolean;
+  data: {
+    userId: string;
+    fullName: string;
+    submissions: CompetitorSubmission[];
+  };
+}
+
 export interface Submission {
   paintingId: string;
   roundId: string;

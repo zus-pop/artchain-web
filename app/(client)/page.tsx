@@ -10,7 +10,20 @@ import { useMeQuery } from "@/hooks/useMeQuery";
 import { useAuthStore } from "@/store";
 import { Post } from "@/types/post";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, LogOut, Settings, User } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  Mail,
+  Settings,
+  User,
+  MapPin,
+  Phone,
+  Facebook,
+  Instagram,
+  Youtube,
+  Send,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -164,12 +177,12 @@ const NewsCardSmall = ({
       <p className="text-3xl sm:text-sm font-semibold text-black uppercase mb-1">
         {category}
       </p>
-            <div className="text-sm sm:text-base font-semibold">
+      <div className="text-sm sm:text-base font-semibold">
         <ReactMarkdown>{title}</ReactMarkdown>
       </div>
       {content && (
         <div className="text-base text-gray-600 mt-2 line-clamp-2">
-          <ReactMarkdown>{content.slice(0, 100) + '...'}</ReactMarkdown>
+          <ReactMarkdown>{content.slice(0, 100) + "..."}</ReactMarkdown>
         </div>
       )}
     </div>
@@ -262,11 +275,6 @@ export default function Page() {
     return displayUser?.fullName || "User";
   };
 
-  const getAvatarInitial = () => {
-    const name = getDisplayName();
-    return name.charAt(0).toUpperCase();
-  };
-
   const handleLogout = () => {
     logout();
     router.push("/auth");
@@ -289,7 +297,7 @@ export default function Page() {
       try {
         setLoadingPosts(true);
         const resp = await getPosts({ limit: 5 });
-        console.log('Fetched posts:', resp.data);
+        console.log("Fetched posts:", resp.data);
         if (mounted) setPosts(resp.data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -416,15 +424,13 @@ export default function Page() {
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                   className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                 >
-                  <div
-                    className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
-                      displayUser?.role === "GUARDIAN"
-                        ? "bg-green-500"
-                        : "bg-red-500"
-                    }`}
-                  >
-                    {getAvatarInitial()}
-                  </div>
+                  <Image
+                    src="http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1564153943327-fa0006d0f633%3Fixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D%26auto%3Dformat%26fit%3Dcrop%26q%3D80%26w%3D1480&w=3840&q=75"
+                    alt="Avatar"
+                    width={32}
+                    height={32}
+                    className="rounded-full"
+                  />
                   <span className="max-w-32 truncate">{getDisplayName()}</span>
                   <ChevronDown
                     className={`h-4 w-4 transition-transform duration-200 ${
@@ -448,15 +454,13 @@ export default function Page() {
                     >
                       <div className="p-4 border-b border-gray-100">
                         <div className="flex items-center space-x-3">
-                          <div
-                            className={`h-12 w-12 rounded-full flex items-center justify-center text-white text-lg font-bold ${
-                              displayUser?.role === "GUARDIAN"
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            }`}
-                          >
-                            {getAvatarInitial()}
-                          </div>
+                          <Image
+                            src="http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1564153943327-fa0006d0f633%3Fixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D%26auto%3Dformat%26fit%3Dcrop%26q%3D80%26w%3D1480&w=3840&q=75"
+                            alt="Avatar"
+                            width={48}
+                            height={48}
+                            className="rounded-full"
+                          />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-gray-900 truncate">
                               {getDisplayName()}
@@ -610,9 +614,9 @@ export default function Page() {
                     <p>
                       <strong>Thời gian:</strong>{" "}
                       {activeContest
-                        ? `${new Date(activeContest.startDate).toLocaleDateString(
-                            "vi-VN"
-                          )} đến ${new Date(
+                        ? `${new Date(
+                            activeContest.startDate
+                          ).toLocaleDateString("vi-VN")} đến ${new Date(
                             activeContest.endDate
                           ).toLocaleDateString("vi-VN")}`
                         : "21-10-2025 đến 12-12-2025"}
@@ -620,12 +624,18 @@ export default function Page() {
                     <p>
                       <strong>Lưu ý:</strong>
                       <br />
-                      { activeContest?.rounds?.[0]?.sendOriginalDeadline
+                      {activeContest?.rounds?.[0]?.sendOriginalDeadline
                         ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${(() => {
-                            const deadline = activeContest.rounds[0].sendOriginalDeadline;
+                            const deadline =
+                              activeContest.rounds[0].sendOriginalDeadline;
                             const date = new Date(deadline);
-                            const day = date.getUTCDate().toString().padStart(2, '0');
-                            const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                            const day = date
+                              .getUTCDate()
+                              .toString()
+                              .padStart(2, "0");
+                            const month = (date.getUTCMonth() + 1)
+                              .toString()
+                              .padStart(2, "0");
                             const year = date.getUTCFullYear();
                             return `${day}/${month}/${year}`;
                           })()}`
@@ -775,11 +785,15 @@ export default function Page() {
                             spotlightPost.image_url ||
                             "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
                           }
-                          alt={spotlightPost.title || "Spotlight To Emerging Artist"}
+                          alt={
+                            spotlightPost.title ||
+                            "Spotlight To Emerging Artist"
+                          }
                           className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6 cursor-pointer"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.backgroundColor =
-                              "#FF5733";
+                            (
+                              e.target as HTMLImageElement
+                            ).style.backgroundColor = "#FF5733";
                           }}
                         />
                       </Link>
@@ -834,11 +848,11 @@ export default function Page() {
                         </div>
                       ) : (
                         <>
-                          &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ tranh
-                          dành cho học sinh từ lớp 1 đến lớp 9 đang học tập tại
-                          Thành phố Hồ Chí Minh. Cuộc thi khuyến khích các em thể
-                          hiện góc nhìn riêng về thành phố qua màu sắc, đường nét và
-                          trí...
+                          &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ
+                          tranh dành cho học sinh từ lớp 1 đến lớp 9 đang học
+                          tập tại Thành phố Hồ Chí Minh. Cuộc thi khuyến khích
+                          các em thể hiện góc nhìn riêng về thành phố qua màu
+                          sắc, đường nét và trí...
                         </>
                       )}
                     </AnimatedContainer>
@@ -928,18 +942,37 @@ export default function Page() {
                     <div key={i} className="p-2">
                       <div className="flex flex-col animate-pulse">
                         <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded" />
-                        <div className={`h-6 bg-gray-300 mb-2 rounded ${i === 0 ? 'w-3/4' : i === 1 ? 'w-2/3' : 'w-1/2'}`} />
+                        <div
+                          className={`h-6 bg-gray-300 mb-2 rounded ${
+                            i === 0 ? "w-3/4" : i === 1 ? "w-2/3" : "w-1/2"
+                          }`}
+                        />
                         <div className="space-y-2 mb-6">
-                          <div className={`h-4 bg-gray-300 rounded ${i === 2 ? 'w-4/6' : 'w-full'}`}></div>
-                          <div className={`h-4 bg-gray-300 rounded ${i === 1 ? 'w-3/4' : 'w-5/6'}`}></div>
+                          <div
+                            className={`h-4 bg-gray-300 rounded ${
+                              i === 2 ? "w-4/6" : "w-full"
+                            }`}
+                          ></div>
+                          <div
+                            className={`h-4 bg-gray-300 rounded ${
+                              i === 1 ? "w-3/4" : "w-5/6"
+                            }`}
+                          ></div>
                         </div>
-                        <div className={`w-full h-10 bg-gray-300 rounded-sm ${i === 0 ? '' : 'w-11/12'}`} />
+                        <div
+                          className={`w-full h-10 bg-gray-300 rounded-sm ${
+                            i === 0 ? "" : "w-11/12"
+                          }`}
+                        />
                       </div>
                     </div>
                   ))
                 : campaigns.length > 0
                 ? campaigns.map((c, idx) => (
-                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`}>
+                    <Link
+                      key={c.campaignId ?? idx}
+                      href={`/campaigns/${c.campaignId}`}
+                    >
                       <CampaignCard
                         imgSrc={
                           c.image ||
@@ -1009,96 +1042,204 @@ export default function Page() {
       )}
 
       {/* --- Footer --- */}
-      {/* <footer className="py-8 sm:py-12 md:py-16 bg-black text-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-          <div>
-            <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">
-              Về chúng tôi
-            </h5>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-              <li>
-                <a href="#" className="hover:text-white">
-                  Nhiệm vụ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Đội ngũ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
+      <footer className="relative bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+        </div>
+
+        <div className="relative py-12 sm:py-16 md:py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
+            {/* Main Footer Content */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 sm:gap-12 mb-8 sm:mb-12">
+              {/* About Section */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center space-x-3 mb-4">
+                  <img
+                    src="/images/newlogo.png"
+                    alt="Artchain Logo"
+                    className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+                  />
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">
+                    Nét Vẽ Xanh
+                  </h3>
+                </div>
+                <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+                  Nơi nuôi dưỡng tài năng hội họa trẻ, kết nối cộng đồng nghệ sĩ
+                  và lan tỏa giá trị nghệ thuật đến mọi nhà.
+                </p>
+                <div className="flex space-x-4">
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                  >
+                    <Youtube className="w-5 h-5" />
+                  </a>
+                </div>
+              </div>
+
+              {/* About Links */}
+              <div>
+                <h5 className="font-bold text-white mb-4 sm:mb-6 text-sm sm:text-base uppercase tracking-wider">
+                  Về chúng tôi
+                </h5>
+                <ul className="space-y-3 text-sm sm:text-base">
+                  {/* <li>
+                    <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group">
+                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      Nhiệm vụ
+                    </a>
+                  </li> */}
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                    >
+                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      Đội ngũ
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                    >
+                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      Liên hệ
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Contest Links */}
+              <div>
+                <h5 className="font-bold text-white mb-4 sm:mb-6 text-sm sm:text-base uppercase tracking-wider">
+                  Cuộc thi
+                </h5>
+                <ul className="space-y-3 text-sm sm:text-base">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                    >
+                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      Nét Vẽ Xanh 2025
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                    >
+                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      Thể lệ
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                    >
+                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      Nộp bài
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Contact Info */}
+              <div>
+                <h5 className="font-bold text-white mb-4 sm:mb-6 text-sm sm:text-base uppercase tracking-wider">
                   Liên hệ
-                </a>
-              </li>
-            </ul>
+                </h5>
+                <ul className="space-y-3 text-sm sm:text-base">
+                  <li className="flex items-start space-x-3">
+                    <MapPin className="w-4 h-4 text-[#FF6E1A] mt-0.5 flex-shrink-0" />
+                    <span className="text-gray-300">
+                      123 Đường ABC, Quận 1<br />
+                      TP.HCM, Việt Nam
+                    </span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Phone className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
+                    <span className="text-gray-300">+84 123 456 789</span>
+                  </li>
+                  <li className="flex items-center space-x-3">
+                    <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
+                    <span className="text-gray-300">info@netvexanh.vn</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Newsletter Signup */}
+            <div className="border-t border-gray-800 pt-8 sm:pt-12">
+              <div className="max-w-md mx-auto text-center">
+                <h4 className="text-lg sm:text-xl font-bold text-white mb-3">
+                  Đăng ký nhận tin
+                </h4>
+                <p className="text-gray-300 text-sm sm:text-base mb-6">
+                  Nhận thông tin mới nhất về cuộc thi và các sự kiện nghệ thuật
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    placeholder="Nhập email của bạn"
+                    className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
+                  />
+                  <button className="px-6 py-3 bg-[#FF6E1A] hover:bg-[#FF833B] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
+                    <Send className="w-4 h-4" />
+                    Đăng ký
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">
-              Cuộc thi
-            </h5>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-              <li>
-                <a href="#" className="hover:text-white">
-                  Nét Vẽ Xanh 2025
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Thể lệ
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Nộp bài
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">
-              Pháp lý
-            </h5>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-              <li>
-                <a href="#" className="hover:text-white">
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <p className="text-gray-400 text-xs sm:text-sm text-center md:text-left">
+                &copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                >
                   Điều khoản dịch vụ
                 </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                >
                   Chính sách bảo mật
                 </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">
-              Theo dõi
-            </h5>
-            <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-              <li>
-                <a href="#" className="hover:text-white">
-                  Facebook
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                >
+                  Cookie Policy
                 </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Instagram
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Youtube
-                </a>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12 border-t border-[#FF833B] rounded-sm pt-6 sm:pt-8 text-center text-xs sm:text-sm">
-          <p>&copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.</p>
-        </div>
-      </footer> */}
+      </footer>
     </div>
   );
 }

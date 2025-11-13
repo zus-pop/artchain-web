@@ -18,6 +18,7 @@ import GlassSurface from "@/components/GlassSurface";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store";
+import Image from "next/image";
 
 interface ArtistNavigationProps {
   children?: React.ReactNode;
@@ -279,14 +280,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                   >
-                    <div
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold ${
-                        displayUser?.role === "GUARDIAN"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    >
-                      {getAvatarInitial()}
+                    <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
+                      <Image
+                        src="https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480"
+                        alt="User Avatar"
+                        width={32}
+                        height={32}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <span className="max-w-32 truncate">{getDisplayName()}</span>
                     <ChevronDown
@@ -311,14 +312,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
                       >
                         <div className="p-4 border-b border-gray-100">
                           <div className="flex items-center space-x-3">
-                            <div
-                              className={`h-12 w-12 rounded-full flex items-center justify-center text-white text-lg font-bold ${
-                                displayUser?.role === "GUARDIAN"
-                                  ? "bg-green-500"
-                                  : "bg-red-500"
-                              }`}
-                            >
-                              {getAvatarInitial()}
+                            <div className="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
+                              <Image
+                                src="https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480"
+                                alt="User Avatar"
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">
