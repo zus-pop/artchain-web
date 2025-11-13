@@ -32,7 +32,9 @@ export const metadata: Metadata = {
   title: "ArtChain - Cuộc thi nghệ thuật",
   description: "Nền tảng cuộc thi vẽ tranh nghệ thuật hàng đầu",
   icons: {
-    icon: "/images/newlogo.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/images/newlogo.png",
   },
 };
 
@@ -44,8 +46,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Favicon: use PNG stored in public/images/newlogo.png */}
-        <link rel="icon" href="/images/newlogo.png" />
+        {/* Favicon */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/newlogo.png" />
+        <link rel="apple-touch-icon" href="/images/newlogo.png" />
+        <meta name="theme-color" content="#ffffff" />
         <style
           dangerouslySetInnerHTML={{
             __html: `

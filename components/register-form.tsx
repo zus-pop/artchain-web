@@ -14,38 +14,31 @@ import { useWards } from "@/hooks/useWards";
 import { IconSchool, IconUsers } from "@tabler/icons-react";
 import Checkbox from "./Checkbox";
 import Image from "next/image";
+import { Eye, EyeOff } from "lucide-react";
 
 // Schema for Guardian (Người đại diện)
 const guardianSchema = z
   .object({
     username: z
       .string()
-      .min(3, "Tên đăng nhập phải có ít nhất 3 ký tự")
-      .max(20, "Tên đăng nhập không được quá 20 ký tự")
+      .min(3, "Tối thiểu 3 ký tự")
+      .max(20, "Tối đa 20 ký tự")
       .regex(
         /^[a-zA-Z0-9_]+$/,
-        "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới"
+        "Chỉ chữ, số, gạch dưới"
       ),
     password: z
       .string()
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Mật khẩu phải chứa ít nhất 1 chữ thường, 1 chữ hoa và 1 số"
-      ),
-    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
+      .min(8, "Tối thiểu 8 ký tự"),
+    confirmPassword: z.string().min(1, "Xác nhận mật khẩu"),
     fullName: z
       .string()
-      .min(2, "Họ và tên phải có ít nhất 2 ký tự")
-      .max(50, "Họ và tên không được quá 50 ký tự")
-      .regex(
-        /^[a-zA-ZÀ-ỹ\s]+$/,
-        "Họ và tên chỉ được chứa chữ cái và khoảng trắng"
-      ),
-    email: z.string().email("Địa chỉ email không hợp lệ"),
+      .min(2, "Tối thiểu 2 ký tự")
+      .max(50, "Tối đa 50 ký tự"),
+    email: z.string().email("Email không hợp lệ"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
+    message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
   });
 
@@ -54,36 +47,28 @@ const competitorSchema = z
   .object({
     username: z
       .string()
-      .min(3, "Tên đăng nhập phải có ít nhất 3 ký tự")
-      .max(20, "Tên đăng nhập không được quá 20 ký tự")
+      .min(3, "Tối thiểu 3 ký tự")
+      .max(20, "Tối đa 20 ký tự")
       .regex(
         /^[a-zA-Z0-9_]+$/,
-        "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới"
+        "Chỉ chữ, số, gạch dưới"
       ),
     password: z
       .string()
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Mật khẩu phải chứa ít nhất 1 chữ thường, 1 chữ hoa và 1 số"
-      ),
-    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
+      .min(8, "Tối thiểu 8 ký tự"),
+    confirmPassword: z.string().min(1, "Xác nhận mật khẩu"),
     fullName: z
       .string()
-      .min(2, "Họ và tên phải có ít nhất 2 ký tự")
-      .max(50, "Họ và tên không được quá 50 ký tự")
-      .regex(
-        /^[a-zA-ZÀ-ỹ\s]+$/,
-        "Họ và tên chỉ được chứa chữ cái và khoảng trắng"
-      ),
-    email: z.string().email("Địa chỉ email không hợp lệ"),
-    birthday: z.string().min(1, "Vui lòng chọn ngày sinh"),
-    schoolName: z.string().min(1, "Vui lòng nhập tên trường"),
-    ward: z.string().min(1, "Vui lòng chọn phường/xã"),
-    grade: z.string().min(1, "Vui lòng nhập lớp"),
+      .min(2, "Tối thiểu 2 ký tự")
+      .max(50, "Tối đa 50 ký tự"),
+    email: z.string().email("Email không hợp lệ"),
+    birthday: z.string().min(1, "Chọn ngày sinh"),
+    schoolName: z.string().min(1, "Nhập tên trường"),
+    ward: z.string().min(1, "Chọn phường/xã"),
+    grade: z.string().min(1, "Nhập lớp"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
+    message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
   });
 
@@ -102,6 +87,8 @@ export function RegisterForm({
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<'competitor' | 'guardian' | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { wards } = useWards();
 
   // Guardian form
@@ -190,7 +177,7 @@ export function RegisterForm({
               onClick={() => router.push('/')}
             />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
-              {translations.selectAccountType || "Tham gia với vai trò thí sinh hoặc người đại diện"}
+              {translations.selectAccountType || "Chọn vai trò"}
             </h1>
           </div>
 
@@ -220,7 +207,7 @@ export function RegisterForm({
                 
                 {/* Hàng 2: Text */}
                 <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
-                  {translations.iAmCompetitor || "Tôi là thí sinh tự do"}
+                  {translations.iAmCompetitor || "Thí sinh tự do"}
                 </h3>
               </div>
             </div>
@@ -249,7 +236,7 @@ export function RegisterForm({
                 
                 {/* Hàng 2: Text */}
                 <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
-                  {translations.iAmGuardian || "Tôi là người giám hộ"}
+                  {translations.iAmGuardian || "Người giám hộ"}
                 </h3>
               </div>
             </div>
@@ -333,17 +320,17 @@ export function RegisterForm({
           </button>
           {/* Title */}
           <h1 className="text-5xl text-black leading-tight mb-6 ">
-            {selectedRole === 'competitor' ? "Đăng ký thí sinh" :  "Đăng ký người giám hộ"}
+            {selectedRole === 'competitor' ? "Đăng ký thí sinh" : "Đăng ký giám hộ"}
           </h1>
 
           {/* Guardian Form */}
           {selectedRole === 'guardian' && (
             <form onSubmit={guardianHandleSubmit(handleGuardianRegister)} className="flex flex-col">
               {/* Full Name and Email - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="grid gap-2">
                   <label className="text-base font-medium text-black" htmlFor="guardian-fullName">
-                    {translations.fullName || "Họ và tên"}
+                    Họ tên
                   </label>
                   <Controller
                     control={guardianControl}
@@ -352,6 +339,7 @@ export function RegisterForm({
                       <input
                         id="guardian-fullName"
                         type="text"
+                        placeholder="Họ và tên"
                         className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
@@ -373,6 +361,7 @@ export function RegisterForm({
                       <input
                         id="guardian-email"
                         type="email"
+                        placeholder="Email"
                         className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
@@ -388,7 +377,7 @@ export function RegisterForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div className="grid gap-2">
                   <label className="text-base font-medium text-black" htmlFor="guardian-username">
-                    {translations.username || "Tên đăng nhập"}
+                    Username
                   </label>
                   <Controller
                     control={guardianControl}
@@ -397,6 +386,7 @@ export function RegisterForm({
                       <input
                         id="guardian-username"
                         type="text"
+                        placeholder="Tên đăng nhập"
                         className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
@@ -409,20 +399,34 @@ export function RegisterForm({
 
                 <div className="grid gap-2">
                   <label className="text-base font-medium text-black" htmlFor="guardian-password">
-                    {translations.password || "Mật khẩu"}
+                    Password
                   </label>
-                  <Controller
-                    control={guardianControl}
-                    name="password"
-                    render={({ field }) => (
-                      <input
-                        id="guardian-password"
-                        type="password"
-                        className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                        {...field}
-                      />
-                    )}
-                  />
+                  <div className="relative">
+                    <Controller
+                      control={guardianControl}
+                      name="password"
+                      render={({ field }) => (
+                        <input
+                          id="guardian-password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Mật khẩu"
+                          className="w-full h-10 px-4 pr-12 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                          {...field}
+                        />
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      {!showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                   <p className="text-sm text-red-500 min-h-5">
                     {guardianErrors.password?.message}
                   </p>
@@ -432,20 +436,34 @@ export function RegisterForm({
               {/* Confirm Password - Full width */}
               <div className="grid gap-2 mt-2">
                 <label className="text-base font-medium text-black" htmlFor="guardian-confirmPassword">
-                  {translations.confirmPassword || "Xác nhận mật khẩu"}
+                  Xác nhận
                 </label>
-                <Controller
-                  control={guardianControl}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <input
-                      id="guardian-confirmPassword"
-                      type="password"
-                      className="w-full h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                      {...field}
-                    />
-                  )}
-                />
+                <div className="relative">
+                  <Controller
+                    control={guardianControl}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <input
+                        id="guardian-confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Xác nhận mật khẩu"
+                        className="w-full h-10 px-4 pr-12 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                        {...field}
+                      />
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    {!showConfirmPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
                 <p className="text-sm text-red-500 min-h-5">
                   {guardianErrors.confirmPassword?.message}
                 </p>
@@ -454,7 +472,7 @@ export function RegisterForm({
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={!guardianIsValid || isPending}
+                disabled={isPending}
                 className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
                 {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
@@ -495,7 +513,7 @@ export function RegisterForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-fullName">
-                    {translations.fullName || "Họ và tên"}
+                    Họ tên
                   </label>
                   <Controller
                     control={competitorControl}
@@ -540,7 +558,7 @@ export function RegisterForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-username">
-                    {translations.username || "Tên đăng nhập"}
+                    Username
                   </label>
                   <Controller
                     control={competitorControl}
@@ -561,20 +579,33 @@ export function RegisterForm({
 
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-password">
-                    {translations.password || "Mật khẩu"}
+                    Password
                   </label>
-                  <Controller
-                    control={competitorControl}
-                    name="password"
-                    render={({ field }) => (
-                      <input
-                        id="competitor-password"
-                        type="password"
-                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                        {...field}
-                      />
-                    )}
-                  />
+                  <div className="relative">
+                    <Controller
+                      control={competitorControl}
+                      name="password"
+                      render={({ field }) => (
+                        <input
+                          id="competitor-password"
+                          type={showPassword ? "text" : "password"}
+                          className="w-full mt-2 h-10 px-4 pr-12 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                          {...field}
+                        />
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      {!showPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                   <p className="text-sm text-red-500 min-h-5">
                     {competitorErrors.password?.message}
                   </p>
@@ -585,20 +616,33 @@ export function RegisterForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-confirmPassword">
-                    {translations.confirmPassword || "Xác nhận mật khẩu"}
+                    Xác nhận
                   </label>
-                  <Controller
-                    control={competitorControl}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <input
-                        id="competitor-confirmPassword"
-                        type="password"
-                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                        {...field}
-                      />
-                    )}
-                  />
+                  <div className="relative">
+                    <Controller
+                      control={competitorControl}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <input
+                          id="competitor-confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          className="w-full mt-2 h-10 px-4 pr-12 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                          {...field}
+                        />
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    >
+                      {!showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5" />
+                      ) : (
+                        <Eye className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
                   <p className="text-sm text-red-500 min-h-5">
                     {competitorErrors.confirmPassword?.message}
                   </p>
@@ -606,7 +650,7 @@ export function RegisterForm({
 
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-birthday">
-                    {translations.birthday || "Tuổi"}
+                    Tuổi
                   </label>
                   <Controller
                     control={competitorControl}
@@ -635,7 +679,7 @@ export function RegisterForm({
               {/* School Name - Full width */}
               <div className="grid ">
                 <label className="text-sm font-medium text-black" htmlFor="competitor-schoolName">
-                  {translations.schoolName || "Tên trường"}
+                  Trường
                 </label>
                 <Controller
                   control={competitorControl}
@@ -658,7 +702,7 @@ export function RegisterForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-ward">
-                    {translations.ward || "Phường/Xã"}
+                    Phường/Xã
                   </label>
                   <Controller
                     control={competitorControl}
@@ -687,7 +731,7 @@ export function RegisterForm({
 
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-grade">
-                    {translations.grade || "Lớp"}
+                    Lớp
                   </label>
                   <Controller
                     control={competitorControl}
@@ -716,7 +760,7 @@ export function RegisterForm({
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={!competitorIsValid || isPending}
+                disabled={isPending}
                 className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
                 {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}

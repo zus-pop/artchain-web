@@ -242,7 +242,7 @@ export default function ContestsPage() {
             </motion.div>
           ) : (
             <motion.div
-              className="text-center py-16"
+              className="text-center py-16 min-h-screen"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6 }}

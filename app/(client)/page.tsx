@@ -214,6 +214,9 @@ export default function Page() {
   // Active section state for header highlighting
   const [activeSection, setActiveSection] = useState("hero");
 
+  // Distortion scale animation state
+  const [distortionScale, setDistortionScale] = useState(-150);
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY + 200; // offset to detect section earlier
@@ -231,6 +234,38 @@ export default function Page() {
     // Set initial active section
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Distortion scale animation effect
+  useEffect(() => {
+    let animationId: number;
+    let direction = 1; // 1 for increasing, -1 for decreasing
+
+    const animate = () => {
+      setDistortionScale(prev => {
+        let next = prev + direction * 2; // Adjust speed here
+        
+        if (next >= 150) {
+          next = 150;
+          direction = -1; // Start decreasing
+        } else if (next <= -150) {
+          next = -150;
+          direction = 1; // Start increasing
+        }
+        
+        return next;
+      });
+      
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
   }, []);
 
   // Auth hooks
@@ -365,7 +400,7 @@ export default function Page() {
           brightness={54}
           opacity={1}
           displace={0.5}
-          distortionScale={-180}
+          distortionScale={distortionScale}
           redOffset={0}
           greenOffset={10}
           blueOffset={20}
@@ -604,11 +639,11 @@ export default function Page() {
                     Cuộc thi đang diễn ra
                   </h2>
                   <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-                    {activeContest?.title || "Thành Phố Trong Mắt Em"}
+                    {activeContest?.title || "Không có cuộc thi nào"}
                   </h3>
                   <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
                     {activeContest?.description ||
-                      '"Thành Phố Trong Mắt Em" là cuộc thi vẽ tranh dành cho học sinh lớp 1–9 tại TP.HCM, nơi các em thể hiện góc nhìn và ước mơ về thành phố bằng màu sắc sáng tạo.'}
+                      "Các cuộc thi sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những cơ hội tham gia thú vị."}
                   </p>
                   <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
                     <p>
@@ -619,7 +654,7 @@ export default function Page() {
                           ).toLocaleDateString("vi-VN")} đến ${new Date(
                             activeContest.endDate
                           ).toLocaleDateString("vi-VN")}`
-                        : "21-10-2025 đến 12-12-2025"}
+                        : "Chưa có thông tin thời gian"}
                     </p>
                     <p>
                       <strong>Lưu ý:</strong>
@@ -639,34 +674,42 @@ export default function Page() {
                             const year = date.getUTCFullYear();
                             return `${day}/${month}/${year}`;
                           })()}`
-                        : "Thí sinh cần nộp bản cứng tác phẩm trước ngày quy định."}
+                        : "Thông tin deadline sẽ được cập nhật sớm."}
                     </p>
                   </div>
-                  <button
-                    onClick={() =>
-                      activeContest?.contestId &&
-                      router.push(`/contests/${activeContest.contestId}`)
-                    }
-                    className="mt-6 sm:mt-10 bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
-                  >
-                    Tham gia ngay <ArrowRightIcon />
-                  </button>
+                  {activeContest && (
+                    <button
+                      onClick={() =>
+                        activeContest.contestId &&
+                        router.push(`/contests/${activeContest.contestId}`)
+                      }
+                      className="mt-6 sm:mt-10 bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
+                    >
+                      Tham gia ngay <ArrowRightIcon />
+                    </button>
+                  )}
                 </div>
 
-                <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
-                  <img
-                    src={
-                      activeContest?.bannerUrl ||
-                      "https://plus.unsplash.com/premium_vector-1697729767007-36c5a80b5782?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=2910"
-                    }
-                    alt="Minh họa thành phố"
-                    className="h-full w-full object-cover md:w-[50vw] max-w-none "
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.backgroundColor =
-                        "#89c4f4";
-                    }}
-                  />
-                </div>
+                {activeContest ? (
+                  <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
+                    <img
+                      src={activeContest.bannerUrl}
+                      alt="Minh họa thành phố"
+                      className="h-full w-full object-cover md:w-[50vw] max-w-none "
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.backgroundColor =
+                          "#89c4f4";
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-64 rounded-xl sm:h-80 md:h-full bg-gray-100 md:-mr-[calc((100vw-72rem)/2+2rem)] flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <div className="text-6xl mb-4">🎨</div>
+                      <p className="text-lg font-medium">Chưa có hình ảnh</p>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -739,12 +782,12 @@ export default function Page() {
                         />
                       </Link>
                     ) : (
-                      <NewsCardSmall
-                        imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                        category="Digital & Contemparary Art"
-                        title="How Art Fairs Are Adapting to the<br />Digital Age"
-                        darkBg={true}
-                      />
+                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
+                        <div className="text-center text-gray-500 py-8">
+                          <div className="text-sm mb-1">Không có bài viết</div>
+                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
+                        </div>
+                      </div>
                     )}
                     {smallPosts[1] ? (
                       <Link href={`/posts/${smallPosts[1].post_id}`}>
@@ -766,12 +809,12 @@ export default function Page() {
                         />
                       </Link>
                     ) : (
-                      <NewsCardSmall
-                        imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                        category="Digital & Contemparary Art"
-                        title="How Art Fairs Are Adapting to the<br />Digital Age"
-                        darkBg={true}
-                      />
+                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
+                        <div className="text-center text-gray-500 py-8">
+                          <div className="text-sm mb-1">Không có bài viết</div>
+                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -798,15 +841,12 @@ export default function Page() {
                         />
                       </Link>
                     ) : (
-                      <img
-                        src="https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
-                        alt="Spotlight To Emerging Artist"
-                        className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.backgroundColor =
-                            "#FF5733";
-                        }}
-                      />
+                      <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-200 flex items-center justify-center mb-4 sm:mb-6">
+                        <div className="text-center text-gray-500">
+                          <div className="text-lg mb-2">Không có bài viết nổi bật</div>
+                          <p className="text-sm">Các bài viết sẽ được cập nhật sớm.</p>
+                        </div>
+                      </div>
                     )}
                     <AnimatedContainer
                       className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
@@ -830,7 +870,7 @@ export default function Page() {
                         animation="animate-fade-in-right"
                         delay={200}
                       >
-                        Spotlight To Emerging Artist: Ones to watch in 2025
+                        Không có bài viết nổi bật
                       </AnimatedContainer>
                     )}
                     <AnimatedContainer
@@ -847,13 +887,9 @@ export default function Page() {
                           </ReactMarkdown>
                         </div>
                       ) : (
-                        <>
-                          &quot;Thành Phố Trong Mắt Em&quot; là cuộc thi vẽ
-                          tranh dành cho học sinh từ lớp 1 đến lớp 9 đang học
-                          tập tại Thành phố Hồ Chí Minh. Cuộc thi khuyến khích
-                          các em thể hiện góc nhìn riêng về thành phố qua màu
-                          sắc, đường nét và trí...
-                        </>
+                        <div className="text-gray-500 italic">
+                          Các bài viết nổi bật sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những nội dung thú vị về nghệ thuật và cuộc thi.
+                        </div>
                       )}
                     </AnimatedContainer>
                   </div>
@@ -881,12 +917,12 @@ export default function Page() {
                         />
                       </Link>
                     ) : (
-                      <NewsCardSmall
-                        imgSrc="https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                        category="Digital & Contemparary Art"
-                        title="How Art Fairs Are Adapting to the<br />Digital Age"
-                        darkBg={true}
-                      />
+                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
+                        <div className="text-center text-gray-500 py-8">
+                          <div className="text-sm mb-1">Không có bài viết</div>
+                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
+                        </div>
+                      </div>
                     )}
                     {smallPosts[3] ? (
                       <Link href={`/posts/${smallPosts[3].post_id}`}>
@@ -908,12 +944,12 @@ export default function Page() {
                         />
                       </Link>
                     ) : (
-                      <NewsCardSmall
-                        imgSrc="https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                        category="Digital & Contemparary Art"
-                        title="How Art Fairs Are Adapting to the<br />Digital Age"
-                        darkBg={true}
-                      />
+                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
+                        <div className="text-center text-gray-500 py-8">
+                          <div className="text-sm mb-1">Không có bài viết</div>
+                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </>
@@ -983,37 +1019,10 @@ export default function Page() {
                       />
                     </Link>
                   ))
-                : // fallback static content if no campaigns
-                  [
-                    {
-                      imgSrc:
-                        "https://placehold.co/400x300/2ecc71/ffffff?text=Campaign+1",
-                      title: "Gieo Mầm Tài Năng Trẻ",
-                      description:
-                        "Mục tiêu gây quỹ để mua vật liệu vẽ<br />chất lượng và tổ chức các buổi<br />workshop miễn phí cho thí sinh.",
-                    },
-                    {
-                      imgSrc:
-                        "https://placehold.co/400x300/f1c40f/ffffff?text=Campaign+2",
-                      title: "Tiếp Sức Nét Cọ",
-                      description:
-                        "Kêu gọi cộng đồng hỗ trợ kinh phí in<br />ấn, trưng bày tác phẩm tại triển lãm<br />cuối cuộc thi.",
-                    },
-                    {
-                      imgSrc:
-                        "https://placehold.co/400x300/e74c3c/ffffff?text=Campaign+3",
-                      title: "Mơ Ước Màu Nước",
-                      description:
-                        "Mục tiêu gây quỹ nhỏ nhằm cung cấp<br />dụng cụ vẽ cho các thí sinh có hoàn<br />cảnh khó khăn tham gia.",
-                    },
-                  ].map((item, i) => (
-                    <CampaignCard
-                      key={i}
-                      imgSrc={item.imgSrc}
-                      title={item.title}
-                      description={item.description}
-                    />
-                  ))}
+                : // Show no data message instead of mock data
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-gray-400 text-sm">Các chiến dịch sẽ được cập nhật sớm.</p>
+                  </div>}
             </div>
           </div>
         </AnimatedContainer>
