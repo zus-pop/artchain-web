@@ -1,10 +1,97 @@
 "use client";
+import React from "react";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useQuery } from "@tanstack/react-query";
+import { getSystemStatistics } from "@/apis/admin";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  PieLabelRenderProps,
+} from "recharts";
+import { Users, Trophy, Palette, Vote, Award, Image, Target } from "lucide-react";
 
 export default function AdminDashboardPage() {
+  // Fetch system statistics
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["system-statistics"],
+    queryFn: getSystemStatistics,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  const systemStats = stats?.data;
+
+  // Prepare chart data
+  const userRoleData = systemStats ? [
+    { name: "Competitors", value: systemStats.users.byRole.competitors, color: "#8884d8" },
+    { name: "Guardians", value: systemStats.users.byRole.guardians, color: "#82ca9d" },
+    { name: "Examiners", value: systemStats.users.byRole.examiners, color: "#ffc658" },
+    { name: "Staff", value: systemStats.users.byRole.staffs, color: "#ff7c7c" },
+    { name: "Admins", value: systemStats.users.byRole.admins, color: "#8dd1e1" },
+  ] : [];
+
+  const contestStatusData = systemStats ? [
+    { name: "Active", value: systemStats.contests.active, color: "#10b981" },
+    { name: "Upcoming", value: systemStats.contests.upcoming, color: "#f59e0b" },
+    { name: "Ended", value: systemStats.contests.ended, color: "#ef4444" },
+    { name: "Completed", value: systemStats.contests.completed, color: "#6366f1" },
+  ] : [];
+
+  const paintingStatusData = systemStats ? [
+    { name: "Approved", value: systemStats.paintings.approved },
+    { name: "Pending", value: systemStats.paintings.pending },
+    { name: "Rejected", value: systemStats.paintings.rejected },
+  ] : [];
+
+  const exhibitionData = systemStats ? [
+    { name: "Active", value: systemStats.exhibitions.active, color: "#10b981" },
+    { name: "Completed", value: systemStats.exhibitions.completed, color: "#6366f1" },
+  ] : [];
+
+  const campaignData = systemStats ? [
+    { name: "Active", value: systemStats.campaigns.active, color: "#f59e0b" },
+    { name: "Completed", value: systemStats.campaigns.completed, color: "#8b5cf6" },
+  ] : [];
+
+  if (isLoading) {
+    return (
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AdminSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader title="Admin Dashboard" />
+          <div className="flex flex-1 flex-col">
+            <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
+              <Breadcrumb items={[]} homeHref="/dashboard/admin" />
+            </div>
+            <div className="flex items-center justify-center flex-1">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137]"></div>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
   return (
     <SidebarProvider
       style={
@@ -23,216 +110,207 @@ export default function AdminDashboardPage() {
           </div>
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              {/* Admin Dashboard Content */}
+              {/* Overview Cards */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Total Users
+                      <p className="text-sm font-medium text-gray-600">Total Users</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {systemStats?.users.total || 0}
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">2,543</p>
                     </div>
                     <div className="rounded-lg bg-blue-50 p-3">
-                      <svg
-                        className="h-6 w-6 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
+                      <Users className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    +12.5% from last month
+                    {systemStats?.users.active || 0} active users
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Pending Reports
+                      <p className="text-sm font-medium text-gray-600">Total Contests</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {systemStats?.contests.total || 0}
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">45</p>
                     </div>
                     <div className="rounded-lg bg-orange-50 p-3">
-                      <svg
-                        className="h-6 w-6 text-orange-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                        />
-                      </svg>
+                      <Trophy className="h-6 w-6 text-orange-600" />
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    Requires attention
+                    {systemStats?.contests.active || 0} active contests
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        Active Accounts
+                      <p className="text-sm font-medium text-gray-600">Total Paintings</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {systemStats?.paintings.total || 0}
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">1,892</p>
                     </div>
                     <div className="rounded-lg bg-green-50 p-3">
-                      <svg
-                        className="h-6 w-6 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
+                      <Palette className="h-6 w-6 text-green-600" />
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    74.4% of total users
+                    {systemStats?.paintings.pending || 0} pending reviews
                   </p>
                 </div>
 
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
-                        System Health
+                      <p className="text-sm font-medium text-gray-600">Total Evaluations</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {systemStats?.evaluations.total || 0}
                       </p>
-                      <p className="text-3xl font-bold text-gray-900">98.5%</p>
                     </div>
                     <div className="rounded-lg bg-purple-50 p-3">
-                      <svg
-                        className="h-6 w-6 text-purple-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                        />
-                      </svg>
+                      <Vote className="h-6 w-6 text-purple-600" />
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    All systems operational
+                    System evaluations
                   </p>
                 </div>
               </div>
 
-              {/* Recent Activity */}
-              <div className="rounded-lg border border-gray-200 bg-white p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  Recent Activity
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-blue-50 p-2">
-                        <svg
-                          className="h-5 w-5 text-blue-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          New user registered
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          john.doe@example.com
-                        </p>
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-500">5 min ago</span>
+              {/* Charts Section */}
+              <div className="space-y-6">
+                {/* Row 1: User Roles Distribution - Full Width */}
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    User Roles Distribution
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={userRoleData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={(props: PieLabelRenderProps) => `${props.name} ${((props.percent as number) * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {userRoleData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Row 2: Contest Status + Painting Status */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Contest Status Overview
+                    </h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={contestStatusData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
 
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-orange-50 p-2">
-                        <svg
-                          className="h-5 w-5 text-orange-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          New report submitted
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Inappropriate content report
-                        </p>
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Painting Submissions Status
+                    </h3>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={paintingStatusData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#82ca9d" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                {/* Row 3: Votes + Awards */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Votes Overview
+                    </h3>
+                    <div className="flex items-center justify-center h-48">
+                      <div className="text-center">
+                        <Vote className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+                        <p className="text-3xl font-bold text-gray-900">{systemStats?.votes.total || 0}</p>
+                        <p className="text-sm text-gray-600">Total Votes</p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">15 min ago</span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="rounded-lg bg-red-50 p-2">
-                        <svg
-                          className="h-5 w-5 text-red-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          Account suspended
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Violation of terms of service
-                        </p>
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Awards Overview
+                    </h3>
+                    <div className="flex items-center justify-center h-48">
+                      <div className="text-center">
+                        <Award className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                        <p className="text-3xl font-bold text-gray-900">{systemStats?.awards.total || 0}</p>
+                        <p className="text-sm text-gray-600">Total Awards</p>
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">1 hour ago</span>
+                  </div>
+                </div>
+
+                {/* Row 4: Exhibitions + Campaigns */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Exhibitions Status
+                    </h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={exhibitionData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={40}
+                          outerRadius={70}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {exhibitionData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Campaigns Status
+                    </h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <BarChart data={campaignData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#8884d8" />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </div>

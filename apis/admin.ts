@@ -1,32 +1,10 @@
 import myAxios from "@/lib/custom-axios";
+import { AdminUser, GetAllUsersResponse } from "@/types/admin/user";
+import { SystemStatisticsResponse } from "@/types/admin/system";
 
 /**
  * Admin API - User Management
  */
-
-export interface AdminUser {
-  userId: string;
-  username: string;
-  fullName: string;
-  email: string;
-  phone: string | null;
-  role: "ADMIN" | "STAFF" | "EXAMINER" | "GUARDIAN" | "COMPETITOR";
-  status: number; // 1 = active, 0 = suspended
-  createdAt: string;
-  positionLevel: string | null;
-}
-
-export interface GetAllUsersResponse {
-  data: AdminUser[];
-  meta: {
-    total: number;
-    page: string;
-    limit: string;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
 
 // GET /api/admin/accounts - Get all accounts with pagination and role filtering
 export const getAllUsers = async (params?: {
@@ -63,5 +41,15 @@ export const activateUser = async (id: string): Promise<{
   };
 }> => {
   const response = await myAxios.patch(`/admin/users/activate/${id}`);
+  return response.data;
+};
+
+/**
+ * Admin API - System Statistics
+ */
+
+// GET /api/admin/statistics/system - Get system statistics overview
+export const getSystemStatistics = async (): Promise<SystemStatisticsResponse> => {
+  const response = await myAxios.get("/admin/statistics/system");
   return response.data;
 };
