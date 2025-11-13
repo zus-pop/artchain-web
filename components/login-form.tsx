@@ -212,7 +212,7 @@ export function LoginForm({
             {/* Nút Đăng nhập */}
             <button
               type="submit"
-              disabled={!isValid || isPending}
+              disabled={isPending}
               className="flex cursor-pointer items-center justify-center gap-2 w-full h-14 rounded-sm px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
             >
               {translations.login || "Đăng nhập"}
