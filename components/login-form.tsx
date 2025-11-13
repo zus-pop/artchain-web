@@ -5,11 +5,12 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import Image from "next/image"; // Import Next.js Image
+import { Eye, EyeOff } from "lucide-react";
 
 // Định nghĩa schema validation
 const schema = z.object({
@@ -38,6 +39,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const { currentLanguage } = useLanguageStore();
   const translations = useTranslation(currentLanguage);
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
@@ -51,7 +53,7 @@ export function LoginForm({
     defaultValues: {
       username: "",
       password: "",
-      staySignedIn: false,
+      staySignedIn: true,
     },
   });
 
@@ -84,7 +86,7 @@ export function LoginForm({
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="flex items-center gap-2 text-base font-medium text-black hover:text-black mb-6 relative after:content-[''] after:absolute after:bottom-[-2px] after:left-0 after:w-0 after:h-0.5 after:bg-black after:transition-all after:duration-300 hover:after:w-full"
+            className="flex cursor-pointer items-center gap-2 text-base font-medium text-black mb-6 hover:text-orange-500 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -154,18 +156,31 @@ export function LoginForm({
               >
                 {translations.password || "Mật khẩu"}
               </label>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <input
-                    id="password"
-                    type="password"
-                    className="w-full h-12 px-4 rounded-sm border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                    {...field}
-                  />
-                )}
-              />
+              <div className="relative">
+                <Controller
+                  control={control}
+                  name="password"
+                  render={({ field }) => (
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      className="w-full h-12 px-4 pr-12 rounded-sm border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                      {...field}
+                    />
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  {!showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               <p className="text-sm text-red-500 min-h-5">
                 {errors.password?.message}
               </p>
@@ -198,7 +213,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={!isValid || isPending}
-              className="flex items-center justify-center gap-2 w-full h-14 rounded-sm px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
+              className="flex cursor-pointer items-center justify-center gap-2 w-full h-14 rounded-sm px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-10 mb-4"
             >
               {translations.login || "Đăng nhập"}
               <svg

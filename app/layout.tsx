@@ -31,6 +31,9 @@ const beVietnamPro = Be_Vietnam_Pro({
 export const metadata: Metadata = {
   title: "ArtChain - Cuộc thi nghệ thuật",
   description: "Nền tảng cuộc thi vẽ tranh nghệ thuật hàng đầu",
+  icons: {
+    icon: "/images/newlogo.png",
+  },
 };
 
 export default function RootLayout({
@@ -41,6 +44,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Favicon: use PNG stored in public/images/newlogo.png */}
+        <link rel="icon" href="/images/newlogo.png" />
         <style
           dangerouslySetInnerHTML={{
             __html: `

@@ -1,6 +1,6 @@
 import myAxios from "@/lib/custom-axios";
 import { ApiResponse } from "@/types";
-import { Painting, Round2ImageRequest, TopPainting } from "@/types/painting";
+import { Painting, Round2ImageRequest, TopPainting, CompetitorSubmissionsResponse } from "@/types/painting";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -20,6 +20,28 @@ export function useGetMySubmissions() {
         throw error;
       }
     },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    refetchOnWindowFocus: false,
+  });
+}
+
+/**
+ * Get all submissions of a specific user by userId (for guardians)
+ */
+export function useGetUserSubmissions(userId?: number) {
+  return useQuery({
+    queryKey: ["user-submissions", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      try {
+        const response = await myAxios.get(`/guardians/competitor/${userId}/submissions`);
+        return response.data as CompetitorSubmissionsResponse;
+      } catch (error) {
+        console.error("Error fetching user submissions:", error);
+        throw error;
+      }
+    },
+    enabled: !!userId,
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: false,
   });

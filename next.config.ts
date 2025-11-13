@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
       {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+        pathname: "/**",
+      },
+      {
         protocol: "https",
         hostname: "example.com", // Thay thế bằng tên miền thực của bạn
         port: "",
