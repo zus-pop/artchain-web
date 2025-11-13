@@ -62,27 +62,8 @@ const data = {
       ],
     },
     {
-      title: "Reports Management",
-      url: "/dashboard/admin/reports",
-      icon: IconReport,
-      items: [
-        {
-          title: "User Reports",
-          url: "/dashboard/admin/reports",
-        },
-        {
-          title: "Pending Reports",
-          url: "/dashboard/admin/reports/pending",
-        },
-        {
-          title: "Resolved Reports",
-          url: "/dashboard/admin/reports/resolved",
-        },
-      ],
-    },
-    {
-      title: "Statistics",
-      url: "/dashboard/admin/statistics",
+      title: "Contest Analytics",
+      url: "/dashboard/admin/contests",
       icon: IconChartBar,
       items: [
         {
@@ -100,6 +81,25 @@ const data = {
         {
           title: "Reports Analytics",
           url: "/dashboard/admin/statistics/reports",
+        },
+      ],
+    },
+    {
+      title: "Reports Management",
+      url: "/dashboard/admin/reports",
+      icon: IconReport,
+      items: [
+        {
+          title: "User Reports",
+          url: "/dashboard/admin/reports",
+        },
+        {
+          title: "Pending Reports",
+          url: "/dashboard/admin/reports/pending",
+        },
+        {
+          title: "Resolved Reports",
+          url: "/dashboard/admin/reports/resolved",
         },
       ],
     },
