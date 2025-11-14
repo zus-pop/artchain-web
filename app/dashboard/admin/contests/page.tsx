@@ -369,10 +369,17 @@ export default function AdminContestsPage() {
                           </span>
                             <button
                               onClick={() => {
-                                setSelectedContestId(contest.contestId as unknown as number);
-                                setStatsModalOpen(true);
+                                if (contest.status === "ACTIVE") {
+                                  setSelectedContestId(contest.contestId as unknown as number);
+                                  setStatsModalOpen(true);
+                                }
                               }}
-                              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                              disabled={contest.status !== "ACTIVE"}
+                              className={`p-2 transition-colors ${
+                                contest.status === "ACTIVE"
+                                  ? "text-gray-400 hover:text-gray-600 cursor-pointer"
+                                  : "text-gray-300 cursor-not-allowed opacity-50"
+                              }`}
                             >
                               <IconEye className="h-5 w-5" />
                             </button>

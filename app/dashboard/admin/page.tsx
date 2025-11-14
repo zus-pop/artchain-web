@@ -6,8 +6,18 @@ import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { getSystemStatistics } from "@/apis/admin";
-import { getUserGrowth, getTopCompetitors, getTopExaminers, getMostVotedPaintings } from "@/apis/admin";
-import type { ApiListResponse, TopCompetitorItem, TopExaminerItem, TopPaintingItem } from "@/types/admin/toplists";
+import {
+  getUserGrowth,
+  getTopCompetitors,
+  getTopExaminers,
+  getMostVotedPaintings,
+} from "@/apis/admin";
+import type {
+  ApiListResponse,
+  TopCompetitorItem,
+  TopExaminerItem,
+  TopPaintingItem,
+} from "@/types/admin/toplists";
 import { UserGrowthItem, UserGrowthResponse } from "@/types/admin/system";
 
 interface TickProps {
@@ -33,7 +43,15 @@ import {
   Line,
   PieLabelRenderProps,
 } from "recharts";
-import { Users, Trophy, Palette, Vote, Award, Image, Target } from "lucide-react";
+import {
+  Users,
+  Trophy,
+  Palette,
+  Vote,
+  Award,
+  Image,
+  Target,
+} from "lucide-react";
 import Loader from "@/components/Loaders";
 
 export default function AdminDashboardPage() {
@@ -47,104 +65,231 @@ export default function AdminDashboardPage() {
   const systemStats = stats?.data;
 
   // Prepare chart data
-  const userRoleData = systemStats ? [
-    { name: "Competitors", value: systemStats.users.byRole.competitors, color: "#8884d8" },
-    { name: "Guardians", value: systemStats.users.byRole.guardians, color: "#82ca9d" },
-    { name: "Examiners", value: systemStats.users.byRole.examiners, color: "#ffc658" },
-    { name: "Staff", value: systemStats.users.byRole.staffs, color: "#ff7c7c" },
-    { name: "Admins", value: systemStats.users.byRole.admins, color: "#8dd1e1" },
-  ] : [];
+  const userRoleData = systemStats
+    ? [
+        {
+          name: "Competitors",
+          value: systemStats.users.byRole.competitors,
+          color: "#8884d8",
+        },
+        {
+          name: "Guardians",
+          value: systemStats.users.byRole.guardians,
+          color: "#82ca9d",
+        },
+        {
+          name: "Examiners",
+          value: systemStats.users.byRole.examiners,
+          color: "#ffc658",
+        },
+        {
+          name: "Staff",
+          value: systemStats.users.byRole.staffs,
+          color: "#ff7c7c",
+        },
+        {
+          name: "Admins",
+          value: systemStats.users.byRole.admins,
+          color: "#8dd1e1",
+        },
+      ]
+    : [];
 
-  const contestStatusData = systemStats ? [
-    { name: "Active", value: systemStats.contests.active, color: "#10b981" },
-    { name: "Upcoming", value: systemStats.contests.upcoming, color: "#f59e0b" },
-    { name: "Ended", value: systemStats.contests.ended, color: "#ef4444" },
-    { name: "Completed", value: systemStats.contests.completed, color: "#6366f1" },
-  ] : [];
+  const contestStatusData = systemStats
+    ? [
+        {
+          name: "Active",
+          value: systemStats.contests.active,
+          color: "#10b981",
+        },
+        {
+          name: "Upcoming",
+          value: systemStats.contests.upcoming,
+          color: "#f59e0b",
+        },
+        { name: "Ended", value: systemStats.contests.ended, color: "#ef4444" },
+        {
+          name: "Completed",
+          value: systemStats.contests.completed,
+          color: "#6366f1",
+        },
+      ]
+    : [];
 
-  const paintingStatusData = systemStats ? [
-    { name: "Accepted", value: systemStats.paintings.accepted },
-    { name: "Pending", value: systemStats.paintings.pending },
-    { name: "Rejected", value: systemStats.paintings.rejected },
-  ] : [];
+  const paintingStatusData = systemStats
+    ? [
+        { name: "Accepted", value: systemStats.paintings.accepted },
+        { name: "Pending", value: systemStats.paintings.pending },
+        { name: "Rejected", value: systemStats.paintings.rejected },
+      ]
+    : [];
 
-  const exhibitionData = systemStats ? [
-    { name: "Active", value: systemStats.exhibitions.active, color: "#10b981" },
-    { name: "Completed", value: systemStats.exhibitions.completed, color: "#6366f1" },
-  ] : [];
+  const exhibitionData = systemStats
+    ? [
+        {
+          name: "Active",
+          value: systemStats.exhibitions.active,
+          color: "#10b981",
+        },
+        {
+          name: "Draft",
+          value: systemStats.exhibitions.draft,
+          color: "#6366f1",
+        },
+      ]
+    : [];
 
-  const campaignData = systemStats ? [
-    { name: "Active", value: systemStats.campaigns.active, color: "#f59e0b" },
-    { name: "Completed", value: systemStats.campaigns.completed, color: "#8b5cf6" },
-  ] : [];
+  const campaignData = systemStats
+    ? [
+        {
+          name: "Active",
+          value: systemStats.campaigns.active,
+          color: "#f59e0b",
+        },
+        { name: "Draft", value: systemStats.campaigns.draft, color: "#8b5cf6" },
+      ]
+    : [];
 
   // Controls and user-growth query (right-side line chart)
   const [startDate, setStartDate] = useState<string>(() => "2025-01-01");
   const [endDate, setEndDate] = useState<string>(() => "2025-12-31");
   const [groupBy, setGroupBy] = useState<string>(() => "month");
-  const [topN, setTopN] = useState<number>(10);
+  // Sorting for top competitors names (dropdown inside the Top Competitors card)
+  const [sortBy, setSortBy] = useState<"totalSubmissions" | "awardsWon">(
+    "totalSubmissions"
+  );
 
-  // Top lists queries (typed)
-  const { data: topCompetitorsRaw } = useQuery<ApiListResponse<TopCompetitorItem> | TopCompetitorItem[]>({
-    queryKey: ["top-competitors", topN],
-    queryFn: () => getTopCompetitors(topN),
+  // Top lists queries (typed) - Get top 10 by default
+  const { data: topCompetitorsRaw } = useQuery<
+    ApiListResponse<TopCompetitorItem> | TopCompetitorItem[]
+  >({
+    queryKey: ["top-competitors"],
+    queryFn: () => getTopCompetitors(10),
     enabled: true,
   });
-  const { data: topExaminersRaw } = useQuery<ApiListResponse<TopExaminerItem> | TopExaminerItem[]>({
-    queryKey: ["top-examiners", topN],
-    queryFn: () => getTopExaminers(topN),
+  const { data: topExaminersRaw } = useQuery<
+    ApiListResponse<TopExaminerItem> | TopExaminerItem[]
+  >({
+    queryKey: ["top-examiners"],
+    queryFn: () => getTopExaminers(10),
     enabled: true,
   });
-  const { data: topPaintingsRaw } = useQuery<ApiListResponse<TopPaintingItem> | TopPaintingItem[]>({
-    queryKey: ["top-paintings", topN],
-    queryFn: () => getMostVotedPaintings(topN),
+  const { data: topPaintingsRaw } = useQuery<
+    ApiListResponse<TopPaintingItem> | TopPaintingItem[]
+  >({
+    queryKey: ["top-paintings"],
+    queryFn: () => getMostVotedPaintings(10),
     enabled: true,
   });
 
-  const topCompetitors = (topCompetitorsRaw as ApiListResponse<TopCompetitorItem>)?.data ?? (topCompetitorsRaw as TopCompetitorItem[]) ?? [];
-  const topExaminers = (topExaminersRaw as ApiListResponse<TopExaminerItem>)?.data ?? (topExaminersRaw as TopExaminerItem[]) ?? [];
-  const topPaintings = (topPaintingsRaw as ApiListResponse<TopPaintingItem>)?.data ?? (topPaintingsRaw as TopPaintingItem[]) ?? [];
+  const topCompetitors =
+    (topCompetitorsRaw as ApiListResponse<TopCompetitorItem>)?.data ??
+    (topCompetitorsRaw as TopCompetitorItem[]) ??
+    [];
+  const topExaminers =
+    (topExaminersRaw as ApiListResponse<TopExaminerItem>)?.data ??
+    (topExaminersRaw as TopExaminerItem[]) ??
+    [];
+  const topPaintings =
+    (topPaintingsRaw as ApiListResponse<TopPaintingItem>)?.data ??
+    (topPaintingsRaw as TopPaintingItem[]) ??
+    [];
 
-  // Normalize top lists into chart-friendly shape
-  const topCompetitorsData = ([...(topCompetitors || [])].map((it: TopCompetitorItem, idx: number) => ({
-    name: it.fullName ?? `#${it.competitorId ?? idx + 1}`,
-    value: Number(it.totalSubmissions ?? 0),
-  })).sort((a, b) => a.value - b.value));
+  // Prepare two arrays:
+  // - `topCompetitorsDataBars`: fixed ordering for the chart (descending by submissions then awards)
+  // - `topCompetitorsDataNames`: ordering used by the names dropdown (controlled by user)
+  const topCompetitorsDataBars = useMemo(() => {
+    const arr = (topCompetitors || []).map(
+      (it: TopCompetitorItem, idx: number) => ({
+        name: it.fullName ?? `#${it.competitorId ?? idx + 1}`,
+        value: Number(it.totalSubmissions ?? 0),
+        awardsWon: Number(it.awardsWon ?? 0),
+      })
+    );
 
-  const topExaminersData = ([...(topExaminers || [])].map((it: TopExaminerItem, idx: number) => ({
-    name: it.fullName ?? `#${it.examinerId ?? idx + 1}`,
-    value: Number(it.totalEvaluations ?? 0),
-  })).sort((a, b) => a.value - b.value));
+    // Always sort bars descending by totalSubmissions, tie-breaker awardsWon
+    arr.sort((a, b) => {
+      if (b.value !== a.value) return b.value - a.value;
+      return b.awardsWon - a.awardsWon;
+    });
 
-  const topPaintingsData = ([...(topPaintings || [])].map((p: TopPaintingItem, idx: number) => ({
-    name: p.title ?? `#${p.paintingId ?? idx + 1}`,
-    value: Number(p.voteCount ?? 0),
-  })).sort((a, b) => a.value - b.value));
+    return arr;
+  }, [topCompetitors]);
 
-  const {
-    data: userGrowthRaw,
-    isLoading: isLoadingUserGrowth,
-  } = useQuery<UserGrowthResponse | UserGrowthResponse['data'] | null>({
+  const topCompetitorsDataNames = useMemo(() => {
+    const arr = (topCompetitors || []).map(
+      (it: TopCompetitorItem, idx: number) => ({
+        name: it.fullName ?? `#${it.competitorId ?? idx + 1}`,
+        value: Number(it.totalSubmissions ?? 0),
+        awardsWon: Number(it.awardsWon ?? 0),
+      })
+    );
+
+    if (sortBy === "totalSubmissions") {
+      arr.sort((a, b) => {
+        if (b.value !== a.value) return b.value - a.value;
+        return b.awardsWon - a.awardsWon;
+      });
+    } else {
+      arr.sort((a, b) => {
+        if (b.awardsWon !== a.awardsWon) return b.awardsWon - a.awardsWon;
+        return b.value - a.value;
+      });
+    }
+
+    return arr;
+  }, [topCompetitors, sortBy]);
+
+  const topExaminersData = [...(topExaminers || [])]
+    .map((it: TopExaminerItem, idx: number) => ({
+      name: it.fullName ?? `#${it.examinerId ?? idx + 1}`,
+      value: Number(it.totalEvaluations ?? 0),
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  const topPaintingsData = [...(topPaintings || [])]
+    .map((p: TopPaintingItem, idx: number) => ({
+      name: p.title ?? `#${p.paintingId ?? idx + 1}`,
+      value: Number(p.voteCount ?? 0),
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  const topPaintingsList = [...(topPaintings || [])]
+    .map((p: TopPaintingItem, idx: number) => ({
+      title: p.title ?? `#${p.paintingId ?? idx + 1}`,
+      competitorName: p.competitorName ?? "Unknown",
+      voteCount: Number(p.voteCount ?? 0),
+    }))
+    .sort((a, b) => b.voteCount - a.voteCount);
+
+  const { data: userGrowthRaw, isLoading: isLoadingUserGrowth } = useQuery<
+    UserGrowthResponse | UserGrowthResponse["data"] | null
+  >({
     queryKey: ["user-growth", startDate, endDate, groupBy],
     queryFn: () => getUserGrowth({ startDate, endDate, groupBy }),
     enabled: true,
   });
 
-  const userGrowthPayload = (userGrowthRaw as UserGrowthResponse)?.data ?? (userGrowthRaw as UserGrowthResponse['data']) ?? null;
+  const userGrowthPayload =
+    (userGrowthRaw as UserGrowthResponse)?.data ??
+    (userGrowthRaw as UserGrowthResponse["data"]) ??
+    null;
   const growth = userGrowthPayload?.growth ?? [];
 
-  const growthChartData = useMemo(() => (
-    (growth || []).map((g: UserGrowthItem) => ({
-      period: g.period,
-      totalUsers: g.totalUsers,
-      competitors: g.competitors,
-      examiners: g.examiners,
-      guardians: g.guardians,
-      staffs: g.staffs,
-      admins: g.admins,
-      cumulativeTotal: g.cumulativeTotal,
-    }))
-  ), [growth]);
+  const growthChartData = useMemo(
+    () =>
+      (growth || []).map((g: UserGrowthItem) => ({
+        period: g.period,
+        totalUsers: g.totalUsers,
+        competitors: g.competitors,
+        examiners: g.examiners,
+        guardians: g.guardians,
+        staffs: g.staffs,
+        admins: g.admins,
+        cumulativeTotal: g.cumulativeTotal,
+      })),
+    [growth]
+  );
 
   // Custom tick renderer for period axis when grouped by day.
   // Renders the date in two lines: day on top, MM-YYYY on bottom to avoid overlapping.
@@ -154,14 +299,20 @@ export default function AdminDashboardPage() {
     // Expecting ISO date like '2025-01-01' or period string. Try to parse.
     const d = new Date(value);
     const isValidDate = !isNaN(d.getTime());
-    const top = isValidDate ? String(d.getDate()).padStart(2, '0') : value;
-    const bottom = isValidDate ? `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}` : '';
+    const top = isValidDate ? String(d.getDate()).padStart(2, "0") : value;
+    const bottom = isValidDate
+      ? `${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`
+      : "";
 
     return (
       <g transform={`translate(${x},${y})`}>
         <text x={0} y={0} textAnchor="middle" fontSize={11} fill="#666">
-          <tspan x={0} dy={-6}>{top}</tspan>
-          <tspan x={0} dy={14}>{bottom}</tspan>
+          <tspan x={0} dy={-6}>
+            {top}
+          </tspan>
+          <tspan x={0} dy={14}>
+            {bottom}
+          </tspan>
         </text>
       </g>
     );
@@ -169,7 +320,10 @@ export default function AdminDashboardPage() {
 
   // Helper to build 5-step ticks and an upper bound rounded up to nearest 5
   const makeFiveStepTicks = (dataArr: { value?: number }[]) => {
-    const max = dataArr && dataArr.length ? Math.max(...dataArr.map(d => d.value ?? 0)) : 0;
+    const max =
+      dataArr && dataArr.length
+        ? Math.max(...dataArr.map((d) => d.value ?? 0))
+        : 0;
     const upper = Math.max(5, Math.ceil(max / 5) * 5);
     const ticks = [] as number[];
     for (let v = 0; v <= upper; v += 5) ticks.push(v);
@@ -228,7 +382,9 @@ export default function AdminDashboardPage() {
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Users</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Users
+                      </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.users.total || 0}
                       </p>
@@ -245,7 +401,9 @@ export default function AdminDashboardPage() {
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Contests</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Contests
+                      </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.contests.total || 0}
                       </p>
@@ -262,7 +420,9 @@ export default function AdminDashboardPage() {
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Paintings</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Paintings
+                      </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.paintings.total || 0}
                       </p>
@@ -279,7 +439,9 @@ export default function AdminDashboardPage() {
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Evaluations</p>
+                      <p className="text-sm font-medium text-gray-600">
+                        Total Evaluations
+                      </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.evaluations.total || 0}
                       </p>
@@ -300,8 +462,10 @@ export default function AdminDashboardPage() {
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                     <div className="md:col-span-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">User Roles Distribution</h3>
-                      <div style={{ width: '100%', height: 260 }}>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        User Roles Distribution
+                      </h3>
+                      <div style={{ width: "100%", height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
                             <Pie
@@ -309,13 +473,20 @@ export default function AdminDashboardPage() {
                               cx="50%"
                               cy="50%"
                               labelLine={false}
-                              label={(props: PieLabelRenderProps) => `${props.name} ${((props.percent as number) * 100).toFixed(0)}%`}
+                              label={(props: PieLabelRenderProps) =>
+                                `${props.name} ${(
+                                  (props.percent as number) * 100
+                                ).toFixed(0)}%`
+                              }
                               outerRadius={80}
                               fill="#8884d8"
                               dataKey="value"
                             >
                               {userRoleData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={entry.color}
+                                />
                               ))}
                             </Pie>
                             <Tooltip />
@@ -328,15 +499,31 @@ export default function AdminDashboardPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
                         <div className="flex items-center gap-2">
                           <label className="text-sm text-gray-600">Start</label>
-                          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="staff-input" />
+                          <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="staff-input"
+                          />
                         </div>
                         <div className="flex items-center gap-2">
                           <label className="text-sm text-gray-600">End</label>
-                          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="staff-input" />
+                          <input
+                            type="date"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="staff-input"
+                          />
                         </div>
                         <div className="flex items-center gap-2">
-                          <label className="text-sm text-gray-600">Group by</label>
-                          <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className="staff-input">
+                          <label className="text-sm text-gray-600">
+                            Group by
+                          </label>
+                          <select
+                            value={groupBy}
+                            onChange={(e) => setGroupBy(e.target.value)}
+                            className="staff-input"
+                          >
                             <option value="day">Day</option>
                             <option value="week">Week</option>
                             <option value="month">Month</option>
@@ -345,79 +532,87 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
 
-                      <h3 className="text-sm text-gray-700 mb-2">User growth ({groupBy})</h3>
-                      <div style={{ width: '100%', height: 300 }}>
+                      <h3 className="text-sm text-gray-700 mb-2">
+                        User growth ({groupBy})
+                      </h3>
+                      <div style={{ width: "100%", height: 300 }}>
                         {isLoadingUserGrowth ? (
-                          <div className="flex items-center justify-center h-full">Loading...</div>
+                          <div className="flex items-center justify-center h-full">
+                            Loading...
+                          </div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={growthChartData} margin={{ left: 0, right: 20 }}>
+                            <LineChart
+                              data={growthChartData}
+                              margin={{ left: 0, right: 20 }}
+                            >
                               <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="period" tick={groupBy === 'day' ? renderPeriodTick : undefined} interval={groupBy === 'day' ? 0 : undefined} />
+                              <XAxis
+                                dataKey="period"
+                                tick={
+                                  groupBy === "day"
+                                    ? renderPeriodTick
+                                    : undefined
+                                }
+                                interval={groupBy === "day" ? 0 : undefined}
+                              />
                               <YAxis />
                               <Tooltip />
                               <Legend />
-                              <Line type="monotone" dataKey="totalUsers" name="Total Users" stroke="#4f46e5" strokeWidth={2} />
-                              <Line type="monotone" dataKey="cumulativeTotal" name="Cumulative" stroke="#06b6d4" strokeWidth={2} strokeDasharray="4 4" />
-                              <Line type="monotone" dataKey="competitors" name="Competitors" stroke="#8884d8" strokeWidth={1} />
-                              <Line type="monotone" dataKey="examiners" name="Examiners" stroke="#82ca9d" strokeWidth={1} />
-                              <Line type="monotone" dataKey="guardians" name="Guardians" stroke="#f59e0b" strokeWidth={1} />
-                              <Line type="monotone" dataKey="staffs" name="Staffs" stroke="#ff7c7c" strokeWidth={1} />
-                              <Line type="monotone" dataKey="admins" name="Admins" stroke="#8dd1e1" strokeWidth={1} />
+                              <Line
+                                type="monotone"
+                                dataKey="totalUsers"
+                                name="Total Users"
+                                stroke="#4f46e5"
+                                strokeWidth={2}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="cumulativeTotal"
+                                name="Cumulative"
+                                stroke="#06b6d4"
+                                strokeWidth={2}
+                                strokeDasharray="4 4"
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="competitors"
+                                name="Competitors"
+                                stroke="#8884d8"
+                                strokeWidth={1}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="examiners"
+                                name="Examiners"
+                                stroke="#82ca9d"
+                                strokeWidth={1}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="guardians"
+                                name="Guardians"
+                                stroke="#f59e0b"
+                                strokeWidth={1}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="staffs"
+                                name="Staffs"
+                                stroke="#ff7c7c"
+                                strokeWidth={1}
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="admins"
+                                name="Admins"
+                                stroke="#8dd1e1"
+                                strokeWidth={1}
+                              />
                             </LineChart>
                           </ResponsiveContainer>
                         )}
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* New Row: Top lists (Competitors + Examiners) */}
-                <div className="rounded-lg border border-gray-200 bg-white p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Top lists</h3>
-                    <div className="flex items-center gap-2">
-                      <label className="text-sm text-gray-600">Top N</label>
-                      <input type="number" min={1} value={topN} onChange={(e) => setTopN(Number(e.target.value) || 10)} className="staff-input w-20" />
-                    </div>
-                  </div>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="rounded-lg border border-gray-100 bg-white p-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Top Competitors</h4>
-                      {topCompetitorsData.length === 0 ? (
-                        <div className="text-sm text-gray-500">No data</div>
-                      ) : (
-                        <div style={{ width: '100%', height: 220 }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={topCompetitorsData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis type="number" />
-                              <YAxis dataKey="name" type="category" width={140} />
-                              <Tooltip />
-                              <Bar dataKey="value" fill="#4f46e5" />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="rounded-lg border border-gray-100 bg-white p-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-3">Top Examiners</h4>
-                      {topExaminersData.length === 0 ? (
-                        <div className="text-sm text-gray-500">No data</div>
-                      ) : (
-                        <div style={{ width: '100%', height: 220 }}>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={topExaminersData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis type="number" />
-                              <YAxis dataKey="name" type="category" width={140} />
-                              <Tooltip />
-                              <Bar dataKey="value" fill="#16a34a" />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -433,7 +628,10 @@ export default function AdminDashboardPage() {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         {/* Use explicit 5-step ticks and an upper bound rounded to nearest 5 */}
-                        <YAxis domain={[0, contestTicks.upper]} ticks={contestTicks.ticks} />
+                        <YAxis
+                          domain={[0, contestTicks.upper]}
+                          ticks={contestTicks.ticks}
+                        />
                         <Tooltip />
                         <Bar dataKey="value" fill="#8884d8" />
                       </BarChart>
@@ -448,7 +646,10 @@ export default function AdminDashboardPage() {
                       <BarChart data={paintingStatusData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
-                        <YAxis domain={[0, paintingTicks.upper]} ticks={paintingTicks.ticks} />
+                        <YAxis
+                          domain={[0, paintingTicks.upper]}
+                          ticks={paintingTicks.ticks}
+                        />
                         <Tooltip />
                         <Bar dataKey="value" fill="#82ca9d" />
                       </BarChart>
@@ -456,34 +657,42 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                {/* Row 3: Awards + Votes (left) and Exhibitions (right) */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-4">
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Votes Overview</h3>
-                      <div className="flex items-center justify-center h-48">
-                        <div className="text-center">
-                          <Vote className="h-16 w-16 text-purple-500 mx-auto mb-4" />
-                          <p className="text-3xl font-bold text-gray-900">{systemStats?.votes.total || 0}</p>
-                          <p className="text-sm text-gray-600">Total Votes</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border border-gray-200 bg-white p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Awards Overview</h3>
-                      <div className="flex items-center justify-center h-48">
-                        <div className="text-center">
-                          <Award className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                          <p className="text-3xl font-bold text-gray-900">{systemStats?.awards.total || 0}</p>
-                          <p className="text-sm text-gray-600">Total Awards</p>
-                        </div>
+                {/* Row 3: Votes + Awards + Exhibitions */}
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Votes Overview
+                    </h3>
+                    <div className="flex items-center justify-center h-48">
+                      <div className="text-center">
+                        <Vote className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+                        <p className="text-3xl font-bold text-gray-900">
+                          {systemStats?.votes.total || 0}
+                        </p>
+                        <p className="text-sm text-gray-600">Total Votes</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Exhibitions Status</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Awards Overview
+                    </h3>
+                    <div className="flex items-center justify-center h-48">
+                      <div className="text-center">
+                        <Award className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                        <p className="text-3xl font-bold text-gray-900">
+                          {systemStats?.awards.total || 0}
+                        </p>
+                        <p className="text-sm text-gray-600">Total Awards</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Exhibitions Status
+                    </h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie
@@ -506,29 +715,223 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
+{/* New Row: Top lists (Competitors + Examiners) */}
+                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-xl font-bold text-gray-900">
+                        Top Performers
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <h4 className="text-sm font-semibold text-gray-800">
+                            Top Competitors
+                          </h4>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="sr-only">Sort by</label>
+                          <select
+                            value={sortBy}
+                            onChange={(e) =>
+                              setSortBy(
+                                e.target.value as
+                                  | "totalSubmissions"
+                                  | "awardsWon"
+                              )
+                            }
+                            className="text-xs border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="totalSubmissions">
+                              Submissions
+                            </option>
+                            <option value="awardsWon">Awards</option>
+                          </select>
+                        </div>
+                      </div>
+                      {/* List of top competitors names */}
+                      <div className="mt-4">
+                        <ul className="text-sm space-y-2 max-h-60 overflow-y-auto">
+                          {topCompetitorsDataNames
+                            .slice(0, 10)
+                            .map((item, index) => {
+                              const rank = index + 1;
+                              const isTop3 = rank <= 3;
+                              return (
+                                <li
+                                  key={index}
+                                  className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                                    isTop3
+                                      ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                                      : "hover:bg-gray-50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                        rank === 1
+                                          ? "bg-yellow-500 text-white"
+                                          : rank === 2
+                                          ? "bg-gray-400 text-white"
+                                          : rank === 3
+                                          ? "bg-orange-600 text-white"
+                                          : "bg-gray-200 text-gray-700"
+                                      }`}
+                                    >
+                                      {rank}
+                                    </span>
+                                    <span
+                                      className={`font-medium ${
+                                        isTop3
+                                          ? "text-gray-900"
+                                          : "text-gray-700"
+                                      }`}
+                                    >
+                                      {item.name}
+                                    </span>
+                                  </div>
+                                  <span
+                                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                                      sortBy === "totalSubmissions"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-green-100 text-green-800"
+                                    }`}
+                                  >
+                                    {sortBy === "totalSubmissions"
+                                      ? `${item.value}`
+                                      : `${item.awardsWon}`}
+                                  </span>
+                                </li>
+                              );
+                            })}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <h4 className="text-sm font-semibold text-gray-800">
+                          Top Examiners
+                        </h4>
+                      </div>
+                      {/* List of top examiners names */}
+                      <div className="mt-4">
+                        <ul className="text-sm space-y-2 max-h-60 overflow-y-auto">
+                          {topExaminersData.slice(0, 10).map((item, index) => {
+                            const rank = index + 1;
+                            const isTop3 = rank <= 3;
+                            return (
+                              <li
+                                key={index}
+                                className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                                  isTop3
+                                    ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
+                                    : "hover:bg-gray-50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                      rank === 1
+                                        ? "bg-green-500 text-white"
+                                        : rank === 2
+                                        ? "bg-emerald-400 text-white"
+                                        : rank === 3
+                                        ? "bg-teal-600 text-white"
+                                        : "bg-gray-200 text-gray-700"
+                                    }`}
+                                  >
+                                    {rank}
+                                  </span>
+                                  <span
+                                    className={`font-medium ${
+                                      isTop3 ? "text-gray-900" : "text-gray-700"
+                                    }`}
+                                  >
+                                    {item.name}
+                                  </span>
+                                </div>
+                                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-purple-100 text-purple-800">
+                                  {item.value}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Row 4: Top Paintings (most voted) + Campaigns */}
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Paintings (Most Voted)</h3>
-                    {topPaintingsData.length === 0 ? (
-                      <div className="text-sm text-gray-500">No data</div>
-                    ) : (
-                      <div style={{ width: '100%', height: 260 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={topPaintingsData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" />
-                            <YAxis dataKey="name" type="category" width={180} />
-                            <Tooltip />
-                            <Bar dataKey="value" fill="#ef4444" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
+                  <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Top Paintings (Most Voted)
+                      </h3>
+                    </div>
+                    {/* List of top paintings */}
+                    <div className="mt-4">
+                      <ul className="text-sm space-y-2 max-h-60 overflow-y-auto">
+                        {topPaintingsList.slice(0, 10).map((item, index) => {
+                          const rank = index + 1;
+                          const isTop3 = rank <= 3;
+                          return (
+                            <li
+                              key={index}
+                              className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                                isTop3
+                                  ? "bg-gradient-to-r from-red-50 to-pink-50 border border-red-200"
+                                  : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                    rank === 1
+                                      ? "bg-red-500 text-white"
+                                      : rank === 2
+                                      ? "bg-pink-400 text-white"
+                                      : rank === 3
+                                      ? "bg-rose-600 text-white"
+                                      : "bg-gray-200 text-gray-700"
+                                  }`}
+                                >
+                                  {rank}
+                                </span>
+                                <div>
+                                  <span
+                                    className={`font-medium block ${
+                                      isTop3 ? "text-gray-900" : "text-gray-700"
+                                    }`}
+                                  >
+                                    {item.title}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    by {item.competitorName}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-red-100 text-red-800">
+                                {item.voteCount} votes
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   </div>
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaigns Status</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Campaigns Status
+                    </h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <BarChart data={campaignData}>
                         <CartesianGrid strokeDasharray="3 3" />
