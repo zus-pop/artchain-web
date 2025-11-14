@@ -4,6 +4,7 @@ import {
   ContestResponseDTO,
   CreateContestRequest,
   GetStaffRoundsResponse,
+  RoundDetail,
   UpdateContestRequest,
 } from "@/types/staff/contest-dto";
 import { CreatePostRequest } from "@/types/staff/post-dto";
@@ -11,6 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { CreateCampaignRequest } from "../types/staff/campaign";
+import { ApiResponse } from "../types";
 
 /**
  * Staff Contest Management APIs
@@ -178,6 +180,21 @@ export const getStaffRounds = async (
   const response = await myAxios.get(`/staff/contests/${contestId}/rounds`, {
     params,
   });
+  return response.data;
+};
+
+export const getDetailedStaffRounds = async (params: {
+  contestId: string;
+  name: string;
+}): Promise<ApiResponse<RoundDetail>> => {
+  const response = await myAxios.get(
+    `/staff/contests/${params.contestId}/rounds/detail`,
+    {
+      params: {
+        name: params.name,
+      },
+    }
+  );
   return response.data;
 };
 

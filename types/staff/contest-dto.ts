@@ -1,5 +1,7 @@
 // contest-dto.ts
 
+import { PaintingStatus } from "../dashboard";
+
 /**
  * DTO cho một vòng (round) trong contest
  */
@@ -89,6 +91,23 @@ export interface RoundTableDTO {
   resultAnnounceDate: string;
   sendOriginalDeadline: string;
   status: string;
+  competitors: {
+    competitorId: string;
+    birthday: string;
+    schoolName: string;
+    ward: string;
+    grade: string;
+    guardianId: string;
+    username: string;
+    email: string;
+    fullName: string;
+    paintings: {
+      paintingId: number;
+      title: string;
+      imageUrl: string;
+      status: PaintingStatus;
+    }[];
+  }[];
 }
 
 /**
@@ -107,6 +126,25 @@ export interface RoundResponseItem {
   table?: string;
   tables?: RoundTableDTO[];
   totalTables?: number;
+}
+
+export interface RoundDetail {
+  roundInfo: {
+    roundId: string;
+    contestId: string;
+    table: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    submissionDeadline: string;
+    resultAnnounceDate: string;
+    sendOriginalDeadline: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  isRound2: boolean;
+  tables: RoundTableDTO[];
 }
 
 /**
