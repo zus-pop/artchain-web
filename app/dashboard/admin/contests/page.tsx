@@ -160,11 +160,11 @@ export default function AdminContestsPage() {
     >
       <AdminSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Contest Management" />
+        <SiteHeader title={t.contestManagement} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-linear-to-r from-red-50 to-orange-50">
             <Breadcrumb
-              items={[{ label: "Contest Management" }]}
+              items={[{ label: t.contestManagement }]}
               homeHref="/dashboard/admin"
             />
           </div>
@@ -173,7 +173,7 @@ export default function AdminContestsPage() {
               {/* Statistics Cards */}
               <div className="">
                 <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Contests distribution</h4>
+                  <h4 className="text-sm font-medium text-gray-600 mb-2">{t.contestsDistribution}</h4>
                   <div className="h-36">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={[{
@@ -205,7 +205,7 @@ export default function AdminContestsPage() {
                 <IconSearch className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search contests by title or description..."
+                  placeholder={t.searchContests}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="staff-input w-full pl-10 pr-4 py-2"
@@ -222,7 +222,7 @@ export default function AdminContestsPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  All Contests
+                  {t.allContests}
                 </button>
                 <button
                   onClick={() => setSelectedStatus("ACTIVE")}
@@ -232,7 +232,7 @@ export default function AdminContestsPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Active
+                  {t.active}
                 </button>
                 <button
                   onClick={() => setSelectedStatus("UPCOMING")}
@@ -242,7 +242,7 @@ export default function AdminContestsPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Upcoming
+                  {t.upcoming}
                 </button>
                 <button
                   onClick={() => setSelectedStatus("ENDED")}
@@ -252,7 +252,7 @@ export default function AdminContestsPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Ended
+                  {t.ended}
                 </button>
                 <button
                   onClick={() => setSelectedStatus("COMPLETED")}
@@ -262,7 +262,7 @@ export default function AdminContestsPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Completed
+                  {t.completed}
                 </button>
                 <button
                   onClick={() => setSelectedStatus("DRAFT")}
@@ -272,7 +272,7 @@ export default function AdminContestsPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Draft
+                  {t.draft}
                 </button>
               </div>
 
@@ -297,11 +297,11 @@ export default function AdminContestsPage() {
                   ))
                 ) : error ? (
                   <div className="text-center py-12">
-                    <p className="text-red-500">Error loading contests</p>
+                    <p className="text-red-500">{t.errorLoadingContests}</p>
                   </div>
                 ) : (!isFiltering && filteredContests.length === 0) ? (
                   <div className="text-center py-12">
-                    <p className="text-gray-500">No contests found</p>
+                    <p className="text-gray-500">{t.noContestsFound}</p>
                   </div>
                 ) : (
                   filteredContests.map((contest) => (
@@ -351,11 +351,11 @@ export default function AdminContestsPage() {
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <IconTrophy className="h-4 w-4" />
-                                  <span>{contest.numOfAward || 0} awards</span>
+                                  <span>{contest.numOfAward || 0} {t.awards}</span>
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <IconEye className="h-4 w-4" />
-                                  <span>{contest.rounds?.length || 0} rounds</span>
+                                  <span>{contest.rounds?.length || 0} {t.rounds}</span>
                                 </div>
                               </div>
                             </div>
@@ -398,7 +398,7 @@ export default function AdminContestsPage() {
                     disabled={isLoadingMore}
                     className="staff-btn-primary disabled:opacity-50"
                   >
-                    {isLoadingMore ? "Loading..." : "Load More"}
+                    {isLoadingMore ? t.loading : t.loadMore}
                   </button>
                 </div>
               )}
@@ -414,7 +414,7 @@ export default function AdminContestsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                   <div className="bg-white rounded-lg w-[95%] max-w-4xl p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-semibold">Contest statistics</h3>
+                      <h3 className="text-lg font-semibold">{t.contestStatistics}</h3>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
@@ -423,7 +423,7 @@ export default function AdminContestsPage() {
                           }}
                           className="px-3 py-1 text-sm bg-gray-100 rounded"
                         >
-                          Close
+                          {t.close}
                         </button>
                       </div>
                     </div>
@@ -436,7 +436,7 @@ export default function AdminContestsPage() {
                       (() => {
                         const payload = (contestStatsResponse as ContestStatisticsResponse)?.data ?? (contestStatsResponse as ContestStatistics) ?? null;
                         // payload expected shape: { contest, submissions, participants, evaluations, votes, awards }
-                        if (!payload) return <div className="py-6">No data</div>;
+                        if (!payload) return <div className="py-6">{t.noData}</div>;
                         const submissions = payload.submissions || {};
                         const byRound = submissions.byRound || {};
                         const roundData = Object.keys(byRound).map(r => ({
@@ -452,7 +452,7 @@ export default function AdminContestsPage() {
                         return (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">Submissions (status)</h4>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">{t.submissionsStatus}</h4>
                               <div className="h-48">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <BarChart
@@ -477,7 +477,7 @@ export default function AdminContestsPage() {
                             </div>
 
                             <div>
-                              <h4 className="text-sm font-medium text-gray-700 mb-2">Submissions by round</h4>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">{t.submissionsByRound}</h4>
                               <div className="h-48">
                                 <ResponsiveContainer width="100%" height="100%">
                                   <BarChart data={roundData}>
@@ -495,19 +495,19 @@ export default function AdminContestsPage() {
 
                             <div className="md:col-span-2 grid grid-cols-2 gap-4 mt-2">
                               <div className="p-3 border rounded">
-                                <div className="text-sm text-gray-500">Participants</div>
+                                <div className="text-sm text-gray-500">{t.participants}</div>
                                 <div className="text-2xl font-semibold">{payload.participants?.totalCompetitors ?? '-'}</div>
                               </div>
                               <div className="p-3 border rounded">
-                                <div className="text-sm text-gray-500">Votes</div>
+                                <div className="text-sm text-gray-500">{t.votes}</div>
                                 <div className="text-2xl font-semibold">{payload.votes?.total ?? '-'}</div>
                               </div>
                               <div className="p-3 border rounded">
-                                <div className="text-sm text-gray-500">Evaluations</div>
+                                <div className="text-sm text-gray-500">{t.evaluations}</div>
                                 <div className="text-2xl font-semibold">{payload.evaluations?.total ?? '-'}</div>
                               </div>
                               <div className="p-3 border rounded">
-                                <div className="text-sm text-gray-500">Awards</div>
+                                <div className="text-sm text-gray-500">{t.awards}</div>
                                 <div className="text-2xl font-semibold">{payload.awards?.total ?? '-'} ({payload.awards?.awarded ?? '-'})</div>
                               </div>
                             </div>

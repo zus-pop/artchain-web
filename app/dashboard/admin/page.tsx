@@ -53,6 +53,8 @@ import {
   Target,
 } from "lucide-react";
 import Loader from "@/components/Loaders";
+import { useLanguageStore } from "@/store/language-store";
+import { useTranslation } from "@/lib/i18n";
 
 export default function AdminDashboardPage() {
   // Fetch system statistics
@@ -158,6 +160,10 @@ export default function AdminDashboardPage() {
   const [sortBy, setSortBy] = useState<"totalSubmissions" | "awardsWon">(
     "totalSubmissions"
   );
+
+  // Translation
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // Top lists queries (typed) - Get top 10 by default
   const { data: topCompetitorsRaw } = useQuery<
@@ -370,7 +376,7 @@ export default function AdminDashboardPage() {
     >
       <AdminSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Admin Dashboard" />
+        <SiteHeader title={t.adminDashboard} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-gray-200 bg-white">
             <Breadcrumb items={[]} homeHref="/dashboard/admin" />
@@ -383,7 +389,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Users
+                        {t.totalUsers}
                       </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.users.total || 0}
@@ -394,7 +400,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    {systemStats?.users.active || 0} active users
+                    {systemStats?.users.active || 0} {t.activeUsers}
                   </p>
                 </div>
 
@@ -402,7 +408,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Contests
+                        {t.totalContestsAdmin}
                       </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.contests.total || 0}
@@ -421,7 +427,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Paintings
+                        {t.totalPaintingsAdmin}
                       </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.paintings.total || 0}
@@ -432,7 +438,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    {systemStats?.paintings.pending || 0} pending reviews
+                    {systemStats?.paintings.pending || 0} {t.pendingReviews}
                   </p>
                 </div>
 
@@ -440,7 +446,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">
-                        Total Evaluations
+                        {t.totalEvaluationsAdmin}
                       </p>
                       <p className="text-3xl font-bold text-gray-900">
                         {systemStats?.evaluations.total || 0}
@@ -451,7 +457,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    System evaluations
+                    {t.systemEvaluations}
                   </p>
                 </div>
               </div>
@@ -463,7 +469,7 @@ export default function AdminDashboardPage() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                     <div className="md:col-span-1">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        User Roles Distribution
+                        {t.userRolesDistribution}
                       </h3>
                       <div style={{ width: "100%", height: 260 }}>
                         <ResponsiveContainer width="100%" height="100%">
@@ -517,16 +523,16 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <label className="text-sm text-gray-600">
-                            Group by
+                            {t.groupBy}
                           </label>
                           <select
                             value={groupBy}
                             onChange={(e) => setGroupBy(e.target.value)}
                             className="staff-input"
                           >
-                            <option value="day">Day</option>
-                            <option value="week">Week</option>
-                            <option value="month">Month</option>
+                            <option value="day">{t.day}</option>
+                            <option value="week">{t.week}</option>
+                            <option value="month">{t.month}</option>
                             <option value="year">Year</option>
                           </select>
                         </div>
@@ -562,14 +568,14 @@ export default function AdminDashboardPage() {
                               <Line
                                 type="monotone"
                                 dataKey="totalUsers"
-                                name="Total Users"
+                                name={t.totalUsers}
                                 stroke="#4f46e5"
                                 strokeWidth={2}
                               />
                               <Line
                                 type="monotone"
                                 dataKey="cumulativeTotal"
-                                name="Cumulative"
+                                name={t.cumulative}
                                 stroke="#06b6d4"
                                 strokeWidth={2}
                                 strokeDasharray="4 4"
@@ -621,7 +627,7 @@ export default function AdminDashboardPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Contest Status Overview
+                      {t.contestStatusOverview}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={contestStatusData}>
@@ -640,7 +646,7 @@ export default function AdminDashboardPage() {
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Painting Submissions Status
+                      {t.paintingSubmissionsStatus}
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={paintingStatusData}>
@@ -661,7 +667,7 @@ export default function AdminDashboardPage() {
                 <div className="grid gap-6 md:grid-cols-3">
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Votes Overview
+                      {t.votesOverview}
                     </h3>
                     <div className="flex items-center justify-center h-48">
                       <div className="text-center">
@@ -676,7 +682,7 @@ export default function AdminDashboardPage() {
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Awards Overview
+                      {t.awardsOverview}
                     </h3>
                     <div className="flex items-center justify-center h-48">
                       <div className="text-center">
@@ -691,7 +697,7 @@ export default function AdminDashboardPage() {
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Exhibitions Status
+                      {t.exhibitionsStatus}
                     </h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
@@ -720,7 +726,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <h3 className="text-xl font-bold text-gray-900">
-                        Top Performers
+                        {t.topPerformers}
                       </h3>
                     </div>
                   </div>
@@ -730,7 +736,7 @@ export default function AdminDashboardPage() {
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                           <h4 className="text-sm font-semibold text-gray-800">
-                            Top Competitors
+                            {t.topCompetitors}
                           </h4>
                         </div>
                         <div className="flex items-center gap-2">
@@ -816,7 +822,7 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <h4 className="text-sm font-semibold text-gray-800">
-                          Top Examiners
+                          {t.topExaminersAdmin}
                         </h4>
                       </div>
                       {/* List of top examiners names */}
@@ -873,7 +879,7 @@ export default function AdminDashboardPage() {
                   <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
                       <h3 className="text-lg font-bold text-gray-900">
-                        Top Paintings (Most Voted)
+                        {t.topPaintingsMostVoted}
                       </h3>
                     </div>
                     {/* List of top paintings */}
@@ -930,7 +936,7 @@ export default function AdminDashboardPage() {
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Campaigns Status
+                      {t.campaignsStatus}
                     </h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <BarChart data={campaignData}>
