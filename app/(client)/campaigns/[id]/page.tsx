@@ -101,12 +101,8 @@ const CampaignDetailPage = () => {
       const response: SponsorResponse = await createSponsor(sponsorData);
 
       if (!response.error && response.data.checkoutUrl) {
-        // Open checkout URL in new tab - PayOS will handle redirects to success/cancel URLs
-        window.open(response.data.checkoutUrl, '_blank');
-
-        // Show success message - user will be redirected by PayOS after payment
-        setFormError(null);
-        alert('Payment page opened in new tab. Please complete your payment there.');
+        // Redirect to checkout URL in the same tab - PayOS will handle redirects to success/cancel URLs
+        window.location.href = response.data.checkoutUrl;
       } else {
         setFormError('Failed to create sponsorship. Please try again.');
       }
