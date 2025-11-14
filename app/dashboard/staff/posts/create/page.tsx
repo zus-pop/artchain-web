@@ -10,6 +10,7 @@ import myAxios from "@/lib/custom-axios";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { Post, PostStatus } from "@/types/dashboard";
+import { MDXEditorMethods } from "@mdxeditor/editor";
 import {
   IconArrowLeft,
   IconDeviceFloppy,
@@ -69,7 +70,6 @@ function CreatePostPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
   const [loading, setLoading] = useState(isEditing);
 
   // Tags state
@@ -80,6 +80,7 @@ function CreatePostPage() {
   const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<MDXEditorMethods>(null);
 
   // Fetch tags based on search query
   useEffect(() => {
@@ -104,22 +105,12 @@ function CreatePostPage() {
     return () => clearTimeout(debounceTimer);
   }, [tagSearch]);
 
-  // Close dropdown when clicking outside
+  // Update editor content when formData.content changes
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        tagInputRef.current &&
-        !tagInputRef.current.parentElement?.parentElement?.contains(
-          event.target as Node
-        )
-      ) {
-        setShowTagDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (editorRef.current && formData.content) {
+      editorRef.current.setMarkdown(formData.content);
+    }
+  }, [formData.content]);
 
   // Handle tag selection
   const handleSelectTag = (tag: Tag) => {
@@ -236,10 +227,13 @@ Ready to join the revolution? Create your free account today and start exploring
     setIsSubmitting(true);
 
     try {
+      // Get content directly from the editor
+      const content = editorRef.current?.getMarkdown() || "";
+
       // Create FormData for file upload
       const formDataToSend = new FormData();
       formDataToSend.append("title", formData.title);
-      formDataToSend.append("content", formData.content);
+      formDataToSend.append("content", content);
       formDataToSend.append("status", formData.status);
       formDataToSend.append("tag_ids", JSON.stringify(formData.tag_ids));
 
@@ -252,7 +246,7 @@ Ready to join the revolution? Create your free account today and start exploring
         // For update, convert FormData to regular object since update API might not support FormData
         const updateData = {
           title: formData.title,
-          content: formData.content,
+          content: content,
           status: formData.status,
           tag_ids: formData.tag_ids,
         };
@@ -334,16 +328,7 @@ Ready to join the revolution? Create your free account today and start exploring
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPreviewMode(!previewMode)}
-                    disabled={loading}
-                    className=" border border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2 disabled:opacity-50"
-                  >
-                    <IconEye className="h-4 w-4" />
-                    {previewMode ? t.editMode : t.previewMode}
-                  </button>
-                </div>
+                <div className="flex items-center gap-2"></div>
               </div>
 
               {loading ? (
@@ -506,26 +491,11 @@ Ready to join the revolution? Create your free account today and start exploring
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           {t.contentLabel} *
                         </label>
-                        {previewMode ? (
-                          <div className="prose max-w-none">
-                            <div
-                              className="min-h-[400px] p-4 border border-[#e6e2da] bg-gray-50"
-                              dangerouslySetInnerHTML={{
-                                __html:
-                                  formData.content ||
-                                  "Your content will appear here...",
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <MDXEditorWrapper
-                            markdown={formData.content}
-                            onChange={(value) =>
-                              handleInputChange("content", value)
-                            }
-                            placeholder={t.writeContentHere}
-                          />
-                        )}
+                        <MDXEditorWrapper
+                          ref={editorRef}
+                          markdown={formData.content}
+                          placeholder={t.writeContentHere}
+                        />
                         <p className="text-xs staff-text-secondary mt-2">
                           {t.useToolbarFormat}
                         </p>
@@ -748,11 +718,7 @@ Ready to join the revolution? Create your free account today and start exploring
                     <button
                       type="button"
                       onClick={handlePublish}
-                      disabled={
-                        isSubmitting ||
-                        !formData.title.trim() ||
-                        !formData.content.trim()
-                      }
+                      disabled={isSubmitting || !formData.title.trim()}
                       className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isSubmitting ? (
