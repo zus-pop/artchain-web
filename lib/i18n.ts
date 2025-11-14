@@ -266,6 +266,7 @@ export const translations = {
     viewDetails: "Xem Chi Tiết",
     editContest: "Chỉnh Sửa Cuộc Thi",
     deleteContest: "Xóa Cuộc Thi",
+    notifyRound2: "Thông Báo Vòng 2",
 
     // Search and Filter
     searchContests: "Tìm kiếm cuộc thi theo tiêu đề, mô tả hoặc danh mục...",
@@ -890,7 +891,7 @@ export const translations = {
     submissionDeadlineDetail: "Hạn Nộp Bài",
     resultAnnounceDetail: "Công Bố Kết Quả",
     originalDeadlineDetail: "Hạn Gửi Bản Gốc",
-    totalTablesDetail: "Tổng Bảng",
+    totalTablesDetail: "Tổng Số lượng Bảng",
     viewTableDetailsDetail: "Xem Chi Tiết Bảng",
     startDetail: "Bắt Đầu",
     endDetail: "Kết Thúc",
@@ -903,7 +904,7 @@ export const translations = {
     createRound2ConfirmDetail:
       "Bạn có chắc chắn muốn tạo vòng 2 với cài đặt hiện tại?",
     numberOfTablesDetail: "Số Bảng",
-    currentContestSettingDetail: "Cài Đặt Cuộc Thi Hiện Tại {0} bảng",
+    currentContestSettingDetail: "Cài Đặt Số Bảng Của Cuộc Thi Hiện Tại",
     tablesDetail: "bảng",
     enterNumberOfTablesDetail: "Nhập số bảng",
     creatingDetail: "Đang tạo...",
@@ -1351,6 +1352,7 @@ export const translations = {
     viewDetails: "View Details",
     editContest: "Edit Contest",
     deleteContest: "Delete Contest",
+    notifyRound2: "Notify Round 2",
 
     // Search and Filter
     searchContests: "Search contests by title, description or category...",
@@ -1984,7 +1986,7 @@ export const translations = {
     createRound2ConfirmDetail:
       "Are you sure you want to create round 2 with current settings?",
     numberOfTablesDetail: "Number of Tables",
-    currentContestSettingDetail: "Current Contest Setting {0} tables",
+    currentContestSettingDetail: "Current Contest Tables Setting",
     tablesDetail: "tables",
     enterNumberOfTablesDetail: "Enter number of tables",
     creatingDetail: "Creating...",

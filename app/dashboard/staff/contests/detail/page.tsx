@@ -1,9 +1,10 @@
 "use client";
 
-import { useNotifyContest } from "@/apis/email";
+import { useNotifyContest, useSendMultipleEmails } from "@/apis/email";
 import {
   createStaffRound2,
   deleteStaffRound,
+  getDetailedStaffRounds,
   getStaffContestById,
   getStaffRounds,
   publishStaffContest,
@@ -33,6 +34,7 @@ import {
   IconEdit,
   IconEye,
   IconFileText,
+  IconMail,
   IconPlus,
   IconSettings,
   IconTrophy,
@@ -59,7 +61,8 @@ function ContestDetailContent() {
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [showCreateRound2Confirm, setShowCreateRound2Confirm] = useState(false);
   const [round2NumberOfTables, setRound2NumberOfTables] = useState<number>(0);
-
+  const [isNotifyingRound2, setIsNotifyingRound2] = useState(false);
+  const notify = useSendMultipleEmails();
   // Fetch contest details
   const { data: contestData, isLoading } = useQuery({
     queryKey: ["contest-detail", contestId],
@@ -166,6 +169,42 @@ function ContestDetailContent() {
         roundId: String(roundId),
       });
     }
+  };
+
+  const handleNotifyRound2 = async () => {
+    if (!contestId) return;
+    setIsNotifyingRound2(true);
+
+    const res = await getDetailedStaffRounds({
+      contestId: contestId,
+      name: "ROUND_2",
+    });
+    const competitors = res.data.tables.flatMap(
+      (competitors) => competitors.competitors
+    );
+
+    const emails = competitors.map((c) => c.email);
+    notify.mutate(
+      {
+        to: emails,
+        subject: "Thông báo vòng 2 cuộc thi",
+        text: "Chúc mừng bạn đã được chọn vào vòng 2 cuộc thi! Hãy chuẩn bị tốt cho vòng thi sắp tới.",
+      },
+      {
+        onSuccess: () => {
+          toast.success("Đã gửi thông báo đến thí sinh vòng 2");
+          setIsNotifyingRound2(false);
+        },
+        onError: (error) => {
+          let message = error.message;
+          if (error instanceof AxiosError) {
+            message = error.response?.data.message;
+          }
+          toast.error(message);
+          setIsNotifyingRound2(false);
+        },
+      }
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -387,6 +426,18 @@ function ContestDetailContent() {
                         </p>
                         <p className="text-sm staff-text-primary font-semibold">
                           {contest.numOfAward} prizes
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.quantity} {t.rounds} 2
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {contest.round2Quantity}
                         </p>
                       </div>
                     </div>
@@ -781,9 +832,21 @@ function ContestDetailContent() {
                           </div>
                         ) : (
                           <div>
-                            <p className="text-sm staff-text-secondary mb-3">
-                              {t.totalTablesDetail} {round.totalTables}
-                            </p>
+                            <div className="flex items-center justify-between mb-3">
+                              <p className="text-sm staff-text-secondary">
+                                {t.totalTablesDetail}: {round.totalTables}
+                              </p>
+                              <button
+                                onClick={handleNotifyRound2}
+                                disabled={isNotifyingRound2}
+                                className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <IconMail className="h-4 w-4" />
+                                {isNotifyingRound2
+                                  ? "Notifying..."
+                                  : t.notifyRound2}
+                              </button>
+                            </div>
                             <div className="space-y-2">
                               {round.tables?.map((table) => (
                                 <div

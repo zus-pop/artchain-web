@@ -4,13 +4,16 @@ import {
   ContestResponseDTO,
   CreateContestRequest,
   GetStaffRoundsResponse,
+  RoundDetail,
   UpdateContestRequest,
 } from "@/types/staff/contest-dto";
+import { BulkAcceptSubmissionsResponse } from "@/types/staff/submission-dto";
 import { CreatePostRequest } from "@/types/staff/post-dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { CreateCampaignRequest } from "../types/staff/campaign";
+import { ApiResponse } from "../types";
 
 /**
  * Staff Contest Management APIs
@@ -181,6 +184,21 @@ export const getStaffRounds = async (
   return response.data;
 };
 
+export const getDetailedStaffRounds = async (params: {
+  contestId: string;
+  name: string;
+}): Promise<ApiResponse<RoundDetail>> => {
+  const response = await myAxios.get(
+    `/staff/contests/${params.contestId}/rounds/detail`,
+    {
+      params: {
+        name: params.name,
+      },
+    }
+  );
+  return response.data;
+};
+
 // GET /api/staff/contests/{contestId}/rounds/{roundId} - Get round by ID
 export const getStaffRoundById = async (contestId: number, roundId: string) => {
   const response = await myAxios.get(
@@ -275,6 +293,17 @@ export const acceptStaffSubmission = async (paintingId: string) => {
   );
   return response.data;
 };
+
+// PATCH /api/staff/contests/submissions/accept - Accept multiple submissions at once
+export const acceptMultipleSubmissions = async (paintingIds: string[]): Promise<BulkAcceptSubmissionsResponse> => {
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/accept`,
+    { paintingIds }
+  );
+  return response.data;
+};
+
+
 
 // PATCH /api/staff/contests/submissions/{paintingId}/reject - Reject a submission
 export const rejectStaffSubmission = async (

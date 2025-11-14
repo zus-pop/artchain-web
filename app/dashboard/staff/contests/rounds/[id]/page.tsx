@@ -2,6 +2,7 @@
 
 import {
   acceptStaffSubmission,
+  acceptMultipleSubmissions,
   getStaffRoundById,
   getStaffSubmissions,
   rejectStaffSubmission,
@@ -10,6 +11,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SubmissionDetailDialog } from "@/components/staff/SubmissionDetailDialog";
+import CustomCheckbox from "@/components/CustomCheckbox";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTranslation } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
@@ -30,6 +32,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 function RoundDetailContent() {
   const params = useParams();
@@ -46,6 +49,10 @@ function RoundDetailContent() {
 
   const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(
     null
+  );
+
+  const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(
+    new Set()
   );
 
   // Fetch round details
@@ -94,6 +101,44 @@ function RoundDetailContent() {
     },
   });
 
+  // Accept multiple submissions mutation
+  const acceptMultipleMutation = useMutation({
+    mutationFn: (paintingIds: string[]) => acceptMultipleSubmissions(paintingIds),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({
+        queryKey: ["round-submissions", contestId, roundId, selectedStatus],
+      });
+      setSelectedSubmissions(new Set());
+
+      // Show detailed toast notification
+      const { meta, data } = response;
+      
+      if (meta.failureCount === 0) {
+        // All successful
+        toast.success(`Successfully accepted ${meta.successCount} submission${meta.successCount > 1 ? 's' : ''}!`);
+      } else if (meta.successCount === 0) {
+        // All failed
+        toast.error(`Failed to accept all ${meta.failureCount} submission${meta.failureCount > 1 ? 's' : ''}`);
+      } else {
+        // Partial success
+        toast.warning(
+          `Processed ${meta.total} submissions: ${meta.successCount} accepted, ${meta.failureCount} failed`,
+          {
+            description: data.failed.length > 0 
+              ? `Failed: ${data.failed.map(f => f.error).join(', ')}` 
+              : undefined,
+            duration: 5000,
+          }
+        );
+      }
+    },
+    onError: (error) => {
+      toast.error('Failed to accept submissions', {
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    },
+  });
+
   // Quick reject mutation
   const rejectMutation = useMutation({
     mutationFn: (paintingId: string) => rejectStaffSubmission(paintingId),
@@ -113,6 +158,49 @@ function RoundDetailContent() {
   const handleQuickReject = (paintingId: string) => {
     if (confirm(t.confirmRejectSubmission)) {
       rejectMutation.mutate(paintingId);
+    }
+  };
+
+  const handleSelectSubmission = (paintingId: string, checked: boolean) => {
+    setSelectedSubmissions(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(paintingId);
+      } else {
+        newSet.delete(paintingId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      // Only select submissions that are currently visible (filtered by status)
+      const visibleSubmissions = submissions.filter((s: Submission) => {
+        if (selectedStatus === "ALL") return true;
+        return s.status === selectedStatus;
+      });
+      setSelectedSubmissions(new Set(visibleSubmissions.map((s: Submission) => s.paintingId)));
+    } else {
+      setSelectedSubmissions(new Set());
+    }
+  };
+
+  const handleAcceptAllSelected = () => {
+    // Only accept submissions that are still PENDING
+    const pendingSelected = Array.from(selectedSubmissions).filter(paintingId => {
+      const submission = submissions.find((s: Submission) => s.paintingId === paintingId);
+      return submission?.status === "PENDING";
+    });
+
+    if (pendingSelected.length === 0) {
+      alert("No pending submissions selected to accept.");
+      return;
+    }
+
+    if (confirm(`Accept all ${pendingSelected.length} selected pending submissions?`)) {
+      // Use the bulk accept API
+      acceptMultipleMutation.mutate(pendingSelected);
     }
   };
 
@@ -366,6 +454,29 @@ function RoundDetailContent() {
                       {t.submissions}
                     </h3>
 
+                    {/* Select All Checkbox */}
+                    {submissions.length > 0 && (
+                      <div className="flex items-center gap-3">
+                        {selectedSubmissions.size > 0 && Array.from(selectedSubmissions).some(paintingId => {
+                          const submission = submissions.find((s: Submission) => s.paintingId === paintingId);
+                          return submission?.status === "PENDING";
+                        }) && (
+                          <button
+                            onClick={handleAcceptAllSelected}
+                            disabled={acceptMultipleMutation.isPending}
+                            className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold rounded"
+                          >
+                            {acceptMultipleMutation.isPending ? 'Accepting...' : 'Accept All'}
+                          </button>
+                        )}
+                        <CustomCheckbox
+                          checked={selectedSubmissions.size === submissions.length && submissions.length > 0}
+                          onChange={(checked) => handleSelectAll(checked)}
+                          label={selectedSubmissions.size > 0 ? `Selected (${selectedSubmissions.size})` : 'Select All'}
+                        />
+                      </div>
+                    )}
+
                     {/* Status Filter Tabs */}
                     <div className="flex gap-2">
                       <button
@@ -420,8 +531,20 @@ function RoundDetailContent() {
                       {submissions.map((submission: Submission) => (
                         <div
                           key={submission.paintingId}
-                          className="border border-[#e6e2da] overflow-hidden hover:shadow-lg transition-shadow"
+                          className={`border overflow-hidden hover:shadow-lg transition-shadow relative ${
+                            selectedSubmissions.has(submission.paintingId)
+                              ? 'border-orange-500 -translate-x-1 -translate-y-1 shadow-lg'
+                              : 'border-[#B8AAAA] hover:border-orange-500/60'
+                          }`}
                         >
+                          {/* Checkbox */}
+                          <div className="absolute top-2 left-2 z-10">
+                            <CustomCheckbox
+                              checked={selectedSubmissions.has(submission.paintingId)}
+                              onChange={(checked) => handleSelectSubmission(submission.paintingId, checked)}
+                            />
+                          </div>
+
                           {/* Image */}
                           <div className="relative h-48 bg-gray-100">
                             {submission.imageUrl ? (
@@ -522,13 +645,36 @@ function RoundDetailContent() {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className="text-xl font-bold staff-text-primary flex items-center gap-2">
-                          <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                          <div className="w-3 h-3 bg-orange-500"></div>
                           {t.pendingReview} ({counts.pending})
                         </h3>
                         <p className="text-sm staff-text-secondary mt-1">
                           {t.submissionsAwaitingReview}
                         </p>
                       </div>
+
+                      {/* Select All Checkbox */}
+                      {counts.pending > 0 && (
+                        <div className="flex items-center gap-3">
+                          {selectedSubmissions.size > 0 && Array.from(selectedSubmissions).some(paintingId => {
+                            const submission = submissions.find((s: Submission) => s.paintingId === paintingId);
+                            return submission?.status === "PENDING";
+                          }) && (
+                            <button
+                              onClick={handleAcceptAllSelected}
+                              disabled={acceptMultipleMutation.isPending}
+                              className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold rounded"
+                            >
+                              {acceptMultipleMutation.isPending ? 'Accepting...' : 'Accept All'}
+                            </button>
+                          )}
+                          <CustomCheckbox
+                            checked={selectedSubmissions.size === submissions.filter((s: Submission) => s.status === "PENDING").length && submissions.filter((s: Submission) => s.status === "PENDING").length > 0}
+                            onChange={(checked) => handleSelectAll(checked)}
+                            label={selectedSubmissions.size > 0 ? `Selected (${selectedSubmissions.size})` : 'Select All'}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {isLoadingSubmissions ? (
@@ -538,10 +684,22 @@ function RoundDetailContent() {
                     ) : counts.pending > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {submissions.map((submission: Submission) => (
-                          <div
-                            key={submission.paintingId}
-                            className="border-2 border-orange-200 overflow-hidden hover:shadow-lg transition-all hover:border-orange-300"
-                          >
+                        <div
+                          key={submission.paintingId}
+                          className={`border-2 overflow-hidden hover:shadow-lg transition-all relative ${
+                            selectedSubmissions.has(submission.paintingId)
+                              ? 'border-orange-500 -translate-x-1 -translate-y-1 shadow-lg'
+                              : 'border-[#B8AAAA] hover:border-orange-500/60'
+                          }`}
+                        >
+                            {/* Checkbox */}
+                            <div className="absolute top-2 left-2 z-10">
+                              <CustomCheckbox
+                                checked={selectedSubmissions.has(submission.paintingId)}
+                                onChange={(checked) => handleSelectSubmission(submission.paintingId, checked)}
+                              />
+                            </div>
+
                             {/* Image */}
                             <div className="relative h-48 bg-gray-100">
                               {submission.imageUrl ? (
@@ -560,7 +718,7 @@ function RoundDetailContent() {
                                 </div>
                               )}
                               <div className="absolute top-2 right-2">
-                                <span className="bg-orange-500 text-white px-2 py-1 text-xs font-bold rounded">
+                                <span className="bg-orange-500 text-white px-2 py-1 text-xs font-bold">
                                   PENDING
                                 </span>
                               </div>
