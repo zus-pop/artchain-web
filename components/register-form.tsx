@@ -29,7 +29,7 @@ const guardianSchema = z
       ),
     password: z
       .string()
-      .min(8, "Tối thiểu 8 ký tự"),
+      .min(6, "Tối thiểu 6 ký tự"),
     confirmPassword: z.string().min(1, "Xác nhận mật khẩu"),
     fullName: z
       .string()
@@ -55,7 +55,7 @@ const competitorSchema = z
       ),
     password: z
       .string()
-      .min(8, "Tối thiểu 8 ký tự"),
+      .min(6, "Tối thiểu 6 ký tự"),
     confirmPassword: z.string().min(1, "Xác nhận mật khẩu"),
     fullName: z
       .string()
