@@ -85,6 +85,7 @@ function ViewPostContent() {
   const [tagSearch, setTagSearch] = useState("");
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<any>(null);
 
   // Fetch post data
   const {
@@ -207,9 +208,10 @@ function ViewPostContent() {
   };
 
   const handleSave = async () => {
+    const content = editorRef.current?.getMarkdown() || editedContent;
     const updateData = {
       title: editedTitle,
-      content: editedContent,
+      content: content,
       status: editedStatus,
       tag_ids: editedTagIds,
     };
@@ -579,8 +581,8 @@ function ViewPostContent() {
                           {t.contentLabel}
                         </label>
                         <MDXEditorWrapper
+                          ref={editorRef}
                           markdown={editedContent}
-                          onChange={setEditedContent}
                           placeholder={t.writeContentHere}
                         />
                       </div>
