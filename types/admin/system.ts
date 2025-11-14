@@ -36,12 +36,12 @@ export interface SystemStatistics {
   exhibitions: {
     total: number;
     active: number;
-    completed: number;
+    draft: number;
   };
   campaigns: {
     total: number;
     active: number;
-    completed: number;
+    draft: number;
   };
 }
 
