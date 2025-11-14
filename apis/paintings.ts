@@ -27,8 +27,9 @@ export function useGetMySubmissions() {
 
 /**
  * Get all submissions of a specific user by userId (for guardians)
+ * Note: guardian competitor/user IDs are UUID strings, so accept a string here.
  */
-export function useGetUserSubmissions(userId?: number) {
+export function useGetUserSubmissions(userId?: string) {
   return useQuery({
     queryKey: ["user-submissions", userId],
     queryFn: async () => {

@@ -369,7 +369,7 @@ export default function ExhibitionDetailPage({
                                       </div>
                                     </div>
                                   )}
-                                  <div className="absolute top-3 right-3">
+                                  {/* <div className="absolute top-3 right-3">
                                     <span
                                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
                                         exhibitionPainting.status === "ACCEPTED"
@@ -382,7 +382,7 @@ export default function ExhibitionDetailPage({
                                     >
                                       {exhibitionPainting.status}
                                     </span>
-                                  </div>
+                                  </div> */}
                                   <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
                                     <Link
                                       href={`/dashboard/staff/competitors/paintings/${exhibitionPainting.paintingId}`}

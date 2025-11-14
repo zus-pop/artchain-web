@@ -23,7 +23,7 @@ import {
   Youtube,
   Send,
 } from "lucide-react";
-import Image from "next/image";
+// Avatar will be rendered as an initial-letter circle; no Next/Image needed here
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
@@ -310,6 +310,8 @@ export default function Page() {
     return displayUser?.fullName || "User";
   };
 
+  const getAvatarInitial = () => getDisplayName().charAt(0).toUpperCase();
+
   const handleLogout = () => {
     logout();
     router.push("/auth");
@@ -352,7 +354,8 @@ export default function Page() {
     (async () => {
       try {
         setLoadingCampaigns(true);
-        const resp = await getCampaigns({ limit: 3 });
+        // Only fetch campaigns with ACTIVE status
+        const resp = await getCampaigns({ limit: 3, status: "ACTIVE" });
         // resp shape may vary; try common properties
         const items = resp?.data ?? [];
         if (mounted)
@@ -459,13 +462,13 @@ export default function Page() {
                   onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                   className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                 >
-                  <Image
-                    src="http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1564153943327-fa0006d0f633%3Fixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D%26auto%3Dformat%26fit%3Dcrop%26q%3D80%26w%3D1480&w=3840&q=75"
-                    alt="Avatar"
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                      displayUser?.role === "GUARDIAN" ? "bg-green-600" : "bg-red-600"
+                    }`}
+                  >
+                    {getAvatarInitial()}
+                  </div>
                   <span className="max-w-32 truncate">{getDisplayName()}</span>
                   <ChevronDown
                     className={`h-4 w-4 transition-transform duration-200 ${
@@ -488,28 +491,28 @@ export default function Page() {
                       className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-60"
                     >
                       <div className="p-4 border-b border-gray-100">
-                        <div className="flex items-center space-x-3">
-                          <Image
-                            src="http://localhost:3000/_next/image?url=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1564153943327-fa0006d0f633%3Fixlib%3Drb-4.1.0%26ixid%3DM3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%253D%253D%26auto%3Dformat%26fit%3Dcrop%26q%3D80%26w%3D1480&w=3840&q=75"
-                            alt="Avatar"
-                            width={48}
-                            height={48}
-                            className="rounded-full"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">
-                              {getDisplayName()}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {displayUser?.role === "GUARDIAN"
-                                ? "Guardian"
-                                : "Competitor"}
-                            </p>
-                            <p className="text-xs text-gray-400 truncate">
-                              {displayUser?.email || "email@example.com"}
-                            </p>
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                                displayUser?.role === "GUARDIAN" ? "bg-green-600" : "bg-red-600"
+                              }`}
+                            >
+                              {getAvatarInitial()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">
+                                {getDisplayName()}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {displayUser?.role === "GUARDIAN"
+                                  ? "Guardian"
+                                  : "Competitor"}
+                              </p>
+                              <p className="text-xs text-gray-400 truncate">
+                                {displayUser?.email || "email@example.com"}
+                              </p>
+                            </div>
                           </div>
-                        </div>
                       </div>
 
                       <div className="py-2">

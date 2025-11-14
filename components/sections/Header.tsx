@@ -18,7 +18,7 @@ import GlassSurface from "@/components/GlassSurface";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store";
-import Image from "next/image";
+// Avatar will be rendered as an initial-letter circle; no Next/Image needed here
 
 interface ArtistNavigationProps {
   children?: React.ReactNode;
@@ -37,6 +37,38 @@ const Header: React.FC<ArtistNavigationProps> = ({
   const [activeTab, setActiveTab] = useState(defaultTab);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Distortion scale animation state (match home page behavior)
+  const [distortionScale, setDistortionScale] = useState(-150);
+
+  useEffect(() => {
+    let animationId: number;
+    let direction = 1; // 1 for increasing, -1 for decreasing
+
+    const animate = () => {
+      setDistortionScale((prev) => {
+        let next = prev + direction * 2; // speed
+
+        if (next >= 150) {
+          next = 150;
+          direction = -1;
+        } else if (next <= -150) {
+          next = -150;
+          direction = 1;
+        }
+
+        return next;
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, []);
   const { currentLanguage, setLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
 
@@ -223,7 +255,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
           brightness={54}
           opacity={1}
           displace={0.5}
-          distortionScale={-180}
+          distortionScale={distortionScale}
           redOffset={0}
           greenOffset={10}
           blueOffset={20}
@@ -280,14 +312,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                   >
-                    <div className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0">
-                      <Image
-                        src="https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480"
-                        alt="User Avatar"
-                        width={32}
-                        height={32}
-                        className="w-full h-full object-cover"
-                      />
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                        displayUser?.role === "GUARDIAN"
+                          ? "bg-green-600"
+                          : "bg-red-600"
+                      }`}
+                    >
+                      {getAvatarInitial()}
                     </div>
                     <span className="max-w-32 truncate">{getDisplayName()}</span>
                     <ChevronDown
@@ -312,14 +344,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
                       >
                         <div className="p-4 border-b border-gray-100">
                           <div className="flex items-center space-x-3">
-                            <div className="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
-                              <Image
-                                src="https://images.unsplash.com/photo-1564153943327-fa0006d0f633?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1480"
-                                alt="User Avatar"
-                                width={48}
-                                height={48}
-                                className="w-full h-full object-cover"
-                              />
+                            <div
+                              className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                                displayUser?.role === "GUARDIAN"
+                                  ? "bg-green-600"
+                                  : "bg-red-600"
+                              }`}
+                            >
+                              {getAvatarInitial()}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">

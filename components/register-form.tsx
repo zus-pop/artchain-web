@@ -418,12 +418,13 @@ export function RegisterForm({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       {!showPassword ? (
-                        <EyeOff className="w-5 h-5" />
+                        <EyeOff className="w-4 h-4" />
                       ) : (
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -455,12 +456,13 @@ export function RegisterForm({
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                   >
                     {!showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4" />
                     )}
                   </button>
                 </div>
@@ -473,7 +475,7 @@ export function RegisterForm({
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
+                className="cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
                 {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
                 <svg
@@ -597,12 +599,13 @@ export function RegisterForm({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       {!showPassword ? (
-                        <EyeOff className="w-5 h-5" />
+                        <EyeOff className="w-4 h-4" />
                       ) : (
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -634,12 +637,13 @@ export function RegisterForm({
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                      className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       {!showConfirmPassword ? (
-                        <EyeOff className="w-5 h-5" />
+                        <EyeOff className="w-4 h-4" />
                       ) : (
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -650,24 +654,18 @@ export function RegisterForm({
 
                 <div className="grid">
                   <label className="text-sm font-medium text-black" htmlFor="competitor-birthday">
-                    Tuổi
+                    Ngày sinh
                   </label>
                   <Controller
                     control={competitorControl}
                     name="birthday"
                     render={({ field }) => (
-                      <select
+                      <input
                         id="competitor-birthday"
+                        type="date"
                         className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
-                      >
-                        <option value="">Chọn tuổi</option>
-                        {Array.from({ length: 10 }, (_, i) => i + 6).map((age) => (
-                          <option key={age} value={age.toString()}>
-                            {age} tuổi
-                          </option>
-                        ))}
-                      </select>
+                      />
                     )}
                   />
                   <p className="text-sm text-red-500 min-h-5">
@@ -761,7 +759,7 @@ export function RegisterForm({
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
+                className="cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
                 {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
                 <svg
