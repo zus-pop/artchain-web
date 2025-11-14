@@ -1,7 +1,12 @@
 "use client";
 
 import { useGetContestById } from "@/apis/contests";
-import { getVotedAward, getVotedPaintings, useSubmitVote, useRemoveVote } from "@/apis/vote";
+import {
+  getVotedAward,
+  getVotedPaintings,
+  useSubmitVote,
+  useRemoveVote,
+} from "@/apis/vote";
 import Loader from "@/components/Loaders";
 import { useAuth } from "@/hooks";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,7 +17,7 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { VotedPaining } from "@/types/vote";
 
-type VotedPainting = VotedPaining['paintings'][0];
+type VotedPainting = VotedPaining["paintings"][0];
 
 const statusLabels = {
   UPCOMING: "Sắp diễn ra",
@@ -46,7 +51,8 @@ export default function ContestDetailPage() {
   const [votePaintings, setVotePaintings] = useState<VotedPainting[]>([]);
   const [loadingPaintings, setLoadingPaintings] = useState(false);
   const [showVoteDialog, setShowVoteDialog] = useState(false);
-  const [selectedPainting, setSelectedPainting] = useState<VotedPainting | null>(null);
+  const [selectedPainting, setSelectedPainting] =
+    useState<VotedPainting | null>(null);
 
   // Get awards for voting
   const { data: votedAwardData } = getVotedAward(contestId.toString());
@@ -65,13 +71,13 @@ export default function ContestDetailPage() {
         const response = await getVotedPaintings({
           contestId: contestId.toString(),
           awardId: selectedAwardId,
-          accountId: user?.userId || '',
+          accountId: user?.userId || "",
         });
         // response.data is now a single VotedPaining object, not an array
         const paintingsData = response.data?.paintings || [];
         setVotePaintings(paintingsData);
       } catch (err) {
-        console.error('Error fetching paintings:', err);
+        console.error("Error fetching paintings:", err);
         setVotePaintings([]);
       } finally {
         setLoadingPaintings(false);
@@ -83,7 +89,7 @@ export default function ContestDetailPage() {
 
   const handleVoteClick = (painting: VotedPainting) => {
     if (!isAuthenticated) {
-      alert('Vui lòng đăng nhập để vote!');
+      alert("Vui lòng đăng nhập để vote!");
       return;
     }
     setSelectedPainting(painting);
@@ -107,7 +113,7 @@ export default function ContestDetailPage() {
     const response = await getVotedPaintings({
       contestId: contestId.toString(),
       awardId: selectedAwardId,
-      accountId: user?.userId || '',
+      accountId: user?.userId || "",
     });
     const paintingsData = response.data?.paintings || [];
     setVotePaintings(paintingsData);
@@ -128,7 +134,7 @@ export default function ContestDetailPage() {
       const response = await getVotedPaintings({
         contestId: contestId.toString(),
         awardId: selectedAwardId,
-        accountId: user?.userId || '',
+        accountId: user?.userId || "",
       });
       const paintingsData = response.data?.paintings || [];
       setVotePaintings(paintingsData);
@@ -273,12 +279,18 @@ export default function ContestDetailPage() {
                   </p>
                   <p className="text-black">
                     Thí sinh cần nộp bản cứng tác phẩm trước ngày{" "}
-                    { contest.rounds?.[0]?.sendOriginalDeadline
+                    {contest.rounds?.[0]?.sendOriginalDeadline
                       ? (() => {
-                          const deadline = contest.rounds[0].sendOriginalDeadline;
+                          const deadline =
+                            contest.rounds[0].sendOriginalDeadline;
                           const date = new Date(deadline);
-                          const day = date.getUTCDate().toString().padStart(2, '0');
-                          const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                          const day = date
+                            .getUTCDate()
+                            .toString()
+                            .padStart(2, "0");
+                          const month = (date.getUTCMonth() + 1)
+                            .toString()
+                            .padStart(2, "0");
                           const year = date.getUTCFullYear();
                           return `${day}/${month}/${year}`;
                         })()
@@ -393,12 +405,14 @@ export default function ContestDetailPage() {
                 Gửi bản gốc
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                { contest.rounds?.[0]?.sendOriginalDeadline
+                {contest.rounds?.[0]?.sendOriginalDeadline
                   ? (() => {
                       const deadline = contest.rounds[0].sendOriginalDeadline;
                       const date = new Date(deadline);
-                      const day = date.getUTCDate().toString().padStart(2, '0');
-                      const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+                      const day = date.getUTCDate().toString().padStart(2, "0");
+                      const month = (date.getUTCMonth() + 1)
+                        .toString()
+                        .padStart(2, "0");
                       const year = date.getUTCFullYear();
                       return `${day}/${month}/${year}`;
                     })()
@@ -426,7 +440,7 @@ export default function ContestDetailPage() {
                 Số lượng thí sinh
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                20 thí sinh có bài thi tốt nhất sau vòng 1
+                {contest.round2Quantity} thí sinh có bài thi tốt nhất sau vòng 1
               </p>
             </div>
 
@@ -455,7 +469,7 @@ export default function ContestDetailPage() {
                 Vote cho giải thưởng
               </h3>
             </div>
-            
+
             <p className="text-sm sm:text-base text-black mb-6">
               Chọn giải thưởng và vote cho bức tranh yêu thích của bạn
             </p>
@@ -473,24 +487,30 @@ export default function ContestDetailPage() {
                       onClick={() => setSelectedAwardId(award.awardId)}
                       className={`p-4 cursor-pointer sm:p-5 border-2 text-left transition-all hover:shadow-md ${
                         selectedAwardId === award.awardId
-                          ? 'border-[#FF6E1A] bg-[#FF6E1A]/10'
-                          : 'border-[#b8aaaa] hover:border-[#FF6E1A]/50'
+                          ? "border-[#FF6E1A] bg-[#FF6E1A]/10"
+                          : "border-[#b8aaaa] hover:border-[#FF6E1A]/50"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-semibold text-black text-base sm:text-lg">
                           {award.name}
                         </h4>
-                        <Trophy className={`w-5 h-5 ${
-                          selectedAwardId === award.awardId ? 'text-[#FF6E1A]' : 'text-gray-400'
-                        }`} />
+                        <Trophy
+                          className={`w-5 h-5 ${
+                            selectedAwardId === award.awardId
+                              ? "text-[#FF6E1A]"
+                              : "text-gray-400"
+                          }`}
+                        />
                       </div>
                       <p className="text-sm text-gray-700 mb-2">
                         {award.description}
                       </p>
                       <div className="flex items-center justify-between text-xs text-gray-600">
                         <span>Giải: {award.prize}</span>
-                        <span className="font-medium">{award.totalVotes} votes</span>
+                        <span className="font-medium">
+                          {award.totalVotes} votes
+                        </span>
                       </div>
                     </button>
                   ))}
@@ -508,7 +528,7 @@ export default function ContestDetailPage() {
                 <h4 className="text-base sm:text-lg font-semibold text-black mb-4">
                   Các bức tranh tham gia:
                 </h4>
-                
+
                 {loadingPaintings ? (
                   <div className="flex justify-center items-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-[#FF6E1A]" />
@@ -517,65 +537,76 @@ export default function ContestDetailPage() {
                 ) : votePaintings.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {(() => {
-                      const hasAlreadyVoted = votePaintings.some(p => p.hasVoted);
+                      const hasAlreadyVoted = votePaintings.some(
+                        (p) => p.hasVoted
+                      );
                       return votePaintings.map((painting) => (
-                      <div
-                        key={painting.paintingId}
-                        className="border border-[#b8aaaa] overflow-hidden hover:shadow-lg transition-all hover:scale-105 duration-300"
-                      >
-                        <div className="relative h-48 sm:h-56 w-full bg-gray-100">
-                          {painting.imageUrl ? (
-                            <Image
-                              src={painting.imageUrl}
-                              alt={painting.title}
-                              fill
-                              className="object-cover"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                              <div className="text-center">
-                                <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                                <p className="text-gray-500 text-sm">Chưa có ảnh</p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-4">
-                          <h5 className="font-semibold text-black mb-1 line-clamp-1 text-base">
-                            {painting.title}
-                          </h5>
-                          <p className="text-sm text-gray-700 mb-2">
-                            {painting.competitorName}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600 font-medium">
-                              {painting.voteCount} votes
-                            </span>
-                            {painting.hasVoted ? (
-                              <button
-                                onClick={() => handleRemoveVote(painting)}
-                                disabled={removeVoteMutation.isPending}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
-                              >
-                                <ThumbsUp className="w-4 h-4 fill-current" />
-                                Bỏ vote
-                              </button>
+                        <div
+                          key={painting.paintingId}
+                          className="border border-[#b8aaaa] overflow-hidden hover:shadow-lg transition-all hover:scale-105 duration-300"
+                        >
+                          <div className="relative h-48 sm:h-56 w-full bg-gray-100">
+                            {painting.imageUrl ? (
+                              <Image
+                                src={painting.imageUrl}
+                                alt={painting.title}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              />
                             ) : (
-                              <button
-                                onClick={() => handleVoteClick(painting)}
-                                disabled={hasAlreadyVoted || submitVoteMutation.isPending}
-                                title={hasAlreadyVoted ? "Bạn đã bình chọn rồi" : undefined}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-[#FF6E1A] text-white text-sm font-medium hover:bg-[#FF833B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <ThumbsUp className="w-4 h-4" />
-                                Vote
-                              </button>
+                              <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-gray-100 to-gray-200">
+                                <div className="text-center">
+                                  <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                                  <p className="text-gray-500 text-sm">
+                                    Chưa có ảnh
+                                  </p>
+                                </div>
+                              </div>
                             )}
                           </div>
+                          <div className="p-4">
+                            <h5 className="font-semibold text-black mb-1 line-clamp-1 text-base">
+                              {painting.title}
+                            </h5>
+                            <p className="text-sm text-gray-700 mb-2">
+                              {painting.competitorName}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600 font-medium">
+                                {painting.voteCount} votes
+                              </span>
+                              {painting.hasVoted ? (
+                                <button
+                                  onClick={() => handleRemoveVote(painting)}
+                                  disabled={removeVoteMutation.isPending}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                                >
+                                  <ThumbsUp className="w-4 h-4 fill-current" />
+                                  Bỏ vote
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleVoteClick(painting)}
+                                  disabled={
+                                    hasAlreadyVoted ||
+                                    submitVoteMutation.isPending
+                                  }
+                                  title={
+                                    hasAlreadyVoted
+                                      ? "Bạn đã bình chọn rồi"
+                                      : undefined
+                                  }
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-[#FF6E1A] text-white text-sm font-medium hover:bg-[#FF833B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <ThumbsUp className="w-4 h-4" />
+                                  Vote
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))
+                      ));
                     })()}
                   </div>
                 ) : (
@@ -602,7 +633,7 @@ export default function ContestDetailPage() {
               <h3 className="text-xl font-bold text-black mb-4">
                 Xác nhận vote
               </h3>
-              
+
               <div className="mb-6">
                 {selectedPainting.imageUrl && (
                   <div className="relative h-48 w-full mb-4 rounded-lg overflow-hidden">
@@ -615,13 +646,16 @@ export default function ContestDetailPage() {
                   </div>
                 )}
                 <p className="text-gray-700 mb-2">
-                  <span className="font-semibold">Bức tranh:</span> {selectedPainting.title}
+                  <span className="font-semibold">Bức tranh:</span>{" "}
+                  {selectedPainting.title}
                 </p>
                 <p className="text-gray-700 mb-2">
-                  <span className="font-semibold">Thí sinh:</span> {selectedPainting.competitorName}
+                  <span className="font-semibold">Thí sinh:</span>{" "}
+                  {selectedPainting.competitorName}
                 </p>
                 <p className="text-gray-700">
-                  <span className="font-semibold">Số votes hiện tại:</span> {selectedPainting.voteCount}
+                  <span className="font-semibold">Số votes hiện tại:</span>{" "}
+                  {selectedPainting.voteCount}
                 </p>
               </div>
 

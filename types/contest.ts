@@ -13,6 +13,8 @@ export interface Contest {
   bannerUrl?: string;
   description: string;
   numOfAward: number;
+  round2Quantity: number;
+  numberOfTablesRound2: number;
   startDate: string;
   endDate: string;
   status: ContestStatus;
