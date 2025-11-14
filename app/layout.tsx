@@ -48,7 +48,12 @@ export default function RootLayout({
       <head>
         {/* Favicon */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/images/newlogo.png" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/images/newlogo.png"
+        />
         <link rel="apple-touch-icon" href="/images/newlogo.png" />
         <meta name="theme-color" content="#ffffff" />
         <style
