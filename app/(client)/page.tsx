@@ -1190,7 +1190,7 @@ export default function Page() {
                   </li>
                   <li className="flex items-center space-x-3">
                     <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">info@netvexanh.vn</span>
+                    <span className="text-gray-300">artchain999@gmail.com</span>
                   </li>
                 </ul>
               </div>
