@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  acceptStaffSubmission,
   acceptMultipleSubmissions,
   getStaffRoundById,
   getStaffSubmissions,
@@ -91,16 +90,6 @@ function RoundDetailContent() {
 
   const submissions = submissionsData?.data || [];
 
-  // Quick accept mutation
-  const acceptMutation = useMutation({
-    mutationFn: (paintingId: string) => acceptStaffSubmission(paintingId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["round-submissions", contestId, roundId, selectedStatus],
-      });
-    },
-  });
-
   // Accept multiple submissions mutation
   const acceptMultipleMutation = useMutation({
     mutationFn: (paintingIds: string[]) => acceptMultipleSubmissions(paintingIds),
@@ -151,7 +140,7 @@ function RoundDetailContent() {
 
   const handleQuickAccept = (paintingId: string) => {
     if (confirm(t.confirmAcceptSubmission)) {
-      acceptMutation.mutate(paintingId);
+      acceptMultipleMutation.mutate([paintingId]);
     }
   };
 
@@ -194,11 +183,11 @@ function RoundDetailContent() {
     });
 
     if (pendingSelected.length === 0) {
-      alert("No pending submissions selected to accept.");
+      alert(t.noPendingSubmissionsSelected);
       return;
     }
 
-    if (confirm(`Accept all ${pendingSelected.length} selected pending submissions?`)) {
+    if (confirm(t.acceptAllSelectedPending.replace('${count}', pendingSelected.length.toString()))) {
       // Use the bulk accept API
       acceptMultipleMutation.mutate(pendingSelected);
     }
@@ -469,11 +458,11 @@ function RoundDetailContent() {
                             {acceptMultipleMutation.isPending ? 'Accepting...' : 'Accept All'}
                           </button>
                         )}
-                        <CustomCheckbox
-                          checked={selectedSubmissions.size === submissions.length && submissions.length > 0}
-                          onChange={(checked) => handleSelectAll(checked)}
-                          label={selectedSubmissions.size > 0 ? `Selected (${selectedSubmissions.size})` : 'Select All'}
-                        />
+                          <CustomCheckbox
+                            checked={selectedSubmissions.size === submissions.length && submissions.length > 0}
+                            onChange={(checked) => handleSelectAll(checked)}
+                            label={selectedSubmissions.size > 0 ? `${t.selected} (${selectedSubmissions.size})` : t.selectAll}
+                          />
                       </div>
                     )}
 
@@ -608,9 +597,9 @@ function RoundDetailContent() {
                                     onClick={() =>
                                       handleQuickAccept(submission.paintingId)
                                     }
-                                    disabled={acceptMutation.isPending}
+                                    disabled={acceptMultipleMutation.isPending}
                                     className="px-3 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
-                                    title="Accept"
+                                    title={t.acceptBtn}
                                   >
                                     <IconCheck className="h-4 w-4" />
                                   </button>
@@ -620,7 +609,7 @@ function RoundDetailContent() {
                                     }
                                     disabled={rejectMutation.isPending}
                                     className="px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
-                                    title="Reject"
+                                    title={t.rejectBtn}
                                   >
                                     <IconX className="h-4 w-4" />
                                   </button>
@@ -665,7 +654,7 @@ function RoundDetailContent() {
                               disabled={acceptMultipleMutation.isPending}
                               className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold rounded"
                             >
-                              {acceptMultipleMutation.isPending ? 'Accepting...' : 'Accept All'}
+                              {acceptMultipleMutation.isPending ? t.accepting : t.acceptAll}
                             </button>
                           )}
                           <CustomCheckbox
@@ -679,7 +668,7 @@ function RoundDetailContent() {
 
                     {isLoadingSubmissions ? (
                       <div className="text-center py-8 staff-text-secondary">
-                        Loading submissions...
+                        {t.roundLoadingSubmissions}
                       </div>
                     ) : counts.pending > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -719,7 +708,7 @@ function RoundDetailContent() {
                               )}
                               <div className="absolute top-2 right-2">
                                 <span className="bg-orange-500 text-white px-2 py-1 text-xs font-bold">
-                                  PENDING
+                                  {t.pendingReview}
                                 </span>
                               </div>
                             </div>
@@ -754,9 +743,9 @@ function RoundDetailContent() {
                                   onClick={() =>
                                     handleQuickAccept(submission.paintingId)
                                   }
-                                  disabled={acceptMutation.isPending}
+                                  disabled={acceptMultipleMutation.isPending}
                                   className="px-4 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 font-semibold"
-                                  title="Accept"
+                                  title={t.acceptBtn}
                                 >
                                   <IconCheck className="h-4 w-4" />
                                 </button>
@@ -766,7 +755,7 @@ function RoundDetailContent() {
                                   }
                                   disabled={rejectMutation.isPending}
                                   className="px-4 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 font-semibold"
-                                  title="Reject"
+                                  title={t.rejectBtn}
                                 >
                                   <IconX className="h-4 w-4" />
                                 </button>
