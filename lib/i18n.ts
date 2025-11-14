@@ -904,7 +904,7 @@ export const translations = {
     createRound2ConfirmDetail:
       "Bạn có chắc chắn muốn tạo vòng 2 với cài đặt hiện tại?",
     numberOfTablesDetail: "Số Bảng",
-    currentContestSettingDetail: "Cài Đặt Cuộc Thi Hiện Tại {0} bảng",
+    currentContestSettingDetail: "Cài Đặt Số Bảng Của Cuộc Thi Hiện Tại",
     tablesDetail: "bảng",
     enterNumberOfTablesDetail: "Nhập số bảng",
     creatingDetail: "Đang tạo...",
@@ -1986,7 +1986,7 @@ export const translations = {
     createRound2ConfirmDetail:
       "Are you sure you want to create round 2 with current settings?",
     numberOfTablesDetail: "Number of Tables",
-    currentContestSettingDetail: "Current Contest Setting {0} tables",
+    currentContestSettingDetail: "Current Contest Tables Setting",
     tablesDetail: "tables",
     enterNumberOfTablesDetail: "Enter number of tables",
     creatingDetail: "Creating...",
