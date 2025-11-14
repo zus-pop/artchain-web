@@ -125,7 +125,7 @@ export default function AddChildPage() {
             </div>
             <button
               onClick={handleAddChild}
-              className="bg-[#FF6E1A] text-[#FF6E1A]-foreground px-4 py-2 hover:bg-[#FF6E1A]/90 transition-colors flex items-center space-x-2 font-medium"
+              className="bg-[#FF6E1A] text-white px-4 py-2 hover:bg-[#FF6E1A]/90 transition-colors flex items-center space-x-2 font-medium"
             >
               <Plus className="h-4 w-4" />
               <span>Thêm con em</span>
@@ -239,7 +239,7 @@ export default function AddChildPage() {
             </p>
             <button
               onClick={handleAddChild}
-              className="bg-[#FF6E1A] text-[#FF6E1A]-foreground px-6 py-2 hover:bg-[#FF6E1A]/90 transition-colors font-medium flex items-center space-x-2 mx-auto"
+              className="bg-[#FF6E1A] text-white px-6 py-2 hover:bg-[#FF6E1A]/90 transition-colors font-medium flex items-center space-x-2 mx-auto"
             >
               <Plus className="h-4 w-4" />
               <span>Thêm con em đầu tiên</span>

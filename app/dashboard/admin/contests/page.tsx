@@ -1,121 +1,152 @@
 "use client";
 
 import { AdminSidebar } from "@/components/admin-sidebar";
-import { CreateUserDialog } from "@/components/admin/create-user-dialog";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { User, UserRole } from "@/types";
-import { AdminUser } from "@/types/admin/user";
-import { getAllUsers, banUser, activateUser } from "@/apis/admin";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { Contest, ContestStatus } from "@/types/contest";
+import { useGetContestsPaginated } from "@/apis/contests";
+import { useQuery } from "@tanstack/react-query";
 import {
-  IconPlus,
   IconSearch,
-  IconChevronsLeft,
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsRight,
+  IconTrophy,
+  IconCalendar,
+  IconEye,
+  IconPlus,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Cell,
+} from "recharts";
+import { useState, useEffect, useCallback } from "react";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
+import Image from "next/image";
+import { getContestStatistics } from "@/apis/admin";
+import { ContestStatisticsResponse, ContestStatistics } from "@/types/admin/system";
+import Loader from "@/components/Loaders";
 
-// Helper function to convert AdminUser to User type
-const convertAdminUserToUser = (adminUser: AdminUser): User => {
-  return {
-    id: adminUser.userId,
-    username: adminUser.username,
-    fullName: adminUser.fullName,
-    email: adminUser.email,
-    role: adminUser.role as UserRole,
-    status: adminUser.status === 1 ? "ACTIVE" : "SUSPENDED",
-    createdAt: new Date(adminUser.createdAt).toISOString().split("T")[0],
-  };
-};
-
-export default function AccountsManagementPage() {
-  // State for filters and search
-  const [selectedRole, setSelectedRole] = useState<UserRole | "ALL">("ALL");
+export default function AdminContestsPage() {
+  // State for filters and infinite scroll
+  const [selectedStatus, setSelectedStatus] = useState<ContestStatus | "ALL">("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [selectedContestId, setSelectedContestId] = useState<number | null>(null);
+  const pageSize = 20; // Fixed page size for infinite scroll
 
   // Translation
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
 
-  // Fetch users from API
+  // Fetch contests with pagination
   const {
-    data: usersResponse,
+    data: contestsResponse,
     isLoading,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ["admin-users", currentPage, pageSize, selectedRole, searchQuery],
-    queryFn: () =>
-      getAllUsers({
-        page: currentPage,
-        limit: pageSize,
-        role: selectedRole !== "ALL" ? selectedRole : undefined,
-        search: searchQuery || undefined,
-      }),
-    staleTime: 1 * 60 * 1000, // 1 minute
+  } = useGetContestsPaginated(
+    selectedStatus !== "ALL" ? selectedStatus : undefined,
+    page,
+    pageSize
+  );
+
+  // Also fetch a large first page of all contests to compute stable statistics
+  const {
+    data: allContestsResponse,
+    isLoading: isLoadingAllContests,
+  } = useGetContestsPaginated(undefined, 1, 1000);
+
+  // Fetch selected contest stats only when modal is open
+  const {
+    data: contestStatsResponse,
+    isLoading: isLoadingContestStats,
+    error: contestStatsError,
+  } = useQuery<ContestStatisticsResponse | ContestStatistics | null>({
+    queryKey: ["contestStats", selectedContestId],
+    queryFn: () => (selectedContestId ? getContestStatistics(selectedContestId) : Promise.resolve(null)),
+    enabled: !!selectedContestId && statsModalOpen,
   });
 
-  // Convert API users to local User type
-  const users = usersResponse?.data.map(convertAdminUserToUser) || [];
-  const meta = usersResponse?.meta;
-
-  // State for dialogs
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-  // Filter users (now done by API, but keep for local display)
-  const filteredUsers = users;
-
-  // Ban/Activate user mutations
-  const banUserMutation = useMutation({
-    mutationFn: banUser,
-    onSuccess: () => {
-      refetch();
-    },
-  });
-
-  const activateUserMutation = useMutation({
-    mutationFn: activateUser,
-    onSuccess: () => {
-      refetch();
-    },
-  });
-
-  // CRUD Operations
-
-  const handleToggleStatus = async (user: User) => {
-    if (user.status === "ACTIVE") {
-      await banUserMutation.mutateAsync(user.id);
-    } else {
-      await activateUserMutation.mutateAsync(user.id);
+  // Handle infinite scroll
+  const loadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore && contestsResponse) {
+      setIsLoadingMore(true);
+      setPage(prev => prev + 1);
     }
+  }, [isLoadingMore, hasMore, contestsResponse]);
+
+  // Update contests list when new data arrives
+  useEffect(() => {
+    if (contestsResponse) {
+      if (page === 1) {
+        setContests(contestsResponse);
+      } else {
+        setContests(prev => [...prev, ...contestsResponse]);
+      }
+      setHasMore(contestsResponse.length === pageSize);
+      setIsLoadingMore(false);
+      // data arrived for current filters
+      setIsFiltering(false);
+    }
+  }, [contestsResponse, page, pageSize]);
+
+  // Filter contests locally by search query
+  const filteredContests = contests.filter(contest =>
+    contest.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contest.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Get contest status statistics. Prefer stats computed from the full dataset
+  // if available (so the stat cards stay stable when filtering/pagination
+  // changes). Otherwise fall back to the currently-loaded contests.
+  const statsSource = (allContestsResponse && allContestsResponse.length > 0)
+    ? allContestsResponse
+    : contests;
+
+  const statusStats = {
+    total: statsSource.length,
+    active: statsSource.filter(c => c.status === "ACTIVE").length,
+    upcoming: statsSource.filter(c => c.status === "UPCOMING").length,
+    ended: statsSource.filter(c => c.status === "ENDED").length,
+    completed: statsSource.filter(c => c.status === "COMPLETED").length,
+    draft: statsSource.filter(c => c.status === "DRAFT").length,
   };
 
-  const getRoleBadgeColor = (role: UserRole) => {
-    const colors: Record<UserRole, string> = {
-      COMPETITOR: "staff-badge-pending",
-      GUARDIAN: "staff-badge-approved",
-      STAFF: "staff-badge-active",
-      ADMIN: "staff-badge-rejected",
-      EXAMINER: "staff-badge-neutral",
+  // Total used for chart scaling (sum of individual status counts)
+  const statusTotal =
+    statusStats.active +
+    statusStats.upcoming +
+    statusStats.ended +
+    statusStats.completed +
+    statusStats.draft;
+
+  const getStatusBadgeColor = (status: ContestStatus) => {
+    const colors: Record<ContestStatus, string> = {
+      ACTIVE: "staff-badge-active",
+      UPCOMING: "staff-badge-pending",
+      ENDED: "staff-badge-neutral",
+      COMPLETED: "staff-badge-approved",
+      DRAFT: "staff-badge-rejected",
+      CANCELLED: "staff-badge-neutral",
+      ALL: "staff-badge-neutral",
     };
-    return colors[role];
+    return colors[status];
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
   return (
@@ -129,33 +160,44 @@ export default function AccountsManagementPage() {
     >
       <AdminSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title={t.accountManagement} />
+        <SiteHeader title="Contest Management" />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-linear-to-r from-red-50 to-orange-50">
             <Breadcrumb
-              items={[{ label: t.accountManagement }]}
+              items={[{ label: "Contest Management" }]}
               homeHref="/dashboard/admin"
             />
           </div>
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-              {/* Page Header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="staff-heading">
-                    {t.allUsers} ({meta?.total || 0})
-                  </h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {t.manageAllUserAccounts}
-                  </p>
+              {/* Statistics Cards */}
+              <div className="">
+                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                  <h4 className="text-sm font-medium text-gray-600 mb-2">Contests distribution</h4>
+                  <div className="h-36">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[{
+                        name: 'Contests',
+                        ACTIVE: statusStats.active,
+                        UPCOMING: statusStats.upcoming,
+                        ENDED: statusStats.ended,
+                        COMPLETED: statusStats.completed,
+                        DRAFT: statusStats.draft,
+                      }]}
+                      layout="vertical">
+                        <XAxis type="number" hide domain={[0, statusTotal || 1]} />
+                        <YAxis type="category" dataKey="name" hide />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="ACTIVE" stackId="a" fill="#10b981" />
+                        <Bar dataKey="UPCOMING" stackId="a" fill="#f59e0b" />
+                        <Bar dataKey="ENDED" stackId="a" fill="#6b7280" />
+                        <Bar dataKey="COMPLETED" stackId="a" fill="#7c3aed" />
+                        <Bar dataKey="DRAFT" stackId="a" fill="#ef4444" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  className="staff-btn-primary flex items-center gap-2"
-                >
-                  <IconPlus className="h-4 w-4" />
-                  {t.addNewUser}
-                </button>
               </div>
 
               {/* Search Bar */}
@@ -163,317 +205,303 @@ export default function AccountsManagementPage() {
                 <IconSearch className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={t.searchByNameEmailUsername}
+                  placeholder="Search contests by title or description..."
                   value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setCurrentPage(1); // Reset to first page on search
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      refetch();
-                    }
-                  }}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="staff-input w-full pl-10 pr-4 py-2"
                 />
               </div>
 
-              {/* Filters */}
+              {/* Status Filters */}
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => {
-                    setSelectedRole("ALL");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => setSelectedStatus("ALL")}
                   className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedRole === "ALL"
+                    selectedStatus === "ALL"
                       ? "staff-badge-active"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  {t.allUsersFilter}
+                  All Contests
                 </button>
                 <button
-                  onClick={() => {
-                    setSelectedRole("COMPETITOR");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => setSelectedStatus("ACTIVE")}
                   className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedRole === "COMPETITOR"
+                    selectedStatus === "ACTIVE"
+                      ? "staff-badge-active"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Active
+                </button>
+                <button
+                  onClick={() => setSelectedStatus("UPCOMING")}
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                    selectedStatus === "UPCOMING"
                       ? "staff-badge-pending"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  {t.competitorsFilter}
+                  Upcoming
                 </button>
                 <button
-                  onClick={() => {
-                    setSelectedRole("GUARDIAN");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => setSelectedStatus("ENDED")}
                   className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedRole === "GUARDIAN"
-                      ? "staff-badge-approved"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {t.guardiansFilter}
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedRole("STAFF");
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedRole === "STAFF"
-                      ? "staff-badge-rejected"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {t.staffFilter}
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedRole("ADMIN");
-                    setCurrentPage(1);
-                  }}
-                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedRole === "ADMIN"
+                    selectedStatus === "ENDED"
                       ? "staff-badge-neutral"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  {t.adminsFilter}
+                  Ended
                 </button>
                 <button
-                  onClick={() => {
-                    setSelectedRole("EXAMINER");
-                    setCurrentPage(1);
-                  }}
+                  onClick={() => setSelectedStatus("COMPLETED")}
                   className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                    selectedRole === "EXAMINER"
-                      ? "staff-badge-active"
+                    selectedStatus === "COMPLETED"
+                      ? "staff-badge-approved"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  {t.examinersFilter}
+                  Completed
+                </button>
+                <button
+                  onClick={() => setSelectedStatus("DRAFT")}
+                  className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                    selectedStatus === "DRAFT"
+                      ? "staff-badge-rejected"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  Draft
                 </button>
               </div>
 
-              {/* Users Table */}
-              <div className="staff-card overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-linear-to-r from-red-50 to-orange-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {t.userTable}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {t.emailTable}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {t.roleTable}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {t.createdTable}
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          {t.activeTableAdmin}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {isLoading ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            className="px-6 py-12 text-center text-gray-500"
-                          >
-                            {t.loadingUsers}
-                          </td>
-                        </tr>
-                      ) : error ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            className="px-6 py-12 text-center text-red-500"
-                          >
-                            {t.errorLoadingUsers}
-                          </td>
-                        </tr>
-                      ) : filteredUsers.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            className="px-6 py-12 text-center text-gray-500"
-                          >
-                            {t.noUsersFound}
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredUsers.map((user) => (
-                          <tr key={user.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="h-10 w-10 rounded-full bg-[#d9534f] flex items-center justify-center text-white font-semibold">
-                                  {getInitials(user.fullName)}
+              {/* Contests List */}
+              <div className="space-y-4">
+                {isLoading && contests.length === 0 ? (
+                  // Loading skeleton
+                  Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="staff-card animate-pulse">
+                      <div className="flex items-center space-x-4 p-4">
+                        <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <div className="h-6 bg-gray-200 rounded w-16"></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : error ? (
+                  <div className="text-center py-12">
+                    <p className="text-red-500">Error loading contests</p>
+                  </div>
+                ) : (!isFiltering && filteredContests.length === 0) ? (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500">No contests found</p>
+                  </div>
+                ) : (
+                  filteredContests.map((contest) => (
+                    <div key={contest.contestId} className="staff-card hover:shadow-lg transition-shadow">
+                      <div className="flex items-center space-x-4 p-4">
+                        {/* Contest Image */}
+                        <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                          {contest.bannerUrl ? (
+                            <Image
+                              src={contest.bannerUrl}
+                              alt={contest.title}
+                              width={96}
+                              height={96}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <IconTrophy className="h-8 w-8 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Contest Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0 pr-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-lg text-gray-900 truncate">
+                                    {contest.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {contest.description.length > 120
+                                      ? `${contest.description.substring(0, 120)}...`
+                                      : contest.description
+                                    }
+                                  </p>
                                 </div>
-                                <div className="ml-4">
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {user.fullName}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    @{user.username}
-                                  </div>
+                                
+                                {/* Status Badge removed from here and placed with action buttons */}
+                              </div>
+                              
+                              <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                <div className="flex items-center space-x-1">
+                                  <IconCalendar className="h-4 w-4" />
+                                  <span>{formatDate(contest.startDate)} - {formatDate(contest.endDate)}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <IconTrophy className="h-4 w-4" />
+                                  <span>{contest.numOfAward || 0} awards</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <IconEye className="h-4 w-4" />
+                                  <span>{contest.rounds?.length || 0} rounds</span>
                                 </div>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                {user.email}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span
-                                className={`inline-flex px-2 py-1 text-xs font-semibold ${getRoleBadgeColor(
-                                  user.role
-                                )}`}
-                              >
-                                {user.role}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {user.createdAt}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={user.status === "ACTIVE"}
-                                  onChange={() => handleToggleStatus(user)}
-                                  disabled={
-                                    banUserMutation.isPending ||
-                                    activateUserMutation.isPending
-                                  }
-                                  className="sr-only peer"
-                                />
-                                <div className="group peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-16 h-8 shadow-md peer-checked:bg-emerald-500 peer-focus:outline-none after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-6 after:w-6 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-8 peer-hover:after:scale-95 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed">
-                                  <svg
-                                    className="absolute top-1 left-8 stroke-gray-900 w-6 h-6"
-                                    height={100}
-                                    preserveAspectRatio="xMidYMid meet"
-                                    viewBox="0 0 100 100"
-                                    width={100}
-                                    x={0}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    y={0}
-                                  >
-                                    <path
-                                      d="M30,46V38a20,20,0,0,1,40,0v8a8,8,0,0,1,8,8V74a8,8,0,0,1-8,8H30a8,8,0,0,1-8-8V54A8,8,0,0,1,30,46Zm32-8v8H38V38a12,12,0,0,1,24,0Z"
-                                      fillRule="evenodd"
-                                    ></path>
-                                  </svg>
-                                  <svg
-                                    className="absolute top-1 left-1 stroke-gray-900 w-6 h-6"
-                                    height={100}
-                                    preserveAspectRatio="xMidYMid meet"
-                                    viewBox="0 0 100 100"
-                                    width={100}
-                                    x={0}
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    y={0}
-                                  >
-                                    <path
-                                      className="svg-fill-primary"
-                                      d="M50,18A19.9,19.9,0,0,0,30,38v8a8,8,0,0,0-8,8V74a8,8,0,0,0,8,8H70a8,8,0,0,0,8-8V54a8,8,0,0,0-8-8H38V38a12,12,0,0,1,23.6-3,4,4,0,1,0,7.8-2A20.1,20.1,0,0,0,50,18Z"
-                                    ></path>
-                                  </svg>
-                                </div>
-                              </label>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons (status moved here) */}
+                        <div className="flex-shrink-0 flex items-center space-x-2">
+                          <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadgeColor(contest.status)}`}>
+                            {contest.status}
+                          </span>
+                            <button
+                              onClick={() => {
+                                setSelectedContestId(contest.contestId as unknown as number);
+                                setStatsModalOpen(true);
+                              }}
+                              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <IconEye className="h-5 w-5" />
+                            </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
-              {/* Pagination */}
-              {meta && meta.totalPages > 1 && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm staff-text-secondary">
-                        {t.show} {t.perPage}:
-                      </span>
-                      <select
-                        value={pageSize}
-                        onChange={(e) => {
-                          setPageSize(Number(e.target.value));
-                          setCurrentPage(1); // Reset to first page when changing page size
-                        }}
-                        className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-[#d9534f] text-sm"
-                      >
-                        <option value={5}>5</option>
-                        <option value={10}>10</option>
-                        <option value={20}>20</option>
-                        <option value={50}>50</option>
-                      </select>
+              {/* Load More Button */}
+              {hasMore && !isLoading && (
+                <div className="flex justify-center py-4">
+                  <button
+                    onClick={loadMore}
+                    disabled={isLoadingMore}
+                    className="staff-btn-primary disabled:opacity-50"
+                  >
+                    {isLoadingMore ? "Loading..." : "Load More"}
+                  </button>
+                </div>
+              )}
+
+              {/* Loading indicator for infinite scroll */}
+              {isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137]"></div>
+                </div>
+              )}
+              {/* Stats Modal */}
+              {statsModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                  <div className="bg-white rounded-lg w-[95%] max-w-4xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold">Contest statistics</h3>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setStatsModalOpen(false);
+                            setSelectedContestId(null);
+                          }}
+                          className="px-3 py-1 text-sm bg-gray-100 rounded"
+                        >
+                          Close
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-sm staff-text-secondary">
-                      {t.showing}{" "}
-                      {users.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}{" "}
-                      {t.to} {Math.min(currentPage * pageSize, meta.total)}{" "}
-                      {t.of} {meta.total} {t.entries.toLowerCase()}
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setCurrentPage(1)}
-                      disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="First page"
-                    >
-                      <IconChevronsLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.max(1, prev - 1))
-                      }
-                      disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Previous page"
-                    >
-                      <IconChevronLeft className="h-4 w-4" />
-                    </button>
+                    {isLoadingContestStats ? (
+                      <div className="py-12 text-center"><Loader /></div>
+                    ) : contestStatsError ? (
+                      <div className="py-12 text-center text-red-500"><Loader /></div>
+                    ) : (
+                      (() => {
+                        const payload = (contestStatsResponse as ContestStatisticsResponse)?.data ?? (contestStatsResponse as ContestStatistics) ?? null;
+                        // payload expected shape: { contest, submissions, participants, evaluations, votes, awards }
+                        if (!payload) return <div className="py-6">No data</div>;
+                        const submissions = payload.submissions || {};
+                        const byRound = submissions.byRound || {};
+                        const roundData = Object.keys(byRound).map(r => ({ name: r, value: byRound[r] }));
+                        const submissionStack = [
+                          { name: 'Accepted', value: submissions.accepted ?? submissions.approved ?? 0, color: '#10b981' },
+                          { name: 'Pending', value: submissions.pending ?? 0, color: '#f59e0b' },
+                          { name: 'Rejected', value: submissions.rejected ?? 0, color: '#ef4444' },
+                        ];
 
-                    <span className="px-3 py-1 text-sm staff-text-primary">
-                      {t.pageText} {currentPage} {t.ofText} {meta.totalPages}
-                    </span>
+                        return (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">Submissions (status)</h4>
+                              <div className="h-48">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart
+                                    data={[{
+                                      name: 'Submissions',
+                                      Accepted: submissionStack[0].value,
+                                      Pending: submissionStack[1].value,
+                                      Rejected: submissionStack[2].value,
+                                    }]}
+                                    layout="vertical"
+                                  >
+                                    <XAxis type="number" hide />
+                                    <YAxis type="category" dataKey="name" hide />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="Accepted" stackId="a" fill={submissionStack[0].color} />
+                                    <Bar dataKey="Pending" stackId="a" fill={submissionStack[1].color} />
+                                    <Bar dataKey="Rejected" stackId="a" fill={submissionStack[2].color} />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
 
-                    <button
-                      onClick={() =>
-                        setCurrentPage((prev) =>
-                          Math.min(meta.totalPages, prev + 1)
-                        )
-                      }
-                      disabled={currentPage === meta.totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Next page"
-                    >
-                      <IconChevronRight className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(meta.totalPages)}
-                      disabled={currentPage === meta.totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Last page"
-                    >
-                      <IconChevronsRight className="h-4 w-4" />
-                    </button>
+                            <div>
+                              <h4 className="text-sm font-medium text-gray-700 mb-2">Submissions by round</h4>
+                              <div className="h-48">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart data={roundData}>
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Bar dataKey="value" fill="#7c3aed" />
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </div>
+                            </div>
+
+                            <div className="md:col-span-2 grid grid-cols-2 gap-4 mt-2">
+                              <div className="p-3 border rounded">
+                                <div className="text-sm text-gray-500">Participants</div>
+                                <div className="text-2xl font-semibold">{payload.participants?.totalCompetitors ?? '-'}</div>
+                              </div>
+                              <div className="p-3 border rounded">
+                                <div className="text-sm text-gray-500">Votes</div>
+                                <div className="text-2xl font-semibold">{payload.votes?.total ?? '-'}</div>
+                              </div>
+                              <div className="p-3 border rounded">
+                                <div className="text-sm text-gray-500">Evaluations</div>
+                                <div className="text-2xl font-semibold">{payload.evaluations?.total ?? '-'}</div>
+                              </div>
+                              <div className="p-3 border rounded">
+                                <div className="text-sm text-gray-500">Awards</div>
+                                <div className="text-2xl font-semibold">{payload.awards?.total ?? '-'} ({payload.awards?.awarded ?? '-'})</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    )}
                   </div>
                 </div>
               )}
@@ -481,12 +509,6 @@ export default function AccountsManagementPage() {
           </div>
         </div>
       </SidebarInset>
-
-      {/* Create User Dialog */}
-      <CreateUserDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-      />
     </SidebarProvider>
   );
 }

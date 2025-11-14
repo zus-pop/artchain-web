@@ -505,8 +505,8 @@ export default function Page() {
                               </p>
                               <p className="text-xs text-gray-500">
                                 {displayUser?.role === "GUARDIAN"
-                                  ? "Guardian"
-                                  : "Competitor"}
+                                  ? "Người đại diện"
+                                  : "Thí sinh"}
                               </p>
                               <p className="text-xs text-gray-400 truncate">
                                 {displayUser?.email || "email@example.com"}
@@ -1190,7 +1190,7 @@ export default function Page() {
                   </li>
                   <li className="flex items-center space-x-3">
                     <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">info@netvexanh.vn</span>
+                    <span className="text-gray-300">artchain999@gmail.com</span>
                   </li>
                 </ul>
               </div>

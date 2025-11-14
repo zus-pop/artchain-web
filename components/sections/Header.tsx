@@ -359,8 +359,8 @@ const Header: React.FC<ArtistNavigationProps> = ({
                               </p>
                               <p className="text-xs text-gray-500">
                                 {displayUser?.role === "GUARDIAN"
-                                  ? "Guardian"
-                                  : "Competitor"}
+                                  ? "Người đại diện"
+                                  : "Thí sinh"}
                               </p>
                               <p className="text-xs text-gray-400 truncate">
                                 {displayUser?.email || "email@example.com"}

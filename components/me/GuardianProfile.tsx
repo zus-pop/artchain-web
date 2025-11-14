@@ -388,36 +388,6 @@ export default function GuardianProfileScreen({
                 Thí sinh
               </button>
 
-              {/* Tab Cuộc thi */}
-              <button
-                onClick={() => setActiveTab("competitions")}
-                className={`
-                  ${
-                    activeTab === "competitions"
-                      ? "border-black text-black"
-                      : "border-transparent text-black hover:border-black hover:text-black"
-                  }
-                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
-                `}
-              >
-                Cuộc thi
-              </button>
-
-              {/* Tab Tiến độ */}
-              <button
-                onClick={() => setActiveTab("progress")}
-                className={`
-                  ${
-                    activeTab === "progress"
-                      ? "border-black text-black"
-                      : "border-transparent text-black hover:border-black hover:text-black"
-                  }
-                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
-                `}
-              >
-                Tiến độ
-              </button>
-
               {/* Tab Thông tin */}
               <button
                 onClick={() => setActiveTab("about")}

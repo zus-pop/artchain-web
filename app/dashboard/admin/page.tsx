@@ -1,11 +1,22 @@
 "use client";
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { getSystemStatistics } from "@/apis/admin";
+import { getUserGrowth, getTopCompetitors, getTopExaminers, getMostVotedPaintings } from "@/apis/admin";
+import type { ApiListResponse, TopCompetitorItem, TopExaminerItem, TopPaintingItem } from "@/types/admin/toplists";
+import { UserGrowthItem, UserGrowthResponse } from "@/types/admin/system";
+
+interface TickProps {
+  x: number;
+  y: number;
+  payload: {
+    value: string;
+  };
+}
 import {
   BarChart,
   Bar,
@@ -23,6 +34,7 @@ import {
   PieLabelRenderProps,
 } from "recharts";
 import { Users, Trophy, Palette, Vote, Award, Image, Target } from "lucide-react";
+import Loader from "@/components/Loaders";
 
 export default function AdminDashboardPage() {
   // Fetch system statistics
@@ -51,7 +63,7 @@ export default function AdminDashboardPage() {
   ] : [];
 
   const paintingStatusData = systemStats ? [
-    { name: "Approved", value: systemStats.paintings.approved },
+    { name: "Accepted", value: systemStats.paintings.accepted },
     { name: "Pending", value: systemStats.paintings.pending },
     { name: "Rejected", value: systemStats.paintings.rejected },
   ] : [];
@@ -65,6 +77,107 @@ export default function AdminDashboardPage() {
     { name: "Active", value: systemStats.campaigns.active, color: "#f59e0b" },
     { name: "Completed", value: systemStats.campaigns.completed, color: "#8b5cf6" },
   ] : [];
+
+  // Controls and user-growth query (right-side line chart)
+  const [startDate, setStartDate] = useState<string>(() => "2025-01-01");
+  const [endDate, setEndDate] = useState<string>(() => "2025-12-31");
+  const [groupBy, setGroupBy] = useState<string>(() => "month");
+  const [topN, setTopN] = useState<number>(10);
+
+  // Top lists queries (typed)
+  const { data: topCompetitorsRaw } = useQuery<ApiListResponse<TopCompetitorItem> | TopCompetitorItem[]>({
+    queryKey: ["top-competitors", topN],
+    queryFn: () => getTopCompetitors(topN),
+    enabled: true,
+  });
+  const { data: topExaminersRaw } = useQuery<ApiListResponse<TopExaminerItem> | TopExaminerItem[]>({
+    queryKey: ["top-examiners", topN],
+    queryFn: () => getTopExaminers(topN),
+    enabled: true,
+  });
+  const { data: topPaintingsRaw } = useQuery<ApiListResponse<TopPaintingItem> | TopPaintingItem[]>({
+    queryKey: ["top-paintings", topN],
+    queryFn: () => getMostVotedPaintings(topN),
+    enabled: true,
+  });
+
+  const topCompetitors = (topCompetitorsRaw as ApiListResponse<TopCompetitorItem>)?.data ?? (topCompetitorsRaw as TopCompetitorItem[]) ?? [];
+  const topExaminers = (topExaminersRaw as ApiListResponse<TopExaminerItem>)?.data ?? (topExaminersRaw as TopExaminerItem[]) ?? [];
+  const topPaintings = (topPaintingsRaw as ApiListResponse<TopPaintingItem>)?.data ?? (topPaintingsRaw as TopPaintingItem[]) ?? [];
+
+  // Normalize top lists into chart-friendly shape
+  const topCompetitorsData = ([...(topCompetitors || [])].map((it: TopCompetitorItem, idx: number) => ({
+    name: it.fullName ?? `#${it.competitorId ?? idx + 1}`,
+    value: Number(it.totalSubmissions ?? 0),
+  })).sort((a, b) => a.value - b.value));
+
+  const topExaminersData = ([...(topExaminers || [])].map((it: TopExaminerItem, idx: number) => ({
+    name: it.fullName ?? `#${it.examinerId ?? idx + 1}`,
+    value: Number(it.totalEvaluations ?? 0),
+  })).sort((a, b) => a.value - b.value));
+
+  const topPaintingsData = ([...(topPaintings || [])].map((p: TopPaintingItem, idx: number) => ({
+    name: p.title ?? `#${p.paintingId ?? idx + 1}`,
+    value: Number(p.voteCount ?? 0),
+  })).sort((a, b) => a.value - b.value));
+
+  const {
+    data: userGrowthRaw,
+    isLoading: isLoadingUserGrowth,
+  } = useQuery<UserGrowthResponse | UserGrowthResponse['data'] | null>({
+    queryKey: ["user-growth", startDate, endDate, groupBy],
+    queryFn: () => getUserGrowth({ startDate, endDate, groupBy }),
+    enabled: true,
+  });
+
+  const userGrowthPayload = (userGrowthRaw as UserGrowthResponse)?.data ?? (userGrowthRaw as UserGrowthResponse['data']) ?? null;
+  const growth = userGrowthPayload?.growth ?? [];
+
+  const growthChartData = useMemo(() => (
+    (growth || []).map((g: UserGrowthItem) => ({
+      period: g.period,
+      totalUsers: g.totalUsers,
+      competitors: g.competitors,
+      examiners: g.examiners,
+      guardians: g.guardians,
+      staffs: g.staffs,
+      admins: g.admins,
+      cumulativeTotal: g.cumulativeTotal,
+    }))
+  ), [growth]);
+
+  // Custom tick renderer for period axis when grouped by day.
+  // Renders the date in two lines: day on top, MM-YYYY on bottom to avoid overlapping.
+  const renderPeriodTick = (tickProps: TickProps) => {
+    const { x, y, payload } = tickProps;
+    const value: string = payload?.value ?? "";
+    // Expecting ISO date like '2025-01-01' or period string. Try to parse.
+    const d = new Date(value);
+    const isValidDate = !isNaN(d.getTime());
+    const top = isValidDate ? String(d.getDate()).padStart(2, '0') : value;
+    const bottom = isValidDate ? `${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}` : '';
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} textAnchor="middle" fontSize={11} fill="#666">
+          <tspan x={0} dy={-6}>{top}</tspan>
+          <tspan x={0} dy={14}>{bottom}</tspan>
+        </text>
+      </g>
+    );
+  };
+
+  // Helper to build 5-step ticks and an upper bound rounded up to nearest 5
+  const makeFiveStepTicks = (dataArr: { value?: number }[]) => {
+    const max = dataArr && dataArr.length ? Math.max(...dataArr.map(d => d.value ?? 0)) : 0;
+    const upper = Math.max(5, Math.ceil(max / 5) * 5);
+    const ticks = [] as number[];
+    for (let v = 0; v <= upper; v += 5) ticks.push(v);
+    return { upper, ticks };
+  };
+
+  const contestTicks = makeFiveStepTicks(contestStatusData);
+  const paintingTicks = makeFiveStepTicks(paintingStatusData);
 
   if (isLoading) {
     return (
@@ -84,7 +197,7 @@ export default function AdminDashboardPage() {
               <Breadcrumb items={[]} homeHref="/dashboard/admin" />
             </div>
             <div className="flex items-center justify-center flex-1">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137]"></div>
+              <Loader />
             </div>
           </div>
         </SidebarInset>
@@ -183,30 +296,130 @@ export default function AdminDashboardPage() {
 
               {/* Charts Section */}
               <div className="space-y-6">
-                {/* Row 1: User Roles Distribution - Full Width */}
+                {/* Row 1: User Roles (left 1/3) + User Growth line chart (right 2/3) */}
                 <div className="rounded-lg border border-gray-200 bg-white p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    User Roles Distribution
-                  </h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={userRoleData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={(props: PieLabelRenderProps) => `${props.name} ${((props.percent as number) * 100).toFixed(0)}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {userRoleData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                    <div className="md:col-span-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">User Roles Distribution</h3>
+                      <div style={{ width: '100%', height: 260 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={userRoleData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={(props: PieLabelRenderProps) => `${props.name} ${((props.percent as number) * 100).toFixed(0)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {userRoleData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-gray-600">Start</label>
+                          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="staff-input" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-gray-600">End</label>
+                          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="staff-input" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm text-gray-600">Group by</label>
+                          <select value={groupBy} onChange={(e) => setGroupBy(e.target.value)} className="staff-input">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month">Month</option>
+                            <option value="year">Year</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <h3 className="text-sm text-gray-700 mb-2">User growth ({groupBy})</h3>
+                      <div style={{ width: '100%', height: 300 }}>
+                        {isLoadingUserGrowth ? (
+                          <div className="flex items-center justify-center h-full">Loading...</div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={growthChartData} margin={{ left: 0, right: 20 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis dataKey="period" tick={groupBy === 'day' ? renderPeriodTick : undefined} interval={groupBy === 'day' ? 0 : undefined} />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
+                              <Line type="monotone" dataKey="totalUsers" name="Total Users" stroke="#4f46e5" strokeWidth={2} />
+                              <Line type="monotone" dataKey="cumulativeTotal" name="Cumulative" stroke="#06b6d4" strokeWidth={2} strokeDasharray="4 4" />
+                              <Line type="monotone" dataKey="competitors" name="Competitors" stroke="#8884d8" strokeWidth={1} />
+                              <Line type="monotone" dataKey="examiners" name="Examiners" stroke="#82ca9d" strokeWidth={1} />
+                              <Line type="monotone" dataKey="guardians" name="Guardians" stroke="#f59e0b" strokeWidth={1} />
+                              <Line type="monotone" dataKey="staffs" name="Staffs" stroke="#ff7c7c" strokeWidth={1} />
+                              <Line type="monotone" dataKey="admins" name="Admins" stroke="#8dd1e1" strokeWidth={1} />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* New Row: Top lists (Competitors + Examiners) */}
+                <div className="rounded-lg border border-gray-200 bg-white p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Top lists</h3>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">Top N</label>
+                      <input type="number" min={1} value={topN} onChange={(e) => setTopN(Number(e.target.value) || 10)} className="staff-input w-20" />
+                    </div>
+                  </div>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="rounded-lg border border-gray-100 bg-white p-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Top Competitors</h4>
+                      {topCompetitorsData.length === 0 ? (
+                        <div className="text-sm text-gray-500">No data</div>
+                      ) : (
+                        <div style={{ width: '100%', height: 220 }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={topCompetitorsData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis type="number" />
+                              <YAxis dataKey="name" type="category" width={140} />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#4f46e5" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="rounded-lg border border-gray-100 bg-white p-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Top Examiners</h4>
+                      {topExaminersData.length === 0 ? (
+                        <div className="text-sm text-gray-500">No data</div>
+                      ) : (
+                        <div style={{ width: '100%', height: 220 }}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={topExaminersData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                              <CartesianGrid strokeDasharray="3 3" />
+                              <XAxis type="number" />
+                              <YAxis dataKey="name" type="category" width={140} />
+                              <Tooltip />
+                              <Bar dataKey="value" fill="#16a34a" />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Row 2: Contest Status + Painting Status */}
@@ -219,7 +432,8 @@ export default function AdminDashboardPage() {
                       <BarChart data={contestStatusData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
-                        <YAxis />
+                        {/* Use explicit 5-step ticks and an upper bound rounded to nearest 5 */}
+                        <YAxis domain={[0, contestTicks.upper]} ticks={contestTicks.ticks} />
                         <Tooltip />
                         <Bar dataKey="value" fill="#8884d8" />
                       </BarChart>
@@ -234,7 +448,7 @@ export default function AdminDashboardPage() {
                       <BarChart data={paintingStatusData}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
-                        <YAxis />
+                        <YAxis domain={[0, paintingTicks.upper]} ticks={paintingTicks.ticks} />
                         <Tooltip />
                         <Bar dataKey="value" fill="#82ca9d" />
                       </BarChart>
@@ -242,41 +456,34 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                {/* Row 3: Votes + Awards */}
+                {/* Row 3: Awards + Votes (left) and Exhibitions (right) */}
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Votes Overview
-                    </h3>
-                    <div className="flex items-center justify-center h-48">
-                      <div className="text-center">
-                        <Vote className="h-16 w-16 text-purple-500 mx-auto mb-4" />
-                        <p className="text-3xl font-bold text-gray-900">{systemStats?.votes.total || 0}</p>
-                        <p className="text-sm text-gray-600">Total Votes</p>
+                  <div className="space-y-4">
+                    <div className="rounded-lg border border-gray-200 bg-white p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Votes Overview</h3>
+                      <div className="flex items-center justify-center h-48">
+                        <div className="text-center">
+                          <Vote className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+                          <p className="text-3xl font-bold text-gray-900">{systemStats?.votes.total || 0}</p>
+                          <p className="text-sm text-gray-600">Total Votes</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-gray-200 bg-white p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Awards Overview</h3>
+                      <div className="flex items-center justify-center h-48">
+                        <div className="text-center">
+                          <Award className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                          <p className="text-3xl font-bold text-gray-900">{systemStats?.awards.total || 0}</p>
+                          <p className="text-sm text-gray-600">Total Awards</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Awards Overview
-                    </h3>
-                    <div className="flex items-center justify-center h-48">
-                      <div className="text-center">
-                        <Award className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-                        <p className="text-3xl font-bold text-gray-900">{systemStats?.awards.total || 0}</p>
-                        <p className="text-sm text-gray-600">Total Awards</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 4: Exhibitions + Campaigns */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Exhibitions Status
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Exhibitions Status</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie
@@ -297,11 +504,31 @@ export default function AdminDashboardPage() {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
+                </div>
+
+                {/* Row 4: Top Paintings (most voted) + Campaigns */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="rounded-lg border border-gray-200 bg-white p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Paintings (Most Voted)</h3>
+                    {topPaintingsData.length === 0 ? (
+                      <div className="text-sm text-gray-500">No data</div>
+                    ) : (
+                      <div style={{ width: '100%', height: 260 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={topPaintingsData} layout="vertical" margin={{ left: 10, right: 10 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" />
+                            <YAxis dataKey="name" type="category" width={180} />
+                            <Tooltip />
+                            <Bar dataKey="value" fill="#ef4444" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Campaigns Status
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Campaigns Status</h3>
                     <ResponsiveContainer width="100%" height={200}>
                       <BarChart data={campaignData}>
                         <CartesianGrid strokeDasharray="3 3" />
