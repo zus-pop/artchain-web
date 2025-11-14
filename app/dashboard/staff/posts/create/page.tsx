@@ -10,6 +10,7 @@ import myAxios from "@/lib/custom-axios";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { Post, PostStatus } from "@/types/dashboard";
+import { MDXEditorMethods } from "@mdxeditor/editor";
 import {
   IconArrowLeft,
   IconDeviceFloppy,
@@ -79,7 +80,7 @@ function CreatePostPage() {
   const [isLoadingTags, setIsLoadingTags] = useState(false);
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<MDXEditorMethods>(null);
 
   // Fetch tags based on search query
   useEffect(() => {

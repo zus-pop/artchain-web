@@ -35,6 +35,7 @@ import { toast } from "sonner";
 
 import { formatDate } from "@/lib/utils";
 import { Post } from "@/types/post";
+import { MDXEditorMethods } from "@mdxeditor/editor";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
@@ -85,7 +86,7 @@ function ViewPostContent() {
   const [tagSearch, setTagSearch] = useState("");
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const tagInputRef = useRef<HTMLInputElement>(null);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<MDXEditorMethods>(null);
 
   // Fetch post data
   const {
