@@ -242,6 +242,14 @@ export const translations = {
     confirmAcceptSubmission: "Bạn có chắc chắn muốn chấp nhận bài nộp này?",
     confirmRejectSubmission: "Bạn có chắc chắn muốn từ chối bài nộp này?",
 
+    // Selection and Bulk Actions
+    selectAll: "Chọn Tất Cả",
+    selected: "Đã Chọn",
+    acceptAll: "Chấp Nhận Tất Cả",
+    accepting: "Đang Chấp Nhận...",
+    noPendingSubmissionsSelected: "Không có bài nộp đang chờ nào được chọn để chấp nhận.",
+    acceptAllSelectedPending: "Chấp nhận tất cả ${count} bài nộp đang chờ đã chọn?",
+
     allAwards: "Tất Cả Giải Thưởng",
     awardCollections: "Bộ Sưu Tập Giải Thưởng",
     announceResults: "Công Bố Kết Quả",
@@ -2161,6 +2169,14 @@ export const translations = {
     titleLabel: "Title",
     updating: "Updating...",
     update: "Update",
+
+    // Selection and Bulk Actions
+    selectAll: "Select All",
+    selected: "Selected",
+    acceptAll: "Accept All",
+    accepting: "Accepting...",
+    noPendingSubmissionsSelected: "No pending submissions selected to accept.",
+    acceptAllSelectedPending: "Accept all ${count} selected pending submissions?",
   },
 } as const;
 
