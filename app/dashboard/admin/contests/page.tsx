@@ -29,6 +29,7 @@ import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
 import Image from "next/image";
 import { getContestStatistics } from "@/apis/admin";
+import { ContestStatisticsResponse, ContestStatistics } from "@/types/admin/system";
 import Loader from "@/components/Loaders";
 
 export default function AdminContestsPage() {
@@ -72,7 +73,7 @@ export default function AdminContestsPage() {
     data: contestStatsResponse,
     isLoading: isLoadingContestStats,
     error: contestStatsError,
-  } = useQuery<any>({
+  } = useQuery<ContestStatisticsResponse | ContestStatistics | null>({
     queryKey: ["contestStats", selectedContestId],
     queryFn: () => (selectedContestId ? getContestStatistics(selectedContestId) : Promise.resolve(null)),
     enabled: !!selectedContestId && statsModalOpen,
@@ -426,7 +427,7 @@ export default function AdminContestsPage() {
                       <div className="py-12 text-center text-red-500"><Loader /></div>
                     ) : (
                       (() => {
-                        const payload = contestStatsResponse?.data ?? contestStatsResponse ?? null;
+                        const payload = (contestStatsResponse as ContestStatisticsResponse)?.data ?? (contestStatsResponse as ContestStatistics) ?? null;
                         // payload expected shape: { contest, submissions, participants, evaluations, votes, awards }
                         if (!payload) return <div className="py-6">No data</div>;
                         const submissions = payload.submissions || {};

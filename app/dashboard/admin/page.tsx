@@ -8,6 +8,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getSystemStatistics } from "@/apis/admin";
 import { getUserGrowth, getTopCompetitors, getTopExaminers, getMostVotedPaintings } from "@/apis/admin";
 import type { ApiListResponse, TopCompetitorItem, TopExaminerItem, TopPaintingItem } from "@/types/admin/toplists";
+import { UserGrowthItem, UserGrowthResponse } from "@/types/admin/system";
+
+interface TickProps {
+  x: number;
+  y: number;
+  payload: {
+    value: string;
+  };
+}
 import {
   BarChart,
   Bar,
@@ -97,35 +106,35 @@ export default function AdminDashboardPage() {
   const topPaintings = (topPaintingsRaw as ApiListResponse<TopPaintingItem>)?.data ?? (topPaintingsRaw as TopPaintingItem[]) ?? [];
 
   // Normalize top lists into chart-friendly shape
-  const topCompetitorsData = ([...(topCompetitors || [])].map((it: any, idx: number) => ({
-    name: it.name ?? it.username ?? it.fullName ?? it.competitorName ?? `#${it.id ?? idx + 1}`,
-    value: Number(it.count ?? it.total ?? it.value ?? it.score ?? 0),
+  const topCompetitorsData = ([...(topCompetitors || [])].map((it: TopCompetitorItem, idx: number) => ({
+    name: it.fullName ?? `#${it.competitorId ?? idx + 1}`,
+    value: Number(it.totalSubmissions ?? 0),
   })).sort((a, b) => a.value - b.value));
 
-  const topExaminersData = ([...(topExaminers || [])].map((it: any, idx: number) => ({
-    name: it.name ?? it.username ?? it.fullName ?? `#${it.id ?? idx + 1}`,
-    value: Number(it.count ?? it.total ?? it.value ?? it.score ?? 0),
+  const topExaminersData = ([...(topExaminers || [])].map((it: TopExaminerItem, idx: number) => ({
+    name: it.fullName ?? `#${it.examinerId ?? idx + 1}`,
+    value: Number(it.totalEvaluations ?? 0),
   })).sort((a, b) => a.value - b.value));
 
-  const topPaintingsData = ([...(topPaintings || [])].map((p: any, idx: number) => ({
-    name: p.title ?? p.name ?? p.paintingName ?? `#${p.id ?? idx + 1}`,
-    value: Number(p.votes ?? p.count ?? p.total ?? p.value ?? 0),
+  const topPaintingsData = ([...(topPaintings || [])].map((p: TopPaintingItem, idx: number) => ({
+    name: p.title ?? `#${p.paintingId ?? idx + 1}`,
+    value: Number(p.voteCount ?? 0),
   })).sort((a, b) => a.value - b.value));
 
   const {
     data: userGrowthRaw,
     isLoading: isLoadingUserGrowth,
-  } = useQuery<any>({
+  } = useQuery<UserGrowthResponse | UserGrowthResponse['data'] | null>({
     queryKey: ["user-growth", startDate, endDate, groupBy],
     queryFn: () => getUserGrowth({ startDate, endDate, groupBy }),
     enabled: true,
   });
 
-  const userGrowthPayload = userGrowthRaw?.data ?? userGrowthRaw ?? null;
+  const userGrowthPayload = (userGrowthRaw as UserGrowthResponse)?.data ?? (userGrowthRaw as UserGrowthResponse['data']) ?? null;
   const growth = userGrowthPayload?.growth ?? [];
 
   const growthChartData = useMemo(() => (
-    (growth || []).map((g: any) => ({
+    (growth || []).map((g: UserGrowthItem) => ({
       period: g.period,
       totalUsers: g.totalUsers,
       competitors: g.competitors,
@@ -139,7 +148,7 @@ export default function AdminDashboardPage() {
 
   // Custom tick renderer for period axis when grouped by day.
   // Renders the date in two lines: day on top, MM-YYYY on bottom to avoid overlapping.
-  const renderPeriodTick = (tickProps: any) => {
+  const renderPeriodTick = (tickProps: TickProps) => {
     const { x, y, payload } = tickProps;
     const value: string = payload?.value ?? "";
     // Expecting ISO date like '2025-01-01' or period string. Try to parse.

@@ -1,4 +1,5 @@
 import myAxios from "@/lib/custom-axios";
+import { ContestStatisticsResponse, UserGrowthResponse } from "@/types/admin/system";
 import { AdminUser, GetAllUsersResponse } from "@/types/admin/user";
 import { SystemStatisticsResponse } from "@/types/admin/system";
 
@@ -55,7 +56,7 @@ export const getSystemStatistics = async (): Promise<SystemStatisticsResponse> =
 };
 
 // GET /api/admin/statistics/contest/{contestId} - Get statistics for a single contest
-export const getContestStatistics = async (contestId: number | string): Promise<any> => {
+export const getContestStatistics = async (contestId: number | string): Promise<ContestStatisticsResponse> => {
   const response = await myAxios.get(`/admin/statistics/contest/${contestId}`);
   return response.data; // expected shape: { success: true, data: { ... } }
 };
@@ -65,7 +66,7 @@ export const getUserGrowth = async (params?: {
   startDate?: string;
   endDate?: string;
   groupBy?: string; // day|week|month|year
-}): Promise<any> => {
+}): Promise<UserGrowthResponse> => {
   const response = await myAxios.get(`/admin/statistics/user-growth`, { params });
   return response.data; // expected shape: { success: true, data: { summary, growth: [...] } }
 };
