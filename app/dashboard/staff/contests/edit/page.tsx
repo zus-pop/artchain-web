@@ -315,8 +315,6 @@ function EditContestContent() {
                         type="number"
                         name="round2Quantity"
                         value={formData.round2Quantity}
-                        minLength={16}
-                        step={4}
                         onChange={handleInputChange}
                         min="0"
                         className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
