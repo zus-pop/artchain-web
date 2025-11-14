@@ -304,7 +304,8 @@ export default function ContestDetailPage() {
               {/* Nút Tải quy định thi - chỉ hiển thị khi ACTIVE */}
               {contest.status === "ACTIVE" && (
                 <Link
-                  href={"#"}
+                  href={contest.ruleUrl}
+                  target="_blank"
                   className="flex items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#b8aaaa] text-black font-medium text-base hover:bg-[#FF6E1A]/10 hover:border-[#FF6E1A] transition-colors duration-200 shadow-sm"
                 >
                   Tải quy định thi ⬇

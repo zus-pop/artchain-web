@@ -15,6 +15,7 @@ export interface Contest {
   numOfAward: number;
   round2Quantity: number;
   numberOfTablesRound2: number;
+  ruleUrl: string;
   startDate: string;
   endDate: string;
   status: ContestStatus;
