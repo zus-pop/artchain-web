@@ -137,7 +137,7 @@ export default function CreateContestPage() {
     watch,
     trigger,
   } = useForm<CreateContestFormData>({
-    mode: "onChange",
+    mode: "all",
     resolver: zodResolver(createContestSchema(t)),
     defaultValues: {
       round2Quantity: 0,
@@ -225,8 +225,7 @@ export default function CreateContestPage() {
   });
 
   const onSubmit = (data: CreateContestFormData) => {
-    console.log(data);
-    // createMutation.mutate(data);
+    createMutation.mutate(data);
   };
 
   const handleFileChange = (
