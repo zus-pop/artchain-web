@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks";
 import { useEffect } from "react";
 import { ClientOnly } from "@/components/ClientOnly";
+import Loader from "@/components/Loaders";
 
 function DashboardContent() {
   const router = useRouter();
@@ -34,8 +35,7 @@ function DashboardContent() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+         <Loader />
         </div>
       </div>
     );
@@ -56,10 +56,7 @@ export default function DashboardPage() {
     <ClientOnly
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-white">
-          <div className="text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="mt-4 text-gray-600">Initializing...</p>
-          </div>
+         <Loader/>
         </div>
       }
     >

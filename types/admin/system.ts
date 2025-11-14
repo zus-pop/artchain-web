@@ -20,7 +20,7 @@ export interface SystemStatistics {
   };
   paintings: {
     total: number;
-    approved: number;
+    accepted: number;
     pending: number;
     rejected: number;
   };
