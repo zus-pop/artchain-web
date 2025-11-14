@@ -6,6 +6,7 @@ import {
   GetStaffRoundsResponse,
   UpdateContestRequest,
 } from "@/types/staff/contest-dto";
+import { BulkAcceptSubmissionsResponse } from "@/types/staff/submission-dto";
 import { CreatePostRequest } from "@/types/staff/post-dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -275,6 +276,17 @@ export const acceptStaffSubmission = async (paintingId: string) => {
   );
   return response.data;
 };
+
+// PATCH /api/staff/contests/submissions/accept - Accept multiple submissions at once
+export const acceptMultipleSubmissions = async (paintingIds: string[]): Promise<BulkAcceptSubmissionsResponse> => {
+  const response = await myAxios.patch(
+    `/staff/contests/submissions/accept`,
+    { paintingIds }
+  );
+  return response.data;
+};
+
+
 
 // PATCH /api/staff/contests/submissions/{paintingId}/reject - Reject a submission
 export const rejectStaffSubmission = async (
