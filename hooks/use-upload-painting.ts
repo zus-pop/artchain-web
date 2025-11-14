@@ -37,7 +37,7 @@ export function useUploadPainting() {
     },
     onSuccess: () => {
       toast.success("Bài thi của bạn đã được gửi thành công!");
-      router.push("/me");
+      router.back();
     },
     onError: (error) => {
       let message = error.message;

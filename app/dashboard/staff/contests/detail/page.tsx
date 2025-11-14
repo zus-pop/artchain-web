@@ -430,6 +430,18 @@ function ContestDetailContent() {
                       </div>
                     </div>
 
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.quantity} {t.rounds} 2
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {contest.round2Quantity}
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="flex items-start gap-3">
                       <IconClock className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
