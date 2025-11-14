@@ -64,7 +64,7 @@ export interface ContestStatistics {
     pending: number;
     rejected: number;
     approved?: number;
-    byRound: Record<string, number>;
+    byRound: Record<string, number | { total: number }>;
   };
   participants: {
     total: number;

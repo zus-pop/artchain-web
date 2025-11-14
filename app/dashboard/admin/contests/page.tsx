@@ -432,7 +432,10 @@ export default function AdminContestsPage() {
                         if (!payload) return <div className="py-6">No data</div>;
                         const submissions = payload.submissions || {};
                         const byRound = submissions.byRound || {};
-                        const roundData = Object.keys(byRound).map(r => ({ name: r, value: byRound[r] }));
+                        const roundData = Object.keys(byRound).map(r => ({
+                          name: r,
+                          value: typeof byRound[r] === 'object' && byRound[r] !== null ? (byRound[r] as { total: number }).total ?? 0 : byRound[r] as number ?? 0
+                        }));
                         const submissionStack = [
                           { name: 'Accepted', value: submissions.accepted ?? submissions.approved ?? 0, color: '#10b981' },
                           { name: 'Pending', value: submissions.pending ?? 0, color: '#f59e0b' },
@@ -473,7 +476,10 @@ export default function AdminContestsPage() {
                                   <BarChart data={roundData}>
                                     <XAxis dataKey="name" />
                                     <YAxis />
-                                    <Tooltip />
+                                    <Tooltip
+                                      formatter={(value, name) => [value, 'Submissions']}
+                                      labelFormatter={(label) => `Round: ${label}`}
+                                    />
                                     <Bar dataKey="value" fill="#7c3aed" />
                                   </BarChart>
                                 </ResponsiveContainer>
