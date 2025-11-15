@@ -145,6 +145,20 @@ const SkeletonSpotlightPost = () => (
   </div>
 );
 
+// Truncate text at a word boundary so we don't cut mid-word
+const truncateAtWord = (text: string | undefined, maxChars: number) => {
+  if (!text) return text;
+  if (text.length <= maxChars) return text;
+
+  const lastSpace = text.lastIndexOf(" ", maxChars);
+  if (lastSpace > 0) return text.slice(0, lastSpace) + "...";
+
+  const nextSpace = text.indexOf(" ", maxChars);
+  if (nextSpace > 0) return text.slice(0, nextSpace) + "...";
+
+  return text;
+};
+
 // Component Card cho Tin tức nhỏ
 const NewsCardSmall = ({
   imgSrc,
@@ -182,7 +196,7 @@ const NewsCardSmall = ({
       </div>
       {content && (
         <div className="text-base text-gray-600 mt-2 line-clamp-2">
-          <ReactMarkdown>{content.slice(0, 100) + "..."}</ReactMarkdown>
+          <ReactMarkdown>{truncateAtWord(content, 100)}</ReactMarkdown>
         </div>
       )}
     </div>
