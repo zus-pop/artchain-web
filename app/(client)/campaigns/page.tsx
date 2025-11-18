@@ -75,7 +75,7 @@ const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
         {/* Action Button */}
         <Link href={`/campaigns/${campaign.campaignId}`}>
           <button className="w-full flex items-center justify-center bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
-            Support Campaign
+            Ủng Hộ Chiến Dịch
             <ArrowRight className="w-4 h-4 ml-2" />
           </button>
         </Link>
@@ -110,7 +110,7 @@ const CampaignPage = () => {
 
   if (loading) {
     return (
-      <section className="py-16 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 px-4 min-h-screen bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
           <Loader />
         </div>
@@ -120,7 +120,7 @@ const CampaignPage = () => {
 
   if (error) {
     return (
-      <section className="py-16 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
+      <section className="py-16 px-4 min-h-screen bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <div className="bg-[#FF6E1A] dark:bg-[#FF6E1A]/20 border border-[#FF6E1A] dark:border-[#FF6E1A] rounded-lg p-6 max-w-md mx-auto">
@@ -162,10 +162,10 @@ const CampaignPage = () => {
           <div className="text-center py-12">
             <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              No Active Campaigns
+              Không Có Chiến Dịch Hoạt Động
             </h3>
             <p className="text-gray-500 dark:text-gray-500">
-              Check back later for new campaigns to support.
+              Hãy kiểm tra lại sau để xem các chiến dịch mới cần hỗ trợ.
             </p>
           </div>
         )}

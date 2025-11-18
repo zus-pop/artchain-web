@@ -228,9 +228,6 @@ export default function Page() {
   // Active section state for header highlighting
   const [activeSection, setActiveSection] = useState("hero");
 
-  // Distortion scale animation state
-  const [distortionScale, setDistortionScale] = useState(-150);
-
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY + 200; // offset to detect section earlier
@@ -248,38 +245,6 @@ export default function Page() {
     // Set initial active section
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Distortion scale animation effect
-  useEffect(() => {
-    let animationId: number;
-    let direction = 1; // 1 for increasing, -1 for decreasing
-
-    const animate = () => {
-      setDistortionScale(prev => {
-        let next = prev + direction * 2; // Adjust speed here
-        
-        if (next >= 150) {
-          next = 150;
-          direction = -1; // Start decreasing
-        } else if (next <= -150) {
-          next = -150;
-          direction = 1; // Start increasing
-        }
-        
-        return next;
-      });
-      
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animationId = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
   }, []);
 
   // Auth hooks
@@ -417,7 +382,7 @@ export default function Page() {
           brightness={54}
           opacity={1}
           displace={0.5}
-          distortionScale={distortionScale}
+          distortionScale={180}
           redOffset={0}
           greenOffset={10}
           blueOffset={20}

@@ -5,6 +5,8 @@ import {
   Round2ImageRequest,
   TopPainting,
   CompetitorSubmissionsResponse,
+  PaintingEvaluation,
+  CompetitorSubmission,
 } from "@/types/painting";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -43,7 +45,8 @@ export function useGetUserSubmissions(userId?: string) {
         const response = await myAxios.get(
           `/guardians/competitor/${userId}/submissions`
         );
-        return response.data as CompetitorSubmissionsResponse;
+        // API returns array directly, not wrapped in CompetitorSubmissionsResponse
+        return response.data as CompetitorSubmission[];
       } catch (error) {
         console.error("Error fetching user submissions:", error);
         throw error;
@@ -140,18 +143,14 @@ export function useGetRound2TopByContestId(contestId: string) {
   return useQuery({
     queryKey: ["/paintings/tops", contestId],
     queryFn: async () => {
-      const response = await myAxios.get<
-        ApiResponse<TopPainting[]> & {
-          summary: {
-            totalTables: number;
-            totalPaintings: number;
-          };
+      const response = await myAxios.get<ApiResponse<TopPainting[]>>(
+        `/paintings/round2/rankings`,
+        {
+          params: {
+            contestId: contestId,
+          },
         }
-      >(`/paintings/round2/rankings`, {
-        params: {
-          contestId: contestId,
-        },
-      });
+      );
       return response.data;
     },
   });
@@ -198,5 +197,29 @@ export function useUploadRound2Painting() {
       }
       toast.error(message);
     },
+  });
+}
+
+/**
+ * Get evaluations for a specific painting
+ */
+export function useGetPaintingEvaluations(paintingId: string) {
+  return useQuery({
+    queryKey: ["painting-evaluations", paintingId],
+    queryFn: async () => {
+      if (!paintingId) return null;
+      try {
+        const response = await myAxios.get(
+          `/paintings/${paintingId}/evaluations`
+        );
+        return response.data as PaintingEvaluation[];
+      } catch (error) {
+        console.error("Error fetching painting evaluations:", error);
+        throw error;
+      }
+    },
+    enabled: !!paintingId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 }

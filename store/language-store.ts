@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export type Language = 'vi' | 'en';
 
@@ -7,7 +8,14 @@ interface LanguageStore {
   setLanguage: (language: Language) => void;
 }
 
-export const useLanguageStore = create<LanguageStore>((set) => ({
-  currentLanguage: 'vi',
-  setLanguage: (language) => set({ currentLanguage: language }),
-}));
+export const useLanguageStore = create<LanguageStore>()(
+  persist(
+    (set) => ({
+      currentLanguage: 'vi',
+      setLanguage: (language) => set({ currentLanguage: language }),
+    }),
+    {
+      name: 'language-storage',
+    }
+  )
+);

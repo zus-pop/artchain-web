@@ -37,38 +37,6 @@ const Header: React.FC<ArtistNavigationProps> = ({
   const [activeTab, setActiveTab] = useState(defaultTab);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Distortion scale animation state (match home page behavior)
-  const [distortionScale, setDistortionScale] = useState(-150);
-
-  useEffect(() => {
-    let animationId: number;
-    let direction = 1; // 1 for increasing, -1 for decreasing
-
-    const animate = () => {
-      setDistortionScale((prev) => {
-        let next = prev + direction * 2; // speed
-
-        if (next >= 150) {
-          next = 150;
-          direction = -1;
-        } else if (next <= -150) {
-          next = -150;
-          direction = 1;
-        }
-
-        return next;
-      });
-
-      animationId = requestAnimationFrame(animate);
-    };
-
-    animationId = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
-  }, []);
   const { currentLanguage, setLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
 
@@ -255,7 +223,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
           brightness={54}
           opacity={1}
           displace={0.5}
-          distortionScale={distortionScale}
+          distortionScale={180}
           redOffset={0}
           greenOffset={10}
           blueOffset={20}
