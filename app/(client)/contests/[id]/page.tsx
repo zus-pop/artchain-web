@@ -158,7 +158,7 @@ export default function ContestDetailPage() {
     return `${minutes} phút`;
   };
 
-  const formatVND = (value: any) => {
+  const formatVND = (value: string | number | null | undefined) => {
     if (value === null || typeof value === "undefined") return "";
     // strip non-numeric (except dot and minus), parse to number
     const num = Number(String(value).replace(/[^0-9.-]+/g, ""));
@@ -566,7 +566,7 @@ export default function ContestDetailPage() {
               </label>
               {votedAwardData?.data?.awards && votedAwardData.data.awards.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {votedAwardData.data.awards.map((award: any) => (
+                  {votedAwardData.data.awards.map((award: { awardId: string; name: string; description: string; rank: number; prize: string; quantity: number; totalVotes: number }) => (
                     <button
                       key={award.awardId}
                       onClick={() => setSelectedAwardId(String(award.awardId))}
