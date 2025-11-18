@@ -1010,6 +1010,16 @@ export const translations = {
     cancelDetail: "Hủy",
     publishingDetail: "Đang xuất bản...",
     publishDetail: "Xuất Bản",
+    cannotPublishWithoutAwards:
+      "Không thể xuất bản cuộc thi khi chưa cấu hình giải thưởng hoặc có giá trị giải thưởng bằng 0",
+    configureAwardsBeforePublishing:
+      "Vui lòng cấu hình giải thưởng với giá trị phù hợp trước khi xuất bản cuộc thi.",
+    awardsMustBeConfiguredBeforePublishing:
+      "Giải thưởng phải được cấu hình trước khi xuất bản cuộc thi",
+    allAwardsMustHavePrizeValues:
+      "Tất cả giải thưởng phải có giá trị được đặt trước khi xuất bản",
+    publishContestToMakeVisible:
+      "Xuất bản cuộc thi để hiển thị cho người tham gia",
     createRound2Detail: "Tạo Vòng 2",
     round2Date: "Ngày Vòng 2",
     dateConstraints: "Ràng buộc ngày tháng",
@@ -2122,6 +2132,16 @@ export const translations = {
     cancelDetail: "Cancel",
     publishingDetail: "Publishing...",
     publishDetail: "Publish",
+    cannotPublishWithoutAwards:
+      "Cannot publish contest without awards configured or with zero prize values",
+    configureAwardsBeforePublishing:
+      "Please configure awards with proper prize values before publishing the contest.",
+    awardsMustBeConfiguredBeforePublishing:
+      "Awards must be configured before publishing the contest",
+    allAwardsMustHavePrizeValues:
+      "All awards must have prize values set before publishing",
+    publishContestToMakeVisible:
+      "Publish contest to make it visible to participants",
     createRound2Detail: "Create Round 2",
     round2Date: "Round 2 Date",
     dateConstraints: "Date Constraints",

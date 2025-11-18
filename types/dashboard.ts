@@ -1,5 +1,6 @@
 // Dashboard Types - Centralized interface definitions for staff and admin dashboards
 
+import { StringValidation } from "zod/v3";
 import { UserRole } from "./auth";
 
 // =============================================================================
@@ -145,7 +146,7 @@ export interface Contest {
   isScheduleEnforced: boolean;
   bannerUrl?: string;
   ruleUrl: string | null;
-  numOfAward?: number;
+  numOfAward: number;
   round2Quantity: number;
   numberOfTablesRound2: number;
   rounds?: Array<{
@@ -163,6 +164,28 @@ export interface Contest {
     updatedAt: string;
   }>;
   examiners?: [];
+  awards?: {
+    awardId: string;
+    contestId: string;
+    name: string;
+    description: string;
+    rank: number;
+    quantity: number;
+    prize: string;
+    createdAt: string;
+    updatedAt: string;
+    winners: {
+      paintingId: string;
+      title: string;
+      imageUrl: string;
+      competitorId: string;
+      competitorName: string;
+      competitorEmail: string;
+      competitorSchool: string;
+      competitorGrade: string;
+    }[];
+    winnerCount: number;
+  }[];
 }
 
 // Form Data Types

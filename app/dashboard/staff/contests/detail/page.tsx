@@ -5,11 +5,11 @@ import {
   createStaffRound2,
   deleteStaffRound,
   getDetailedStaffRounds,
-  useGetQualifiedPaintingForRound2,
   getStaffContestById,
   getStaffRounds,
   publishStaffContest,
   toggleExaminerScheduleEnforcement,
+  useGetQualifiedPaintingForRound2,
   useUpdateOriginalSubmissionStatus,
 } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -41,14 +41,13 @@ import {
   IconSettings,
   IconTrophy,
   IconUsers,
-  IconUsersGroup,
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 function ContestDetailContent() {
@@ -343,8 +342,20 @@ function ContestDetailContent() {
                   </Link>
                   {contest.status === "DRAFT" && (
                     <button
+                      //   disabled={
+                      //     !contest.numOfAward ||
+                      //     contest.numOfAward === 0 ||
+                      //     contest.awards?.some((a) => Number(a.prize) === 0)
+                      //   }
                       onClick={() => setShowPublishConfirm(true)}
-                      className="bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                      className="bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                      title={
+                        !contest.numOfAward || contest.numOfAward === 0
+                          ? t.awardsMustBeConfiguredBeforePublishing
+                          : contest.awards?.some((a) => Number(a.prize) === 0)
+                          ? t.allAwardsMustHavePrizeValues
+                          : t.publishContestToMakeVisible
+                      }
                     >
                       <IconTrophy className="h-4 w-4" />
                       {t.publishContestDetail}
@@ -508,7 +519,7 @@ function ContestDetailContent() {
               </div>
 
               {/* Stats Cards */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div className="staff-card staff-stat-info p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
@@ -525,7 +536,7 @@ function ContestDetailContent() {
                   </div>
                 </div>
 
-                <div className="staff-card staff-stat-success p-4">
+                {/* <div className="staff-card staff-stat-success p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
                       <IconUsersGroup className="h-5 w-5 text-white" />
@@ -537,7 +548,7 @@ function ContestDetailContent() {
                       <p className="text-2xl font-bold staff-text-primary">0</p>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="staff-card staff-stat-secondary p-4">
                   <div className="flex items-center gap-3">
@@ -750,9 +761,13 @@ function ContestDetailContent() {
                           {!round.isRound2 && round.roundId && (
                             <div className="flex items-center gap-2">
                               <button
-                                disabled={qualifiedPaintingsData?.data.qualified.some(
-                                  (i) => i.painting === null
-                                )}
+                                disabled={
+                                  qualifiedPaintingsData?.data.qualified
+                                    .length === 0 ||
+                                  qualifiedPaintingsData?.data.qualified.some(
+                                    (i) => i.painting === null
+                                  )
+                                }
                                 onClick={() =>
                                   setShowQualifiedPaintingsDialog(true)
                                 }
@@ -972,6 +987,28 @@ function ContestDetailContent() {
             </DialogTitle>
             <DialogDescription>
               {t.publishContestConfirmDetail}
+              {(!contest.numOfAward || contest.numOfAward === 0) && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-yellow-800 text-sm">
+                    <IconTrophy className="h-4 w-4" />
+                    <span>
+                      <strong>Warning:</strong> {t.cannotPublishWithoutAwards}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {contest.awards?.some((a) => Number(a.prize) === 0) &&
+                contest.numOfAward > 0 && (
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-yellow-800 text-sm">
+                      <IconTrophy className="h-4 w-4" />
+                      <span>
+                        <strong>Warning:</strong>{" "}
+                        {t.configureAwardsBeforePublishing}
+                      </span>
+                    </div>
+                  </div>
+                )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -990,7 +1027,12 @@ function ContestDetailContent() {
                 });
                 setShowPublishConfirm(false);
               }}
-              disabled={publishContestMutation.isPending}
+              disabled={
+                publishContestMutation.isPending ||
+                !contest.numOfAward ||
+                contest.numOfAward === 0 ||
+                contest.awards?.some((a) => Number(a.prize) === 0)
+              }
               className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {publishContestMutation.isPending
@@ -1295,19 +1337,23 @@ function ContestDetailContent() {
                   </span>
                 </div>
                 {(() => {
-                  const round1ResultDate = rounds.find((r) => !r.isRound2)?.resultAnnounceDate;
-                  return round1ResultDate && (
-                    <div className="flex justify-between items-center">
-                      <span className="staff-text-secondary">
-                        {t.round1Results}:
-                      </span>
-                      <span className="font-medium staff-text-primary">
-                        {formatDate({
-                          dateString: round1ResultDate,
-                          language: currentLanguage,
-                        })}
-                      </span>
-                    </div>
+                  const round1ResultDate = rounds.find(
+                    (r) => !r.isRound2
+                  )?.resultAnnounceDate;
+                  return (
+                    round1ResultDate && (
+                      <div className="flex justify-between items-center">
+                        <span className="staff-text-secondary">
+                          {t.round1Results}:
+                        </span>
+                        <span className="font-medium staff-text-primary">
+                          {formatDate({
+                            dateString: round1ResultDate,
+                            language: currentLanguage,
+                          })}
+                        </span>
+                      </div>
+                    )
                   );
                 })()}
                 <div className="flex justify-between items-center border-t border-[#e6e2da] pt-3 mt-1">
@@ -1349,21 +1395,19 @@ function ContestDetailContent() {
                 type="date"
                 value={round2Date}
                 onChange={(e) => setRound2Date(e.target.value)}
-                min={
-                  (() => {
-                    const round1Results = rounds.find(
-                      (r) => !r.isRound2
-                    )?.resultAnnounceDate;
-                    return round1Results
-                      ? formatDateForInput(
-                          new Date(
-                            new Date(round1Results).getTime() +
-                              24 * 60 * 60 * 1000
-                          )
+                min={(() => {
+                  const round1Results = rounds.find(
+                    (r) => !r.isRound2
+                  )?.resultAnnounceDate;
+                  return round1Results
+                    ? formatDateForInput(
+                        new Date(
+                          new Date(round1Results).getTime() +
+                            24 * 60 * 60 * 1000
                         )
-                      : formatDateForInput(contest.startDate);
-                  })()
-                }
+                      )
+                    : formatDateForInput(contest.startDate);
+                })()}
                 max={formatDateForInput(contest.endDate)}
                 className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
