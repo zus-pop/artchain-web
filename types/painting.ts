@@ -93,3 +93,27 @@ export interface Submission {
     username: string;
   };
 }
+
+export interface PaintingEvaluation {
+  id: string;
+  paintingId: string;
+  examinerId: string;
+  scoreRound1: number | null;
+  scoreRound2: number | null;
+  creativityScore: number | null;
+  compositionScore: number | null;
+  colorScore: number | null;
+  technicalScore: number | null;
+  aestheticScore: number | null;
+  feedback: string | null;
+  evaluationDate: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  examiner: {
+    examinerId: string;
+    specialization: string | null;
+    assignedScheduleId: number;
+  };
+  examinerName: string;
+}
