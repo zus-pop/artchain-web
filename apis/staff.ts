@@ -3,6 +3,7 @@ import { ContestStatus } from "@/types/contest";
 import {
   ContestResponseDTO,
   CreateContestRequest,
+  CreateContestResponse,
   GetStaffRoundsResponse,
   RoundDetail,
   UpdateContestRequest,
@@ -53,11 +54,15 @@ export const createStaffContest = async (data: CreateContestRequest) => {
   formData.append("numOfAward", "0");
   formData.append("roundName", "ROUND_1");
   formData.append("roundTable", "paintings");
-  const response = await myAxios.post("/staff/contests", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await myAxios.post<ApiResponse<CreateContestResponse>>(
+    "/staff/contests",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 

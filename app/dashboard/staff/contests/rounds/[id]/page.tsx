@@ -686,7 +686,7 @@ function RoundDetailContent() {
                               <button
                                 onClick={handleAcceptAllSelected}
                                 disabled={acceptMultipleMutation.isPending}
-                                className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold rounded"
+                                className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold"
                               >
                                 {acceptMultipleMutation.isPending
                                   ? t.accepting

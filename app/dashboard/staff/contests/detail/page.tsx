@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTranslation } from "@/lib/i18n";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateForInput } from "@/lib/utils";
 import { useLanguageStore } from "@/store/language-store";
 import { Contest } from "@/types/dashboard";
 import {
@@ -62,6 +62,7 @@ function ContestDetailContent() {
   const [showEmbeddedPdf, setShowEmbeddedPdf] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [showCreateRound2Confirm, setShowCreateRound2Confirm] = useState(false);
+  const [round2Date, setRound2Date] = useState<string>("");
   const [showQualifiedPaintingsDialog, setShowQualifiedPaintingsDialog] =
     useState(false);
   const [showConfirmUpdateDialog, setShowConfirmUpdateDialog] = useState(false);
@@ -117,9 +118,9 @@ function ContestDetailContent() {
 
   // Create round 2 mutation
   const createRound2Mutation = useMutation({
-    mutationFn: ({ contestId }: { contestId: number }) =>
+    mutationFn: ({ contestId, date }: { contestId: number; date: string }) =>
       createStaffRound2(contestId, {
-        date: new Date().toISOString(),
+        date: date,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -749,10 +750,13 @@ function ContestDetailContent() {
                           {!round.isRound2 && round.roundId && (
                             <div className="flex items-center gap-2">
                               <button
+                                disabled={qualifiedPaintingsData?.data.qualified.some(
+                                  (i) => i.painting === null
+                                )}
                                 onClick={() =>
                                   setShowQualifiedPaintingsDialog(true)
                                 }
-                                className="bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                                className="bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <IconEye className="h-4 w-4" />
                                 {t.qualifiedPaintings} (
@@ -1047,112 +1051,115 @@ function ContestDetailContent() {
             {qualifiedPaintingsData?.data?.qualified &&
             qualifiedPaintingsData.data.qualified.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {qualifiedPaintingsData.data.qualified.map((item) => (
-                  <div
-                    key={item.painting.paintingId}
-                    className="border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors min-h-[400px] flex flex-col"
-                  >
-                    <div className="aspect-square relative">
-                      <Image
-                        src={item.painting.imageUrl}
-                        alt={item.painting.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-1 text-center">
-                          {item.painting.title}
-                        </h4>
-                        <p className="text-xs text-gray-600 mb-1">
-                          <strong>{t.artistLabel}: </strong>
-                          {item.competitorName}
-                        </p>
-                        <p className="text-xs text-gray-600 mb-1 truncate">
-                          <strong>{t.emailLabel}: </strong>
-                          {item.competitorEmail}
-                        </p>
-                        <div className="flex items-center justify-start gap-4 mb-2">
-                          <span className="text-xs text-gray-600">
-                            <strong>{t.scoreLabel}: </strong>
-                            {item.avgScore.toFixed(1)}
-                          </span>
-                          <span className="text-xs text-gray-600">
-                            <strong>{t.reviewsLabel}: </strong>
-                            {item.evaluationCount}
-                          </span>
-                        </div>
-                        <div className="mb-3 flex justify-center">
-                          <span
-                            className={`inline-flex items-center px-2 py-1 text-xs font-medium ${
-                              item.painting.status === "ACCEPTED"
-                                ? "bg-green-100 text-green-800"
-                                : item.painting.status === "REJECTED"
-                                ? "bg-red-100 text-red-800"
-                                : item.painting.status === "ORIGINAL_SUBMITTED"
-                                ? "bg-blue-100 text-blue-800"
+                {qualifiedPaintingsData.data.qualified
+                  .filter((i) => i.painting !== null)
+                  .map((item) => (
+                    <div
+                      key={item.painting.paintingId}
+                      className="border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors min-h-[400px] flex flex-col"
+                    >
+                      <div className="aspect-square relative">
+                        <Image
+                          src={item.painting.imageUrl}
+                          alt={item.painting.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-1 text-center">
+                            {item.painting.title}
+                          </h4>
+                          <p className="text-xs text-gray-600 mb-1">
+                            <strong>{t.artistLabel}: </strong>
+                            {item.competitorName}
+                          </p>
+                          <p className="text-xs text-gray-600 mb-1 truncate">
+                            <strong>{t.emailLabel}: </strong>
+                            {item.competitorEmail}
+                          </p>
+                          <div className="flex items-center justify-start gap-4 mb-2">
+                            <span className="text-xs text-gray-600">
+                              <strong>{t.scoreLabel}: </strong>
+                              {item.avgScore.toFixed(1)}
+                            </span>
+                            <span className="text-xs text-gray-600">
+                              <strong>{t.reviewsLabel}: </strong>
+                              {item.evaluationCount}
+                            </span>
+                          </div>
+                          <div className="mb-3 flex justify-center">
+                            <span
+                              className={`inline-flex items-center px-2 py-1 text-xs font-medium ${
+                                item.painting.status === "ACCEPTED"
+                                  ? "bg-green-100 text-green-800"
+                                  : item.painting.status === "REJECTED"
+                                  ? "bg-red-100 text-red-800"
+                                  : item.painting.status ===
+                                    "ORIGINAL_SUBMITTED"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : item.painting.status ===
+                                    "NOT_SUBMITTED_ORIGINAL"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {item.painting.status === "ORIGINAL_SUBMITTED"
+                                ? t.originalSubmittedStatus
                                 : item.painting.status ===
                                   "NOT_SUBMITTED_ORIGINAL"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {item.painting.status === "ORIGINAL_SUBMITTED"
-                              ? t.originalSubmittedStatus
-                              : item.painting.status ===
-                                "NOT_SUBMITTED_ORIGINAL"
-                              ? t.originalNotSubmittedStatus
-                              : item.painting.status === "ACCEPTED"
-                              ? t.acceptedStatus
-                              : item.painting.status === "REJECTED"
-                              ? t.rejectedStatus
-                              : item.painting.status === "PENDING"
-                              ? t.pendingReviewStatus
-                              : item.painting.status}
-                          </span>
-                        </div>
-                      </div>
-                      {item.painting.status !== "ORIGINAL_SUBMITTED" &&
-                        item.painting.status !== "NOT_SUBMITTED_ORIGINAL" && (
-                          <div className="flex items-center justify-center gap-2 mt-auto">
-                            <button
-                              onClick={() => {
-                                setPendingUpdate({
-                                  paintingId: item.painting.paintingId,
-                                  hasSubmittedOriginal: true,
-                                  paintingTitle: item.painting.title,
-                                });
-                                setShowConfirmUpdateDialog(true);
-                              }}
-                              disabled={
-                                updateOriginalSubmissionStatus.isPending
-                              }
-                              className="bg-linear-to-r from-green-500 to-green-600 text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {t.originalSubmittedStatus}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setPendingUpdate({
-                                  paintingId: item.painting.paintingId,
-                                  hasSubmittedOriginal: false,
-                                  paintingTitle: item.painting.title,
-                                });
-                                setShowConfirmUpdateDialog(true);
-                              }}
-                              disabled={
-                                updateOriginalSubmissionStatus.isPending
-                              }
-                              className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              {t.originalNotSubmittedStatus}
-                            </button>
+                                ? t.originalNotSubmittedStatus
+                                : item.painting.status === "ACCEPTED"
+                                ? t.acceptedStatus
+                                : item.painting.status === "REJECTED"
+                                ? t.rejectedStatus
+                                : item.painting.status === "PENDING"
+                                ? t.pendingReviewStatus
+                                : item.painting.status}
+                            </span>
                           </div>
-                        )}
+                        </div>
+                        {item.painting.status !== "ORIGINAL_SUBMITTED" &&
+                          item.painting.status !== "NOT_SUBMITTED_ORIGINAL" && (
+                            <div className="flex items-center justify-center gap-2 mt-auto">
+                              <button
+                                onClick={() => {
+                                  setPendingUpdate({
+                                    paintingId: item.painting.paintingId,
+                                    hasSubmittedOriginal: true,
+                                    paintingTitle: item.painting.title,
+                                  });
+                                  setShowConfirmUpdateDialog(true);
+                                }}
+                                disabled={
+                                  updateOriginalSubmissionStatus.isPending
+                                }
+                                className="bg-linear-to-r from-green-500 to-green-600 text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {t.originalSubmittedStatus}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setPendingUpdate({
+                                    paintingId: item.painting.paintingId,
+                                    hasSubmittedOriginal: false,
+                                    paintingTitle: item.painting.title,
+                                  });
+                                  setShowConfirmUpdateDialog(true);
+                                }}
+                                disabled={
+                                  updateOriginalSubmissionStatus.isPending
+                                }
+                                className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {t.originalNotSubmittedStatus}
+                              </button>
+                            </div>
+                          )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
@@ -1232,7 +1239,10 @@ function ContestDetailContent() {
       {/* Create Round 2 Confirmation Dialog */}
       <Dialog
         open={showCreateRound2Confirm}
-        onOpenChange={setShowCreateRound2Confirm}
+        onOpenChange={(open) => {
+          setShowCreateRound2Confirm(open);
+          if (!open) setRound2Date("");
+        }}
       >
         <DialogContent>
           <DialogHeader>
@@ -1244,32 +1254,146 @@ function ContestDetailContent() {
             </DialogTitle>
             <DialogDescription>
               {t.createRound2ConfirmDetail}
-              <div className="mt-2 p-3 bg-gray-50 rounded">
-                <p className="text-sm">
+              <div className="mt-2 p-3 bg-gray-50">
+                <div className="text-sm">
                   <strong>{t.round2Quantity}:</strong> {contest.round2Quantity}
-                </p>
-                <p className="text-sm">
+                </div>
+                <div className="text-sm">
                   <strong>{t.numberOfTables}:</strong>{" "}
                   {contest.numberOfTablesRound2}
-                </p>
+                </div>
               </div>
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Date Constraints Display */}
+            <div className="p-4 bg-[#f9f7f4] border border-[#e6e2da]">
+              <h4 className="text-sm font-medium staff-text-primary mb-3 flex items-center gap-2">
+                <IconCalendar className="h-4 w-4" />
+                {t.dateConstraints}
+              </h4>
+              <div className="grid grid-cols-1 gap-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="staff-text-secondary">
+                    {t.contestStart}:
+                  </span>
+                  <span className="font-medium staff-text-primary">
+                    {formatDate({
+                      dateString: contest.startDate,
+                      language: currentLanguage,
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="staff-text-secondary">{t.contestEnd}:</span>
+                  <span className="font-medium staff-text-primary">
+                    {formatDate({
+                      dateString: contest.endDate,
+                      language: currentLanguage,
+                    })}
+                  </span>
+                </div>
+                {rounds.find((r) => !r.isRound2)?.resultAnnounceDate && (
+                  <div className="flex justify-between items-center">
+                    <span className="staff-text-secondary">
+                      {t.round1Results}:
+                    </span>
+                    <span className="font-medium staff-text-primary">
+                      {formatDate({
+                        dateString: rounds.find((r) => !r.isRound2)
+                          ?.resultAnnounceDate!,
+                        language: currentLanguage,
+                      })}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center border-t border-[#e6e2da] pt-3 mt-1">
+                  <span className="staff-text-secondary font-medium">
+                    {t.validRange}:
+                  </span>
+                  <span className="font-medium staff-text-primary text-xs">
+                    {(() => {
+                      // Calculate the exact same dates used in input constraints
+                      const round1Results = rounds.find(
+                        (r) => !r.isRound2
+                      )?.resultAnnounceDate;
+                      const minDate = round1Results
+                        ? new Date(
+                            new Date(round1Results).getTime() +
+                              24 * 60 * 60 * 1000
+                          )
+                        : new Date(contest.startDate);
+                      const maxDate = new Date(contest.endDate);
+
+                      return `${formatDate({
+                        dateString: minDate.toISOString(),
+                        language: currentLanguage,
+                      })} - ${formatDate({
+                        dateString: maxDate.toISOString(),
+                        language: currentLanguage,
+                      })}`;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium staff-text-primary mb-2">
+                {t.round2Date || "Round 2 Date"}
+              </label>
+              <input
+                type="date"
+                value={round2Date}
+                onChange={(e) => setRound2Date(e.target.value)}
+                min={
+                  rounds.find((r) => !r.isRound2)?.resultAnnounceDate
+                    ? formatDateForInput(
+                        new Date(
+                          new Date(
+                            rounds.find((r) => !r.isRound2)?.resultAnnounceDate!
+                          ).getTime() +
+                            24 * 60 * 60 * 1000
+                        )
+                      )
+                    : formatDateForInput(contest.startDate)
+                }
+                max={formatDateForInput(contest.endDate)}
+                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+              <p className="text-xs staff-text-secondary mt-1">
+                {t.round2DateHelp ||
+                  "Date must be after Round 1 results announcement and within contest dates"}
+              </p>
+            </div>
+          </div>
+
           <DialogFooter>
             <button
-              onClick={() => setShowCreateRound2Confirm(false)}
+              onClick={() => {
+                setShowCreateRound2Confirm(false);
+                setRound2Date("");
+              }}
               className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
             >
               {t.cancelDetail}
             </button>
             <button
               onClick={() => {
+                if (!round2Date) {
+                  toast.error("Please select a date for Round 2");
+                  return;
+                }
                 createRound2Mutation.mutate({
                   contestId: Number(contestId),
+                  date: round2Date,
                 });
                 setShowCreateRound2Confirm(false);
+                setRound2Date("");
               }}
-              disabled={createRound2Mutation.isPending}
+              disabled={createRound2Mutation.isPending || !round2Date}
               className="bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createRound2Mutation.isPending ? t.creatingDetail : t.confirmBtn}

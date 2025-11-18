@@ -508,6 +508,10 @@ export const translations = {
     contestIdLabelDetail: "ID Cuộc Thi:",
     contestIdLabel: "ID Cuộc Thi:",
     round2CompetitorsLabel: "Số thí sinh vòng 2",
+    round2Configuration: "Cấu Hình Vòng 2",
+    bannerPreview: "Xem Trước Banner",
+    currentFile: "Tệp hiện tại:",
+    pdfPreview: "Xem Trước PDF",
     roundDates: "Ngày Vòng",
     files: "Tệp",
     bannerImage: "Hình Ảnh Banner",
@@ -538,13 +542,25 @@ export const translations = {
     roundEndAfterStart: "Ngày kết thúc vòng phải sau ngày bắt đầu vòng",
     submissionDeadlineRequired: "Hạn nộp là bắt buộc",
     submissionAfterRoundStart: "Hạn nộp phải sau ngày bắt đầu vòng",
+    submissionBeforeRoundEnd: "Hạn nộp phải trước hoặc bằng ngày kết thúc vòng",
     resultDateRequired: "Ngày công bố kết quả là bắt buộc",
     originalDeadlineRequired: "Hạn gửi bản gốc là bắt buộc",
-    topCompetitorsMin: "Số thí sinh xuất sắc phải ít nhất là 0",
+    topCompetitorsMin: "Số thí sinh xuất sắc phải ít nhất là 1",
     topCompetitorsMax: "Số thí sinh xuất sắc quá cao",
-    tablesMin: "Số bảng phải ít nhất là 0",
-    tablesMax: "Tối đa 26 bảng cho vòng 2",
+    tablesMin: "Số bảng phải ít nhất là 3",
+    tablesMax: "Tối đa 6 bảng cho vòng 2",
     competitorsEvenlyDivided: "Thí sinh phải được chia đều vào các bảng",
+
+    // Date Range Validation
+    roundStartWithinContest:
+      "Ngày bắt đầu vòng phải nằm trong khoảng thời gian cuộc thi",
+    roundEndWithinContest:
+      "Ngày kết thúc vòng phải nằm trong khoảng thời gian cuộc thi",
+    submissionWithinContest: "Hạn nộp phải nằm trong khoảng thời gian cuộc thi",
+    resultDateWithinContest:
+      "Ngày công bố kết quả phải nằm trong khoảng thời gian cuộc thi",
+    originalDeadlineWithinContest:
+      "Hạn gửi bản gốc phải nằm trong khoảng thời gian cuộc thi",
 
     // User Form Validation
     usernameMinLength: "Tên đăng nhập phải có ít nhất 3 ký tự",
@@ -995,6 +1011,14 @@ export const translations = {
     publishingDetail: "Đang xuất bản...",
     publishDetail: "Xuất Bản",
     createRound2Detail: "Tạo Vòng 2",
+    round2Date: "Ngày Vòng 2",
+    dateConstraints: "Ràng buộc ngày tháng",
+    contestStart: "Ngày bắt đầu cuộc thi",
+    contestEnd: "Ngày kết thúc cuộc thi",
+    round1Results: "Kết quả Vòng 1",
+    validRange: "Khoảng thời gian hợp lệ",
+    round2DateHelp:
+      "Ngày phải sau khi công bố kết quả Vòng 1 và trong khoảng thời gian cuộc thi",
     createRound2ConfirmDetail:
       "Bạn có chắc chắn muốn tạo vòng 2 với cài đặt hiện tại?",
     round2Quantity: "Số lượng vòng 2",
@@ -1620,6 +1644,10 @@ export const translations = {
     contestIdLabelDetail: "Contest ID:",
     contestIdLabel: "Contest ID:",
     round2CompetitorsLabel: "Round 2 competitors",
+    round2Configuration: "Round 2 Configuration",
+    bannerPreview: "Banner Preview",
+    currentFile: "Current file:",
+    pdfPreview: "PDF Preview",
     roundDates: "Round Dates",
     files: "Files",
     bannerImage: "Banner Image",
@@ -1651,13 +1679,24 @@ export const translations = {
     submissionDeadlineRequired: "Submission deadline is required",
     submissionAfterRoundStart:
       "Submission deadline must be after round start date",
+    submissionBeforeRoundEnd:
+      "Submission deadline must be before or equal to round end date",
     resultDateRequired: "Result announcement date is required",
     originalDeadlineRequired: "Original deadline is required",
-    topCompetitorsMin: "Number of top competitors must be at least 0",
+    topCompetitorsMin: "Number of top competitors must be at least 1",
     topCompetitorsMax: "Number of top competitors is too high",
-    tablesMin: "Number of tables must be at least 0",
-    tablesMax: "Maximum 26 tables for round 2",
+    tablesMin: "Number of tables must be at least 3",
+    tablesMax: "Maximum 6 tables for round 2",
     competitorsEvenlyDivided: "Competitors must be evenly divided among tables",
+
+    // Date Range Validation
+    roundStartWithinContest: "Round start date must be within contest dates",
+    roundEndWithinContest: "Round end date must be within contest dates",
+    submissionWithinContest: "Submission deadline must be within contest dates",
+    resultDateWithinContest:
+      "Result announcement date must be within contest dates",
+    originalDeadlineWithinContest:
+      "Original deadline must be within contest dates",
 
     // User Form Validation
     usernameMinLength: "Username must be at least 3 characters",
@@ -2078,6 +2117,14 @@ export const translations = {
     publishingDetail: "Publishing...",
     publishDetail: "Publish",
     createRound2Detail: "Create Round 2",
+    round2Date: "Round 2 Date",
+    dateConstraints: "Date Constraints",
+    contestStart: "Contest Start",
+    contestEnd: "Contest End",
+    round1Results: "Round 1 Results",
+    validRange: "Valid Range",
+    round2DateHelp:
+      "Date must be after Round 1 results announcement and within contest dates",
     createRound2ConfirmDetail:
       "Are you sure you want to create round 2 with current settings?",
     round2Quantity: "Round 2 Quantity",
