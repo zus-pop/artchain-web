@@ -1,20 +1,21 @@
 "use client";
 
+import { useCreateBatchAward } from "@/apis/award";
 import { createStaffContest } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Lang, useTranslation } from "@/lib/i18n";
+import { formatDateForInput } from "@/lib/utils";
 import { useLanguageStore } from "@/store/language-store";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   IconArrowLeft,
-  IconCalendar,
   IconDeviceFloppy,
+  IconEye,
   IconFileText,
-  IconTrophy,
-  IconUpload,
+  IconX,
 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -36,9 +37,9 @@ const createContestSchema = (t: Lang) =>
         .max(2000, t.descriptionTooLong),
       round2Quantity: z
         .number()
-        .min(0, t.topCompetitorsMin)
+        .min(1, t.topCompetitorsMin)
         .max(100, t.topCompetitorsMax),
-      numberOfTablesRound2: z.number().min(0, t.tablesMin).max(26, t.tablesMax),
+      numberOfTablesRound2: z.number().min(3, t.tablesMin).max(6, t.tablesMax),
       startDate: z
         .string()
         .min(1, t.startDateRequired)
@@ -87,18 +88,90 @@ const createContestSchema = (t: Lang) =>
       path: ["endDate"],
     })
     .refine(
-      (data) => new Date(data.roundEndDate) > new Date(data.roundStartDate),
+      (data) => {
+        if (!data.roundEndDate || !data.roundStartDate) return true;
+        return new Date(data.roundEndDate) > new Date(data.roundStartDate);
+      },
       {
         message: t.roundEndAfterStart,
         path: ["roundEndDate"],
       }
     )
     .refine(
-      (data) =>
-        new Date(data.roundSubmissionDeadline) >= new Date(data.roundStartDate),
+      (data) => {
+        if (!data.roundSubmissionDeadline || !data.roundStartDate) return true;
+        return (
+          new Date(data.roundSubmissionDeadline) >=
+          new Date(data.roundStartDate)
+        );
+      },
       {
         message: t.submissionAfterRoundStart,
         path: ["roundSubmissionDeadline"],
+      }
+    )
+    .refine(
+      (data) => {
+        if (!data.roundSubmissionDeadline || !data.roundEndDate) return true;
+        return (
+          new Date(data.roundSubmissionDeadline) <= new Date(data.roundEndDate)
+        );
+      },
+      {
+        message: t.submissionBeforeRoundEnd,
+        path: ["roundSubmissionDeadline"],
+      }
+    )
+    .refine(
+      (data) => {
+        if (!data.roundResultAnnounceDate || !data.roundStartDate) return true;
+        return (
+          new Date(data.roundResultAnnounceDate) >=
+          new Date(data.roundStartDate)
+        );
+      },
+      {
+        message: t.resultDateWithinContest,
+        path: ["roundResultAnnounceDate"],
+      }
+    )
+    .refine(
+      (data) => {
+        if (!data.roundResultAnnounceDate || !data.roundEndDate) return true;
+        return (
+          new Date(data.roundResultAnnounceDate) <= new Date(data.roundEndDate)
+        );
+      },
+      {
+        message: t.resultDateWithinContest,
+        path: ["roundResultAnnounceDate"],
+      }
+    )
+    .refine(
+      (data) => {
+        if (!data.roundSendOriginalDeadline || !data.roundStartDate)
+          return true;
+        return (
+          new Date(data.roundSendOriginalDeadline) >=
+          new Date(data.roundStartDate)
+        );
+      },
+      {
+        message: t.originalDeadlineWithinContest,
+        path: ["roundSendOriginalDeadline"],
+      }
+    )
+    .refine(
+      (data) => {
+        if (!data.roundSendOriginalDeadline || !data.roundEndDate) return true;
+        return (
+          new Date(data.roundSendOriginalDeadline) <=
+          new Date(data.roundEndDate)
+        );
+      },
+      {
+        message: t.originalDeadlineWithinContest,
+        path: ["roundSendOriginalDeadline"],
       }
     )
     .refine(
@@ -135,7 +208,6 @@ export default function CreateContestPage() {
     formState: { errors, isSubmitting, isValid },
     setValue,
     watch,
-    trigger,
   } = useForm<CreateContestFormData>({
     mode: "all",
     resolver: zodResolver(createContestSchema(t)),
@@ -147,10 +219,17 @@ export default function CreateContestPage() {
 
   const watchedRound2Quantity = watch("round2Quantity");
 
-  // Watch date fields for interdependent validation
+  // Watch date fields for interdependent validation and constraints
   const watchedStartDate = watch("startDate");
+  const watchedEndDate = watch("endDate");
   const watchedRoundStartDate = watch("roundStartDate");
+  const watchedRoundEndDate = watch("roundEndDate");
   const watchedRule = watch("rule");
+  const watchedNumberOfTablesRound2 = watch("numberOfTablesRound2");
+
+  // Get today's date for min constraint on startDate
+  const today = new Date();
+  const todayString = formatDateForInput(today);
 
   // Cleanup banner preview URL on unmount
   React.useEffect(() => {
@@ -179,31 +258,56 @@ export default function CreateContestPage() {
         // Use the middle value or a reasonable default
         const defaultValue =
           possibleDivisors[Math.floor(possibleDivisors.length / 2)] || 1;
-        setValue("numberOfTablesRound2", defaultValue);
+        setValue("numberOfTablesRound2", defaultValue, {
+          shouldValidate: true,
+        });
       }
     }
+    // Trigger validation for numberOfTablesRound2 when round2Quantity changes
   }, [watchedRound2Quantity, setValue, watch]);
 
-  // Validate endDate when startDate changes
-  React.useEffect(() => {
-    if (watchedStartDate) {
-      trigger("endDate");
-    }
-  }, [watchedStartDate, trigger]);
-
-  // Validate roundEndDate and roundSubmissionDeadline when roundStartDate changes
-  React.useEffect(() => {
-    if (watchedRoundStartDate) {
-      trigger("roundEndDate");
-      trigger("roundSubmissionDeadline");
-    }
-  }, [watchedRoundStartDate, trigger]);
+  const createBatchAwardMutation = useCreateBatchAward();
 
   const createMutation = useMutation({
     mutationFn: createStaffContest,
-    onSuccess: () => {
+    onSuccess: (value) => {
       queryClient.invalidateQueries({ queryKey: ["staff-contests"] });
-      toast.success("Contest created successfully!");
+      toast.success("Tạo cuộc thi thành công!");
+      createBatchAwardMutation.mutate(
+        {
+          awards: [
+            {
+              contestId: value.data.contest.contestId,
+              name: "Giải nhất",
+              description: `Giải nhất cuộc thi ${value.data.contest.title}`,
+              prize: 0,
+              quantity: 1,
+              rank: 1,
+            },
+            {
+              contestId: value.data.contest.contestId,
+              name: "Giải nhì",
+              description: `Giải nhì cuộc thi ${value.data.contest.title}`,
+              prize: 0,
+              quantity: 1,
+              rank: 2,
+            },
+            {
+              contestId: value.data.contest.contestId,
+              name: "Giải ba",
+              description: `Giải ba cuộc thi ${value.data.contest.title}`,
+              prize: 0,
+              quantity: 1,
+              rank: 3,
+            },
+          ],
+        },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["awards"] });
+          },
+        }
+      );
       router.push("/dashboard/staff/contests");
     },
     onError: (error: unknown) => {
@@ -289,447 +393,584 @@ export default function CreateContestPage() {
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-6">
-                    <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                        <IconFileText className="h-5 w-5 " />
-                        {t.basicInformation}
-                      </h3>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.contestTitle}
-                          </label>
-                          <input
-                            type="text"
-                            {...register("title")}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder={t.enterContestTitle}
-                          />
-                          {errors.title && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.title.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.description}
-                          </label>
-                          <textarea
-                            {...register("description")}
-                            rows={4}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder={t.describeContestTheme}
-                          />
-                          {errors.description && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.description.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                        <IconCalendar className="h-5 w-5 " />
-                        {t.contestScheduleRound2Settings}
-                      </h3>
-
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              {t.startDate}
-                            </label>
-                            <Controller
-                              name="startDate"
-                              control={control}
-                              render={({
-                                field: { onChange, value, ...field },
-                              }) => (
-                                <input
-                                  type="date"
-                                  {...field}
-                                  value={value || ""}
-                                  onChange={(e) =>
-                                    onChange(e.target.value || undefined)
-                                  }
-                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              )}
-                            />
-                            {errors.startDate && (
-                              <p className="text-red-500 text-sm mt-1">
-                                {errors.startDate.message}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              {t.endDate}
-                            </label>
-                            <Controller
-                              name="endDate"
-                              control={control}
-                              render={({
-                                field: { onChange, value, ...field },
-                              }) => (
-                                <input
-                                  type="date"
-                                  {...field}
-                                  value={value || ""}
-                                  onChange={(e) =>
-                                    onChange(e.target.value || undefined)
-                                  }
-                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              )}
-                            />
-                            {errors.endDate && (
-                              <p className="text-red-500 text-sm mt-1">
-                                {errors.endDate.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.numberOfTopCompetitorsRound2}
-                          </label>
-                          <Controller
-                            name="round2Quantity"
-                            control={control}
-                            render={({ field }) => (
-                              <input
-                                type="number"
-                                {...field}
-                                onChange={(e) => {
-                                  const value = parseInt(e.target.value) || 0;
-                                  field.onChange(value);
-                                }}
-                                step={1}
-                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="3"
-                                min="0"
-                              />
-                            )}
-                          />
-                          {errors.round2Quantity && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.round2Quantity.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.numberOfTablesRound2}
-                            {watchedRound2Quantity === 0 && (
-                              <span className="text-gray-500 text-xs ml-1">
-                                {t.disabledWhenNoCompetitors}
-                              </span>
-                            )}
-                          </label>
-                          <Controller
-                            name="numberOfTablesRound2"
-                            control={control}
-                            render={({ field }) => (
-                              <input
-                                type="number"
-                                {...field}
-                                onChange={(e) => {
-                                  const value = parseInt(e.target.value) || 0;
-                                  field.onChange(value);
-                                }}
-                                disabled={watchedRound2Quantity === 0}
-                                step={1}
-                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                placeholder={
-                                  watchedRound2Quantity === 0
-                                    ? "0"
-                                    : (() => {
-                                        const divisors = [];
-                                        for (
-                                          let i = 1;
-                                          i <=
-                                          Math.min(watchedRound2Quantity, 10);
-                                          i++
-                                        ) {
-                                          if (watchedRound2Quantity % i === 0) {
-                                            divisors.push(i);
-                                          }
-                                        }
-                                        return (
-                                          divisors[
-                                            Math.floor(divisors.length / 2)
-                                          ]?.toString() || "1"
-                                        );
-                                      })()
-                                }
-                                min={watchedRound2Quantity === 0 ? "0" : "1"}
-                                max="26"
-                              />
-                            )}
-                          />
-                          {errors.numberOfTablesRound2 && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.numberOfTablesRound2.message}
-                            </p>
-                          )}
-                          {watchedRound2Quantity > 0 && (
-                            <p className="text-xs text-gray-600 mt-1">
-                              {watchedRound2Quantity}{" "}
-                              {t.competitorsDivideTables}{" "}
-                              {(() => {
-                                const divisors = [];
-                                for (
-                                  let i = 1;
-                                  i <= Math.min(watchedRound2Quantity, 10);
-                                  i++
-                                ) {
-                                  if (watchedRound2Quantity % i === 0) {
-                                    divisors.push(i);
-                                  }
-                                }
-                                return (
-                                  divisors.slice(0, 5).join(", ") +
-                                  (divisors.length > 5 ? "..." : "")
-                                );
-                              })()}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                {/* Basic Information */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.basicInformation}
+                  </h3>
+                  <div className="grid gap-4">
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.contestTitle} *
+                      </label>
+                      <input
+                        type="text"
+                        {...register("title")}
+                        className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder={t.enterContestTitle}
+                      />
+                      {errors.title && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.title.message}
+                        </p>
+                      )}
                     </div>
                   </div>
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium staff-text-primary mb-2">
+                      {t.description} *
+                    </label>
+                    <textarea
+                      {...register("description")}
+                      required
+                      rows={4}
+                      className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder={t.describeContestTheme}
+                    />
+                    {errors.description && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.description.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
-                  <div className="space-y-6">
-                    <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                        <IconTrophy className="h-5 w-5 text-yellow-600" />
-                        {t.round1Schedule}
-                      </h3>
-
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              {t.roundStartDate}
-                            </label>
-                            <Controller
-                              name="roundStartDate"
-                              control={control}
-                              render={({
-                                field: { onChange, value, ...field },
-                              }) => (
-                                <input
-                                  type="date"
-                                  {...field}
-                                  value={value || ""}
-                                  onChange={(e) =>
-                                    onChange(e.target.value || undefined)
-                                  }
-                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              )}
-                            />
-                            {errors.roundStartDate && (
-                              <p className="text-red-500 text-sm mt-1">
-                                {errors.roundStartDate.message}
-                              </p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              {t.roundEndDate}
-                            </label>
-                            <Controller
-                              name="roundEndDate"
-                              control={control}
-                              render={({
-                                field: { onChange, value, ...field },
-                              }) => (
-                                <input
-                                  type="date"
-                                  {...field}
-                                  value={value || ""}
-                                  onChange={(e) =>
-                                    onChange(e.target.value || undefined)
-                                  }
-                                  className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              )}
-                            />
-                            {errors.roundEndDate && (
-                              <p className="text-red-500 text-sm mt-1">
-                                {errors.roundEndDate.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.submissionDeadline}
-                          </label>
-                          <Controller
-                            name="roundSubmissionDeadline"
-                            control={control}
-                            render={({
-                              field: { onChange, value, ...field },
-                            }) => (
-                              <input
-                                type="date"
-                                {...field}
-                                value={value || ""}
-                                onChange={(e) =>
-                                  onChange(e.target.value || undefined)
-                                }
-                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                            )}
+                {/* Contest Dates */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.contestDates}
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.startDate} *
+                      </label>
+                      <Controller
+                        name="startDate"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            required
+                            min={todayString}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
-                          {errors.roundSubmissionDeadline && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.roundSubmissionDeadline.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.resultAnnouncementDate}
-                          </label>
-                          <Controller
-                            name="roundResultAnnounceDate"
-                            control={control}
-                            render={({
-                              field: { onChange, value, ...field },
-                            }) => (
-                              <input
-                                type="date"
-                                {...field}
-                                value={value || ""}
-                                onChange={(e) =>
-                                  onChange(e.target.value || undefined)
-                                }
-                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                            )}
-                          />
-                          {errors.roundResultAnnounceDate && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.roundResultAnnounceDate.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.sendOriginalDeadline}
-                          </label>
-                          <Controller
-                            name="roundSendOriginalDeadline"
-                            control={control}
-                            render={({
-                              field: { onChange, value, ...field },
-                            }) => (
-                              <input
-                                type="date"
-                                {...field}
-                                value={value || ""}
-                                onChange={(e) =>
-                                  onChange(e.target.value || undefined)
-                                }
-                                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                            )}
-                          />
-                          {errors.roundSendOriginalDeadline && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {errors.roundSendOriginalDeadline.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                        )}
+                      />
+                      {errors.startDate && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.startDate.message}
+                        </p>
+                      )}
                     </div>
-
-                    <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                        <IconUpload className="h-5 w-5" />
-                        {t.files}
-                      </h3>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.bannerImage}
-                          </label>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.endDate} *
+                      </label>
+                      <Controller
+                        name="endDate"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
                           <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleFileChange(e, "banner")}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            required
+                            disabled={!watchedStartDate}
+                            min={
+                              watchedStartDate
+                                ? formatDateForInput(new Date(watchedStartDate))
+                                : todayString
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedStartDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
                           />
-                          {errors.banner && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {typeof errors.banner.message === "string"
-                                ? errors.banner.message
-                                : "Invalid banner file"}
-                            </p>
-                          )}
-                          {bannerPreview && (
-                            <div className="mt-2">
-                              <Image
-                                src={bannerPreview}
-                                alt="Banner preview"
-                                width={200}
-                                height={100}
-                                className="object-cover rounded border"
-                              />
-                            </div>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {t.rulesFilePDF}
-                          </label>
-                          <input
-                            type="file"
-                            accept=".pdf"
-                            onChange={(e) => handleFileChange(e, "rule")}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                          {errors.rule && (
-                            <p className="text-red-500 text-sm mt-1">
-                              {typeof errors.rule.message === "string"
-                                ? errors.rule.message
-                                : "Invalid rules file"}
-                            </p>
-                          )}
-                          {watchedRule && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              {t.selectedFile} {(watchedRule as File)?.name}
-                            </p>
-                          )}
-                        </div>
-                      </div>
+                        )}
+                      />
+                      {errors.endDate && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.endDate.message}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
+                {/* Round Dates */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.roundDates}
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.roundStartDate}
+                      </label>
+                      <Controller
+                        name="roundStartDate"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            disabled={!watchedStartDate}
+                            min={
+                              watchedStartDate
+                                ? formatDateForInput(new Date(watchedStartDate))
+                                : todayString
+                            }
+                            max={
+                              watchedEndDate
+                                ? formatDateForInput(new Date(watchedEndDate))
+                                : undefined
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedStartDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                        )}
+                      />
+                      {errors.roundStartDate && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roundStartDate.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.roundEndDate}
+                      </label>
+                      <Controller
+                        name="roundEndDate"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            disabled={!watchedRoundStartDate}
+                            min={
+                              watchedRoundStartDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundStartDate)
+                                  )
+                                : watchedStartDate
+                                ? formatDateForInput(new Date(watchedStartDate))
+                                : todayString
+                            }
+                            max={
+                              watchedEndDate
+                                ? formatDateForInput(new Date(watchedEndDate))
+                                : undefined
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedRoundStartDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                        )}
+                      />
+                      {errors.roundEndDate && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roundEndDate.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.submissionDeadline}
+                      </label>
+                      <Controller
+                        name="roundSubmissionDeadline"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            disabled={
+                              !watchedRoundStartDate || !watchedRoundEndDate
+                            }
+                            min={
+                              watchedRoundStartDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundStartDate)
+                                  )
+                                : watchedStartDate
+                                ? formatDateForInput(new Date(watchedStartDate))
+                                : todayString
+                            }
+                            max={
+                              watchedRoundEndDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundEndDate)
+                                  )
+                                : watchedEndDate
+                                ? formatDateForInput(new Date(watchedEndDate))
+                                : undefined
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedRoundStartDate || !watchedRoundEndDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                        )}
+                      />
+                      {errors.roundSubmissionDeadline && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roundSubmissionDeadline.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.resultAnnouncementDate}
+                      </label>
+                      <Controller
+                        name="roundResultAnnounceDate"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            disabled={
+                              !watchedRoundStartDate || !watchedRoundEndDate
+                            }
+                            min={
+                              watchedRoundStartDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundStartDate)
+                                  )
+                                : watchedStartDate
+                                ? formatDateForInput(new Date(watchedStartDate))
+                                : todayString
+                            }
+                            max={
+                              watchedRoundEndDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundEndDate)
+                                  )
+                                : watchedEndDate
+                                ? formatDateForInput(new Date(watchedEndDate))
+                                : undefined
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedRoundStartDate || !watchedRoundEndDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                        )}
+                      />
+                      {errors.roundResultAnnounceDate && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roundResultAnnounceDate.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.sendOriginalDeadline}
+                      </label>
+                      <Controller
+                        name="roundSendOriginalDeadline"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            disabled={
+                              !watchedRoundStartDate || !watchedRoundEndDate
+                            }
+                            min={
+                              watchedRoundStartDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundStartDate)
+                                  )
+                                : watchedStartDate
+                                ? formatDateForInput(new Date(watchedStartDate))
+                                : todayString
+                            }
+                            max={
+                              watchedRoundEndDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundEndDate)
+                                  )
+                                : watchedEndDate
+                                ? formatDateForInput(new Date(watchedEndDate))
+                                : undefined
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedRoundStartDate || !watchedRoundEndDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                        )}
+                      />
+                      {errors.roundSendOriginalDeadline && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roundSendOriginalDeadline.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Round 2 Configuration */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.round2Configuration}
+                  </h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.round2CompetitorsLabel}
+                      </label>
+                      <Controller
+                        name="round2Quantity"
+                        control={control}
+                        render={({ field }) => (
+                          <input
+                            type="number"
+                            {...field}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 0;
+                              field.onChange(value);
+                            }}
+                            min="0"
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        )}
+                      />
+                      {errors.round2Quantity && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.round2Quantity.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.numberOfTablesRound2}
+                      </label>
+                      <Controller
+                        name="numberOfTablesRound2"
+                        control={control}
+                        render={({ field }) => (
+                          <input
+                            type="number"
+                            {...field}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 0;
+                              field.onChange(value);
+                            }}
+                            disabled={watchedRound2Quantity === 0}
+                            step={1}
+                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            placeholder={
+                              watchedRound2Quantity === 0
+                                ? "0"
+                                : (() => {
+                                    const divisors = [];
+                                    for (
+                                      let i = 1;
+                                      i <= Math.min(watchedRound2Quantity, 10);
+                                      i++
+                                    ) {
+                                      if (watchedRound2Quantity % i === 0) {
+                                        divisors.push(i);
+                                      }
+                                    }
+                                    return (
+                                      divisors[
+                                        Math.floor(divisors.length / 2)
+                                      ]?.toString() || "1"
+                                    );
+                                  })()
+                            }
+                          />
+                        )}
+                      />
+                      {errors.numberOfTablesRound2 && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.numberOfTablesRound2.message}
+                        </p>
+                      )}
+                      {watchedRound2Quantity > 0 &&
+                        watchedNumberOfTablesRound2 > 0 &&
+                        watchedRound2Quantity % watchedNumberOfTablesRound2 ===
+                          0 && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            {t.competitorsDivisionMessage
+                              .replace(
+                                "{count}",
+                                watchedRound2Quantity.toString()
+                              )
+                              .replace(
+                                "{tables}",
+                                watchedNumberOfTablesRound2.toString()
+                              )
+                              .replace(
+                                "{perTable}",
+                                Math.floor(
+                                  watchedRound2Quantity /
+                                    watchedNumberOfTablesRound2
+                                ).toString()
+                              )}
+                          </p>
+                        )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Files */}
+                <div className="staff-card p-6">
+                  <h3 className="text-lg font-bold staff-text-primary mb-4">
+                    {t.files}
+                  </h3>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                          {t.bannerImage} *
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, "banner")}
+                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        {errors.banner && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {typeof errors.banner.message === "string"
+                              ? errors.banner.message
+                              : "Invalid banner file"}
+                          </p>
+                        )}
+                      </div>
+                      {bannerPreview && (
+                        <div>
+                          <p className="text-sm font-medium staff-text-primary mb-2">
+                            {t.bannerPreview}
+                          </p>
+                          <Image
+                            src={bannerPreview}
+                            alt="Banner preview"
+                            width={300}
+                            height={150}
+                            className="object-cover rounded border shadow-sm w-full"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                          {t.rulesFilePDF} *
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) => handleFileChange(e, "rule")}
+                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        {errors.rule && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {typeof errors.rule.message === "string"
+                              ? errors.rule.message
+                              : "Invalid rules file"}
+                          </p>
+                        )}
+                        {watchedRule && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            {t.selectedFile} {(watchedRule as File)?.name}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Small PDF Viewer */}
+                      {watchedRule && (
+                        <div className="border border-[#e6e2da] rounded overflow-hidden">
+                          <div className="bg-blue-50 px-3 py-2 border-b border-[#e6e2da]">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <IconFileText className="h-4 w-4 text-blue-600" />
+                                <span className="text-sm font-medium staff-text-primary">
+                                  {t.pdfPreview}
+                                </span>
+                              </div>
+                              <a
+                                href={URL.createObjectURL(watchedRule)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 text-sm"
+                              >
+                                <IconEye className="h-4 w-4" />
+                              </a>
+                            </div>
+                          </div>
+                          <div className="relative bg-white">
+                            <iframe
+                              src={URL.createObjectURL(watchedRule)}
+                              className="w-full h-[300px] border-0"
+                              title="Contest Rules PDF Preview"
+                              loading="lazy"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-4 justify-end">
                   <Link
                     href="/dashboard/staff/contests"
-                    className="px-6 py-2 border border-[#e6e2da] text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
                   >
+                    <IconX className="h-4 w-4" />
                     {t.cancel}
                   </Link>
                   <button
@@ -737,7 +978,7 @@ export default function CreateContestPage() {
                     disabled={
                       isSubmitting || createMutation.isPending || !isValid
                     }
-                    className="px-6 py-2 staff-btn-primary transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
                     {isSubmitting || createMutation.isPending

@@ -29,7 +29,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-${stats.length}`}>
       {stats.map((stat, index) => (
         <div
           key={index}

@@ -1,5 +1,4 @@
 import { PaintingStatus } from "./dashboard";
-import { Painting } from "./painting";
 
 export interface Award {
   awardId: string;

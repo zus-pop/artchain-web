@@ -26,7 +26,11 @@ export function useGetContests(status?: ContestStatus) {
 }
 
 // Get contests with pagination and status filter
-export function useGetContestsPaginated(status?: ContestStatus, page?: number, limit?: number) {
+export function useGetContestsPaginated(
+  status?: ContestStatus,
+  page?: number,
+  limit?: number
+) {
   return useQuery({
     queryKey: ["contests-paginated", status, page, limit],
     queryFn: async () => {
@@ -35,7 +39,7 @@ export function useGetContestsPaginated(status?: ContestStatus, page?: number, l
         if (status) params.status = status;
         if (page) params.page = page;
         if (limit) params.limit = limit;
-        
+
         const response = await myAxios.get<ApiResponse<Contest[]>>(
           "/contests",
           { params }
@@ -144,7 +148,10 @@ export const createStaffRound = async (
     maxSubmissions?: number;
   }
 ) => {
-  const response = await myAxios.post(`/staff/contests/${contestId}/rounds`, data);
+  const response = await myAxios.post(
+    `/staff/contests/${contestId}/rounds`,
+    data
+  );
   return response.data;
 };
 
@@ -156,7 +163,9 @@ export const getStaffRounds = async (contestId: number) => {
 
 // GET /api/staff/contests/{contestId}/rounds/{roundId} - Get round by ID
 export const getStaffRoundById = async (contestId: number, roundId: string) => {
-  const response = await myAxios.get(`/staff/contests/${contestId}/rounds/${roundId}`);
+  const response = await myAxios.get(
+    `/staff/contests/${contestId}/rounds/${roundId}`
+  );
   return response.data;
 };
 
@@ -172,12 +181,17 @@ export const updateStaffRound = async (
     maxSubmissions?: number;
   }
 ) => {
-  const response = await myAxios.patch(`/staff/contests/${contestId}/rounds/${roundId}`, data);
+  const response = await myAxios.patch(
+    `/staff/contests/${contestId}/rounds/${roundId}`,
+    data
+  );
   return response.data;
 };
 
 // DELETE /api/staff/contests/{contestId}/rounds/{roundId} - Delete a round
 export const deleteStaffRound = async (contestId: number, roundId: string) => {
-  const response = await myAxios.delete(`/staff/contests/${contestId}/rounds/${roundId}`);
+  const response = await myAxios.delete(
+    `/staff/contests/${contestId}/rounds/${roundId}`
+  );
   return response.data;
 };

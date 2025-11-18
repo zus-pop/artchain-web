@@ -1,4 +1,3 @@
-import { StringValidation } from "zod/v3";
 import { PaintingStatus } from "./dashboard";
 
 export interface CreateExhibitionRequest {

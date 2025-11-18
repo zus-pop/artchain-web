@@ -721,7 +721,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-{/* New Row: Top lists (Competitors + Examiners) */}
+                {/* New Row: Top lists (Competitors + Examiners) */}
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
@@ -772,7 +772,7 @@ export default function AdminDashboardPage() {
                                   key={index}
                                   className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
                                     isTop3
-                                      ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                                      ? "bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200"
                                       : "hover:bg-gray-50"
                                   }`}
                                 >
@@ -836,7 +836,7 @@ export default function AdminDashboardPage() {
                                 key={index}
                                 className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
                                   isTop3
-                                    ? "bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200"
+                                    ? "bg-linear-to-r from-green-50 to-emerald-50 border border-green-200"
                                     : "hover:bg-gray-50"
                                 }`}
                               >
@@ -893,7 +893,7 @@ export default function AdminDashboardPage() {
                               key={index}
                               className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
                                 isTop3
-                                  ? "bg-gradient-to-r from-red-50 to-pink-50 border border-red-200"
+                                  ? "bg-linear-to-r from-red-50 to-pink-50 border border-red-200"
                                   : "hover:bg-gray-50"
                               }`}
                             >

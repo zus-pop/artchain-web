@@ -1,6 +1,6 @@
 // contest-dto.ts
 
-import { PaintingStatus } from "../dashboard";
+import { ContestStatus, PaintingStatus } from "../dashboard";
 
 /**
  * DTO cho một vòng (round) trong contest
@@ -9,7 +9,7 @@ export interface RoundDTO {
   roundId: number;
   contestId: number;
   table: string | null;
-  name: string;
+  name: "ROUND_1" | "ROUND_2";
   startDate: string | null;
   endDate: string | null;
   submissionDeadline: string | null;
@@ -181,11 +181,44 @@ export interface CreateContestRequest {
   roundSendOriginalDeadline: string;
 }
 
+export interface CreateContestResponse {
+  contest: {
+    contestId: string;
+    title: string;
+    description: string;
+    bannerUrl: string;
+    numOfAward: string;
+    round2Quantity: string;
+    numberOfTablesRound2: number;
+    isScheduleEnforced: boolean;
+    ruleUrl: string;
+    startDate: string;
+    endDate: string;
+    status: ContestStatus;
+    createdBy: string;
+  };
+  rounds: {
+    roundId: number;
+    contestId: number;
+    table: string;
+    name: "ROUND_1" | "ROUND_2";
+    startDate: string;
+    endDate: string;
+    submissionDeadline: string;
+    resultAnnounceDate: string;
+    sendOriginalDeadline: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
 export interface UpdateContestRequest {
   contestId: string;
   title?: string;
   description?: string;
   round2Quantity?: number;
+  numberOfTablesRound2?: number;
   startDate?: string;
   endDate?: string;
   banner?: File;

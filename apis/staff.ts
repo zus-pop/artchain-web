@@ -3,13 +3,18 @@ import { ContestStatus } from "@/types/contest";
 import {
   ContestResponseDTO,
   CreateContestRequest,
+  CreateContestResponse,
   GetStaffRoundsResponse,
   RoundDetail,
   UpdateContestRequest,
 } from "@/types/staff/contest-dto";
-import { BulkAcceptSubmissionsResponse } from "@/types/staff/submission-dto";
+import {
+  BulkAcceptSubmissionsResponse,
+  QualifiedPainting,
+  UpdateOriginalSubmissionStatusRequest,
+} from "@/types/staff/submission-dto";
 import { CreatePostRequest } from "@/types/staff/post-dto";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { CreateCampaignRequest } from "../types/staff/campaign";
@@ -49,11 +54,15 @@ export const createStaffContest = async (data: CreateContestRequest) => {
   formData.append("numOfAward", "0");
   formData.append("roundName", "ROUND_1");
   formData.append("roundTable", "paintings");
-  const response = await myAxios.post("/staff/contests", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await myAxios.post<ApiResponse<CreateContestResponse>>(
+    "/staff/contests",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 
@@ -78,6 +87,11 @@ export const updateStaffContest = async (
   if (data.description) formData.append("description", data.description);
   if (data.round2Quantity !== undefined)
     formData.append("round2Quantity", data.round2Quantity.toString());
+  if (data.numberOfTablesRound2 !== undefined)
+    formData.append(
+      "numberOfTablesRound2",
+      data.numberOfTablesRound2.toString()
+    );
   if (data.startDate) formData.append("startDate", data.startDate);
   if (data.endDate) formData.append("endDate", data.endDate);
   if (data.banner) formData.append("banner", data.banner);
@@ -145,6 +159,45 @@ export const publishStaffContest = async (id: string) => {
   return response.data;
 };
 
+export function useGetQualifiedPaintingForRound2(contestId: string | null) {
+  return useQuery({
+    queryKey: ["qualified-paintings-round2", contestId],
+    queryFn: async () => {
+      const response = await myAxios.get<ApiResponse<QualifiedPainting>>(
+        `/staff/contests/${contestId}/round2-qualified`
+      );
+      return response.data;
+    },
+    enabled: !!contestId,
+  });
+}
+
+export function useUpdateOriginalSubmissionStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: UpdateOriginalSubmissionStatusRequest) => {
+      const response = await myAxios.patch(
+        `/staff/contests/${data.contestId}/paintings/${data.paintingId}/original-submission`,
+        {
+          hasSubmittedOriginal: data.hasSubmittedOriginal,
+        }
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["qualified-paintings-round2"],
+      });
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+}
 /**
  * Staff Rounds Management APIs
  */
@@ -240,7 +293,7 @@ export const deleteStaffRound = async (contestId: number, roundId: string) => {
 // POST /api/staff/contests/{id}/create-round2 - Create round 2
 export const createStaffRound2 = async (
   contestId: number,
-  data: { date: string; numberOfTables: number }
+  data: { date: string }
 ) => {
   const response = await myAxios.post(
     `/staff/contests/${contestId}/create-round2`,
@@ -295,15 +348,14 @@ export const acceptStaffSubmission = async (paintingId: string) => {
 };
 
 // PATCH /api/staff/contests/submissions/accept - Accept multiple submissions at once
-export const acceptMultipleSubmissions = async (paintingIds: string[]): Promise<BulkAcceptSubmissionsResponse> => {
-  const response = await myAxios.patch(
-    `/staff/contests/submissions/accept`,
-    { paintingIds }
-  );
+export const acceptMultipleSubmissions = async (
+  paintingIds: string[]
+): Promise<BulkAcceptSubmissionsResponse> => {
+  const response = await myAxios.patch(`/staff/contests/submissions/accept`, {
+    paintingIds,
+  });
   return response.data;
 };
-
-
 
 // PATCH /api/staff/contests/submissions/{paintingId}/reject - Reject a submission
 export const rejectStaffSubmission = async (
