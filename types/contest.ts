@@ -20,8 +20,21 @@ export interface Contest {
   endDate: string;
   status: ContestStatus;
   createdBy: string;
+  awards: Award[];
   rounds: Rounds[];
   sendOriginalDeadline?: string;
+}
+
+export interface Award {
+  awardId: string;
+  contestId: string;
+  name: string;
+  description: string;
+  rank: number;
+  quantity: number;
+  prize: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Rounds {
