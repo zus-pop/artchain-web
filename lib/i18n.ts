@@ -1173,6 +1173,12 @@ export const translations = {
     assignedLabel: "Đã trao:",
     totalVotesLabel: "Tổng phiếu bầu:",
     completeStatus: "Hoàn thành",
+    scoreBreakdown: "Phân Tích Điểm",
+    creativity: "Sáng Tạo",
+    composition: "Bố Cục",
+    color: "Màu Sắc",
+    technical: "Kỹ Thuật",
+    aesthetic: "Thẩm Mỹ",
 
     // Admin Accounts Management
     accountManagement: "Quản Lý Tài Khoản",
@@ -2300,6 +2306,12 @@ export const translations = {
     assignedLabel: "Assigned:",
     totalVotesLabel: "Total Votes:",
     completeStatus: "Complete",
+    scoreBreakdown: "Score Breakdown",
+    creativity: "Creativity",
+    composition: "Composition",
+    color: "Color",
+    technical: "Technical",
+    aesthetic: "Aesthetic",
 
     // Admin Accounts Management
     accountManagement: "Account Management",

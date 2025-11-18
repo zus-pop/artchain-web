@@ -1294,20 +1294,22 @@ function ContestDetailContent() {
                     })}
                   </span>
                 </div>
-                {rounds.find((r) => !r.isRound2)?.resultAnnounceDate && (
-                  <div className="flex justify-between items-center">
-                    <span className="staff-text-secondary">
-                      {t.round1Results}:
-                    </span>
-                    <span className="font-medium staff-text-primary">
-                      {formatDate({
-                        dateString: rounds.find((r) => !r.isRound2)
-                          ?.resultAnnounceDate!,
-                        language: currentLanguage,
-                      })}
-                    </span>
-                  </div>
-                )}
+                {(() => {
+                  const round1ResultDate = rounds.find((r) => !r.isRound2)?.resultAnnounceDate;
+                  return round1ResultDate && (
+                    <div className="flex justify-between items-center">
+                      <span className="staff-text-secondary">
+                        {t.round1Results}:
+                      </span>
+                      <span className="font-medium staff-text-primary">
+                        {formatDate({
+                          dateString: round1ResultDate,
+                          language: currentLanguage,
+                        })}
+                      </span>
+                    </div>
+                  );
+                })()}
                 <div className="flex justify-between items-center border-t border-[#e6e2da] pt-3 mt-1">
                   <span className="staff-text-secondary font-medium">
                     {t.validRange}:
@@ -1348,16 +1350,19 @@ function ContestDetailContent() {
                 value={round2Date}
                 onChange={(e) => setRound2Date(e.target.value)}
                 min={
-                  rounds.find((r) => !r.isRound2)?.resultAnnounceDate
-                    ? formatDateForInput(
-                        new Date(
+                  (() => {
+                    const round1Results = rounds.find(
+                      (r) => !r.isRound2
+                    )?.resultAnnounceDate;
+                    return round1Results
+                      ? formatDateForInput(
                           new Date(
-                            rounds.find((r) => !r.isRound2)?.resultAnnounceDate!
-                          ).getTime() +
-                            24 * 60 * 60 * 1000
+                            new Date(round1Results).getTime() +
+                              24 * 60 * 60 * 1000
+                          )
                         )
-                      )
-                    : formatDateForInput(contest.startDate)
+                      : formatDateForInput(contest.startDate);
+                  })()
                 }
                 max={formatDateForInput(contest.endDate)}
                 className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

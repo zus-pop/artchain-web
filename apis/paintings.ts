@@ -1,6 +1,11 @@
 import myAxios from "@/lib/custom-axios";
 import { ApiResponse } from "@/types";
-import { Painting, Round2ImageRequest, TopPainting, CompetitorSubmissionsResponse } from "@/types/painting";
+import {
+  Painting,
+  Round2ImageRequest,
+  TopPainting,
+  CompetitorSubmissionsResponse,
+} from "@/types/painting";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -35,7 +40,9 @@ export function useGetUserSubmissions(userId?: string) {
     queryFn: async () => {
       if (!userId) return null;
       try {
-        const response = await myAxios.get(`/guardians/competitor/${userId}/submissions`);
+        const response = await myAxios.get(
+          `/guardians/competitor/${userId}/submissions`
+        );
         return response.data as CompetitorSubmissionsResponse;
       } catch (error) {
         console.error("Error fetching user submissions:", error);
@@ -133,14 +140,18 @@ export function useGetRound2TopByContestId(contestId: string) {
   return useQuery({
     queryKey: ["/paintings/tops", contestId],
     queryFn: async () => {
-      const response = await myAxios.get<ApiResponse<TopPainting[]>>(
-        `/paintings/round2/rankings`,
-        {
-          params: {
-            contestId: contestId,
-          },
+      const response = await myAxios.get<
+        ApiResponse<TopPainting[]> & {
+          summary: {
+            totalTables: number;
+            totalPaintings: number;
+          };
         }
-      );
+      >(`/paintings/round2/rankings`, {
+        params: {
+          contestId: contestId,
+        },
+      });
       return response.data;
     },
   });

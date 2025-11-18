@@ -31,18 +31,58 @@ export interface Painting {
 }
 
 export interface TopPainting {
-  paintingId: string;
-  title: string;
-  imageUrl: string;
-  competitorId: string;
-  competitorName: string;
-  avgScoreRound2: number;
-  evaluationCount: number;
-  status: PaintingStatus;
   table: string;
   roundId: string;
-  createdAt: string;
-  award: Award | null;
+  paintings: {
+    paintingId: string;
+    title: string;
+    imageUrl: string;
+    competitorId: string;
+    competitorName: string;
+    avgScoreRound2: number;
+    avgCreativityScore: number;
+    avgCompositionScore: number;
+    avgColorScore: number;
+    avgTechnicalScore: number;
+    avgAestheticScore: number;
+    evaluationCount: number;
+    status: PaintingStatus;
+    table: string;
+    roundId: string;
+    award: {
+      awardId: string;
+      name: string;
+      description: string;
+      rank: number;
+      prize: string;
+    };
+    createdAt: string;
+  }[];
+  topPainting: {
+    paintingId: string;
+    title: string;
+    imageUrl: string;
+    competitorId: string;
+    competitorName: string;
+    avgScoreRound2: number;
+    avgCreativityScore: number;
+    avgCompositionScore: number;
+    avgColorScore: number;
+    avgTechnicalScore: number;
+    avgAestheticScore: number;
+    evaluationCount: number;
+    status: PaintingStatus;
+    table: string;
+    roundId: string;
+    award: {
+      awardId: string;
+      name: string;
+      description: string;
+      rank: number;
+      prize: string;
+    };
+    createdAt: string;
+  };
 }
 
 export interface Round2ImageRequest {
