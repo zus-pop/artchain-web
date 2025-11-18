@@ -9,7 +9,7 @@ export interface RoundDTO {
   roundId: number;
   contestId: number;
   table: string | null;
-  name: string;
+  name: "ROUND_1" | "ROUND_2";
   startDate: string | null;
   endDate: string | null;
   submissionDeadline: string | null;
@@ -186,6 +186,7 @@ export interface UpdateContestRequest {
   title?: string;
   description?: string;
   round2Quantity?: number;
+  numberOfTablesRound2?: number;
   startDate?: string;
   endDate?: string;
   banner?: File;

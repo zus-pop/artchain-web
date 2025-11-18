@@ -105,7 +105,12 @@ export interface Competitor {
 }
 
 // Painting Management Types
-export type PaintingStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type PaintingStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "ORIGINAL_SUBMITTED"
+  | "NOT_SUBMITTED_ORIGINAL";
 
 export interface Painting {
   id: string;

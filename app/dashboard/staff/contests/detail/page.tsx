@@ -5,10 +5,12 @@ import {
   createStaffRound2,
   deleteStaffRound,
   getDetailedStaffRounds,
+  useGetQualifiedPaintingForRound2,
   getStaffContestById,
   getStaffRounds,
   publishStaffContest,
   toggleExaminerScheduleEnforcement,
+  useUpdateOriginalSubmissionStatus,
 } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
@@ -60,7 +62,14 @@ function ContestDetailContent() {
   const [showEmbeddedPdf, setShowEmbeddedPdf] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [showCreateRound2Confirm, setShowCreateRound2Confirm] = useState(false);
-  const [round2NumberOfTables, setRound2NumberOfTables] = useState<number>(0);
+  const [showQualifiedPaintingsDialog, setShowQualifiedPaintingsDialog] =
+    useState(false);
+  const [showConfirmUpdateDialog, setShowConfirmUpdateDialog] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    paintingId: string;
+    hasSubmittedOriginal: boolean;
+    paintingTitle: string;
+  } | null>(null);
   const [isNotifyingRound2, setIsNotifyingRound2] = useState(false);
   const notify = useSendMultipleEmails();
   // Fetch contest details
@@ -78,17 +87,14 @@ function ContestDetailContent() {
     enabled: !!contestId,
     staleTime: 1 * 60 * 1000,
   });
-  const notifyContest = useNotifyContest();
 
+  const { data: qualifiedPaintingsData } =
+    useGetQualifiedPaintingForRound2(contestId);
+
+  const notifyContest = useNotifyContest();
+  const updateOriginalSubmissionStatus = useUpdateOriginalSubmissionStatus();
   const contest = contestData?.data as Contest;
   const rounds = roundsData?.data || [];
-
-  // Set default number of tables when contest loads
-  useEffect(() => {
-    if (contest?.numberOfTablesRound2) {
-      setRound2NumberOfTables(contest.numberOfTablesRound2);
-    }
-  }, [contest?.numberOfTablesRound2]);
 
   // Delete round mutation
   const deleteMutation = useMutation({
@@ -111,16 +117,9 @@ function ContestDetailContent() {
 
   // Create round 2 mutation
   const createRound2Mutation = useMutation({
-    mutationFn: ({
-      contestId,
-      numberOfTables,
-    }: {
-      contestId: number;
-      numberOfTables: number;
-    }) =>
+    mutationFn: ({ contestId }: { contestId: number }) =>
       createStaffRound2(contestId, {
         date: new Date().toISOString(),
-        numberOfTables,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -323,28 +322,25 @@ function ContestDetailContent() {
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center">
                       <h2 className="text-2xl font-bold staff-text-primary">
                         {contest.title}
                       </h2>
-                      <span className={getStatusColor(contest.status)}>
+                      {/* <span className={getStatusColor(contest.status)}>
                         {contest.status}
-                      </span>
+                      </span> */}
                     </div>
-                    <p className="text-sm staff-text-secondary mt-1">
-                      {t.contestIdLabelDetail} {contest.contestId}
-                    </p>
                   </div>
                 </div>
-                {contest.status === "DRAFT" && (
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
-                      className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
-                    >
-                      <IconEdit className="h-4 w-4" />
-                      {t.editContestDetail}
-                    </Link>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
+                    className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                  >
+                    <IconEdit className="h-4 w-4" />
+                    {t.editContestDetail}
+                  </Link>
+                  {contest.status === "DRAFT" && (
                     <button
                       onClick={() => setShowPublishConfirm(true)}
                       className="bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
@@ -352,8 +348,8 @@ function ContestDetailContent() {
                       <IconTrophy className="h-4 w-4" />
                       {t.publishContestDetail}
                     </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Banner Image */}
@@ -387,7 +383,7 @@ function ContestDetailContent() {
                     {t.contestInformationDetail}
                   </h3>
 
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
                       <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
@@ -419,18 +415,6 @@ function ContestDetailContent() {
                     </div>
 
                     <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
-                      <IconTrophy className="h-5 w-5 staff-text-secondary mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium staff-text-secondary">
-                          {t.numberOfAwardsDetail}
-                        </p>
-                        <p className="text-sm staff-text-primary font-semibold">
-                          {contest.numOfAward} prizes
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
                       <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
@@ -442,6 +426,29 @@ function ContestDetailContent() {
                       </div>
                     </div>
 
+                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                      <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.numberOfTables} {t.rounds} 2
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {contest.numberOfTablesRound2}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <IconTrophy className="h-5 w-5 staff-text-secondary mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium staff-text-secondary">
+                          {t.numberOfAwardsDetail}
+                        </p>
+                        <p className="text-sm staff-text-primary font-semibold">
+                          {contest.numOfAward} {t.prize}
+                        </p>
+                      </div>
+                    </div>
                     <div className="flex items-start gap-3">
                       <IconClock className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
@@ -571,7 +578,7 @@ function ContestDetailContent() {
                   <div className="bg-linear-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-[#e6e2da]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 rounded-lg">
+                        <div className="bg-blue-100 p-2">
                           <IconFileText className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
@@ -612,7 +619,7 @@ function ContestDetailContent() {
                         <div className="flex items-center gap-2 text-sm staff-text-secondary">
                           <IconFileText className="h-4 w-4" />
                           <span>{t.pdfDocumentViewerDetail}</span>
-                          <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                          <span className="text-xs bg-gray-200 px-2 py-1">
                             Embedded View
                           </span>
                         </div>
@@ -703,16 +710,22 @@ function ContestDetailContent() {
                   <h3 className="text-lg font-bold staff-text-primary">
                     {t.contestRoundsDetail}
                   </h3>
-                  {!rounds.some((round) => round.isRound2) && (
-                    <button
-                      onClick={() => setShowCreateRound2Confirm(true)}
-                      disabled={createRound2Mutation.isPending}
-                      className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
-                    >
-                      <IconPlus className="h-4 w-4" />
-                      {t.round2Detail}
-                    </button>
-                  )}
+                  <div className="flex items-center gap-3">
+                    {!rounds.some((round) => round.isRound2) && (
+                      <button
+                        onClick={() => setShowCreateRound2Confirm(true)}
+                        disabled={
+                          createRound2Mutation.isPending ||
+                          (qualifiedPaintingsData?.data?.summary?.submitted ||
+                            0) < contest.round2Quantity
+                        }
+                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <IconPlus className="h-4 w-4" />
+                        {t.round2Detail}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {rounds && rounds.length > 0 ? (
@@ -726,11 +739,6 @@ function ContestDetailContent() {
                           <div className="flex items-center gap-3">
                             <h4 className="font-bold staff-text-primary">
                               {round.name}
-                              {round.table && (
-                                <span className="ml-2 text-sm font-normal staff-text-secondary">
-                                  (Table {round.table})
-                                </span>
-                              )}
                             </h4>
                             {/* {round.status && (
                               <span className={getStatusColor(round.status)}>
@@ -740,6 +748,18 @@ function ContestDetailContent() {
                           </div>
                           {!round.isRound2 && round.roundId && (
                             <div className="flex items-center gap-2">
+                              <button
+                                onClick={() =>
+                                  setShowQualifiedPaintingsDialog(true)
+                                }
+                                className="bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                              >
+                                <IconEye className="h-4 w-4" />
+                                {t.qualifiedPaintings} (
+                                {qualifiedPaintingsData?.data?.summary
+                                  ?.submitted || 0}
+                                /{contest.round2Quantity})
+                              </button>
                               <Link
                                 href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
                                 className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
@@ -977,6 +997,238 @@ function ContestDetailContent() {
         </DialogContent>
       </Dialog>
 
+      {/* Qualified Paintings Dialog */}
+      <Dialog
+        open={showQualifiedPaintingsDialog}
+        onOpenChange={setShowQualifiedPaintingsDialog}
+      >
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="bg-blue-500/10 p-2 rounded-full">
+                <IconEye className="h-6 w-6 text-blue-600" />
+              </div>
+              {t.round1QualifiedPaintingsReview}
+            </DialogTitle>
+            <DialogDescription>
+              {t.round1QualifiedPaintingsReviewDesc}
+              {qualifiedPaintingsData?.data?.summary && (
+                <div className="mt-2 p-3 bg-gray-50">
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="text-center">
+                      <p className="font-semibold text-gray-900">
+                        {qualifiedPaintingsData.data.summary.totalQualified}
+                      </p>
+                      <p className="text-gray-600">{t.totalQualified}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-green-600">
+                        {qualifiedPaintingsData.data.summary.submitted}
+                      </p>
+                      <p className="text-gray-600">
+                        {t.originalSubmittedStatus}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-red-600">
+                        {qualifiedPaintingsData.data.summary.notSubmitted}
+                      </p>
+                      <p className="text-gray-600">
+                        {t.originalNotSubmittedStatus}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            {qualifiedPaintingsData?.data?.qualified &&
+            qualifiedPaintingsData.data.qualified.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {qualifiedPaintingsData.data.qualified.map((item) => (
+                  <div
+                    key={item.painting.paintingId}
+                    className="border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors min-h-[400px] flex flex-col"
+                  >
+                    <div className="aspect-square relative">
+                      <Image
+                        src={item.painting.imageUrl}
+                        alt={item.painting.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="p-4 flex-1 flex flex-col">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-1 text-center">
+                          {item.painting.title}
+                        </h4>
+                        <p className="text-xs text-gray-600 mb-1">
+                          <strong>{t.artistLabel}: </strong>
+                          {item.competitorName}
+                        </p>
+                        <p className="text-xs text-gray-600 mb-1 truncate">
+                          <strong>{t.emailLabel}: </strong>
+                          {item.competitorEmail}
+                        </p>
+                        <div className="flex items-center justify-start gap-4 mb-2">
+                          <span className="text-xs text-gray-600">
+                            <strong>{t.scoreLabel}: </strong>
+                            {item.avgScore.toFixed(1)}
+                          </span>
+                          <span className="text-xs text-gray-600">
+                            <strong>{t.reviewsLabel}: </strong>
+                            {item.evaluationCount}
+                          </span>
+                        </div>
+                        <div className="mb-3 flex justify-center">
+                          <span
+                            className={`inline-flex items-center px-2 py-1 text-xs font-medium ${
+                              item.painting.status === "ACCEPTED"
+                                ? "bg-green-100 text-green-800"
+                                : item.painting.status === "REJECTED"
+                                ? "bg-red-100 text-red-800"
+                                : item.painting.status === "ORIGINAL_SUBMITTED"
+                                ? "bg-blue-100 text-blue-800"
+                                : item.painting.status ===
+                                  "NOT_SUBMITTED_ORIGINAL"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {item.painting.status === "ORIGINAL_SUBMITTED"
+                              ? t.originalSubmittedStatus
+                              : item.painting.status ===
+                                "NOT_SUBMITTED_ORIGINAL"
+                              ? t.originalNotSubmittedStatus
+                              : item.painting.status === "ACCEPTED"
+                              ? t.acceptedStatus
+                              : item.painting.status === "REJECTED"
+                              ? t.rejectedStatus
+                              : item.painting.status === "PENDING"
+                              ? t.pendingReviewStatus
+                              : item.painting.status}
+                          </span>
+                        </div>
+                      </div>
+                      {item.painting.status !== "ORIGINAL_SUBMITTED" &&
+                        item.painting.status !== "NOT_SUBMITTED_ORIGINAL" && (
+                          <div className="flex items-center justify-center gap-2 mt-auto">
+                            <button
+                              onClick={() => {
+                                setPendingUpdate({
+                                  paintingId: item.painting.paintingId,
+                                  hasSubmittedOriginal: true,
+                                  paintingTitle: item.painting.title,
+                                });
+                                setShowConfirmUpdateDialog(true);
+                              }}
+                              disabled={
+                                updateOriginalSubmissionStatus.isPending
+                              }
+                              className="bg-linear-to-r from-green-500 to-green-600 text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {t.originalSubmittedStatus}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setPendingUpdate({
+                                  paintingId: item.painting.paintingId,
+                                  hasSubmittedOriginal: false,
+                                  paintingTitle: item.painting.title,
+                                });
+                                setShowConfirmUpdateDialog(true);
+                              }}
+                              disabled={
+                                updateOriginalSubmissionStatus.isPending
+                              }
+                              className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {t.originalNotSubmittedStatus}
+                            </button>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                {t.noQualifiedPaintingsFound}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <button
+              onClick={() => setShowQualifiedPaintingsDialog(false)}
+              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+            >
+              {t.closeDialog}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Update Dialog */}
+      <Dialog
+        open={showConfirmUpdateDialog}
+        onOpenChange={setShowConfirmUpdateDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="bg-yellow-500/10 p-2 rounded-full">
+                <IconSettings className="h-6 w-6 text-yellow-600" />
+              </div>
+              {t.confirmUpdate}
+            </DialogTitle>
+            <DialogDescription>
+              {t.confirmUpdateDescription}{" "}
+              <span className="font-semibold">
+                {pendingUpdate?.hasSubmittedOriginal
+                  ? t.markAsSubmitted
+                  : t.markAsNotSubmitted}
+              </span>{" "}
+              {t.originalSubmissionForPainting} &ldquo;
+              {pendingUpdate?.paintingTitle}&rdquo;?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              onClick={() => {
+                setShowConfirmUpdateDialog(false);
+                setPendingUpdate(null);
+              }}
+              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+            >
+              {t.cancelBtn}
+            </button>
+            <button
+              onClick={() => {
+                if (pendingUpdate) {
+                  updateOriginalSubmissionStatus.mutate({
+                    contestId: contestId!,
+                    paintingId: pendingUpdate.paintingId,
+                    hasSubmittedOriginal: pendingUpdate.hasSubmittedOriginal,
+                  });
+                }
+                setShowConfirmUpdateDialog(false);
+                setPendingUpdate(null);
+              }}
+              disabled={updateOriginalSubmissionStatus.isPending}
+              className="bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {updateOriginalSubmissionStatus.isPending
+                ? t.updatingStatus
+                : t.confirmBtn}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create Round 2 Confirmation Dialog */}
       <Dialog
         open={showCreateRound2Confirm}
@@ -985,36 +1237,24 @@ function ContestDetailContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <div className="bg-[#d9534f]/10 p-2 rounded-full">
-                <IconPlus className="h-6 w-6 text-[#d9534f]" />
+              <div className="bg-green-500/10 p-2 rounded-full">
+                <IconPlus className="h-6 w-6 text-green-600" />
               </div>
               {t.createRound2Detail}
             </DialogTitle>
-            <DialogDescription>{t.createRound2ConfirmDetail}</DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium staff-text-primary mb-2">
-                  {t.numberOfTablesDetail}
-                </label>
-                <p className="text-xs staff-text-secondary mb-3">
-                  {t.currentContestSettingDetail} {contest.numberOfTablesRound2}{" "}
-                  {t.tablesDetail}
+            <DialogDescription>
+              {t.createRound2ConfirmDetail}
+              <div className="mt-2 p-3 bg-gray-50 rounded">
+                <p className="text-sm">
+                  <strong>{t.round2Quantity}:</strong> {contest.round2Quantity}
                 </p>
-                <input
-                  type="number"
-                  min="1"
-                  value={round2NumberOfTables}
-                  onChange={(e) =>
-                    setRound2NumberOfTables(Number(e.target.value))
-                  }
-                  className="w-full px-3 py-2 border border-[#e6e2da] rounded-md focus:outline-none focus:ring-2 focus:ring-[#d9534f] focus:border-transparent"
-                  placeholder={t.enterNumberOfTablesDetail}
-                />
+                <p className="text-sm">
+                  <strong>{t.numberOfTables}:</strong>{" "}
+                  {contest.numberOfTablesRound2}
+                </p>
               </div>
-            </div>
-          </div>
+            </DialogDescription>
+          </DialogHeader>
           <DialogFooter>
             <button
               onClick={() => setShowCreateRound2Confirm(false)}
@@ -1026,17 +1266,13 @@ function ContestDetailContent() {
               onClick={() => {
                 createRound2Mutation.mutate({
                   contestId: Number(contestId),
-                  numberOfTables: round2NumberOfTables,
                 });
+                setShowCreateRound2Confirm(false);
               }}
-              disabled={
-                createRound2Mutation.isPending || round2NumberOfTables < 1
-              }
-              className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={createRound2Mutation.isPending}
+              className="bg-linear-to-r from-green-500 to-green-600 text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {createRound2Mutation.isPending
-                ? t.creatingDetail
-                : t.createRound2BtnDetail}
+              {createRound2Mutation.isPending ? t.creatingDetail : t.confirmBtn}
             </button>
           </DialogFooter>
         </DialogContent>
