@@ -34,75 +34,75 @@ const data = {
   },
   navMain: [
     {
-      title: "Dashboard",
+      title: "Bảng điều khiển",
       url: "/dashboard/admin",
       icon: IconDashboard,
     },
     {
-      title: "Account Management",
+      title: "Quản lý tài khoản",
       url: "/dashboard/admin/accounts",
       icon: IconUsers,
       items: [
         {
-          title: "All Users",
+          title: "Tất cả người dùng",
           url: "/dashboard/admin/accounts",
         },
         {
-          title: "Competitors",
+          title: "Người tham gia",
           url: "/dashboard/admin/accounts/competitors",
         },
         {
-          title: "Guardians",
+          title: "Người giám hộ",
           url: "/dashboard/admin/accounts/guardians",
         },
         {
-          title: "Staff",
+          title: "Nhân viên",
           url: "/dashboard/admin/accounts/staff",
         },
       ],
     },
     {
-      title: "Contest Analytics",
+      title: "Phân tích cuộc thi",
       url: "/dashboard/admin/contests",
       icon: IconChartBar,
       items: [
         {
-          title: "Overview",
+          title: "Tổng quan",
           url: "/dashboard/admin/statistics",
         },
         {
-          title: "Users Analytics",
+          title: "Phân tích người dùng",
           url: "/dashboard/admin/statistics/users",
         },
         {
-          title: "Contests Analytics",
+          title: "Phân tích cuộc thi",
           url: "/dashboard/admin/statistics/contests",
         },
         {
-          title: "Reports Analytics",
+          title: "Phân tích báo cáo",
           url: "/dashboard/admin/statistics/reports",
         },
       ],
     },
-    {
-      title: "Reports Management",
-      url: "/dashboard/admin/reports",
-      icon: IconReport,
-      items: [
-        {
-          title: "User Reports",
-          url: "/dashboard/admin/reports",
-        },
-        {
-          title: "Pending Reports",
-          url: "/dashboard/admin/reports/pending",
-        },
-        {
-          title: "Resolved Reports",
-          url: "/dashboard/admin/reports/resolved",
-        },
-      ],
-    },
+    // {
+    //   title: "Quản lý báo cáo",
+    //   url: "/dashboard/admin/reports",
+    //   icon: IconReport,
+    //   items: [
+    //     {
+    //       title: "Báo cáo người dùng",
+    //       url: "/dashboard/admin/reports",
+    //     },
+    //     {
+    //       title: "Báo cáo đang chờ",
+    //       url: "/dashboard/admin/reports/pending",
+    //     },
+    //     {
+    //       title: "Báo cáo đã giải quyết",
+    //       url: "/dashboard/admin/reports/resolved",
+    //     },
+    //   ],
+    // },
   ],
   navSecondary: [],
 };
@@ -137,7 +137,7 @@ export function AdminSidebar({
             >
               <Link href="/">
                 <IconShield className="size-5! text-blue-600" />
-                <span className="text-base font-semibold">ArtChain Admin</span>
+                <span className="text-base font-semibold">ArtChain Quản trị</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

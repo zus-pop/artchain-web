@@ -76,6 +76,7 @@ export function DatePicker({
             <Calendar
               mode="single"
               selected={date}
+              captionLayout="dropdown"
               onSelect={handleDateSelect}
               disabled={(date) =>
                 date > new Date() || date < new Date("1900-01-01")
