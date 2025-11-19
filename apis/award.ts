@@ -95,13 +95,14 @@ export function useGetAwardsByContestId(contestId: string) {
   });
 }
 
-export function useAssignAward(paintingId: string) {
+export function useAssignAward() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (assignAwardRequest: AssignAwardRequest) => {
+      const { paintingId, ...rest } = assignAwardRequest;
       const response = await myAxios.post(
         `/staff/paintings/${paintingId}/award`,
-        assignAwardRequest
+        rest
       );
       return response.data;
     },
@@ -119,11 +120,11 @@ export function useAssignAward(paintingId: string) {
     },
   });
 }
-export function useRemoveAward(paintingId: string) {
+export function useRemoveAward() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (paintingId: string) => {
       const response = await myAxios.delete(
         `/staff/paintings/${paintingId}/award`
       );

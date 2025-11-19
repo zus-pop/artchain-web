@@ -144,7 +144,7 @@ export const translations = {
     signInNow: "Sign In Now",
 
     // Dashboard
-    dashboard: "Dashboard",
+    dashboard: "Tổng quan",
     staffDashboard: "Staff Dashboard",
     adminDashboard: "Admin Dashboard",
     contestManagement: "Quản Lý Cuộc Thi",
@@ -1052,6 +1052,10 @@ export const translations = {
     sendEmailAnnouncement: "Gửi thông báo qua email",
     sendingEmail: "Đang gửi email...",
     emailAnnouncementSent: "Đã gửi thông báo qua email thành công",
+    allAwardSlotsMustBeFilledMismatchTooltip:
+      "Tất cả ô giải thưởng phải được điền và tất cả giải thưởng phải khớp với tranh được bình chọn nhiều nhất trước khi công bố kết quả",
+    allAwardSlotsMustBeFilledEmailMismatchTooltip:
+      "Tất cả ô giải thưởng phải được điền và tất cả giải thưởng phải khớp với tranh được bình chọn nhiều nhất trước khi gửi email",
     topPaintings: "Tranh Xuất Sắc",
     loadingPaintings: "Đang tải tranh...",
     noTopPaintingsAvailable: "Chưa có tranh xuất sắc nào",
@@ -1059,7 +1063,7 @@ export const translations = {
     unassigned: "Chưa Trao",
     remove: "Xóa",
     removing: "Đang xóa...",
-    assignAward: "Trao Giải Thưởng:",
+    assignAward: "Trao Giải:",
     noAwardsAvailable: "Không có giải thưởng nào khả dụng",
     availableAwards: "Giải Thưởng Khả Dụng",
     assigned: "đã trao",
@@ -1166,10 +1170,12 @@ export const translations = {
     topAwardsSummary: "Tóm Tắt Giải Thưởng Xuất Sắc",
     votedAwardsSummary: "Tóm Tắt Giải Thưởng Được Bình Chọn",
     assignedStatus: "Đã Trao",
+    correctStatus: "Khớp",
+    mismatchStatus: "Không Khớp",
+    mismatchesFound: "không khớp được tìm thấy",
     assigningAwardStatus: "Đang Trao...",
-    assignAwardButton: "Trao Giải Thưởng",
-    slotsFullStatus: "Đầy Ô",
-    noMatchingAwardStatus: "Không Có Giải Thưởng Phù Hợp",
+    assignAwardButton: "Trao",
+    noMatchingAwardStatus: "Không Có Giải Thưởng",
     overallProgress: "Tiến Độ Tổng Thể",
     allAwardsAssignedReady:
       "Tất cả giải thưởng đã được trao! Sẵn sàng công bố kết quả.",
@@ -1179,9 +1185,12 @@ export const translations = {
     averageScoreLabel: "Điểm Trung Bình:",
     evaluationsLabel: "Đánh giá:",
     removeAwardTitle: "Xóa Giải Thưởng",
+    cannotRemoveTopVotedTitle:
+      "Không thể xóa - đây là tranh được bình chọn nhiều nhất",
     votesLabel: "Phiếu bầu:",
     assignedLabel: "Đã trao:",
     totalVotesLabel: "Tổng phiếu bầu:",
+    topVotesLabel: "Phiếu bầu cao nhất:",
     completeStatus: "Hoàn thành",
     scoreBreakdown: "Phân Tích Điểm",
     creativity: "Sáng Tạo",
@@ -1218,6 +1227,21 @@ export const translations = {
     titleLabel: "Tiêu đề",
     updating: "Đang cập nhật",
     update: "Cập nhật",
+
+    // Vote Results Awards Management
+    currentlyAssignedTo: "Hiện tại được trao cho bức tranh",
+    currentlyAssigned: "Đã Trao",
+    noAssignmentYet: "Chưa có trao thưởng",
+    topVotedPainting: "Tranh được bình chọn nhiều nhất",
+    topVoted: "Được bình chọn nhiều nhất",
+    reassignToTopVoted: "Trao lại cho tranh được bình chọn nhiều nhất",
+    reassignToTop: "Trao lại",
+    assignToTopVoted: "Trao",
+    awardSlotsFull: "Đầy ô giải thưởng",
+    currentWinner: "Người Thắng",
+    reassignAward: "Trao lại giải thưởng",
+    reassign: "Trao lại",
+    noVotesYet: "Chưa có phiếu bầu",
   },
   en: {
     // Header
@@ -2201,6 +2225,10 @@ export const translations = {
     sendEmailAnnouncement: "Send Email Announcement",
     sendingEmail: "Sending email...",
     emailAnnouncementSent: "Email announcement sent successfully",
+    allAwardSlotsMustBeFilledMismatchTooltip:
+      "All award slots must be filled and all awards must match the highest voted paintings before announcing results",
+    allAwardSlotsMustBeFilledEmailMismatchTooltip:
+      "All award slots must be filled and all awards must match the highest voted paintings before sending email",
     topPaintings: "Top Paintings",
     loadingPaintings: "Loading paintings...",
     noTopPaintingsAvailable: "No top paintings available",
@@ -2310,10 +2338,12 @@ export const translations = {
     topAwardsSummary: "Top Awards Summary",
     votedAwardsSummary: "Voted Awards Summary",
     assignedStatus: "Assigned",
+    correctStatus: "Correct",
+    mismatchStatus: "Mismatch",
+    mismatchesFound: "mismatches found",
     assigningAwardStatus: "Assigning...",
-    assignAwardButton: "Assign Award",
-    slotsFullStatus: "Slots Full",
-    noMatchingAwardStatus: "No Matching Award",
+    assignAwardButton: "Assign",
+    noMatchingAwardStatus: "No Award",
     overallProgress: "Overall Progress",
     allAwardsAssignedReady: "All awards assigned! Ready to announce results.",
     topPaintingsTab: "Top Paintings",
@@ -2322,9 +2352,12 @@ export const translations = {
     averageScoreLabel: "Average Score:",
     evaluationsLabel: "Evaluations:",
     removeAwardTitle: "Remove Award",
+    cannotRemoveTopVotedTitle:
+      "Cannot remove - this is the highest voted painting",
     votesLabel: "Votes:",
     assignedLabel: "Assigned:",
     totalVotesLabel: "Total Votes:",
+    topVotesLabel: "Top Votes:",
     completeStatus: "Complete",
     scoreBreakdown: "Score Breakdown",
     creativity: "Creativity",
@@ -2408,6 +2441,21 @@ export const translations = {
     noPendingSubmissionsSelected: "No pending submissions selected to accept.",
     acceptAllSelectedPending:
       "Accept all ${count} selected pending submissions?",
+
+    // Vote Results Awards Management
+    currentlyAssignedTo: "Currently assigned to painting",
+    currentlyAssigned: "Assigned",
+    noAssignmentYet: "No assignment yet",
+    topVotedPainting: "Top Voted Painting",
+    topVoted: "Top Voted",
+    reassignToTopVoted: "Reassign to Top Voted",
+    reassignToTop: "Reassign",
+    assignToTopVoted: "Assign",
+    awardSlotsFull: "Slots Full",
+    currentWinner: "Winner",
+    reassignAward: "Reassign Award",
+    reassign: "Reassign",
+    noVotesYet: "No Votes Yet",
   },
 } as const;
 
