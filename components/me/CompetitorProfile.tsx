@@ -304,11 +304,18 @@ export default function CompetitorProfileScreen({
                               <p className="text-sm font-medium text-gray-600">Trạng thái</p>
                               <span className={`text-xs px-2 py-1 rounded ${
                                 painting.status === 'APPROVED' || painting.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                                painting.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
+                                painting.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
                                 painting.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
+                                painting.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
                               }`}>
                                 {painting.status === 'APPROVED' || painting.status === 'ACCEPTED' ? 'Đã duyệt' : 
-                                 painting.status === 'PENDING' ? 'Chờ duyệt' : painting.status}
+                                 painting.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
+                                 painting.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
+                                 painting.status === 'PENDING' ? 'Chờ xử lý' :
+                                 painting.status === 'REJECTED' ? 'Từ chối' :
+                                 painting.status}
                               </span>
                             </div>
                           </>

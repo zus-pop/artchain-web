@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetContestById } from "@/apis/contests";
+import { useGetContestById, useCheckUploadStatus } from "@/apis/contests";
 import {
   getVotedAward,
   getVotedPaintings,
@@ -45,6 +45,18 @@ export default function ContestDetailPage() {
   const params = useParams();
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
+
+  // Check upload status for competitor
+  const userIdsToCheck = user?.userId ? [user.userId] : [];
+  const { data: uploadStatusData } = useCheckUploadStatus(
+    contestId,
+    userIdsToCheck
+  );
+
+  // Check if current user has uploaded
+  const hasUploaded =
+    uploadStatusData?.data?.find((status) => status.userId === user?.userId)
+      ?.isUploaded || false;
 
   // Vote states
   const [selectedAwardId, setSelectedAwardId] = useState<string | null>(null);
@@ -323,36 +335,48 @@ export default function ContestDetailPage() {
                 </button>
               )}
 
-              {/* Nút Tham gia cuộc thi - luôn hiển thị */}
-              <Link
-                href={
-                  user?.role === "COMPETITOR"
-                    ? {
-                        pathname: "/painting-upload",
-                        query: {
-                          contestId: contest.contestId,
-                          roundId: contest.rounds.find(
-                            (r) => r.name === "ROUND_1"
-                          )?.roundId,
-                          competitorId: user.userId,
-                        },
-                      }
-                    : user?.role === "GUARDIAN"
-                    ? {
-                        pathname: "/children-participation",
-                        query: {
-                          contestId: contest.contestId,
-                          roundId: contest.rounds.find(
-                            (r) => r.name === "ROUND_1"
-                          )?.roundId,
-                        },
-                      }
-                    : "/auth"
-                }
-                className="flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm"
-              >
-                Tham gia cuộc thi
-              </Link>
+              {/* Nút Tham gia cuộc thi - disable if competitor has uploaded */}
+              {user?.role === "COMPETITOR" ? (
+                <button
+                  disabled={hasUploaded}
+                  onClick={() => {
+                    if (!hasUploaded) {
+                      window.location.href = `/painting-upload?contestId=${
+                        contest.contestId
+                      }&roundId=${
+                        contest.rounds.find((r) => r.name === "ROUND_1")
+                          ?.roundId
+                      }&competitorId=${user.userId}`;
+                    }
+                  }}
+                  className={`flex-1 text-white text-center py-3 px-6 font-medium transition-all duration-200 shadow-sm ${
+                    hasUploaded
+                      ? "bg-gray-400 cursor-not-allowed opacity-60"
+                      : "bg-[#FF6E1A] hover:bg-orange-400"
+                  }`}
+                >
+                  {hasUploaded ? "Đã tham gia" : "Tham gia cuộc thi"}
+                </button>
+              ) : (
+                <Link
+                  href={
+                    user?.role === "GUARDIAN"
+                      ? {
+                          pathname: "/children-participation",
+                          query: {
+                            contestId: contest.contestId,
+                            roundId: contest.rounds.find(
+                              (r) => r.name === "ROUND_1"
+                            )?.roundId,
+                          },
+                        }
+                      : "/auth"
+                  }
+                  className="flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm"
+                >
+                  Tham gia cuộc thi
+                </Link>
+              )}
             </div>
           </motion.div>
         </div>

@@ -101,6 +101,7 @@ export interface CompetitorSubmission {
   submissionDate: string;
   status: string;
   averageScore: number;
+  imageUrl?: string;
 }
 
 export interface CompetitorSubmissionsResponse {

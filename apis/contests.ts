@@ -1,6 +1,6 @@
 import myAxios from "@/lib/custom-axios";
 import { useQuery } from "@tanstack/react-query";
-import { Contest, ContestStatus } from "@/types/contest";
+import { Contest, ContestStatus, CheckUploadResponse } from "@/types/contest";
 import { ApiResponse } from "@/types";
 
 // Get all contests with optional status filter
@@ -195,3 +195,33 @@ export const deleteStaffRound = async (contestId: number, roundId: string) => {
   );
   return response.data;
 };
+
+/**
+ * Check Upload Status API
+ */
+
+// GET /api/contests/{id}/check-uploaded - Check if users have uploaded paintings for Round 1
+export const checkUploadedStatus = async (
+  contestId: number,
+  userIds: string[]
+): Promise<CheckUploadResponse> => {
+  const params = new URLSearchParams();
+  userIds.forEach((id) => params.append("userIds", id));
+  
+  const response = await myAxios.get<CheckUploadResponse>(
+    `/contests/${contestId}/check-uploaded`,
+    { params }
+  );
+  return response.data;
+};
+
+// React Query hook for checking upload status
+export function useCheckUploadStatus(contestId: number, userIds: string[]) {
+  return useQuery({
+    queryKey: ["check-uploaded", contestId, userIds],
+    queryFn: () => checkUploadedStatus(contestId, userIds),
+    enabled: !!contestId && userIds.length > 0,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
+  });
+}

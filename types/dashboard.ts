@@ -111,7 +111,8 @@ export type PaintingStatus =
   | "ACCEPTED"
   | "REJECTED"
   | "ORIGINAL_SUBMITTED"
-  | "NOT_SUBMITTED_ORIGINAL";
+  | "NOT_SUBMITTED_ORIGINAL"
+  | "";
 
 export interface Painting {
   id: string;
