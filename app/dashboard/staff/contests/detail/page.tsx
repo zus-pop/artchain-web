@@ -182,12 +182,25 @@ function ContestDetailContent() {
       (competitors) => competitors.competitors
     );
 
+    // Get round2Date from the round 2 data
+    const round2Data = rounds.find((round) => round.isRound2);
+    const round2Date = round2Data?.tables?.[0]?.startDate || "";
+
+    const subject = `Thông báo vào vòng 2 cuộc thi ${contest.title}`;
+    const text = `Chúc mừng bạn đã được chọn vào vòng 2 cuộc thi ${
+      contest.title
+    }! Vòng 2 dự kiến sẽ tổ chức thi vào ngày ${formatDate({
+      dateString: round2Date,
+      language: currentLanguage,
+      dateStyle: "full",
+    })}. Hãy chuẩn bị tốt cho vòng thi sắp tới.`;
+
     const emails = competitors.map((c) => c.email);
     notify.mutate(
       {
         to: emails,
-        subject: "Thông báo vòng 2 cuộc thi",
-        text: "Chúc mừng bạn đã được chọn vào vòng 2 cuộc thi! Hãy chuẩn bị tốt cho vòng thi sắp tới.",
+        subject: subject,
+        text: text,
       },
       {
         onSuccess: () => {

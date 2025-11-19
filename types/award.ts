@@ -31,6 +31,7 @@ export interface Award {
 }
 
 export interface AssignAwardRequest {
+  paintingId: string;
   awardId: string;
 }
 

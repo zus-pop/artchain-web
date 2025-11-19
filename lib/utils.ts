@@ -39,18 +39,20 @@ export function formatDate({
   locale = "vi-VN",
   showTime = false,
   language = "vi",
+  dateStyle = "medium",
 }: {
   dateString: string;
   language?: Language;
   locale?: string;
   showTime?: boolean;
+  dateStyle?: "medium" | "full" | "long" | "short" | undefined;
 }): string {
   if (language === "en") {
     locale = "en-US";
   }
   const date = new Date(dateString);
   const options: Intl.DateTimeFormatOptions = {
-    dateStyle: "medium",
+    dateStyle: dateStyle,
     ...(showTime && { timeStyle: "short" }),
   };
   return date.toLocaleString(locale, options);

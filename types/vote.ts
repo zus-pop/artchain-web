@@ -15,10 +15,16 @@ export interface VotedPaining {
     competitorId: string;
     competitorName: string;
     email: string;
+    avgScoreRound2: number;
+    avgCreativityScore: number;
+    avgCompositionScore: number;
+    avgColorScore: number;
+    avgTechnicalScore: number;
+    avgAestheticScore: number;
+    evaluationCount: number;
     submissionDate: string | null;
     voteCount: number;
     hasVoted: boolean;
-    averageScore: number;
   }[];
   statistics: {
     totalEligiblePaintings: number;
