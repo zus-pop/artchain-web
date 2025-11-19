@@ -70,6 +70,18 @@ const competitorSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
+  })
+  .refine((data) => {
+    if (!data.birthday || !data.grade) return true;
+    const birthYear = new Date(data.birthday).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+    const gradeNum = parseInt(data.grade);
+    const expectedAge = gradeNum + 5; // Lớp 1 = 6 tuổi, lớp 2 = 7 tuổi, v.v.
+    return Math.abs(age - expectedAge) <= 4; // Sai số tối đa 4 năm
+  }, {
+    message: "Tuổi không phù hợp với lớp học (sai số tối đa 4 năm)",
+    path: ["birthday"],
   });
 
 type GuardianSchema = z.infer<typeof guardianSchema>;
@@ -663,6 +675,8 @@ export function RegisterForm({
                       <input
                         id="competitor-birthday"
                         type="date"
+                        min={`${new Date().getFullYear() - 16}-01-01`}
+                        max={`${new Date().getFullYear() - 4}-12-31`}
                         className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
@@ -735,18 +749,18 @@ export function RegisterForm({
                     control={competitorControl}
                     name="grade"
                     render={({ field }) => (
-                      <select
-                        id="competitor-grade"
-                        className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
-                        {...field}
-                      >
-                        <option value="">Chọn lớp</option>
-                        {Array.from({ length: 9 }, (_, i) => i + 1).map((grade) => (
-                          <option key={grade} value={grade.toString()}>
-                            Lớp {grade}
-                          </option>
-                        ))}
-                      </select>
+                        <select
+                          id="competitor-grade"
+                          className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
+                          {...field}
+                        >
+                          <option value="">Chọn lớp</option>
+                          {Array.from({ length: 9 }, (_, i) => i + 1).map((grade) => (
+                            <option key={grade} value={grade.toString()}>
+                              Lớp {grade}
+                            </option>
+                          ))}
+                        </select>
                     )}
                   />
                   <p className="text-sm text-red-500 min-h-5">

@@ -193,7 +193,7 @@ export default function CompetitorProfileScreen({
                   </div>
                   <div className="py-2">
                     <p className="text-sm text-black">
-                      Ngày nộp: {art.submissionDate}
+                      Ngày nộp: {new Date(art.submissionDate).toLocaleDateString("vi-VN")}
                     </p>
                     <p className="mt-1 font-medium text-black">
                       Cuộc thi: {art.competitionName}
