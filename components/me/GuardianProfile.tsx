@@ -118,11 +118,18 @@ export default function GuardianProfileScreen({
               <p className="text-sm font-medium text-gray-600">Trạng thái</p>
               <span className={`text-xs px-2 py-1 rounded ${
                 selectedSubmission.status === 'APPROVED' || selectedSubmission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                selectedSubmission.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
+                selectedSubmission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
                 selectedSubmission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
+                selectedSubmission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
               }`}>
                 {selectedSubmission.status === 'APPROVED' || selectedSubmission.status === 'ACCEPTED' ? 'Đã duyệt' : 
-                 selectedSubmission.status === 'PENDING' ? 'Chờ duyệt' : selectedSubmission.status}
+                 selectedSubmission.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
+                 selectedSubmission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
+                 selectedSubmission.status === 'PENDING' ? 'Chờ xử lý' :
+                 selectedSubmission.status === 'REJECTED' ? 'Từ chối' :
+                 selectedSubmission.status}
               </span>
             </div>
           </div>
@@ -236,19 +243,28 @@ export default function GuardianProfileScreen({
     const contestTitle = submission.contestTitle || "N/A";
 
     return (
-      <div 
+      <div
         className={`overflow-hidden border border-gray-200 rounded-lg ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
         onClick={onClick}
       >
         <div className="relative h-48 w-full bg-gray-200">
-          <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
-                🎨
+          {submission.imageUrl ? (
+            <Image
+              src={submission.imageUrl}
+              alt={submission.title || "Tranh"}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-2 bg-gray-300 rounded-full flex items-center justify-center">
+                  🎨
+                </div>
+                <p className="text-sm">Hình ảnh</p>
               </div>
-              <p className="text-sm">Hình ảnh</p>
             </div>
-          </div>
+          )}
         </div>
         <div className="p-4">
           <p className="text-sm text-black">
@@ -259,10 +275,18 @@ export default function GuardianProfileScreen({
           <div className="flex justify-between items-center mt-2">
             <span className={`text-xs px-2 py-1 rounded ${
               submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+              submission.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
+              submission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
               submission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-red-100 text-red-800'
+              submission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
             }`}>
-              {submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'Đã duyệt' : submission.status === 'PENDING' ? 'Chờ duyệt' : submission.status}
+              {submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'Đã duyệt' : 
+               submission.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
+               submission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
+               submission.status === 'PENDING' ? 'Chờ xử lý' :
+               submission.status === 'REJECTED' ? 'Từ chối' :
+               submission.status}
             </span>
           </div>
         </div>

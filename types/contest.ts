@@ -55,3 +55,15 @@ export interface Rounds {
 export interface ContestFilter {
   status?: ContestStatus;
 }
+
+
+export interface UserUploadStatus {
+  userId: string;
+  isUploaded: boolean;
+}
+
+export interface CheckUploadResponse {
+  success: boolean;
+  data: UserUploadStatus[];
+}
+
