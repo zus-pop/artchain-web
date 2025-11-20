@@ -595,7 +595,7 @@ export default function GuardianProfileScreen({
                   className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors flex items-center space-x-2 font-medium"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Thêm các bé</span>
+                  <span>Thêm con em</span>
                 </Link>
               </div>
               {isLoadingChildren ? (

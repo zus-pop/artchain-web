@@ -110,13 +110,6 @@
   to { left: calc(var(--width, 200px) * -2); }
 }
 
-.slider .item { 
-  filter: grayscale(1); 
-  transition: filter 0.3s ease; 
-}
-.slider .item:hover { 
-  filter: grayscale(0); 
-}
 .slider:hover .item { 
   animation-play-state: paused !important; 
 }

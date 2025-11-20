@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
+import { Eye, EyeOff } from "lucide-react";
 
 interface FloatingInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,9 +11,14 @@ interface FloatingInputProps
 }
 
 const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
-  ({ className, label, error, id, ...props }, ref) => {
+  ({ className, label, error, id, type, ...props }, ref) => {
     const generatedId = React.useId();
     const inputId = id || `floating-input-${generatedId}`;
+    const [showPassword, setShowPassword] = useState(false);
+
+    const toggleShowPassword = () => setShowPassword(!showPassword);
+
+    const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
 
     return (
       <div className="relative w-full">
@@ -29,6 +35,7 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
           <input
             ref={ref}
             id={inputId}
+            type={inputType}
             className={cn(
               "peer w-full pl-6 pr-12 pt-6 pb-2 text-sm text-gray-800 bg-white border rounded-lg shadow-md focus:border-transparent focus:ring-2 focus:outline-none transition-all duration-300 delay-200 placeholder-transparent",
               error
@@ -53,29 +60,13 @@ const FloatingInput = React.forwardRef<HTMLInputElement, FloatingInputProps>(
             {label}
           </label>
 
-          {/* Error Icon with Tooltip */}
-          {error && (
-            <div className="group/error w-10 absolute top-0 bottom-0 right-0 flex items-center justify-center text-red-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1rem"
-                height="1rem"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                viewBox="0 0 24 24"
-                strokeWidth="2"
-                fill="none"
-                stroke="currentColor"
-                className="cursor-pointer"
-              >
-                <path fill="none" d="M0 0h24v24H0z" stroke="none"></path>
-                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"></path>
-                <path d="M12 8v4"></path>
-                <path d="M12 16h.01"></path>
-              </svg>
-              <span className="text-xs absolute cursor-default select-none rounded-md px-2 py-1 bg-red-500 text-white opacity-0 right-0 top-0 z-50 transition-all duration-300 group-hover/error:opacity-100 group-hover/error:-translate-y-full group-hover/error:-translate-x-2 whitespace-nowrap shadow-lg">
-                {error}
-              </span>
+          {/* Password Toggle Icon */}
+          {type === "password" && (
+            <div
+              className="w-10 absolute top-0 bottom-0 right-0 flex items-center justify-center cursor-pointer text-gray-500 hover:text-gray-700"
+              onClick={toggleShowPassword}
+            >
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </div>
           )}
         </div>

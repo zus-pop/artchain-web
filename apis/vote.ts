@@ -45,12 +45,12 @@ export function useSubmitVote() {
     },
     onSuccess: (data) => {
       const voteCount = data.data?.currentVoteCount ?? 0;
-      toast.success(`Vote thành công! Bức tranh hiện có ${voteCount} votes`);
+      toast.success("Bình chọn thành công!");
       // Invalidate queries to refetch data
       queryClient.invalidateQueries({ queryKey: ["votes"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || "Có lỗi xảy ra khi vote";
+      const message = error.response?.data?.message || error.message || "Có lỗi xảy ra khi bình chọn";
       toast.error(message);
     },
   });
@@ -72,11 +72,11 @@ export function useRemoveVote() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Đã xóa vote!");
+      toast.success("Đã xóa bình chọn!");
       queryClient.invalidateQueries({ queryKey: ["votes"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || error.message || "Có lỗi xảy ra khi xóa vote";
+      const message = error.response?.data?.message || error.message || "Có lỗi xảy ra khi xóa bình chọn";
       toast.error(message);
     },
   });
