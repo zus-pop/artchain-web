@@ -17,6 +17,7 @@ export interface SystemStatistics {
     upcoming: number;
     ended: number;
     completed: number;
+    draft: number;
   };
   paintings: {
     total: number;
@@ -42,6 +43,23 @@ export interface SystemStatistics {
     total: number;
     active: number;
     draft: number;
+  };
+  topSchools: {
+    schoolName: string;
+    awardCount: number;
+  }[];
+  topCompetitorsInRecentContests: {
+    contests: {
+      contestId: number;
+      title: string;
+    }[];
+    competitors: {
+      competitorId: string;
+      competitorName: string;
+      email: string;
+      schoolName: string;
+      awardCount: number;
+    }[];
   };
 }
 
