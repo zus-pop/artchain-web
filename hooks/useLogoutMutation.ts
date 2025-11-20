@@ -25,7 +25,7 @@ export function useLogoutMutation() {
       queryClient.clear();
 
       // Show success message
-      toast.success("Logged out successfully.");
+      toast.success("Đăng xuất thành công");
 
       // Navigate to login page
       router.push("/auth");
@@ -34,9 +34,11 @@ export function useLogoutMutation() {
       // Even if API call fails, logout locally
       logout();
       queryClient.clear();
-      
+
       // Show error message
-      toast.error(error.message || "Logout failed, but you've been logged out locally.");
+      toast.error(
+        error.message || "Logout failed, but you've been logged out locally."
+      );
 
       // Navigate to login page
       router.push("/auth");

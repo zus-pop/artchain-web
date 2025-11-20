@@ -22,7 +22,7 @@ export function useLoginMutation() {
         setUser(data.user);
       }
 
-      toast.success("Login successful! Welcome back.");
+      toast.success("Đăng nhập thành công!.");
 
       queryClient.invalidateQueries({ queryKey: ["user-me"] });
 
@@ -30,7 +30,7 @@ export function useLoginMutation() {
     },
     onError: (error) => {
       toast.error(error.message || "Login failed. Please try again.");
-      
+
       setAccessToken(null);
       setUser(null);
       setStaySignedIn(false);

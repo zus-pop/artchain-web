@@ -332,7 +332,7 @@ function EditContestContent() {
   const updateMutation = useMutation({
     mutationFn: updateStaffContest,
     onSuccess: () => {
-      toast.success("Contest updated successfully!");
+      toast.success("Cập nhật cuộc thi thành công");
       queryClient.invalidateQueries({
         queryKey: ["contest-detail", contestId],
       });
