@@ -84,11 +84,17 @@ export function DatePicker({
               onSelect={handleDateSelect}
               hidden={(date) => {
                 const minDate = min ? new Date(min) : new Date("1900-01-01");
-                const maxDate = max ? new Date(max) : new Date();
+                const maxDate = max
+                  ? new Date(max)
+                  : new Date(`${new Date().getFullYear() - 5}-12-31`);
                 return date > maxDate || date < minDate;
               }}
               startMonth={min ? new Date(min) : new Date("1900-01-01")}
-              endMonth={max ? new Date(max) : new Date()}
+              endMonth={
+                max
+                  ? new Date(max)
+                  : new Date(`${new Date().getFullYear() - 5}-12-31`)
+              }
               autoFocus
               showOutsideDays
             />

@@ -147,7 +147,7 @@ function ContestDetailContent() {
       queryClient.invalidateQueries({
         queryKey: ["contest-rounds", contestId],
       });
-      toast.success("Contest published successfully");
+      toast.success("Xuất bản cuộc thi thành công");
     },
     onError: (error) => {
       let message = error.message;

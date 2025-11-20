@@ -1061,7 +1061,7 @@ export const translations = {
     noTopPaintingsAvailable: "Chưa có tranh xuất sắc nào",
     awarded: "Đã Trao",
     unassigned: "Chưa Trao",
-    remove: "Xóa",
+    remove: "Gỡ",
     removing: "Đang xóa...",
     assignAward: "Trao Giải:",
     noAwardsAvailable: "Không có giải thưởng nào khả dụng",

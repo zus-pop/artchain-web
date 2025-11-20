@@ -9,7 +9,7 @@ export function useRegisterMutation(onSuccessCallback?: () => void) {
   return useMutation<void, Error, RegisterRequest>({
     mutationFn: registerApi,
     onSuccess: () => {
-      toast.success("Registration successful! Please login to continue.");
+      toast.success("Đăng ký thành công! Hãy đăng nhập để tiếp tục");
 
       if (onSuccessCallback) {
         onSuccessCallback();
