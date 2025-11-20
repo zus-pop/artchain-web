@@ -194,7 +194,7 @@ function AnnounceResultsPage() {
   // Auto-generate content when contest and paintings data is loaded
   useEffect(() => {
     if (contest && awards.length > 0) {
-      const generatedTitle = `${contest.title} - Results Announced!`;
+      const generatedTitle = `${contest.title} - Thông báo kết quả cuộc thi!`;
       const generatedContent = generateAnnouncementContent();
 
       form.setValue("title", generatedTitle);
@@ -779,7 +779,7 @@ function AnnounceResultsPage() {
                   disabled={createPostMutation.isPending}
                   className="px-6 py-2 border border-[#e6e2da] staff-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
-                  Save as Draft
+                  {t.saveAsDraft}
                 </button>
                 <button
                   onClick={handlePublish}

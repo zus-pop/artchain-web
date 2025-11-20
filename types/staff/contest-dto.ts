@@ -91,6 +91,7 @@ export interface RoundTableDTO {
   resultAnnounceDate: string;
   sendOriginalDeadline: string;
   status: string;
+  totalPaintings: number;
   competitors: {
     competitorId: string;
     birthday: string;
@@ -115,7 +116,8 @@ export interface RoundTableDTO {
  */
 export interface RoundResponseItem {
   roundId?: number;
-  name: string;
+  name: "ROUND_1" | "ROUND_2";
+  totalPaintings: number;
   isRound2: boolean;
   startDate?: string;
   endDate?: string;

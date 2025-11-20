@@ -58,7 +58,7 @@ function AwardManagementPage() {
       quantity: number;
       prize: number;
     }>
-  >([{ name: "", description: "", rank: 1, quantity: 1, prize: 0 }]);
+  >([{ name: "", description: "", rank: 4, quantity: 1, prize: 0 }]);
 
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
@@ -102,7 +102,7 @@ function AwardManagementPage() {
     );
 
     setNewAwards([
-      { name: "", description: "", rank: 1, quantity: 1, prize: 0 },
+      { name: "", description: "", rank: 4, quantity: 1, prize: 0 },
     ]);
   };
 
@@ -134,7 +134,7 @@ function AwardManagementPage() {
       {
         name: "",
         description: "",
-        rank: newAwards.length + 1,
+        rank: 4,
         quantity: 1,
         prize: 0,
       },
@@ -185,9 +185,7 @@ function AwardManagementPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader
-          title={`${contest?.title || "Contest"} - Award Management`}
-        />
+        <SiteHeader title={`${contest?.title || "Contest"}`} />
         <div className="flex flex-1 flex-col">
           <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
             <Breadcrumb
@@ -246,7 +244,7 @@ function AwardManagementPage() {
                         key={index}
                         className="border border-[#e6e2da] rounded-lg p-4 bg-white"
                       >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-1">
                               {t.nameRequired}
@@ -297,24 +295,6 @@ function AwardManagementPage() {
                                 updateNewAward(
                                   index,
                                   "quantity",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="staff-input w-full"
-                              min="1"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-1">
-                              {t.rank}
-                            </label>
-                            <input
-                              type="number"
-                              value={award.rank}
-                              onChange={(e) =>
-                                updateNewAward(
-                                  index,
-                                  "rank",
                                   Number(e.target.value)
                                 )
                               }
@@ -445,23 +425,6 @@ function AwardManagementPage() {
                                   min="1"
                                 />
                               </div>
-                              <div>
-                                <label className="block text-sm font-medium staff-text-primary mb-1">
-                                  {t.rank}
-                                </label>
-                                <input
-                                  type="number"
-                                  value={editFormData?.rank || 1}
-                                  onChange={(e) =>
-                                    setEditFormData({
-                                      ...editFormData!,
-                                      rank: Number(e.target.value),
-                                    })
-                                  }
-                                  className="staff-input w-full"
-                                  min="1"
-                                />
-                              </div>
                             </div>
                             <div>
                               <label className="block text-sm font-medium staff-text-primary mb-1">
@@ -509,9 +472,6 @@ function AwardManagementPage() {
                                 <h5 className="text-lg font-semibold staff-text-primary">
                                   {award.name}
                                 </h5>
-                                <span className="staff-badge-neutral">
-                                  Rank {award.rank}
-                                </span>
                               </div>
                               <p className="text-sm staff-text-secondary mb-2">
                                 {award.description}

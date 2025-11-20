@@ -1,5 +1,5 @@
 import myAxios from "@/lib/custom-axios";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -15,6 +15,7 @@ interface UploadPaintingData {
 
 export function useUploadPainting() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: UploadPaintingData) => {
       const formData = new FormData();
@@ -37,6 +38,7 @@ export function useUploadPainting() {
     },
     onSuccess: () => {
       toast.success("Bài thi của bạn đã được gửi thành công!");
+      queryClient.invalidateQueries({ queryKey: ["check-uploaded"] });
       router.back();
     },
     onError: (error) => {

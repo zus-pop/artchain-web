@@ -6,7 +6,7 @@ export interface ExaminerDTO {
   examinerId: string;
   assignmentDate: string;
   status: string | null;
-  role: string;
+  role: "ROUND_1" | "ROUND_2";
   examiner: {
     examinerId: string;
     specialization: string | null;
