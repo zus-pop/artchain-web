@@ -575,49 +575,32 @@ function AwardsManagementPage() {
                                           <div className="flex flex-wrap gap-2 justify-end">
                                             {/* Assign award based on table order (rank) */}
                                             {(() => {
-                                              // Find the award for this painting - prioritize filling existing awards
-                                              let awardToAssign = null;
+                                              // Find the award for this table's rank
+                                              const tableRank = tableIndex + 1;
+                                              const awardToAssign = awards.find(
+                                                (award) =>
+                                                  award.rank === tableRank
+                                              );
 
-                                              // First, check if any previous awards have available slots
-                                              for (
-                                                let r = tableIndex;
-                                                r >= 1;
-                                                r--
-                                              ) {
-                                                const prevAward = awards.find(
-                                                  (award) => award.rank === r
-                                                );
-                                                if (
-                                                  prevAward &&
-                                                  prevAward.paintings.length <
-                                                    prevAward.quantity
-                                                ) {
-                                                  awardToAssign = prevAward;
-                                                  break;
-                                                }
-                                              }
-
-                                              // If no previous awards have slots, use the award for this rank
                                               if (!awardToAssign) {
-                                                awardToAssign = awards.find(
-                                                  (award) =>
-                                                    award.rank ===
-                                                    tableIndex + 1
+                                                return (
+                                                  <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg text-sm">
+                                                    <IconTrophy className="h-4 w-4" />
+                                                    {t.noAwardsAvailable}
+                                                  </div>
                                                 );
                                               }
 
                                               const isAlreadyAssigned =
-                                                awardToAssign
-                                                  ? awardToAssign.paintings.some(
-                                                      (p) =>
-                                                        p.paintingId ===
-                                                        topPainting.paintingId
-                                                    )
-                                                  : false;
+                                                awardToAssign.paintings.some(
+                                                  (p) =>
+                                                    p.paintingId ===
+                                                    topPainting.paintingId
+                                                );
 
-                                              return awardToAssign &&
-                                                awardToAssign.paintings.length <
-                                                  awardToAssign.quantity &&
+                                              return awardToAssign.paintings
+                                                .length <
+                                                awardToAssign.quantity &&
                                                 !isAlreadyAssigned ? (
                                                 <button
                                                   onClick={() =>
@@ -644,18 +627,10 @@ function AwardsManagementPage() {
                                                   <IconTrophy className="h-4 w-4" />
                                                   {t.assignedStatus}
                                                 </div>
-                                              ) : awardToAssign &&
-                                                awardToAssign.paintings
-                                                  .length >=
-                                                  awardToAssign.quantity ? (
-                                                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg text-sm">
-                                                  <IconTrophy className="h-4 w-4" />
-                                                  {t.awardSlotsFull}
-                                                </div>
                                               ) : (
                                                 <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg text-sm">
                                                   <IconTrophy className="h-4 w-4" />
-                                                  {t.noAwardsAvailable}
+                                                  {t.awardSlotsFull}
                                                 </div>
                                               );
                                             })()}

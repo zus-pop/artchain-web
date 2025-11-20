@@ -346,13 +346,15 @@ function ContestDetailContent() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Link
-                    href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
-                    className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
-                  >
-                    <IconEdit className="h-4 w-4" />
-                    {t.editContestDetail}
-                  </Link>
+                  {!rounds.some((round) => round.isRound2) && (
+                    <Link
+                      href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
+                      className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                    >
+                      <IconEdit className="h-4 w-4" />
+                      {t.editContestDetail}
+                    </Link>
+                  )}
                   {contest.status === "DRAFT" && (
                     <button
                       //   disabled={

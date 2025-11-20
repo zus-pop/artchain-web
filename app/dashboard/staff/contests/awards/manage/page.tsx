@@ -24,8 +24,9 @@ import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Contest } from "../../../../../../types";
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString("vi-VN");
@@ -71,7 +72,7 @@ function AwardManagementPage() {
 
   const { data: awardsData } = useGetAwardsByContestId(contestId);
   const awards = (awardsData?.data as Award[]) || [];
-  const contest = contestData?.data;
+  const contest: Contest = contestData?.data;
 
   const createBatchMutation = useCreateBatchAward();
   const updateMutation = useUpdateAward(editingAward?.awardId || "");
