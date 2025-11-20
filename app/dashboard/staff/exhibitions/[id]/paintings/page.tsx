@@ -95,7 +95,13 @@ export default function EditExhibitionPaintingsPage({
 
   const handlePaintingSelection = (paintingId: string, checked: boolean) => {
     if (checked) {
-      setSelectedPaintingIds((prev) => [...prev, paintingId]);
+      setSelectedPaintingIds((prev) => {
+        // Only add if not already in the array
+        if (!prev.includes(paintingId)) {
+          return [...prev, paintingId];
+        }
+        return prev;
+      });
     } else {
       setSelectedPaintingIds((prev) => prev.filter((id) => id !== paintingId));
     }
@@ -200,12 +206,9 @@ export default function EditExhibitionPaintingsPage({
                       <h1 className="text-3xl font-bold staff-text-primary">
                         {t.managePaintingsTitle}
                       </h1>
-                      <p className="text-sm staff-text-secondary mt-1">
-                        {t.curatePaintingsFromWinners}
-                      </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  {/* <div className="flex items-center gap-3">
                     <Link
                       href={`/dashboard/staff/exhibitions/${id}`}
                       className="staff-btn-secondary flex items-center gap-2"
@@ -213,7 +216,7 @@ export default function EditExhibitionPaintingsPage({
                       <IconArrowLeft className="h-4 w-4" />
                       {t.backToExhibition}
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -232,7 +235,7 @@ export default function EditExhibitionPaintingsPage({
                             </h2>
                             <p className="text-sm staff-text-secondary">
                               {exhibition.exhibitionPaintings?.length || 0}{" "}
-                              {t.paintingsText} in this exhibition
+                              {t.paintingsText} {t.added.toLowerCase()}
                             </p>
                           </div>
                         </div>
@@ -319,8 +322,7 @@ export default function EditExhibitionPaintingsPage({
 
                   {/* Sidebar Column */}
                   <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-                    {/* Quick Stats */}
-                    <div className="staff-card p-6">
+                    {/* <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4">
                         {t.exhibitionStats}
                       </h3>
@@ -364,7 +366,7 @@ export default function EditExhibitionPaintingsPage({
                           </span>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* Add Paintings Section */}
                     <div className="staff-card p-6">
@@ -430,9 +432,6 @@ export default function EditExhibitionPaintingsPage({
                                         <h4 className="font-semibold staff-text-primary text-sm">
                                           {award.name}
                                         </h4>
-                                        <p className="text-xs staff-text-secondary">
-                                          Rank #{award.rank}
-                                        </p>
                                       </div>
                                       <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium">
                                         {award.paintings?.length || 0}
@@ -570,7 +569,6 @@ export default function EditExhibitionPaintingsPage({
                                 className="staff-btn-primary flex items-center gap-2 text-sm px-3 py-1.5"
                                 disabled={addPaintingMutation.isPending}
                               >
-                                <IconPlus className="h-3 w-3" />
                                 {addPaintingMutation.isPending
                                   ? t.addingText
                                   : t.addText}

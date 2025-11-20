@@ -44,6 +44,7 @@ import {
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { Palette } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -324,7 +325,7 @@ function ContestDetailContent() {
             />
           </div>
           <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6 max-w-7xl">
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -620,7 +621,7 @@ function ContestDetailContent() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setShowEmbeddedPdf(!showEmbeddedPdf)}
-                          className="bg-linear-to-r from-gray-500 to-gray-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                          className="cursor-pointer bg-linear-to-r from-gray-500 to-gray-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-all duration-200 hover:scale-105"
                         >
                           <IconFileText className="h-4 w-4" />
                           {showEmbeddedPdf ? t.hideDetail : t.showDetail}{" "}
@@ -694,10 +695,10 @@ function ContestDetailContent() {
                 <button
                   type="button"
                   onClick={() => setIsExaminersDialogOpen(true)}
-                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                  className="flex items-center cursor-pointer space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
                   {/* Icon Section */}
-                  <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                  <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconUsers className="h-5 w-5 text-white" />
                   </div>
                   {/* Text Section */}
@@ -765,7 +766,9 @@ function ContestDetailContent() {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <h4 className="font-bold staff-text-primary">
-                              {round.name}
+                              {round.name === "ROUND_1"
+                                ? `${t.rounds} 1`
+                                : `${t.rounds} 2`}
                             </h4>
                             {/* {round.status && (
                               <span className={getStatusColor(round.status)}>
@@ -773,8 +776,12 @@ function ContestDetailContent() {
                               </span>
                             )} */}
                           </div>
-                          {!round.isRound2 && round.roundId && (
-                            <div className="flex items-center gap-2">
+                        </div>
+
+                        {!round.isRound2 ? (
+                          <div className="space-y-4">
+                            {/* Action Buttons - Moved to top for better visibility */}
+                            <div className="flex flex-col sm:flex-row gap-3 p-4rounded-lg">
                               <button
                                 disabled={
                                   qualifiedPaintingsData?.data.qualified
@@ -786,9 +793,9 @@ function ContestDetailContent() {
                                 onClick={() =>
                                   setShowQualifiedPaintingsDialog(true)
                                 }
-                                className="bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                               >
-                                <IconEye className="h-4 w-4" />
+                                <IconUsers className="h-4 w-4" />
                                 {t.qualifiedPaintings} (
                                 {qualifiedPaintingsData?.data?.summary
                                   ?.submitted || 0}
@@ -796,104 +803,114 @@ function ContestDetailContent() {
                               </button>
                               <Link
                                 href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
-                                className="p-2 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
-                                title={t.viewRoundDetailsDetail}
+                                className="flex-1 bg-linear-to-r from-gray-500 to-gray-600 text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
                               >
-                                <IconEye className="h-4 w-4 staff-text-secondary" />
+                                <Palette className="h-4 w-4" />
+                                {t.reviewPaintings}
                               </Link>
-                              {/* <button
-                                onClick={() =>
-                                  round.roundId &&
-                                  handleDeleteRound(round.roundId)
-                                }
-                                className="p-2 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
-                                title={t.deleteRoundDetail}
-                                disabled={
-                                  deleteMutation.isPending || !round.roundId
-                                }
-                              >
-                                <IconTrash className="h-4 w-4" />
-                              </button> */}
                             </div>
-                          )}
-                        </div>
 
-                        {!round.isRound2 ? (
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            {round.startDate && (
-                              <div>
-                                <p className="staff-text-secondary">
-                                  {t.startDateDetail}
-                                </p>
-                                <p className="staff-text-primary font-semibold">
-                                  {formatDate({
-                                    dateString: round.startDate,
-                                    language: currentLanguage,
-                                  })}
-                                </p>
+                            {/* Key Dates */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {round.startDate && (
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <span className="text-sm staff-text-secondary">
+                                    {t.startDate}
+                                  </span>
+                                  <span className="text-sm staff-text-primary font-semibold">
+                                    {formatDate({
+                                      dateString: round.startDate,
+                                      language: currentLanguage,
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+                              {round.endDate && (
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <span className="text-sm staff-text-secondary">
+                                    {t.endDate}
+                                  </span>
+                                  <span className="text-sm staff-text-primary font-semibold">
+                                    {formatDate({
+                                      dateString: round.endDate,
+                                      language: currentLanguage,
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Submission Deadlines */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {round.submissionDeadline && (
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <span className="text-sm staff-text-secondary">
+                                    {t.submissionDeadlineDetail}
+                                  </span>
+                                  <span className="text-sm staff-text-primary font-semibold">
+                                    {formatDate({
+                                      dateString: round.submissionDeadline,
+                                      language: currentLanguage,
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+                              {round.resultAnnounceDate && (
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <span className="text-sm staff-text-secondary">
+                                    {t.resultAnnounceDetail}
+                                  </span>
+                                  <span className="text-sm staff-text-primary font-semibold">
+                                    {formatDate({
+                                      dateString: round.resultAnnounceDate,
+                                      language: currentLanguage,
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Original Submission & Stats */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {round.sendOriginalDeadline && (
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <span className="text-sm staff-text-secondary">
+                                    {t.originalDeadlineDetail}
+                                  </span>
+                                  <span className="text-sm staff-text-primary font-semibold">
+                                    {formatDate({
+                                      dateString: round.sendOriginalDeadline,
+                                      language: currentLanguage,
+                                    })}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                <span className="text-sm staff-text-secondary">
+                                  {t.approvedPaintings}
+                                </span>
+                                <span className="text-sm staff-text-primary font-semibold">
+                                  {round.totalPaintings}
+                                </span>
                               </div>
-                            )}
-                            {round.endDate && (
-                              <div>
-                                <p className="staff-text-secondary">End Date</p>
-                                <p className="staff-text-primary font-semibold">
-                                  {formatDate({
-                                    dateString: round.endDate,
-                                    language: currentLanguage,
-                                  })}
-                                </p>
-                              </div>
-                            )}
-                            {round.submissionDeadline && (
-                              <div>
-                                <p className="staff-text-secondary">
-                                  {t.submissionDeadlineDetail}
-                                </p>
-                                <p className="staff-text-primary font-semibold">
-                                  {formatDate({
-                                    dateString: round.submissionDeadline,
-                                    language: currentLanguage,
-                                  })}
-                                </p>
-                              </div>
-                            )}
-                            {round.resultAnnounceDate && (
-                              <div>
-                                <p className="staff-text-secondary">
-                                  {t.resultAnnounceDetail}
-                                </p>
-                                <p className="staff-text-primary font-semibold">
-                                  {formatDate({
-                                    dateString: round.resultAnnounceDate,
-                                    language: currentLanguage,
-                                  })}
-                                </p>
-                              </div>
-                            )}
-                            {round.sendOriginalDeadline && (
-                              <div>
-                                <p className="staff-text-secondary">
-                                  {t.originalDeadlineDetail}
-                                </p>
-                                <p className="staff-text-primary font-semibold">
-                                  {formatDate({
-                                    dateString: round.sendOriginalDeadline,
-                                    language: currentLanguage,
-                                  })}
-                                </p>
-                              </div>
-                            )}
+                            </div>
                           </div>
                         ) : (
-                          <div>
-                            <div className="flex items-center justify-between mb-3">
-                              <p className="text-sm staff-text-secondary">
-                                {t.totalTablesDetail}: {round.totalTables}
-                              </p>
+                          <div className="space-y-6">
+                            {/* Round 2 Header with Stats and Actions */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                  <IconUsers className="h-5 w-5 text-gray-600" />
+                                  <span className="text-sm font-medium staff-text-primary">
+                                    {t.totalTablesDetail}: {round.totalTables}
+                                  </span>
+                                </div>
+                              </div>
                               <button
                                 onClick={handleNotifyRound2}
                                 disabled={isNotifyingRound2}
-                                className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="cursor-pointer bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <IconMail className="h-4 w-4" />
                                 {isNotifyingRound2
@@ -901,74 +918,86 @@ function ContestDetailContent() {
                                   : t.notifyRound2}
                               </button>
                             </div>
-                            <div className="space-y-2">
-                              {round.tables?.map((table) => (
-                                <div
-                                  key={table.roundId}
-                                  className="border border-[#e6e2da] p-3 rounded"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                      <h5 className="font-semibold staff-text-primary">
+
+                            {/* Round 2 Dates */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {round.tables &&
+                                round.tables.length > 0 &&
+                                round.tables[0].startDate && (
+                                  <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                    <span className="text-sm staff-text-secondary">
+                                      {t.startDate}
+                                    </span>
+                                    <span className="text-sm staff-text-primary font-semibold">
+                                      {formatDate({
+                                        dateString: round.tables[0].startDate,
+                                        language: currentLanguage,
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                              {round.tables &&
+                                round.tables.length > 0 &&
+                                round.tables[0].endDate && (
+                                  <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                    <span className="text-sm staff-text-secondary">
+                                      {t.endDate}
+                                    </span>
+                                    <span className="text-sm staff-text-primary font-semibold">
+                                      {formatDate({
+                                        dateString: round.tables[0].endDate,
+                                        language: currentLanguage,
+                                      })}
+                                    </span>
+                                  </div>
+                                )}
+                            </div>
+
+                            {/* Tables Grid Layout */}
+                            {round.tables && round.tables.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {round.tables.map((table) => (
+                                  <div
+                                    key={table.roundId}
+                                    className="border border-[#e6e2da] rounded-lg p-6 hover:shadow-md transition-shadow bg-white flex flex-col min-h-[200px]"
+                                  >
+                                    {/* Table Name */}
+                                    <div className="flex-1 mb-4">
+                                      <h5 className="font-semibold staff-text-primary text-lg text-center">
                                         {t.table} {table.table}
                                       </h5>
-                                      {/* <span
-                                        className={getStatusColor(table.status)}
-                                      >
-                                        {table.status}
-                                      </span> */}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Link
-                                        href={`/dashboard/staff/contests/rounds/${table.roundId}?contestId=${contest.contestId}`}
-                                        className="p-1 border border-[#e6e2da] hover:bg-[#f9f7f4] transition-colors"
-                                        title={t.viewTableDetailsDetail}
-                                      >
-                                        <IconEye className="h-3 w-3 staff-text-secondary" />
-                                      </Link>
-                                      {/* <button
-                                        onClick={() =>
-                                          handleDeleteRound(table.roundId)
-                                        }
-                                        className="p-1 border border-red-300 text-red-600 hover:bg-red-50 transition-colors"
-                                        title={t.deleteTableDetail}
-                                        disabled={deleteMutation.isPending}
-                                      >
-                                        <IconTrash className="h-3 w-3" />
-                                      </button> */}
+                                      {/* Table Stats */}
+                                      <div className="mb-6">
+                                        <div className="flex justify-center">
+                                          <div className="flex justify-between items-center p-2 rounded-lg min-w-[120px]">
+                                            <span className="text-sm staff-text-secondary">
+                                              {t.totalPaintings}:
+                                            </span>
+                                            <span className="text-sm staff-text-primary font-semibold">
+                                              {table.totalPaintings || 0}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {/* View Detail Button */}
+                                      <div className="flex justify-center mt-auto">
+                                        <Link
+                                          href={`/dashboard/staff/contests/rounds/${table.roundId}?contestId=${contest.contestId}`}
+                                          className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 w-full text-center"
+                                        >
+                                          {t.viewTableDetailsDetail ||
+                                            "View Details"}
+                                        </Link>
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-2 text-xs mt-2">
-                                    {table.startDate && (
-                                      <div>
-                                        <p className="staff-text-secondary">
-                                          {t.startDetail}
-                                        </p>
-                                        <p className="staff-text-primary font-semibold">
-                                          {formatDate({
-                                            dateString: table.startDate,
-                                            language: currentLanguage,
-                                          })}
-                                        </p>
-                                      </div>
-                                    )}
-                                    {table.endDate && (
-                                      <div>
-                                        <p className="staff-text-secondary">
-                                          {t.endDetail}
-                                        </p>
-                                        <p className="staff-text-primary font-semibold">
-                                          {formatDate({
-                                            dateString: table.endDate,
-                                            language: currentLanguage,
-                                          })}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-8 staff-text-secondary bg-gray-50 rounded-lg">
+                                No tables created yet
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -988,6 +1017,7 @@ function ContestDetailContent() {
         isOpen={isExaminersDialogOpen}
         onClose={() => setIsExaminersDialogOpen(false)}
         contestId={Number(contestId)}
+        rounds={rounds}
       />
 
       {/* Publish Confirmation Dialog */}
@@ -1007,7 +1037,8 @@ function ContestDetailContent() {
                   <div className="flex items-center gap-2 text-yellow-800 text-sm">
                     <IconTrophy className="h-4 w-4" />
                     <span>
-                      <strong>Warning:</strong> {t.cannotPublishWithoutAwards}
+                      <strong>{t.warning}:</strong>{" "}
+                      {t.cannotPublishWithoutAwards}
                     </span>
                   </div>
                 </div>
@@ -1018,7 +1049,7 @@ function ContestDetailContent() {
                     <div className="flex items-center gap-2 text-yellow-800 text-sm">
                       <IconTrophy className="h-4 w-4" />
                       <span>
-                        <strong>Warning:</strong>{" "}
+                        <strong>{t.warning}:</strong>{" "}
                         {t.configureAwardsBeforePublishing}
                       </span>
                     </div>
@@ -1310,7 +1341,6 @@ function ContestDetailContent() {
               {t.createRound2Detail}
             </DialogTitle>
             <DialogDescription>
-              {t.createRound2ConfirmDetail}
               <div className="mt-2 p-3 bg-gray-50">
                 <div className="text-sm">
                   <strong>{t.round2Quantity}:</strong> {contest.round2Quantity}
@@ -1381,12 +1411,24 @@ function ContestDetailContent() {
                       const round1Results = rounds.find(
                         (r) => !r.isRound2
                       )?.resultAnnounceDate;
-                      const minDate = round1Results
-                        ? new Date(
-                            new Date(round1Results).getTime() +
-                              24 * 60 * 60 * 1000
-                          )
-                        : new Date(contest.startDate);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0); // Set to start of today
+
+                      let minDate: Date;
+                      if (round1Results) {
+                        minDate = new Date(
+                          new Date(round1Results).getTime() +
+                            24 * 60 * 60 * 1000
+                        );
+                      } else {
+                        minDate = new Date(contest.startDate);
+                      }
+
+                      // Ensure min date is not in the past
+                      if (minDate < today) {
+                        minDate = today;
+                      }
+
                       const maxDate = new Date(contest.endDate);
 
                       return `${formatDate({
@@ -1414,14 +1456,24 @@ function ContestDetailContent() {
                   const round1Results = rounds.find(
                     (r) => !r.isRound2
                   )?.resultAnnounceDate;
-                  return round1Results
-                    ? formatDateForInput(
-                        new Date(
-                          new Date(round1Results).getTime() +
-                            24 * 60 * 60 * 1000
-                        )
-                      )
-                    : formatDateForInput(contest.startDate);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0); // Set to start of today
+
+                  let minDate: Date;
+                  if (round1Results) {
+                    minDate = new Date(
+                      new Date(round1Results).getTime() + 24 * 60 * 60 * 1000
+                    );
+                  } else {
+                    minDate = new Date(contest.startDate);
+                  }
+
+                  // Ensure min date is not in the past
+                  if (minDate < today) {
+                    minDate = today;
+                  }
+
+                  return formatDateForInput(minDate);
                 })()}
                 max={formatDateForInput(contest.endDate)}
                 className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1447,7 +1499,7 @@ function ContestDetailContent() {
             <button
               onClick={() => {
                 if (!round2Date) {
-                  toast.error("Please select a date for Round 2");
+                  toast.error("Hãy chọn ngày cho vòng 2");
                   return;
                 }
                 createRound2Mutation.mutate({

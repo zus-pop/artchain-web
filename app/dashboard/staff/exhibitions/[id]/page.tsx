@@ -241,7 +241,7 @@ export default function ExhibitionDetailPage({
                 </div>
 
                 {/* Key Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="staff-card p-6">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-blue-100">
@@ -253,26 +253,6 @@ export default function ExhibitionDetailPage({
                         </p>
                         <p className="text-sm staff-text-secondary">
                           {t.totalPaintings}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="staff-card p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-green-100">
-                        <IconClock className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold staff-text-primary">
-                          {Math.ceil(
-                            (new Date(exhibition.endDate).getTime() -
-                              new Date(exhibition.startDate).getTime()) /
-                              (1000 * 60 * 60 * 24)
-                          )}
-                        </p>
-                        <p className="text-sm staff-text-secondary">
-                          {t.daysDuration}
                         </p>
                       </div>
                     </div>
@@ -332,13 +312,13 @@ export default function ExhibitionDetailPage({
                             </p>
                           </div>
                         </div>
-                        <Link
+                        {/* <Link
                           href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/paintings`}
                           className="staff-btn-primary flex items-center gap-2"
                         >
                           <IconPlus className="h-4 w-4" />
                           {t.managePaintings}
-                        </Link>
+                        </Link> */}
                       </div>
 
                       {exhibition.exhibitionPaintings &&

@@ -133,25 +133,11 @@ export default function CreateExhibitionPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Link
-                      href="/dashboard/staff/exhibitions"
-                      className="staff-btn-secondary flex items-center gap-2"
-                    >
-                      <IconX className="h-4 w-4" />
-                      {t.cancel}
-                    </Link>
-                    <button
-                      onClick={handleSubmit(onSubmit)}
-                      disabled={isSubmitting}
-                      className="staff-btn-primary flex items-center gap-2"
-                    >
-                      <IconDeviceFloppy className="h-4 w-4" />
-                      {isSubmitting ? t.creating : t.createExhibition}
-                    </button>
+                    {/* Buttons moved to form bottom */}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1  gap-6">
                   {/* Main Form Column */}
                   <div className="lg:col-span-2 space-y-6">
                     {/* Exhibition Details */}
@@ -274,46 +260,26 @@ export default function CreateExhibitionPage() {
                             </select>
                           </div>
                         </div>
-                      </form>
-                    </div>
-                  </div>
 
-                  {/* Sidebar Column */}
-                  <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-                    {/* Quick Info */}
-                    <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                        {t.exhibitionSetup}
-                      </h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between py-2">
-                          <span className="text-sm staff-text-secondary">
-                            {t.initialStatus}
-                          </span>
-                          <span className="font-semibold staff-text-primary text-sm">
-                            DRAFT
-                          </span>
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#e6e2da]">
+                          <Link
+                            href="/dashboard/staff/exhibitions"
+                            className="staff-btn-secondary flex items-center gap-2"
+                          >
+                            <IconX className="h-4 w-4" />
+                            {t.cancel}
+                          </Link>
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="staff-btn-primary flex items-center gap-2"
+                          >
+                            <IconDeviceFloppy className="h-4 w-4" />
+                            {isSubmitting ? t.creating : t.createExhibition}
+                          </button>
                         </div>
-                        <div className="flex items-center justify-between py-2">
-                          <span className="text-sm staff-text-secondary">
-                            {t.paintingsLabel}
-                          </span>
-                          <span className="font-semibold staff-text-primary text-sm">
-                            {t.addAfterCreation}
-                          </span>
-                        </div>
-                        <div className="text-sm staff-text-secondary py-2">
-                          <p className="mb-2">
-                            <strong>{t.nextSteps}</strong>
-                          </p>
-                          <ol className="list-decimal list-inside space-y-1">
-                            <li>{t.fillExhibitionDetails}</li>
-                            <li>{t.createTheExhibition}</li>
-                            <li>{t.addPaintingsToShowcase}</li>
-                            <li>{t.publishWhenReady}</li>
-                          </ol>
-                        </div>
-                      </div>
+                      </form>
                     </div>
                   </div>
                 </div>
