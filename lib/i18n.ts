@@ -1222,7 +1222,7 @@ export const translations = {
       "Không thể xóa - đây là tranh được bình chọn nhiều nhất",
     votesLabel: "Phiếu bầu:",
     assignedLabel: "Đã trao:",
-    totalVotesLabel: "Tổng phiếu bầu:",
+    totalVotesLabel: "Tổng bình chọn:",
     topVotesLabel: "Phiếu bầu cao nhất:",
     completeStatus: "Hoàn thành",
     scoreBreakdown: "Phân Tích Điểm",
