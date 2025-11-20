@@ -110,8 +110,9 @@ const Header: React.FC<ArtistNavigationProps> = ({
     () => [
       { label: t.home, href: "/", active: true },
       { label: t.contests, href: "/contests" },
-      { label: t.gallery, href: "/gallery" },
       { label: t.posts, href: "/posts" },
+      { label: t.campaignTitle, href: "/campaigns" },
+      { label: t.gallery, href: "/gallery" },
     ],
     [t]
   );
@@ -206,6 +207,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
     .rd-2:checked ~ .slidebar { transform: translateX(calc(1 * var(--w-label))); opacity: 1; }
     .rd-3:checked ~ .slidebar { transform: translateX(calc(2 * var(--w-label))); opacity: 1; }
     .rd-4:checked ~ .slidebar { transform: translateX(calc(3 * var(--w-label))); opacity: 1; }
+    .rd-5:checked ~ .slidebar { transform: translateX(calc(4 * var(--w-label))); opacity: 1; }
   `;
 
   return (
