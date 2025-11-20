@@ -74,92 +74,92 @@ export default function AdminDashboardPage() {
 
   const systemStats = stats?.data;
 
+  // Translation - Moved up before chart data
+  const { currentLanguage, setLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
+
   // Prepare chart data
   const userRoleData = systemStats
     ? [
         {
-          name: "Competitors",
+          name: t.competitorsAdmin,
           value: systemStats.users.byRole.competitors,
           color: "#8884d8",
         },
         {
-          name: "Guardians",
+          name: t.guardiansAdmin,
           value: systemStats.users.byRole.guardians,
           color: "#82ca9d",
         },
         {
-          name: "Examiners",
+          name: t.examinersAdmin,
           value: systemStats.users.byRole.examiners,
           color: "#ffc658",
         },
         {
-          name: "Staff",
+          name: t.staffs,
           value: systemStats.users.byRole.staffs,
           color: "#ff7c7c",
         },
         {
-          name: "Admins",
+          name: t.adminsAdmin,
           value: systemStats.users.byRole.admins,
           color: "#8dd1e1",
         },
       ]
     : [];
 
-  const contestStatusData = systemStats
+  const contestStatusData = useMemo(() => systemStats
     ? [
         {
-          name: "Active",
+          name: t.active,
           value: systemStats.contests.active,
           color: "#10b981",
         },
         {
-          name: "Upcoming",
+          name: t.upcoming,
           value: systemStats.contests.upcoming,
           color: "#f59e0b",
         },
-        { name: "Ended", value: systemStats.contests.ended, color: "#ef4444" },
+        { name: t.ended, value: systemStats.contests.ended, color: "#ef4444" },
         {
-          name: "Completed",
+          name: t.completed,
           value: systemStats.contests.completed,
           color: "#6366f1",
         },
       ]
-    : [];
+    : [], [systemStats, t]);
 
-  const paintingStatusData = systemStats
+  const paintingStatusData = useMemo(() => systemStats
     ? [
-        { name: "Accepted", value: systemStats.paintings.accepted },
-        { name: "Pending", value: systemStats.paintings.pending },
-        { name: "Rejected", value: systemStats.paintings.rejected },
+        { name: t.acceptBtn, value: systemStats.paintings.accepted },
+        { name: t.pending, value: systemStats.paintings.pending },
+        { name: t.rejectBtn, value: systemStats.paintings.rejected },
       ]
-    : [];
+    : [], [systemStats, t]);
 
-  const exhibitionData = systemStats
+  const exhibitionData = useMemo(() => systemStats
     ? [
         {
-          name: "Active",
+          name: t.active,
           value: systemStats.exhibitions.active,
           color: "#10b981",
         },
         {
-          name: "Draft",
+          name: t.draft,
           value: systemStats.exhibitions.draft,
           color: "#6366f1",
         },
       ]
-    : [];
+    : [], [systemStats, t]);
 
   // Controls and user-growth query (right-side line chart)
   const [startDate, setStartDate] = useState<string>(() => "2025-01-01");
   const [endDate, setEndDate] = useState<string>(() => "2025-12-31");
-  const [groupBy, setGroupBy] = useState<string>(() => "month");
+  const [groupBy, setGroupBy] = useState<string>(() => "day");
   // Dialog for award details
   const [selectedAwardCount, setSelectedAwardCount] = useState<number | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  // Translation
-  const { currentLanguage, setLanguage } = useLanguageStore();
-  const t = useTranslation(currentLanguage);
 
   // Top lists queries (typed) - Get top 10 by default
   const { data: topCompetitorsRaw } = useQuery<
@@ -462,7 +462,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                   <p className="mt-2 text-sm text-gray-500">
-                    {systemStats?.contests.active || 0} active contests
+                    {systemStats?.contests.active || 0} {t.activeContestsAdmin}
                   </p>
                 </div>
 
@@ -547,7 +547,7 @@ export default function AdminDashboardPage() {
                     <div className="md:col-span-2">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm text-gray-600">Start</label>
+                          <label className="text-sm text-gray-600">{t.startAdmin}</label>
                           <input
                             type="date"
                             value={startDate}
@@ -556,7 +556,7 @@ export default function AdminDashboardPage() {
                           />
                         </div>
                         <div className="flex items-center gap-2">
-                          <label className="text-sm text-gray-600">End</label>
+                          <label className="text-sm text-gray-600">{t.endAdmin}</label>
                           <input
                             type="date"
                             value={endDate}
@@ -576,18 +576,18 @@ export default function AdminDashboardPage() {
                             <option value="day">{t.day}</option>
                             <option value="week">{t.week}</option>
                             <option value="month">{t.month}</option>
-                            <option value="year">Year</option>
+                            <option value="year">{t.year}</option>
                           </select>
                         </div>
                       </div>
 
                       <h3 className="text-sm text-gray-700 mb-2">
-                        User growth ({groupBy})
+                        {t.userGrowth} ({groupBy})
                       </h3>
                       <div style={{ width: "100%", height: 300 }}>
                         {isLoadingUserGrowth ? (
                           <div className="flex items-center justify-center h-full">
-                            Loading...
+                            {t.loadingAdmin}
                           </div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
@@ -626,35 +626,35 @@ export default function AdminDashboardPage() {
                               <Line
                                 type="monotone"
                                 dataKey="competitors"
-                                name="Competitors"
+                                name={t.competitorsAdmin}
                                 stroke="#8884d8"
                                 strokeWidth={1}
                               />
                               <Line
                                 type="monotone"
                                 dataKey="examiners"
-                                name="Examiners"
+                                name={t.examinersAdmin}
                                 stroke="#82ca9d"
                                 strokeWidth={1}
                               />
                               <Line
                                 type="monotone"
                                 dataKey="guardians"
-                                name="Guardians"
+                                name={t.guardiansAdmin}
                                 stroke="#f59e0b"
                                 strokeWidth={1}
                               />
                               <Line
                                 type="monotone"
                                 dataKey="staffs"
-                                name="Staffs"
+                                name={t.staffs}
                                 stroke="#ff7c7c"
                                 strokeWidth={1}
                               />
                               <Line
                                 type="monotone"
                                 dataKey="admins"
-                                name="Admins"
+                                name={t.adminsAdmin}
                                 stroke="#8dd1e1"
                                 strokeWidth={1}
                               />
@@ -718,7 +718,7 @@ export default function AdminDashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">
                           {systemStats?.votes.total || 0}
                         </p>
-                        <p className="text-sm text-gray-600">Bình chọn</p>
+                        <p className="text-sm text-gray-600">{t.votes}</p>
                       </div>
                     </div>
                   </div>
@@ -733,7 +733,7 @@ export default function AdminDashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">
                           {systemStats?.awards.total || 0}
                         </p>
-                        <p className="text-sm text-gray-600">Giải thưởng</p>
+                        <p className="text-sm text-gray-600">{t.awardsLabel}</p>
                       </div>
                     </div>
                   </div>
@@ -778,7 +778,7 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                         <h4 className="text-sm font-semibold text-gray-800">
-                          Thống kê người tham gia
+                          {t.competitorStats}
                         </h4>
                       </div>
                       <div className="mt-4">
@@ -814,7 +814,7 @@ export default function AdminDashboardPage() {
                                     {rank}
                                   </span>
                                   <span className="font-medium text-gray-700">
-                                  Có  {item.awardCount} giải thưởng
+                                  {t.hasAwards}  {item.awardCount} {t.awardsLabel}
                                   </span>
                                 </div>
                                 <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
@@ -824,7 +824,7 @@ export default function AdminDashboardPage() {
                               </li>
                             );
                           }) : (
-                            <li className="p-2 text-gray-500">No data available</li>
+                            <li className="p-2 text-gray-500">{t.noDataAvailable}</li>
                           )}
                         </ul>
                       </div>
@@ -834,7 +834,7 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <h4 className="text-sm font-semibold text-gray-800">
-                          Thống kê các cuộc thi gần đây
+                          {t.recentContestStats}
                         </h4>
                       </div>
                       {/* List of recent contests */}
@@ -877,7 +877,7 @@ export default function AdminDashboardPage() {
                               </li>
                             );
                           }) : (
-                            <li className="p-2 text-gray-500">No data available</li>
+                            <li className="p-2 text-gray-500">{t.noDataAvailable}</li>
                           )}
                         </ul>
                       </div>
@@ -931,12 +931,12 @@ export default function AdminDashboardPage() {
                                     {item.title}
                                   </span>
                                   <span className="text-xs text-gray-500">
-                                    by {item.competitorName}
+                                    {t.byName} {item.competitorName}
                                   </span>
                                 </div>
                               </div>
                               <span className="text-xs font-semibold px-2 py-1 rounded-full bg-red-100 text-red-800">
-                                {item.voteCount} votes
+                                {item.voteCount} {t.votesAdmin}
                               </span>
                             </li>
                           );
@@ -948,7 +948,7 @@ export default function AdminDashboardPage() {
                   <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                     <div className="flex items-center gap-3 mb-4">
                       <h3 className="text-lg font-bold text-gray-900">
-                        Top Schools
+                        {t.topSchools}
                       </h3>
                     </div>
                     <div className="mt-4">
@@ -988,7 +988,7 @@ export default function AdminDashboardPage() {
                                 </span>
                               </div>
                               <span className="text-xs font-semibold px-2 py-1 rounded-full bg-purple-100 text-purple-800">
-                                {item.value} awards
+                                {item.value} {t.topSchoolsAwards}
                               </span>
                             </li>
                           );
@@ -1006,9 +1006,9 @@ export default function AdminDashboardPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Người tham gia có {selectedAwardCount} giải thưởng</DialogTitle>
+            <DialogTitle>{t.competitorsLabel} {t.hasAwards.toLowerCase()} {selectedAwardCount} {t.awardsLabel}</DialogTitle>
             <DialogDescription>
-              Danh sách người tham gia đã giành được {selectedAwardCount} giải thưởng.
+              {t.competitorStats} - {selectedAwardCount} {t.awardsLabel}
             </DialogDescription>
           </DialogHeader>
           {selectedAwardCount !== null && (
