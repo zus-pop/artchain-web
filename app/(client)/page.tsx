@@ -205,7 +205,7 @@ const NewsCardSmall = ({
 
 // --- Component Chính Của Trang ---
 export default function Page() {
-  const navItems = ["Trang chủ", "Cuộc thi", "Tin tức", "Chiến dịch"];
+  const navItems = ["Trang chủ", "Cuộc thi", "Bài viết", "Chiến dịch", "Triển lãm"];
 
   const sectionIds = ["hero", "contest", "news", "campaigns"];
 
@@ -399,7 +399,13 @@ export default function Page() {
               {navItems.map((item, index) => (
                 <button
                   key={item}
-                  onClick={() => scrollToSection(sectionIds[index])}
+                  onClick={() => {
+                    if (item === "Triển lãm") {
+                      router.push("/gallery");
+                    } else {
+                      scrollToSection(sectionIds[index]);
+                    }
+                  }}
                   className={`relative cursor-pointer text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${
                     activeSection === sectionIds[index]
                       ? "transform -translate-y-0.5"

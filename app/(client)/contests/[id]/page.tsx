@@ -563,7 +563,15 @@ export default function ContestDetailPage() {
                 Ngày thi dự kiến
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                11-12-2025
+                {(() => {
+                  const date = new Date(contest.startDate);
+                  date.setDate(date.getDate() + 2);
+                  return date.toLocaleDateString("vi-VN", {
+                    day: "numeric",
+                    month: "numeric",
+                    year: "numeric",
+                  });
+                })()}
               </p>
             </div>
           </div>
@@ -579,7 +587,7 @@ export default function ContestDetailPage() {
           >
             <div className="flex items-center gap-2 mb-4">
               <h3 className="text-xl sm:text-2xl font-bold text-black">
-                Vote cho giải thưởng
+                Bình chọn giải thưởng
               </h3>
             </div>
 
@@ -621,11 +629,10 @@ export default function ContestDetailPage() {
                         ) : (
                           <span>chưa có giải thưởng được công bố chính thức</span>
                         )}
-                        <span className="font-medium">Rank {award.rank}</span>
                       </div>
                       <div className="mt-2 text-xs text-gray-500">
                         {typeof award.totalVotes !== 'undefined' && (
-                          <span>{award.totalVotes} votes</span>
+                          <span>{award.totalVotes} bình chọn</span>
                         )}
                       </div>
                     </button>
@@ -633,7 +640,7 @@ export default function ContestDetailPage() {
                 </div>
               ) : (
                 <p className="text-center text-gray-600 py-8">
-                  Không có giải thưởng để vote
+                  Không có giải thưởng để bình chọn
                 </p>
               )}
             </div>
@@ -690,7 +697,7 @@ export default function ContestDetailPage() {
                             </p>
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-gray-600 font-medium">
-                                {painting.voteCount} votes
+                                {painting.voteCount} bình chọn
                               </span>
                               {painting.hasVoted ? (
                                 <button
@@ -699,7 +706,7 @@ export default function ContestDetailPage() {
                                   className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
                                 >
                                   <ThumbsUp className="w-4 h-4 fill-current" />
-                                  Bỏ vote
+                                  Bỏ bình chọn
                                 </button>
                               ) : (
                                 <button
@@ -716,7 +723,7 @@ export default function ContestDetailPage() {
                                   className="flex items-center gap-1 px-3 py-1.5 bg-[#FF6E1A] text-white text-sm font-medium hover:bg-[#FF833B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <ThumbsUp className="w-4 h-4" />
-                                  Vote
+                                  Bình chọn
                                 </button>
                               )}
                             </div>
@@ -747,7 +754,7 @@ export default function ContestDetailPage() {
               className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
             >
               <h3 className="text-xl font-bold text-black mb-4">
-                Xác nhận vote
+                Xác nhận bình chọn
               </h3>
 
               <div className="mb-6">
@@ -770,13 +777,13 @@ export default function ContestDetailPage() {
                   {selectedPainting.competitorName}
                 </p>
                 <p className="text-gray-700">
-                  <span className="font-semibold">Số votes hiện tại:</span>{" "}
+                  <span className="font-semibold">Số bình chọn hiện tại:</span>{" "}
                   {selectedPainting.voteCount}
                 </p>
               </div>
 
               <p className="text-gray-600 mb-6">
-                Bạn có chắc chắn muốn vote cho bức tranh này không?
+                Bạn có chắc chắn muốn bình chọn cho bức tranh này không?
               </p>
 
               <div className="flex gap-3">
@@ -794,7 +801,7 @@ export default function ContestDetailPage() {
                   disabled={submitVoteMutation.isPending}
                   className="flex-1 px-4 py-2 bg-[#FF6E1A] text-white font-medium hover:bg-[#FF833B] transition-colors disabled:opacity-50"
                 >
-                  {submitVoteMutation.isPending ? "Đang vote..." : "Xác nhận"}
+                  {submitVoteMutation.isPending ? "Đang bình chọn..." : "Xác nhận"}
                 </button>
               </div>
             </motion.div>

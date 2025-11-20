@@ -237,13 +237,6 @@ export default function AddChildPage() {
             <p className="text-muted-foreground mb-6">
               Hãy thêm thông tin con em để bắt đầu tham gia cuộc thi
             </p>
-            <button
-              onClick={handleAddChild}
-              className="bg-[#FF6E1A] text-white px-6 py-2 hover:bg-[#FF6E1A]/90 transition-colors font-medium flex items-center space-x-2 mx-auto"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Thêm con em đầu tiên</span>
-            </button>
           </div>
         )}
       </motion.div>
