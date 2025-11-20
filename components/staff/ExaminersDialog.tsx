@@ -13,9 +13,12 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
 import { ExaminerDTO, AvailableExaminerDTO } from "@/types/staff/examiner-dto";
 import { ScheduleDTO } from "@/types/staff/schedule-dto";
+import { RoundResponseItem } from "@/types/staff/contest-dto";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
+import { formatDate, formatDateForInput } from "@/lib/utils";
 import {
   getStaffContestExaminers,
   getAllStaffExaminers,
@@ -30,14 +33,18 @@ interface ExaminersDialogProps {
   isOpen: boolean;
   onClose: () => void;
   contestId: number;
+  rounds?: RoundResponseItem[];
 }
 
 export function ExaminersDialog({
   isOpen,
   onClose,
   contestId,
+  rounds = [],
 }: ExaminersDialogProps) {
   const queryClient = useQueryClient();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   // State for adding new examiner
   const [selectedExaminerId, setSelectedExaminerId] = useState<string>("");
@@ -91,11 +98,11 @@ export function ExaminersDialog({
       setSelectedExaminerId("");
       setSelectedRole("ROUND_1");
       setExaminerSearch("");
-      toast.success("Thêm giám khảo thành công");
+      toast.success("Examiner added successfully");
     },
     onError: (error) => {
       console.error("Error adding examiner:", error);
-      toast.error("Xảy ra lỗi khi thêm giám khảo.");
+      toast.error("Error adding examiner");
     },
   });
 
@@ -110,11 +117,11 @@ export function ExaminersDialog({
       queryClient.invalidateQueries({
         queryKey: ["contest-detail", contestId.toString()],
       });
-      toast.success("Gỡ giám khảo thành công");
+      toast.success("Examiner removed successfully");
     },
     onError: (error) => {
       console.error("Error removing examiner:", error);
-      toast.error("Có lỗi khi gỡ giám khảo");
+      toast.error("Error removing examiner");
     },
   });
 
@@ -152,11 +159,11 @@ export function ExaminersDialog({
   const getTaskByRole = (role: string) => {
     switch (role) {
       case "ROUND_1":
-        return "Chấm bài vòng sơ khảo";
+        return "Round 1 Evaluation";
       case "ROUND_2":
-        return "Chấm bài vòng chung kết";
+        return "Round 2 Evaluation";
       default:
-        return "Chấm bài";
+        return "Evaluation";
     }
   };
 
@@ -204,10 +211,10 @@ export function ExaminersDialog({
 
       // Reload schedules
       await loadExaminerSchedules(examiner.examinerId);
-      toast.success("Cập nhật lịch chấm thành công!");
+      toast.success(t.scheduleUpdateSuccess);
     } catch (error) {
       console.error("Error updating schedule:", error);
-      toast.error("Có lỗi khi cập nhật lịch chấm");
+      toast.error(t.scheduleUpdateError);
     }
   };
 
@@ -230,7 +237,7 @@ export function ExaminersDialog({
 
   const handleAddExaminer = () => {
     if (!selectedExaminerId || !selectedRole) {
-      toast.error("Please select an examiner and role");
+      toast.error(t.selectExaminerAndRole);
       return;
     }
     addExaminerMutation.mutate({
@@ -247,11 +254,11 @@ export function ExaminersDialog({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
-            Manage Examiners ({contestExaminers.length})
+            {t.manageExaminers} ({contestExaminers.length})
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
             <IconX className="h-5 w-5 text-gray-500" />
           </button>
@@ -263,15 +270,15 @@ export function ExaminersDialog({
           <div className="mb-6 p-4 border border-gray-200 bg-gray-50">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Add New Examiner
+                {t.addNewExaminer}
               </h3>
               <button
                 onClick={handleAddExaminer}
                 disabled={addExaminerMutation.isPending || !selectedExaminerId}
-                className="px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="px-6 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <IconPlus className="h-5 w-5" />
-                {addExaminerMutation.isPending ? "Adding..." : "Add"}
+                {addExaminerMutation.isPending ? t.adding : t.add}
               </button>
             </div>
 
@@ -283,7 +290,7 @@ export function ExaminersDialog({
                   {/* Examiner Search */}
                   <div className="flex-1 relative">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Examiner
+                      {t.selectExaminer}
                     </label>
                     <div className="relative">
                       <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -295,8 +302,8 @@ export function ExaminersDialog({
                           setShowExaminerDropdown(true);
                         }}
                         onFocus={() => setShowExaminerDropdown(true)}
-                        placeholder="Search examiners..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        placeholder={t.searchExaminers}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                       />
                     </div>
 
@@ -304,7 +311,7 @@ export function ExaminersDialog({
                       <div className="examiner-dropdown absolute z-10 w-full mt-1 bg-white border border-gray-300 shadow-lg max-h-60 overflow-y-auto max-w-md">
                         {isLoadingAvailableExaminers ? (
                           <div className="px-4 py-3 text-sm text-gray-500 text-center">
-                            Loading examiners...
+                            {t.loadingExaminers}
                           </div>
                         ) : availableExaminers.length > 0 ? (
                           availableExaminers
@@ -329,7 +336,7 @@ export function ExaminersDialog({
                                   {examiner.email}
                                 </div>
                                 {examiner.specialization && (
-                                  <div className="text-blue-600 text-xs">
+                                  <div className="text-green-600 text-xs">
                                     {examiner.specialization}
                                   </div>
                                 )}
@@ -337,7 +344,7 @@ export function ExaminersDialog({
                             ))
                         ) : (
                           <div className="px-4 py-2 text-sm text-gray-500">
-                            No examiners found
+                            {t.noExaminersFound}
                           </div>
                         )}
                       </div>
@@ -347,15 +354,15 @@ export function ExaminersDialog({
                   {/* Role Selection */}
                   <div className="w-48">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Role
+                      {t.role}
                     </label>
                     <select
                       value={selectedRole}
                       onChange={(e) => setSelectedRole(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     >
-                      <option value="ROUND_1">Round 1</option>
-                      <option value="ROUND_2">Round 2</option>
+                      <option value="ROUND_1">{t.round1}</option>
+                      <option value="ROUND_2">{t.round2}</option>
                     </select>
                   </div>
                 </div>
@@ -366,20 +373,18 @@ export function ExaminersDialog({
           {/* Current Examiners */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Current Examiners ({contestExaminers.length})
+              {t.currentExaminers} ({contestExaminers.length})
             </h3>
 
             {isLoadingContestExaminers ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
-                <span className="ml-2 text-gray-600">Loading examiners...</span>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                <span className="ml-2 text-gray-600">{t.loadingExaminers}</span>
               </div>
             ) : contestExaminers.length === 0 ? (
               <div className="text-center py-8">
                 <IconUser className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">
-                  No examiners assigned to this contest yet.
-                </p>
+                <p className="text-gray-500">{t.noExaminersAssigned}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -400,7 +405,9 @@ export function ExaminersDialog({
                               examiner.role
                             )}`}
                           >
-                            {examiner.role}
+                            {examiner.role === "ROUND_1"
+                              ? `${t.round1}`
+                              : `${t.round2}`}
                           </span>
                         </div>
 
@@ -433,68 +440,134 @@ export function ExaminersDialog({
                                   : examiner.examinerId
                               )
                             }
-                            className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded hover:bg-blue-100 transition-colors text-sm font-medium flex items-center gap-2"
+                            className="px-4 py-2 bg-green-500/10 text-green-700 border border-green-500/20 rounded hover:bg-green-500/20 transition-colors text-sm font-medium flex items-center gap-2"
                           >
                             <IconCalendar className="h-4 w-4" />
                             {examinerSchedules[examiner.examinerId]?.find(
                               (s) => s.contestId === contestId
                             )
-                              ? `Scheduled: ${new Date(
-                                  examinerSchedules[examiner.examinerId]?.find(
-                                    (s) => s.contestId === contestId
-                                  )?.date || ""
-                                ).toLocaleDateString()}`
-                              : "+ Schedule"}
+                              ? `${t.scheduled}: ${formatDate({
+                                  dateString:
+                                    examinerSchedules[
+                                      examiner.examinerId
+                                    ]?.find((s) => s.contestId === contestId)
+                                      ?.date || "",
+                                  language: currentLanguage,
+                                })}`
+                              : `+ ${t.schedule}`}
                           </button>
 
                           {showScheduleDropdown === examiner.examinerId && (
-                            <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px]">
-                              <div className="p-2">
-                                <button
-                                  onClick={() => {
-                                    // Toggle calendar visibility
-                                    setShowScheduleDropdown(
-                                      examiner.examinerId + "_calendar"
-                                    );
-                                  }}
-                                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 transition-colors rounded flex items-center gap-2"
-                                >
-                                  <IconCalendar className="h-4 w-4" />
-                                  Chọn ngày từ lịch
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                            <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[250px]">
+                              {(() => {
+                                const round = rounds.find(
+                                  (r) => r.name === examiner.role
+                                );
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                let roundStartDate: Date | null = null;
+                                let roundEndDate: Date | null = null;
 
-                          {showScheduleDropdown ===
-                            examiner.examinerId + "_calendar" && (
-                            <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-                              <Calendar
-                                mode="single"
-                                captionLayout="dropdown"
-                                selected={(() => {
-                                  const schedule = examinerSchedules[
-                                    examiner.examinerId
-                                  ]?.find((s) => s.contestId === contestId);
-                                  return schedule?.date
-                                    ? new Date(schedule.date)
-                                    : undefined;
-                                })()}
-                                onSelect={(date) => {
-                                  if (date) {
-                                    const dateString = date
-                                      .toISOString()
-                                      .split("T")[0]; // YYYY-MM-DD format
-                                    handleScheduleDateChange(
-                                      examiner,
-                                      dateString
-                                    );
-                                    setShowScheduleDropdown(null); // Close dropdown after selection
-                                  }
-                                }}
-                                disabled={(date) => date < new Date()}
-                                className="rounded-md border-0 shadow-none"
-                              />
+                                if (
+                                  examiner.role === "ROUND_2" &&
+                                  round?.tables &&
+                                  round.tables.length > 0
+                                ) {
+                                  // For ROUND_2, use the first table's dates
+                                  const table = round.tables[0];
+                                  roundStartDate = table.startDate
+                                    ? new Date(table.startDate)
+                                    : null;
+                                  roundEndDate = table.endDate
+                                    ? new Date(table.endDate)
+                                    : null;
+                                } else {
+                                  // For ROUND_1, use round dates
+                                  roundStartDate = round?.startDate
+                                    ? new Date(round.startDate)
+                                    : null;
+                                  roundEndDate = round?.endDate
+                                    ? new Date(round.endDate)
+                                    : null;
+                                }
+
+                                if (roundStartDate)
+                                  roundStartDate.setHours(0, 0, 0, 0);
+                                if (roundEndDate)
+                                  roundEndDate.setHours(23, 59, 59, 999);
+                                const minDate =
+                                  roundStartDate && roundStartDate > today
+                                    ? roundStartDate
+                                    : today;
+                                const maxDate = roundEndDate;
+                                const currentSchedule = examinerSchedules[
+                                  examiner.examinerId
+                                ]?.find((s) => s.contestId === contestId);
+                                const currentDate = currentSchedule?.date || "";
+
+                                return (
+                                  <>
+                                    <input
+                                      type="date"
+                                      value={currentDate}
+                                      min={formatDateForInput(minDate)}
+                                      max={
+                                        maxDate
+                                          ? formatDateForInput(maxDate)
+                                          : undefined
+                                      }
+                                      onChange={(e) => {
+                                        if (e.target.value) {
+                                          handleScheduleDateChange(
+                                            examiner,
+                                            e.target.value
+                                          );
+                                          setShowScheduleDropdown(null);
+                                        }
+                                      }}
+                                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                                    />
+                                    {(roundStartDate || roundEndDate) && (
+                                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                                        <div className="font-medium mb-1">
+                                          {t.availableDatesForRound}{" "}
+                                          {examiner.role === "ROUND_1"
+                                            ? t.round1
+                                            : t.round2}
+                                          :
+                                        </div>
+                                        <div className="text-xs">
+                                          {roundStartDate && roundEndDate
+                                            ? `${t.fromDate} ${formatDate({
+                                                dateString:
+                                                  roundStartDate.toISOString(),
+                                                language: currentLanguage,
+                                              })} - ${t.untilDate} ${formatDate(
+                                                {
+                                                  dateString:
+                                                    roundEndDate.toISOString(),
+                                                  language: currentLanguage,
+                                                }
+                                              )}`
+                                            : roundStartDate
+                                            ? `${t.fromDate} ${formatDate({
+                                                dateString:
+                                                  roundStartDate.toISOString(),
+                                                language: currentLanguage,
+                                              })}`
+                                            : roundEndDate
+                                            ? `${t.untilDate} ${formatDate({
+                                                dateString:
+                                                  roundEndDate.toISOString(),
+                                                language: currentLanguage,
+                                              })}`
+                                            : null}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                           )}
                         </div>
@@ -528,9 +601,9 @@ export function ExaminersDialog({
         <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+            className="cursor-pointer px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
           >
-            Close
+            {t.close}
           </button>
         </div>
       </div>

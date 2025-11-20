@@ -230,25 +230,10 @@ export default function EditExhibitionPage({
                       <IconPhoto className="h-4 w-4" />
                       {t.managePaintingsBtn}
                     </Link>
-                    <Link
-                      href={`/dashboard/staff/exhibitions/${id}`}
-                      className="staff-btn-secondary flex items-center gap-2"
-                    >
-                      <IconX className="h-4 w-4" />
-                      {t.cancel}
-                    </Link>
-                    <button
-                      onClick={handleSubmit(onSubmit)}
-                      disabled={isSubmitting}
-                      className="staff-btn-primary flex items-center gap-2"
-                    >
-                      <IconDeviceFloppy className="h-4 w-4" />
-                      {isSubmitting ? t.saving : t.saveChanges}
-                    </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   {/* Main Form Column */}
                   <div className="lg:col-span-2 space-y-6">
                     {/* Exhibition Details */}
@@ -371,13 +356,31 @@ export default function EditExhibitionPage({
                             </select>
                           </div>
                         </div>
+
+                        {/* Form Actions */}
+                        <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#e6e2da]">
+                          <Link
+                            href={`/dashboard/staff/exhibitions/${id}`}
+                            className="staff-btn-secondary flex items-center gap-2"
+                          >
+                            <IconX className="h-4 w-4" />
+                            {t.cancel}
+                          </Link>
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="staff-btn-primary flex items-center gap-2"
+                          >
+                            <IconDeviceFloppy className="h-4 w-4" />
+                            {isSubmitting ? t.saving : t.saveChanges}
+                          </button>
+                        </div>
                       </form>
                     </div>
                   </div>
 
                   {/* Sidebar Column */}
-                  <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-                    {/* Quick Stats */}
+                  {/* <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <div className="staff-card p-6">
                       <h3 className="text-lg font-semibold staff-text-primary mb-4">
                         {t.exhibitionStats}
@@ -427,7 +430,7 @@ export default function EditExhibitionPage({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

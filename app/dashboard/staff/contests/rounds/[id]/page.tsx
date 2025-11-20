@@ -7,15 +7,16 @@ import {
   rejectStaffSubmission,
 } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
+import CustomCheckbox from "@/components/CustomCheckbox";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SubmissionDetailDialog } from "@/components/staff/SubmissionDetailDialog";
-import CustomCheckbox from "@/components/CustomCheckbox";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTranslation } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
 import { useLanguageStore } from "@/store/language-store";
 import { Submission } from "@/types/painting";
+import { RoundDTO } from "@/types/staff/contest-dto";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -32,7 +33,15 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { RoundDTO } from "../../../../../../types/staff/contest-dto";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../../../../components/ui/dialog";
+import { Button } from "../../../../../../components/ui/button";
 
 function RoundDetailContent() {
   const params = useParams();
@@ -54,6 +63,14 @@ function RoundDetailContent() {
   const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(
     new Set()
   );
+
+  // Dialog states
+  const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [acceptAllDialogOpen, setAcceptAllDialogOpen] = useState(false);
+  const [pendingAcceptId, setPendingAcceptId] = useState<string | null>(null);
+  const [pendingRejectId, setPendingRejectId] = useState<string | null>(null);
+  const [pendingAcceptAllIds, setPendingAcceptAllIds] = useState<string[]>([]);
 
   // Fetch round details
   const { data: roundData, isLoading: isLoadingRound } = useQuery({
@@ -151,15 +168,13 @@ function RoundDetailContent() {
   });
 
   const handleQuickAccept = (paintingId: string) => {
-    if (confirm(t.confirmAcceptSubmission)) {
-      acceptMultipleMutation.mutate([paintingId]);
-    }
+    setPendingAcceptId(paintingId);
+    setAcceptDialogOpen(true);
   };
 
   const handleQuickReject = (paintingId: string) => {
-    if (confirm(t.confirmRejectSubmission)) {
-      rejectMutation.mutate(paintingId);
-    }
+    setPendingRejectId(paintingId);
+    setRejectDialogOpen(true);
   };
 
   const handleSelectSubmission = (paintingId: string, checked: boolean) => {
@@ -189,6 +204,30 @@ function RoundDetailContent() {
     }
   };
 
+  const handleConfirmAccept = () => {
+    if (pendingAcceptId) {
+      acceptMultipleMutation.mutate([pendingAcceptId]);
+      setAcceptDialogOpen(false);
+      setPendingAcceptId(null);
+    }
+  };
+
+  const handleConfirmReject = () => {
+    if (pendingRejectId) {
+      rejectMutation.mutate(pendingRejectId);
+      setRejectDialogOpen(false);
+      setPendingRejectId(null);
+    }
+  };
+
+  const handleConfirmAcceptAll = () => {
+    if (pendingAcceptAllIds.length > 0) {
+      acceptMultipleMutation.mutate(pendingAcceptAllIds);
+      setAcceptAllDialogOpen(false);
+      setPendingAcceptAllIds([]);
+    }
+  };
+
   const handleAcceptAllSelected = () => {
     // Only accept submissions that are still PENDING
     const pendingSelected = Array.from(selectedSubmissions).filter(
@@ -205,17 +244,8 @@ function RoundDetailContent() {
       return;
     }
 
-    if (
-      confirm(
-        t.acceptAllSelectedPending.replace(
-          "${count}",
-          pendingSelected.length.toString()
-        )
-      )
-    ) {
-      // Use the bulk accept API
-      acceptMultipleMutation.mutate(pendingSelected);
-    }
+    setPendingAcceptAllIds(pendingSelected);
+    setAcceptAllDialogOpen(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -234,8 +264,29 @@ function RoundDetailContent() {
         return "staff-badge-active";
       case "REJECTED":
         return "staff-badge-rejected";
+      case "ORIGINAL_SUBMITTED":
+        return "staff-badge-active";
+      case "NOT_SUBMITTED_ORIGINAL":
+        return "staff-badge-rejected";
       default:
         return "staff-badge-neutral";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return t.pendingReview;
+      case "ACCEPTED":
+        return t.approved;
+      case "REJECTED":
+        return t.rejected;
+      case "ORIGINAL_SUBMITTED":
+        return t.originalSubmittedStatus;
+      case "NOT_SUBMITTED_ORIGINAL":
+        return t.originalNotSubmittedStatus;
+      default:
+        return status;
     }
   };
 
@@ -362,8 +413,10 @@ function RoundDetailContent() {
                   <div>
                     <div className="flex items-center gap-3">
                       <h2 className="text-2xl font-bold staff-text-primary">
-                        {round.name}
-                        {round.table && (
+                        {round.name === "ROUND_1"
+                          ? `${t.rounds} 1`
+                          : `${t.rounds} 2`}
+                        {round.name === "ROUND_2" && round.table && (
                           <span className="ml-2 text-lg font-normal staff-text-secondary">
                             ({t.table} {round.table})
                           </span>
@@ -584,7 +637,7 @@ function RoundDetailContent() {
                               <span
                                 className={getStatusColor(submission.status)}
                               >
-                                {submission.status}
+                                {getStatusText(submission.status)}
                               </span>
                             </div>
                           </div>
@@ -706,8 +759,8 @@ function RoundDetailContent() {
                             onChange={(checked) => handleSelectAll(checked)}
                             label={
                               selectedSubmissions.size > 0
-                                ? `Selected (${selectedSubmissions.size})`
-                                : "Select All"
+                                ? `${t.selected} (${selectedSubmissions.size})`
+                                : t.selectAll
                             }
                           />
                         </div>
@@ -845,6 +898,86 @@ function RoundDetailContent() {
           roundName={round.name}
         />
       )}
+
+      {/* Accept Submission Dialog */}
+      <Dialog open={acceptDialogOpen} onOpenChange={setAcceptDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.confirmAccept || "Confirm Accept"}</DialogTitle>
+            <DialogDescription>{t.confirmAcceptSubmission}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAcceptDialogOpen(false)}
+            >
+              {t.cancel || "Cancel"}
+            </Button>
+            <Button
+              onClick={handleConfirmAccept}
+              disabled={acceptMultipleMutation.isPending}
+            >
+              {acceptMultipleMutation.isPending
+                ? t.accepting
+                : t.accept || "Accept"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Submission Dialog */}
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t.confirmReject || "Confirm Reject"}</DialogTitle>
+            <DialogDescription>{t.confirmRejectSubmission}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+            >
+              {t.cancel || "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmReject}
+              disabled={rejectMutation.isPending}
+            >
+              {rejectMutation.isPending ? "Rejecting..." : t.reject || "Reject"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Accept All Selected Dialog */}
+      <Dialog open={acceptAllDialogOpen} onOpenChange={setAcceptAllDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{"Confirm Accept All"}</DialogTitle>
+            <DialogDescription>
+              {t.acceptAllSelectedPending.replace(
+                "${count}",
+                pendingAcceptAllIds.length.toString()
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setAcceptAllDialogOpen(false)}
+            >
+              {t.cancel || "Cancel"}
+            </Button>
+            <Button
+              onClick={handleConfirmAcceptAll}
+              disabled={acceptMultipleMutation.isPending}
+            >
+              {acceptMultipleMutation.isPending ? t.accepting : t.acceptAll}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }

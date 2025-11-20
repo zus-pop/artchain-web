@@ -165,6 +165,23 @@ export function SubmissionDetailDialog({
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "PENDING":
+        return t.pendingReview;
+      case "ACCEPTED":
+        return t.approved;
+      case "REJECTED":
+        return t.rejected;
+      case "ORIGINAL_SUBMITTED":
+        return t.originalSubmittedStatus;
+      case "NOT_SUBMITTED_ORIGINAL":
+        return t.originalNotSubmittedStatus;
+      default:
+        return status;
+    }
+  };
+
   const handleAccept = () => {
     if (confirm("Are you sure you want to accept this submission?")) {
       acceptMutation.mutate();
@@ -251,7 +268,7 @@ export function SubmissionDetailDialog({
           </DialogTitle>
           <div className="flex items-center justify-between mt-2">
             <span className={getStatusColor(submission.status)}>
-              {submission.status}
+              {getStatusText(submission.status)}
             </span>
           </div>
         </DialogHeader>
@@ -284,7 +301,12 @@ export function SubmissionDetailDialog({
               </label>
               <input
                 {...form.register("title")}
-                className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                readOnly={roundName === "ROUND_1"}
+                className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none transition-all duration-200 ${
+                  roundName === "ROUND_1"
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : "bg-white focus:ring-2 focus:ring-blue-500"
+                }`}
                 placeholder="Enter painting title"
               />
               {form.formState.errors.title && (
@@ -300,7 +322,12 @@ export function SubmissionDetailDialog({
               <textarea
                 {...form.register("description")}
                 rows={4}
-                className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
+                readOnly={roundName === "ROUND_1"}
+                className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none transition-all duration-200 resize-none ${
+                  roundName === "ROUND_1"
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : "bg-white focus:ring-2 focus:ring-blue-500"
+                }`}
                 placeholder="Enter painting description"
               />
               {form.formState.errors.description && (
@@ -339,7 +366,7 @@ export function SubmissionDetailDialog({
                           const file = e.target.files?.[0];
                           form.setValue("round2Image", file);
                         }}
-                        className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                       />
                       {round2Image && (
                         <p className="text-xs staff-text-secondary mt-1">
@@ -385,29 +412,33 @@ export function SubmissionDetailDialog({
                 </div>
               )}
 
-            <div className="flex justify-end">
-              <button
-                onClick={handleUpdatePaintingDetails}
-                disabled={
-                  uploadRound2PaintingMutation.isPending ||
-                  (!form.watch("title")?.trim() &&
-                    !form.watch("description")?.trim() &&
-                    !round2Image) ||
-                  !!form.formState.errors.title ||
-                  !!form.formState.errors.description ||
-                  (roundName &&
-                    (roundName.toLowerCase().includes("round 2") ||
-                      roundName.toLowerCase().includes("round_2") ||
-                      roundName.toLowerCase().includes(" 2")) &&
-                    submission.status === "ACCEPTED" &&
-                    !!form.formState.errors.round2Image)
-                }
-                className="staff-btn-primary disabled:opacity-50 flex items-center gap-2"
-              >
-                <IconCheck className="h-4 w-4" />
-                {uploadRound2PaintingMutation.isPending ? t.updating : t.update}
-              </button>
-            </div>
+            {roundName === "ROUND_2" && (
+              <div className="flex justify-end">
+                <button
+                  onClick={handleUpdatePaintingDetails}
+                  disabled={
+                    uploadRound2PaintingMutation.isPending ||
+                    (!form.watch("title")?.trim() &&
+                      !form.watch("description")?.trim() &&
+                      !round2Image) ||
+                    !!form.formState.errors.title ||
+                    !!form.formState.errors.description ||
+                    (roundName &&
+                      (roundName.toLowerCase().includes("round 2") ||
+                        roundName.toLowerCase().includes("round_2") ||
+                        roundName.toLowerCase().includes(" 2")) &&
+                      submission.status === "ACCEPTED" &&
+                      !!form.formState.errors.round2Image)
+                  }
+                  className="staff-btn-primary disabled:opacity-50 flex items-center gap-2"
+                >
+                  <IconCheck className="h-4 w-4" />
+                  {uploadRound2PaintingMutation.isPending
+                    ? t.updating
+                    : t.update}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Information Grid */}
@@ -424,7 +455,7 @@ export function SubmissionDetailDialog({
               </p>
             </div>
 
-            <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[#e6e2da] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconTrophy className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
@@ -434,9 +465,9 @@ export function SubmissionDetailDialog({
               <p className="text-sm staff-text-primary font-semibold">
                 {submission.contestId}
               </p>
-            </div>
+            </div> */}
 
-            <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[#e6e2da] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
@@ -446,7 +477,7 @@ export function SubmissionDetailDialog({
               <p className="text-sm staff-text-primary font-semibold">
                 {submission.roundId}
               </p>
-            </div>
+            </div> */}
 
             <div className="border border-[#e6e2da] p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -462,7 +493,7 @@ export function SubmissionDetailDialog({
               )}
             </div>
 
-            {submission.awardId && (
+            {/* {submission.awardId && (
               <div className="border border-[#e6e2da] p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <IconTrophy className="h-5 w-5 staff-text-secondary" />
@@ -474,7 +505,7 @@ export function SubmissionDetailDialog({
                   {submission.awardId}
                 </p>
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Metadata */}
@@ -502,7 +533,7 @@ export function SubmissionDetailDialog({
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
+                className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
                 rows={3}
                 placeholder="Provide a reason for rejection..."
               />
@@ -539,7 +570,7 @@ export function SubmissionDetailDialog({
                 >
                   {t.close}
                 </button>
-                <button
+                {/* <button
                   onClick={handleReject}
                   className="px-4 py-2 bg-linear-to-r from-red-500 to-red-600 text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
                   disabled={acceptMutation.isPending}
@@ -554,7 +585,7 @@ export function SubmissionDetailDialog({
                 >
                   <IconCheck className="h-4 w-4 inline mr-2" />
                   {acceptMutation.isPending ? "Accepting..." : "Accept"}
-                </button>
+                </button> */}
               </>
             )}
           </DialogFooter>
