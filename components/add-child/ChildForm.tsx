@@ -131,9 +131,9 @@ export function ChildForm({
     // Expected grade = age - 5 (since grade 1 = 6 years old)
     const expectedGrade = age - 5;
 
-    // Allow grades within a reasonable range (considering the 4-year tolerance from validation)
-    const minGrade = Math.max(1, expectedGrade - 2);
-    const maxGrade = Math.min(9, expectedGrade + 2);
+    // For strict validation: only allow grades that match expected age ±1 year
+    const minGrade = Math.max(1, expectedGrade - 1);
+    const maxGrade = Math.min(9, expectedGrade + 1);
 
     const validGrades = [];
     for (let grade = minGrade; grade <= maxGrade; grade++) {
@@ -293,7 +293,7 @@ export function ChildForm({
                         placeholder="Chọn ngày sinh *"
                         error={errors.birthday?.message}
                         min={`${new Date().getFullYear() - 16}-01-01`}
-                        max={`${new Date().getFullYear() - 4}-12-31`}
+                        max={`${new Date().getFullYear() - 5}-12-31`}
                       />
                     )}
                   />
