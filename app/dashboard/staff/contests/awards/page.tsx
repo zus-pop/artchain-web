@@ -167,7 +167,7 @@ function AwardsManagementPage() {
       {
         onSuccess: () => {
           // Show success message
-          toast.success("Email announcement sent successfully");
+          toast.success("Gửi thông báo qua email thành công!");
           setIsSendingEmail(false);
         },
         onError: (error) => {

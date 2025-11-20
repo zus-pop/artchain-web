@@ -91,11 +91,11 @@ export function ExaminersDialog({
       setSelectedExaminerId("");
       setSelectedRole("ROUND_1");
       setExaminerSearch("");
-      toast.success("Examiner added successfully!");
+      toast.success("Thêm giám khảo thành công");
     },
     onError: (error) => {
       console.error("Error adding examiner:", error);
-      toast.error("Failed to add examiner. Please try again.");
+      toast.error("Xảy ra lỗi khi thêm giám khảo.");
     },
   });
 
@@ -110,11 +110,11 @@ export function ExaminersDialog({
       queryClient.invalidateQueries({
         queryKey: ["contest-detail", contestId.toString()],
       });
-      toast.success("Examiner removed successfully!");
+      toast.success("Gỡ giám khảo thành công");
     },
     onError: (error) => {
       console.error("Error removing examiner:", error);
-      toast.error("Failed to remove examiner. Please try again.");
+      toast.error("Có lỗi khi gỡ giám khảo");
     },
   });
 
@@ -204,10 +204,10 @@ export function ExaminersDialog({
 
       // Reload schedules
       await loadExaminerSchedules(examiner.examinerId);
-      toast.success("Schedule updated successfully!");
+      toast.success("Cập nhật lịch chấm thành công!");
     } catch (error) {
       console.error("Error updating schedule:", error);
-      toast.error("Failed to update schedule. Please try again.");
+      toast.error("Có lỗi khi cập nhật lịch chấm");
     }
   };
 
