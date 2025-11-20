@@ -12,6 +12,7 @@ import {
   getTopExaminers,
   getMostVotedPaintings,
 } from "@/apis/admin";
+import { useGetContests } from "@/apis/contests";
 import type {
   ApiListResponse,
   TopCompetitorItem,
@@ -55,6 +56,13 @@ import {
 import Loader from "@/components/Loaders";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function AdminDashboardPage() {
   // Fetch system statistics
@@ -141,25 +149,13 @@ export default function AdminDashboardPage() {
       ]
     : [];
 
-  const campaignData = systemStats
-    ? [
-        {
-          name: "Active",
-          value: systemStats.campaigns.active,
-          color: "#f59e0b",
-        },
-        { name: "Draft", value: systemStats.campaigns.draft, color: "#8b5cf6" },
-      ]
-    : [];
-
   // Controls and user-growth query (right-side line chart)
   const [startDate, setStartDate] = useState<string>(() => "2025-01-01");
   const [endDate, setEndDate] = useState<string>(() => "2025-12-31");
   const [groupBy, setGroupBy] = useState<string>(() => "month");
-  // Sorting for top competitors names (dropdown inside the Top Competitors card)
-  const [sortBy, setSortBy] = useState<"totalSubmissions" | "awardsWon">(
-    "totalSubmissions"
-  );
+  // Dialog for award details
+  const [selectedAwardCount, setSelectedAwardCount] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Translation
   const { currentLanguage } = useLanguageStore();
@@ -187,6 +183,7 @@ export default function AdminDashboardPage() {
     queryFn: () => getMostVotedPaintings(10),
     enabled: true,
   });
+  const { data: contests } = useGetContests();
 
   const topCompetitors =
     (topCompetitorsRaw as ApiListResponse<TopCompetitorItem>)?.data ??
@@ -222,30 +219,6 @@ export default function AdminDashboardPage() {
     return arr;
   }, [topCompetitors]);
 
-  const topCompetitorsDataNames = useMemo(() => {
-    const arr = (topCompetitors || []).map(
-      (it: TopCompetitorItem, idx: number) => ({
-        name: it.fullName ?? `#${it.competitorId ?? idx + 1}`,
-        value: Number(it.totalSubmissions ?? 0),
-        awardsWon: Number(it.awardsWon ?? 0),
-      })
-    );
-
-    if (sortBy === "totalSubmissions") {
-      arr.sort((a, b) => {
-        if (b.value !== a.value) return b.value - a.value;
-        return b.awardsWon - a.awardsWon;
-      });
-    } else {
-      arr.sort((a, b) => {
-        if (b.awardsWon !== a.awardsWon) return b.awardsWon - a.awardsWon;
-        return b.value - a.value;
-      });
-    }
-
-    return arr;
-  }, [topCompetitors, sortBy]);
-
   const topExaminersData = [...(topExaminers || [])]
     .map((it: TopExaminerItem, idx: number) => ({
       name: it.fullName ?? `#${it.examinerId ?? idx + 1}`,
@@ -267,6 +240,76 @@ export default function AdminDashboardPage() {
       voteCount: Number(p.voteCount ?? 0),
     }))
     .sort((a, b) => b.voteCount - a.voteCount);
+
+  const topSchoolsData = useMemo(() => {
+    const arr = (systemStats?.topSchools || []).map((school) => ({
+      name: school.schoolName,
+      value: school.awardCount,
+    }));
+    arr.sort((a, b) => b.value - a.value);
+    return arr;
+  }, [systemStats]);
+
+  const recentContests = useMemo(() => {
+    if (!contests) return [];
+    return [...contests]
+      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+      .slice(0, 3);
+  }, [contests]);
+
+  const topAwardCounts = useMemo(() => {
+    // Use actual data from API or mock
+    const competitors = systemStats?.topCompetitorsInRecentContests?.competitors;
+    const mockCompetitors = [
+      {
+        competitorId: "a9bc378e-6793-41d8-a43c-fce978b0387a",
+        competitorName: "sonduong",
+        email: "son@gmail.com",
+        schoolName: "Trung học Phước An",
+        awardCount: 1
+      },
+      {
+        competitorId: "8933f1f3-7f4b-44ca-915c-3f0891ed592c",
+        competitorName: "chau",
+        email: "chau@gmail.com",
+        schoolName: "Trung học Phước An",
+        awardCount: 1
+      },
+      {
+        competitorId: "50ba438d-7bc8-438a-ab4c-7943ad3e0cb3",
+        competitorName: "Hoàng Lan Anh",
+        email: "lananh2012@gmail.com",
+        schoolName: "Trung học cơ sở Phan Chu Trinh",
+        awardCount: 1
+      },
+      {
+        competitorId: "02165ca6-a4dc-4609-b434-a2e38e715acd",
+        competitorName: "Nguyễn Thúy Quỳnh",
+        email: "thuyquynh@gmail.com",
+        schoolName: "Trung học cơ sở Phan Chu Trinh",
+        awardCount: 1
+      },
+      {
+        competitorId: "5cf8985d-c817-4d23-add8-6617e1adba0e",
+        competitorName: "Việt Hoàng",
+        email: "viethoang1520.dev@gmail.com",
+        schoolName: "THCS Trần Đại Nghĩa",
+        awardCount: 1
+      }
+    ];
+    const finalCompetitors = (competitors && competitors.length > 0) ? competitors : mockCompetitors;
+    const grouped = finalCompetitors.reduce((acc, comp) => {
+      const count = comp.awardCount;
+      if (!acc[count]) acc[count] = [];
+      acc[count].push(comp);
+      return acc;
+    }, {} as Record<number, typeof finalCompetitors>);
+    const sortedCounts = Object.keys(grouped).map(Number).sort((a, b) => b - a);
+    return sortedCounts.map(count => ({
+      awardCount: count,
+      competitors: grouped[count],
+    }));
+  }, [systemStats]);
 
   const { data: userGrowthRaw, isLoading: isLoadingUserGrowth } = useQuery<
     UserGrowthResponse | UserGrowthResponse["data"] | null
@@ -732,88 +775,57 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <h4 className="text-sm font-semibold text-gray-800">
-                            {t.topCompetitors}
-                          </h4>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <label className="sr-only">Sort by</label>
-                          <select
-                            value={sortBy}
-                            onChange={(e) =>
-                              setSortBy(
-                                e.target.value as
-                                  | "totalSubmissions"
-                                  | "awardsWon"
-                              )
-                            }
-                            className="text-xs border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="totalSubmissions">
-                              Submissions
-                            </option>
-                            <option value="awardsWon">Awards</option>
-                          </select>
-                        </div>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <h4 className="text-sm font-semibold text-gray-800">
+                          Thống kê người tham gia
+                        </h4>
                       </div>
-                      {/* List of top competitors names */}
                       <div className="mt-4">
                         <ul className="text-sm space-y-2 max-h-60 overflow-y-auto">
-                          {topCompetitorsDataNames
-                            .slice(0, 10)
-                            .map((item, index) => {
-                              const rank = index + 1;
-                              const isTop3 = rank <= 3;
-                              return (
-                                <li
-                                  key={index}
-                                  className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
-                                    isTop3
-                                      ? "bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200"
-                                      : "hover:bg-gray-50"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span
-                                      className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                                        rank === 1
-                                          ? "bg-yellow-500 text-white"
-                                          : rank === 2
-                                          ? "bg-gray-400 text-white"
-                                          : rank === 3
-                                          ? "bg-orange-600 text-white"
-                                          : "bg-gray-200 text-gray-700"
-                                      }`}
-                                    >
-                                      {rank}
-                                    </span>
-                                    <span
-                                      className={`font-medium ${
-                                        isTop3
-                                          ? "text-gray-900"
-                                          : "text-gray-700"
-                                      }`}
-                                    >
-                                      {item.name}
-                                    </span>
-                                  </div>
+                          {topAwardCounts.length > 0 ? topAwardCounts.slice(0, 10).map((item, index) => {
+                            const rank = index + 1;
+                            const isTop3 = rank <= 3;
+                            return (
+                              <li
+                                key={index}
+                                className={`flex items-center justify-between p-2 rounded-lg transition-colors cursor-pointer ${
+                                  isTop3
+                                    ? "bg-linear-to-r from-yellow-50 to-orange-50 border border-yellow-200"
+                                    : "hover:bg-gray-50"
+                                }`}
+                                onClick={() => {
+                                  setSelectedAwardCount(item.awardCount);
+                                  setIsDialogOpen(true);
+                                }}
+                              >
+                                <div className="flex items-center gap-2">
                                   <span
-                                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                                      sortBy === "totalSubmissions"
-                                        ? "bg-blue-100 text-blue-800"
-                                        : "bg-green-100 text-green-800"
+                                    className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                      rank === 1
+                                        ? "bg-yellow-500 text-white"
+                                        : rank === 2
+                                        ? "bg-gray-400 text-white"
+                                        : rank === 3
+                                        ? "bg-orange-600 text-white"
+                                        : "bg-gray-200 text-gray-700"
                                     }`}
                                   >
-                                    {sortBy === "totalSubmissions"
-                                      ? `${item.value}`
-                                      : `${item.awardsWon}`}
+                                    {rank}
                                   </span>
-                                </li>
-                              );
-                            })}
+                                  <span className="font-medium text-gray-700">
+                                  Có  {item.awardCount} giải thưởng
+                                  </span>
+                                </div>
+                                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
+                                  {item.competitors.length}
+                                  <Users className="h-3 w-3" />
+                                </span>
+                              </li>
+                            );
+                          }) : (
+                            <li className="p-2 text-gray-500">No data available</li>
+                          )}
                         </ul>
                       </div>
                     </div>
@@ -822,18 +834,18 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <h4 className="text-sm font-semibold text-gray-800">
-                          {t.topExaminersAdmin}
+                          Thống kê các cuộc thi gần đây
                         </h4>
                       </div>
-                      {/* List of top examiners names */}
+                      {/* List of recent contests */}
                       <div className="mt-4">
                         <ul className="text-sm space-y-2 max-h-60 overflow-y-auto">
-                          {topExaminersData.slice(0, 10).map((item, index) => {
+                          {recentContests.length > 0 ? recentContests.map((contest, index) => {
                             const rank = index + 1;
                             const isTop3 = rank <= 3;
                             return (
                               <li
-                                key={index}
+                                key={contest.contestId}
                                 className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
                                   isTop3
                                     ? "bg-linear-to-r from-green-50 to-emerald-50 border border-green-200"
@@ -859,15 +871,14 @@ export default function AdminDashboardPage() {
                                       isTop3 ? "text-gray-900" : "text-gray-700"
                                     }`}
                                   >
-                                    {item.name}
+                                    {contest.title}
                                   </span>
                                 </div>
-                                <span className="text-xs font-semibold px-2 py-1 rounded-full bg-purple-100 text-purple-800">
-                                  {item.value}
-                                </span>
                               </li>
                             );
-                          })}
+                          }) : (
+                            <li className="p-2 text-gray-500">No data available</li>
+                          )}
                         </ul>
                       </div>
                     </div>
@@ -934,19 +945,56 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      {t.campaignsStatus}
-                    </h3>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={campaignData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="value" fill="#8884d8" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                    <div className="flex items-center gap-3 mb-4">
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Top Schools
+                      </h3>
+                    </div>
+                    <div className="mt-4">
+                      <ul className="text-sm space-y-2 max-h-60 overflow-y-auto">
+                        {topSchoolsData.slice(0, 10).map((item, index) => {
+                          const rank = index + 1;
+                          const isTop3 = rank <= 3;
+                          return (
+                            <li
+                              key={index}
+                              className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
+                                isTop3
+                                  ? "bg-linear-to-r from-purple-50 to-indigo-50 border border-purple-200"
+                                  : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                    rank === 1
+                                      ? "bg-purple-500 text-white"
+                                      : rank === 2
+                                      ? "bg-indigo-400 text-white"
+                                      : rank === 3
+                                      ? "bg-blue-600 text-white"
+                                      : "bg-gray-200 text-gray-700"
+                                  }`}
+                                >
+                                  {rank}
+                                </span>
+                                <span
+                                  className={`font-medium ${
+                                    isTop3 ? "text-gray-900" : "text-gray-700"
+                                  }`}
+                                >
+                                  {item.name}
+                                </span>
+                              </div>
+                              <span className="text-xs font-semibold px-2 py-1 rounded-full bg-purple-100 text-purple-800">
+                                {item.value} awards
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -954,6 +1002,30 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </SidebarInset>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Người tham gia có {selectedAwardCount} giải thưởng</DialogTitle>
+            <DialogDescription>
+              Danh sách người tham gia đã giành được {selectedAwardCount} giải thưởng.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedAwardCount !== null && (
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {topAwardCounts.find(item => item.awardCount === selectedAwardCount)?.competitors.map((comp, index) => (
+                <div key={index} className="flex justify-between items-center p-2 border rounded">
+                  <div>
+                    <p className="font-medium">{comp.competitorName}</p>
+                    <p className="text-sm text-gray-600">{comp.schoolName}</p>
+                  </div>
+                  <span className="text-sm text-gray-500">{comp.email}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }
