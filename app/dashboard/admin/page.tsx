@@ -158,7 +158,7 @@ export default function AdminDashboardPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Translation
-  const { currentLanguage } = useLanguageStore();
+  const { currentLanguage, setLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
 
   // Top lists queries (typed) - Get top 10 by default
@@ -718,7 +718,7 @@ export default function AdminDashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">
                           {systemStats?.votes.total || 0}
                         </p>
-                        <p className="text-sm text-gray-600">Total Votes</p>
+                        <p className="text-sm text-gray-600">Bình chọn</p>
                       </div>
                     </div>
                   </div>
@@ -733,7 +733,7 @@ export default function AdminDashboardPage() {
                         <p className="text-3xl font-bold text-gray-900">
                           {systemStats?.awards.total || 0}
                         </p>
-                        <p className="text-sm text-gray-600">Total Awards</p>
+                        <p className="text-sm text-gray-600">Giải thưởng</p>
                       </div>
                     </div>
                   </div>
