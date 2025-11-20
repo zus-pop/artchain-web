@@ -1,5 +1,5 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
@@ -27,7 +27,7 @@ export const FloatingSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
-        
+
         <label className="absolute left-4 top-2 text-xs text-gray-500 transition-all pointer-events-none">
           {label}
         </label>
@@ -45,9 +45,12 @@ export const FloatingSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
             </div>
           </div>
         )}
+
+        {/* Error message below select */}
+        {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
       </div>
     );
   }
 );
 
-FloatingSelect.displayName = 'FloatingSelect';
+FloatingSelect.displayName = "FloatingSelect";

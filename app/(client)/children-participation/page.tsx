@@ -1,9 +1,10 @@
 "use client";
 
-import { useGetContestById } from "@/apis/contests";
+import { useGetContestById, useCheckUploadStatus } from "@/apis/contests";
 import { useGuardianChildren } from "@/apis/guardian";
 import Loader from "@/components/Loaders";
 import { useAuth } from "@/hooks";
+import { UserUploadStatus } from "@/types/contest";
 import { motion } from "framer-motion";
 import { ArrowLeft, Upload, User } from "lucide-react";
 import Image from "next/image";
@@ -33,6 +34,21 @@ function ChildrenParticipation() {
   // Fetch guardian children
   const { data: guardianChildren, isLoading: isLoadingChildren } =
     useGuardianChildren(user?.role === "GUARDIAN" ? user.userId : undefined);
+
+  // Get all children IDs to check upload status
+  const childrenIds = guardianChildren?.map((child) => child.userId) || [];
+  const { data: uploadStatusData } = useCheckUploadStatus(
+    contestId,
+    childrenIds
+  );
+
+  // Create a map of userId to upload status for easy lookup
+  const uploadStatusMap = new Map(
+    uploadStatusData?.data?.map((status: UserUploadStatus) => [
+      status.userId,
+      status.isUploaded,
+    ]) || []
+  );
 
   if (isLoadingContest || isLoadingChildren) {
     return (
@@ -139,71 +155,85 @@ function ChildrenParticipation() {
 
         {guardianChildren && guardianChildren.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {guardianChildren.map((child) => (
-              <motion.div
-                key={child.userId}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="bg-[#faf7f2] p-6 border border-[#e6e2da] shadow-sm hover:shadow-md transition-all duration-200"
-              >
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      {child.fullName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {child.fullName}
-                    </h3>
-                    <p className="text-gray-600 text-sm">@{child.username}</p>
-                  </div>
-                </div>
+            {guardianChildren.map((child) => {
+              const hasUploaded = uploadStatusMap.get(child.userId) || false;
 
-                <div className="space-y-2 text-sm text-gray-600 mb-6">
-                  <div className="flex justify-between">
-                    <span className="font-medium">Trường:</span>
-                    <span>{child.schoolName || "Chưa cập nhật"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Lớp:</span>
-                    <span>{child.grade || "N/A"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Email:</span>
-                    <span className="truncate">{child.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium">Trạng thái:</span>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        child.status === 1
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}
-                    >
-                      {child.status === 1 ? "Đã tham gia" : "Chưa tham gia"}
-                    </span>
-                  </div>
-                </div>
-
-                <Link
-                  href={{
-                    pathname: "/painting-upload",
-                    query: {
-                      contestId: contest.contestId,
-                      roundId: roundId,
-                      competitorId: child.userId,
-                    },
-                  }}
-                  className="w-full bg-[#FF6E1A] text-white text-center py-3 px-4 font-medium hover:from-[#FF6E1A] hover:to-[#FF6E1A] transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+              return (
+                <motion.div
+                  key={child.userId}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-[#faf7f2] p-6 border border-[#e6e2da] shadow-sm hover:shadow-md transition-all duration-200"
                 >
-                  <Upload className="h-4 w-4" />
-                  <span>Nộp bài cho {child.fullName}</span>
-                </Link>
-              </motion.div>
-            ))}
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-lg">
+                        {child.fullName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {child.fullName}
+                      </h3>
+                      <p className="text-gray-600 text-sm">@{child.username}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm text-gray-600 mb-6">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Trường:</span>
+                      <span>{child.schoolName || "Chưa cập nhật"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Lớp:</span>
+                      <span>{child.grade || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Email:</span>
+                      <span className="truncate">{child.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Trạng thái:</span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          hasUploaded
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {hasUploaded ? "Đã tham gia" : "Chưa tham gia"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {hasUploaded ? (
+                    <button
+                      disabled
+                      className="w-full bg-gray-400 text-white text-center py-3 px-4 font-medium cursor-not-allowed opacity-60 flex items-center justify-center space-x-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      <span>Đã nộp bài cho {child.fullName}</span>
+                    </button>
+                  ) : (
+                    <Link
+                      href={{
+                        pathname: "/painting-upload",
+                        query: {
+                          contestId: contest.contestId,
+                          roundId: roundId,
+                          competitorId: child.userId,
+                        },
+                      }}
+                      className="w-full bg-[#FF6E1A] text-white text-center py-3 px-4 font-medium hover:from-[#FF6E1A] hover:to-[#FF6E1A] transition-all duration-200 shadow-sm flex items-center justify-center space-x-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      <span>Nộp bài cho {child.fullName}</span>
+                    </Link>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12">

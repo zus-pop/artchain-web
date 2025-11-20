@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetContestById } from "@/apis/contests";
+import { useGetContestById, useCheckUploadStatus } from "@/apis/contests";
 import {
   getVotedAward,
   getVotedPaintings,
@@ -46,6 +46,18 @@ export default function ContestDetailPage() {
   const contestId = Number(params.id);
   const { data: contest, isLoading, error } = useGetContestById(contestId);
 
+  // Check upload status for competitor
+  const userIdsToCheck = user?.userId ? [user.userId] : [];
+  const { data: uploadStatusData } = useCheckUploadStatus(
+    contestId,
+    userIdsToCheck
+  );
+
+  // Check if current user has uploaded
+  const hasUploaded =
+    uploadStatusData?.data?.find((status) => status.userId === user?.userId)
+      ?.isUploaded || false;
+
   // Vote states
   const [selectedAwardId, setSelectedAwardId] = useState<string | null>(null);
   const [votePaintings, setVotePaintings] = useState<VotedPainting[]>([]);
@@ -53,6 +65,7 @@ export default function ContestDetailPage() {
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [selectedPainting, setSelectedPainting] =
     useState<VotedPainting | null>(null);
+  const [showEmbeddedPdf, setShowEmbeddedPdf] = useState(false);
 
   // Get awards for voting
   const { data: votedAwardData } = getVotedAward(contestId.toString());
@@ -157,6 +170,15 @@ export default function ContestDetailPage() {
     return `${minutes} phút`;
   };
 
+  const formatVND = (value: string | number | null | undefined) => {
+    if (value === null || typeof value === "undefined") return "";
+    // strip non-numeric (except dot and minus), parse to number
+    const num = Number(String(value).replace(/[^0-9.-]+/g, ""));
+    if (isNaN(num)) return String(value);
+    const rounded = Math.round(num);
+    return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VND";
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#faf7f2] pt-20 px-4 flex items-center justify-center">
@@ -185,6 +207,8 @@ export default function ContestDetailPage() {
       </div>
     );
   }
+
+  
 
   return (
     <div className="min-h-screen bg-[#EAE6E0] pt-16 sm:pt-20 px-4 sm:px-6 lg:px-8 text-black">
@@ -303,48 +327,136 @@ export default function ContestDetailPage() {
             <div className="flex gap-4">
               {/* Nút Tải quy định thi - chỉ hiển thị khi ACTIVE */}
               {contest.status === "ACTIVE" && (
-                <Link
-                  href={contest.ruleUrl}
-                  target="_blank"
+                <button
+                  onClick={() => setShowEmbeddedPdf((s) => !s)}
                   className="flex items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#b8aaaa] text-black font-medium text-base hover:bg-[#FF6E1A]/10 hover:border-[#FF6E1A] transition-colors duration-200 shadow-sm"
                 >
-                  Tải quy định thi ⬇
-                </Link>
+                  {showEmbeddedPdf ? "Ẩn xem quy định thi" : "Xem quy định thi"}
+                </button>
               )}
 
-              {/* Nút Tham gia cuộc thi - luôn hiển thị */}
-              <Link
-                href={
-                  user?.role === "COMPETITOR"
-                    ? {
-                        pathname: "/painting-upload",
-                        query: {
-                          contestId: contest.contestId,
-                          roundId: contest.rounds.find(
-                            (r) => r.name === "ROUND_1"
-                          )?.roundId,
-                          competitorId: user.userId,
-                        },
-                      }
-                    : user?.role === "GUARDIAN"
-                    ? {
-                        pathname: "/children-participation",
-                        query: {
-                          contestId: contest.contestId,
-                          roundId: contest.rounds.find(
-                            (r) => r.name === "ROUND_1"
-                          )?.roundId,
-                        },
-                      }
-                    : "/auth"
-                }
-                className="flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm"
-              >
-                Tham gia cuộc thi
-              </Link>
+              {/* Nút Tham gia cuộc thi - disable if competitor has uploaded */}
+              {user?.role === "COMPETITOR" ? (
+                <button
+                  disabled={hasUploaded}
+                  onClick={() => {
+                    if (!hasUploaded) {
+                      window.location.href = `/painting-upload?contestId=${
+                        contest.contestId
+                      }&roundId=${
+                        contest.rounds.find((r) => r.name === "ROUND_1")
+                          ?.roundId
+                      }&competitorId=${user.userId}`;
+                    }
+                  }}
+                  className={`flex-1 text-white text-center py-3 px-6 font-medium transition-all duration-200 shadow-sm ${
+                    hasUploaded
+                      ? "bg-gray-400 cursor-not-allowed opacity-60"
+                      : "bg-[#FF6E1A] hover:bg-orange-400"
+                  }`}
+                >
+                  {hasUploaded ? "Đã tham gia" : "Tham gia cuộc thi"}
+                </button>
+              ) : (
+                <Link
+                  href={
+                    user?.role === "GUARDIAN"
+                      ? {
+                          pathname: "/children-participation",
+                          query: {
+                            contestId: contest.contestId,
+                            roundId: contest.rounds.find(
+                              (r) => r.name === "ROUND_1"
+                            )?.roundId,
+                          },
+                        }
+                      : "/auth"
+                  }
+                  className="flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm"
+                >
+                  Tham gia cuộc thi
+                </Link>
+              )}
             </div>
           </motion.div>
         </div>
+
+        {showEmbeddedPdf && contest.ruleUrl && (
+          <div className="mt-6 sm:mt-8">
+            <div className="bg-white px-4 py-3 border-b border-[#e6e2da] mb-3 rounded-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Trophy className="w-4 h-4 text-[#FF6E1A]" />
+                  <span className="font-medium">Quy định thi</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={contest.ruleUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1 text-sm border border-[#e6e2da] rounded hover:bg-gray-50"
+                  >
+                    Mở trong tab mới
+                  </a>
+                  <button
+                    onClick={() => setShowEmbeddedPdf(false)}
+                    className="px-3 py-1 text-sm border border-[#e6e2da] rounded hover:bg-gray-50"
+                  >
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="relative bg-white rounded-b shadow-sm">
+              <iframe
+                src={contest.ruleUrl}
+                className="w-full h-[600px] md:h-[700px] lg:h-[800px] border-0"
+                title="Contest Rules PDF"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-8 sm:mt-12"
+        >
+          <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
+            Giải thưởng
+          </h2>
+          {contest.awards && contest.awards.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {contest.awards.map((award) => (
+                <div
+                  key={award.awardId}
+                  className="p-4 border-2 border-[#b8aaaa] bg-[#EAE6E0] text-left"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="font-semibold text-black text-base sm:text-lg">
+                      {award.name}
+                    </h5>
+                    <Trophy className="w-5 h-5 text-[#FF6E1A]" />
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-gray-600">
+                    {award.prize ? (
+                      <span>Giá trị: {formatVND(award.prize)}</span>
+                    ) : (
+                      <span>chưa có giá trị giải được công bố</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-600 py-8">
+              Chưa có giải thưởng được công bố chính thức
+            </p>
+          )}
+
+        </motion.div>
 
         {/* Timeline Section */}
         <motion.div
@@ -458,7 +570,7 @@ export default function ContestDetailPage() {
         </motion.div>
 
         {/* Vote Section */}
-        {votedAwardData?.data && (
+        {contest.awards && contest.awards.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -471,25 +583,21 @@ export default function ContestDetailPage() {
               </h3>
             </div>
 
-            <p className="text-sm sm:text-base text-black mb-6">
-              Chọn giải thưởng và vote cho bức tranh yêu thích của bạn
-            </p>
-
-            {/* Award Selection */}
+            {/* Award Selection (use API votes/contest/:id/awards) */}
             <div className="mb-6">
               <label className="block text-base font-semibold text-black mb-3">
                 Chọn giải thưởng:
               </label>
-              {votedAwardData.data.awards.length > 0 ? (
+              {votedAwardData?.data?.awards && votedAwardData.data.awards.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {votedAwardData.data.awards.map((award) => (
+                  {votedAwardData.data.awards.map((award: { awardId: string; name: string; description: string; rank: number; prize: string; quantity: number; totalVotes: number }) => (
                     <button
                       key={award.awardId}
-                      onClick={() => setSelectedAwardId(award.awardId)}
-                      className={`p-4 cursor-pointer sm:p-5 border-2 text-left transition-all hover:shadow-md ${
-                        selectedAwardId === award.awardId
+                      onClick={() => setSelectedAwardId(String(award.awardId))}
+                      className={`p-4 cursor-pointer sm:p-5 border-2 text-left transition-all duration-200 ${
+                        selectedAwardId === String(award.awardId)
                           ? "border-[#FF6E1A] bg-[#FF6E1A]/10"
-                          : "border-[#b8aaaa] hover:border-[#FF6E1A]/50"
+                          : "bg-[#EAE6E0] border-[#d7cfc9] hover:shadow-sm"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -498,7 +606,7 @@ export default function ContestDetailPage() {
                         </h4>
                         <Trophy
                           className={`w-5 h-5 ${
-                            selectedAwardId === award.awardId
+                            selectedAwardId === String(award.awardId)
                               ? "text-[#FF6E1A]"
                               : "text-gray-400"
                           }`}
@@ -508,17 +616,24 @@ export default function ContestDetailPage() {
                         {award.description}
                       </p>
                       <div className="flex items-center justify-between text-xs text-gray-600">
-                        <span>Giải: {award.prize}</span>
-                        <span className="font-medium">
-                          {award.totalVotes} votes
-                        </span>
+                        {award.prize ? (
+                          <span>Giải: {formatVND(award.prize)}</span>
+                        ) : (
+                          <span>chưa có giải thưởng được công bố chính thức</span>
+                        )}
+                        <span className="font-medium">Rank {award.rank}</span>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500">
+                        {typeof award.totalVotes !== 'undefined' && (
+                          <span>{award.totalVotes} votes</span>
+                        )}
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
                 <p className="text-center text-gray-600 py-8">
-                  Không có giải thưởng nào được tạo
+                  Không có giải thưởng để vote
                 </p>
               )}
             </div>

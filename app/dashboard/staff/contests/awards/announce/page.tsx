@@ -135,7 +135,7 @@ function AnnounceResultsPage() {
     sortedAwards.forEach((award) => {
       award.paintings.forEach((painting) => {
         num++;
-        content += `**${num}. ${award.name}**\n`;
+        content += `\n**${num}. ${award.name}**\n`;
         content += `- **${t.artworkLabel}** "${painting.title}"\n`;
         content += `- **${t.artistLabel}** ${painting.competitorName}\n`;
         content += `- **${t.prizeLabel}** ${formatCurrency(

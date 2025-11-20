@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Controller, useForm } from "react-hook-form";
@@ -23,19 +23,11 @@ const guardianSchema = z
       .string()
       .min(3, "Tối thiểu 3 ký tự")
       .max(20, "Tối đa 20 ký tự")
-      .regex(
-        /^[a-zA-Z0-9_]+$/,
-        "Chỉ chữ, số, gạch dưới"
-      ),
-    password: z
-      .string()
-      .min(6, "Tối thiểu 6 ký tự"),
+      .regex(/^[a-zA-Z0-9_]+$/, "Chỉ chữ, số, gạch dưới"),
+    password: z.string().min(6, "Tối thiểu 6 ký tự"),
     confirmPassword: z.string().min(1, "Xác nhận mật khẩu"),
-    fullName: z
-      .string()
-      .min(2, "Tối thiểu 2 ký tự")
-      .max(50, "Tối đa 50 ký tự"),
-    email: z.string().email("Email không hợp lệ"),
+    fullName: z.string().min(2, "Tối thiểu 2 ký tự").max(50, "Tối đa 50 ký tự"),
+    email: z.email("Email không hợp lệ"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu không khớp",
@@ -49,19 +41,11 @@ const competitorSchema = z
       .string()
       .min(3, "Tối thiểu 3 ký tự")
       .max(20, "Tối đa 20 ký tự")
-      .regex(
-        /^[a-zA-Z0-9_]+$/,
-        "Chỉ chữ, số, gạch dưới"
-      ),
-    password: z
-      .string()
-      .min(6, "Tối thiểu 6 ký tự"),
+      .regex(/^[a-zA-Z0-9_]+$/, "Chỉ chữ, số, gạch dưới"),
+    password: z.string().min(6, "Tối thiểu 6 ký tự"),
     confirmPassword: z.string().min(1, "Xác nhận mật khẩu"),
-    fullName: z
-      .string()
-      .min(2, "Tối thiểu 2 ký tự")
-      .max(50, "Tối đa 50 ký tự"),
-    email: z.string().email("Email không hợp lệ"),
+    fullName: z.string().min(2, "Tối thiểu 2 ký tự").max(50, "Tối đa 50 ký tự"),
+    email: z.email("Email không hợp lệ"),
     birthday: z.string().min(1, "Chọn ngày sinh"),
     schoolName: z.string().min(1, "Nhập tên trường"),
     ward: z.string().min(1, "Chọn phường/xã"),
@@ -70,7 +54,22 @@ const competitorSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => {
+      if (!data.birthday || !data.grade) return true;
+      const birthYear = new Date(data.birthday).getFullYear();
+      const currentYear = new Date().getFullYear();
+      const age = currentYear - birthYear;
+      const gradeNum = parseInt(data.grade);
+      const expectedAge = gradeNum + 5; // Lớp 1 = 6 tuổi, lớp 2 = 7 tuổi, v.v.
+      return Math.abs(age - expectedAge) <= 4; // Sai số tối đa 4 năm
+    },
+    {
+      message: "Tuổi không phù hợp với lớp học (sai số tối đa 4 năm)",
+      path: ["birthday"],
+    }
+  );
 
 type GuardianSchema = z.infer<typeof guardianSchema>;
 type CompetitorSchema = z.infer<typeof competitorSchema>;
@@ -85,7 +84,9 @@ export function RegisterForm({
   const { currentLanguage } = useLanguageStore();
   const translations = useTranslation(currentLanguage);
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<'competitor' | 'guardian' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<
+    "competitor" | "guardian" | null
+  >(null);
   const [showForm, setShowForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -113,6 +114,8 @@ export function RegisterForm({
     control: competitorControl,
     handleSubmit: competitorHandleSubmit,
     formState: { errors: competitorErrors, isValid: competitorIsValid },
+    watch: competitorWatch,
+    setValue: competitorSetValue,
   } = useForm({
     mode: "all",
     resolver: zodResolver(competitorSchema),
@@ -130,6 +133,48 @@ export function RegisterForm({
   });
 
   const { mutate, isPending } = useRegisterMutation(onToggle);
+
+  // Watch birthday field for dynamic grade options
+  const watchedBirthday = competitorWatch("birthday");
+
+  // Calculate valid grade range based on birthday
+  const getValidGrades = () => {
+    if (!watchedBirthday) {
+      // If no birthday selected, show all grades 1-9
+      return Array.from({ length: 9 }, (_, i) => i + 1);
+    }
+
+    const birthYear = new Date(watchedBirthday).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+
+    // Expected grade = age - 5 (since grade 1 = 6 years old)
+    const expectedGrade = age - 5;
+
+    // Allow grades within a reasonable range (considering the 4-year tolerance from validation)
+    const minGrade = Math.max(1, expectedGrade - 2);
+    const maxGrade = Math.min(9, expectedGrade + 2);
+
+    const validGrades = [];
+    for (let grade = minGrade; grade <= maxGrade; grade++) {
+      validGrades.push(grade);
+    }
+
+    return validGrades.length > 0
+      ? validGrades
+      : Array.from({ length: 9 }, (_, i) => i + 1);
+  };
+
+  const validGrades = getValidGrades();
+
+  // Clear grade selection if it's no longer valid when birthday changes
+  useEffect(() => {
+    const currentGrade = competitorWatch("grade");
+    if (currentGrade && !validGrades.includes(parseInt(currentGrade))) {
+      // Reset grade if it's not in the valid range
+      competitorSetValue("grade", "");
+    }
+  }, [watchedBirthday, competitorSetValue, validGrades, competitorWatch]);
 
   const handleGuardianRegister = (data: GuardianSchema) => {
     mutate({
@@ -155,16 +200,19 @@ export function RegisterForm({
     });
   };
 
-  const wardOptions = wards.map(ward => ({
+  const wardOptions = wards.map((ward) => ({
     value: ward.name,
-    label: ward.name
+    label: ward.name,
   }));
 
   // Role selection screen
   if (!showForm) {
     return (
       <div
-        className={cn("h-screen overflow-hidden flex items-center justify-center bg-[#EAE6E0] p-8", className)}
+        className={cn(
+          "h-screen overflow-hidden flex items-center justify-center bg-[#EAE6E0] p-8",
+          className
+        )}
         {...props}
       >
         <div className="w-full max-w-2xl">
@@ -174,7 +222,7 @@ export function RegisterForm({
               src="/images/newlogo.png"
               alt="Artchain Logo"
               className="w-22 h-22 mx-auto mb-6 cursor-pointer"
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
             />
             <h1 className="text-3xl font-bold text-gray-800 mb-4">
               {translations.selectAccountType || "Chọn vai trò"}
@@ -186,10 +234,12 @@ export function RegisterForm({
             {/* Competitor Card - ĐÃ CẬP NHẬT CẤU TRÚC */}
             <div
               className={cn(
-                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-[160px] cursor-pointer",
-                selectedRole === 'competitor' ? "border-2 border-orange-500 shadow-md" : "border border-gray-200 hover:border-gray-300"
+                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-40 cursor-pointer",
+                selectedRole === "competitor"
+                  ? "border-2 border-orange-500 shadow-md"
+                  : "border border-gray-200 hover:border-gray-300"
               )}
-              onClick={() => setSelectedRole('competitor')}
+              onClick={() => setSelectedRole("competitor")}
             >
               <div className="w-full">
                 {/* Hàng 1: Icon và Checkbox */}
@@ -199,12 +249,14 @@ export function RegisterForm({
                     stroke={1.5}
                   />
                   <Checkbox
-                    checked={selectedRole === 'competitor'}
-                    onChange={(checked) => setSelectedRole(checked ? 'competitor' : null)}
+                    checked={selectedRole === "competitor"}
+                    onChange={(checked) =>
+                      setSelectedRole(checked ? "competitor" : null)
+                    }
                     id="competitor-checkbox"
                   />
                 </div>
-                
+
                 {/* Hàng 2: Text */}
                 <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
                   {translations.iAmCompetitor || "Thí sinh tự do"}
@@ -215,25 +267,26 @@ export function RegisterForm({
             {/* Guardian Card - ĐÃ CẬP NHẬT CẤU TRÚC */}
             <div
               className={cn(
-                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-[160px] cursor-pointer",
-                selectedRole === 'guardian' ? "border-2 border-orange-500 shadow-md" : "border border-gray-200 hover:border-gray-300"
+                "bg-white rounded-sm p-6 flex flex-col justify-center transition-all duration-200 min-h-40 cursor-pointer",
+                selectedRole === "guardian"
+                  ? "border-2 border-orange-500 shadow-md"
+                  : "border border-gray-200 hover:border-gray-300"
               )}
-              onClick={() => setSelectedRole('guardian')}
+              onClick={() => setSelectedRole("guardian")}
             >
               <div className="w-full">
                 {/* Hàng 1: Icon và Checkbox */}
                 <div className="flex justify-between items-center w-full mb-4">
-                  <IconUsers
-                    className="w-12 h-10 text-gray-700"
-                    stroke={1.5}
-                  />
+                  <IconUsers className="w-12 h-10 text-gray-700" stroke={1.5} />
                   <Checkbox
-                    checked={selectedRole === 'guardian'}
-                    onChange={(checked) => setSelectedRole(checked ? 'guardian' : null)}
+                    checked={selectedRole === "guardian"}
+                    onChange={(checked) =>
+                      setSelectedRole(checked ? "guardian" : null)
+                    }
                     id="guardian-checkbox"
                   />
                 </div>
-                
+
                 {/* Hàng 2: Text */}
                 <h3 className="text-lg font-semibold text-gray-800 text-left w-full">
                   {translations.iAmGuardian || "Người giám hộ"}
@@ -276,7 +329,7 @@ export function RegisterForm({
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-8"
               >
-                 Đăng nhập
+                Đăng nhập
               </span>
             </div>
           </div>
@@ -287,11 +340,11 @@ export function RegisterForm({
 
   // Form screen (giữ nguyên)
   return (
-    <div 
+    <div
       className={cn(
         "h-screen overflow-hidden grid grid-cols-1 md:grid-cols-2",
         className
-      )} 
+      )}
       {...props}
     >
       {/* CỘT BÊN TRÁI (Biểu mẫu) */}
@@ -320,16 +373,24 @@ export function RegisterForm({
           </button>
           {/* Title */}
           <h1 className="text-5xl text-black leading-tight mb-6 ">
-            {selectedRole === 'competitor' ? "Đăng ký thí sinh" : "Đăng ký giám hộ"}
+            {selectedRole === "competitor"
+              ? "Đăng ký thí sinh"
+              : "Đăng ký giám hộ"}
           </h1>
 
           {/* Guardian Form */}
-          {selectedRole === 'guardian' && (
-            <form onSubmit={guardianHandleSubmit(handleGuardianRegister)} className="flex flex-col">
+          {selectedRole === "guardian" && (
+            <form
+              onSubmit={guardianHandleSubmit(handleGuardianRegister)}
+              className="flex flex-col"
+            >
               {/* Full Name and Email - 2 columns */}
               <div className="grid grid-cols-1 gap-4">
                 <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="guardian-fullName">
+                  <label
+                    className="text-base font-medium text-black"
+                    htmlFor="guardian-fullName"
+                  >
                     Họ tên
                   </label>
                   <Controller
@@ -351,7 +412,10 @@ export function RegisterForm({
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="guardian-email">
+                  <label
+                    className="text-base font-medium text-black"
+                    htmlFor="guardian-email"
+                  >
                     {translations.email || "Email"}
                   </label>
                   <Controller
@@ -376,7 +440,10 @@ export function RegisterForm({
               {/* Username and Password - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                 <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="guardian-username">
+                  <label
+                    className="text-base font-medium text-black"
+                    htmlFor="guardian-username"
+                  >
                     Username
                   </label>
                   <Controller
@@ -398,7 +465,10 @@ export function RegisterForm({
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-base font-medium text-black" htmlFor="guardian-password">
+                  <label
+                    className="text-base font-medium text-black"
+                    htmlFor="guardian-password"
+                  >
                     Password
                   </label>
                   <div className="relative">
@@ -418,7 +488,9 @@ export function RegisterForm({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                       className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       {!showPassword ? (
@@ -436,7 +508,10 @@ export function RegisterForm({
 
               {/* Confirm Password - Full width */}
               <div className="grid gap-2 mt-2">
-                <label className="text-base font-medium text-black" htmlFor="guardian-confirmPassword">
+                <label
+                  className="text-base font-medium text-black"
+                  htmlFor="guardian-confirmPassword"
+                >
                   Xác nhận
                 </label>
                 <div className="relative">
@@ -456,7 +531,11 @@ export function RegisterForm({
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                   >
                     {!showConfirmPassword ? (
@@ -477,7 +556,9 @@ export function RegisterForm({
                 disabled={isPending}
                 className="cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
-                {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
+                {isPending
+                  ? translations.processing || "Đang xử lý..."
+                  : translations.register || "Đăng ký"}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -496,7 +577,7 @@ export function RegisterForm({
           )}
 
           {/* Link to login */}
-          {selectedRole === 'guardian' && (
+          {selectedRole === "guardian" && (
             <div className="text-base text-black mt-4 ml-20">
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
@@ -509,12 +590,18 @@ export function RegisterForm({
           )}
 
           {/* Competitor Form */}
-          {selectedRole === 'competitor' && (
-            <form onSubmit={competitorHandleSubmit(handleCompetitorRegister)} className="flex flex-col">
+          {selectedRole === "competitor" && (
+            <form
+              onSubmit={competitorHandleSubmit(handleCompetitorRegister)}
+              className="flex flex-col"
+            >
               {/* Full Name and Email - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-fullName">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-fullName"
+                  >
                     Họ tên
                   </label>
                   <Controller
@@ -535,7 +622,10 @@ export function RegisterForm({
                 </div>
 
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-email">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-email"
+                  >
                     {translations.email || "Email"}
                   </label>
                   <Controller
@@ -559,7 +649,10 @@ export function RegisterForm({
               {/* Username and Password - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-username">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-username"
+                  >
                     Username
                   </label>
                   <Controller
@@ -580,7 +673,10 @@ export function RegisterForm({
                 </div>
 
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-password">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-password"
+                  >
                     Password
                   </label>
                   <div className="relative">
@@ -599,7 +695,9 @@ export function RegisterForm({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                       className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       {!showPassword ? (
@@ -618,7 +716,10 @@ export function RegisterForm({
               {/* Confirm Password and Birthday - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-confirmPassword">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-confirmPassword"
+                  >
                     Xác nhận
                   </label>
                   <div className="relative">
@@ -636,8 +737,14 @@ export function RegisterForm({
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      aria-label={
+                        showConfirmPassword
+                          ? "Hide confirm password"
+                          : "Show confirm password"
+                      }
                       className="absolute top-[55%] right-3 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
                     >
                       {!showConfirmPassword ? (
@@ -653,7 +760,10 @@ export function RegisterForm({
                 </div>
 
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-birthday">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-birthday"
+                  >
                     Ngày sinh
                   </label>
                   <Controller
@@ -663,6 +773,8 @@ export function RegisterForm({
                       <input
                         id="competitor-birthday"
                         type="date"
+                        min={`${new Date().getFullYear() - 16}-01-01`}
+                        max={`${new Date().getFullYear() - 4}-12-31`}
                         className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />
@@ -676,7 +788,10 @@ export function RegisterForm({
 
               {/* School Name - Full width */}
               <div className="grid ">
-                <label className="text-sm font-medium text-black" htmlFor="competitor-schoolName">
+                <label
+                  className="text-sm font-medium text-black"
+                  htmlFor="competitor-schoolName"
+                >
                   Trường
                 </label>
                 <Controller
@@ -699,7 +814,10 @@ export function RegisterForm({
               {/* Ward and Grade - 2 columns */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ">
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-ward">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-ward"
+                  >
                     Phường/Xã
                   </label>
                   <Controller
@@ -728,7 +846,10 @@ export function RegisterForm({
                 </div>
 
                 <div className="grid">
-                  <label className="text-sm font-medium text-black" htmlFor="competitor-grade">
+                  <label
+                    className="text-sm font-medium text-black"
+                    htmlFor="competitor-grade"
+                  >
                     Lớp
                   </label>
                   <Controller
@@ -741,7 +862,7 @@ export function RegisterForm({
                         {...field}
                       >
                         <option value="">Chọn lớp</option>
-                        {Array.from({ length: 9 }, (_, i) => i + 1).map((grade) => (
+                        {validGrades.map((grade) => (
                           <option key={grade} value={grade.toString()}>
                             Lớp {grade}
                           </option>
@@ -761,7 +882,9 @@ export function RegisterForm({
                 disabled={isPending}
                 className="cursor-pointer flex items-center justify-center gap-2 w-full h-10 px-6 bg-orange-500 text-white font-semibold shadow-sm hover:bg-orange-600 duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-2 mb-4"
               >
-                {isPending ? (translations.processing || "Đang xử lý...") : (translations.register || "Đăng ký")}
+                {isPending
+                  ? translations.processing || "Đang xử lý..."
+                  : translations.register || "Đăng ký"}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -780,14 +903,14 @@ export function RegisterForm({
           )}
 
           {/* Link to login */}
-          {selectedRole === 'competitor' && (
+          {selectedRole === "competitor" && (
             <div className="text-sm text-black mt-4 ml-20">
               {translations.alreadyHaveAccount || "Đã có tài khoản?"}{" "}
               <span
                 onClick={onToggle}
                 className="text-black hover:text-orange-500 cursor-pointer underline underline-offset-8"
               >
-               Đăng nhập
+                Đăng nhập
               </span>
             </div>
           )}

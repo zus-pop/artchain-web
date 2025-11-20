@@ -22,10 +22,11 @@ import {
 } from "@tabler/icons-react";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Contest } from "../../../../../../types";
 
 const formatCurrency = (value: number) => {
   return value.toLocaleString("vi-VN");
@@ -40,6 +41,7 @@ export default function AwardManageSuspense() {
 }
 
 function AwardManagementPage() {
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const router = useRouter();
   const contestId = searchParams.get("id") as string;
@@ -70,7 +72,7 @@ function AwardManagementPage() {
 
   const { data: awardsData } = useGetAwardsByContestId(contestId);
   const awards = (awardsData?.data as Award[]) || [];
-  const contest = contestData?.data;
+  const contest: Contest = contestData?.data;
 
   const createBatchMutation = useCreateBatchAward();
   const updateMutation = useUpdateAward(editingAward?.awardId || "");
@@ -85,12 +87,19 @@ function AwardManagementPage() {
       return;
     }
 
-    await createBatchMutation.mutateAsync({
-      awards: validAwards.map((award) => ({
-        contestId,
-        ...award,
-      })),
-    });
+    await createBatchMutation.mutateAsync(
+      {
+        awards: validAwards.map((award) => ({
+          contestId,
+          ...award,
+        })),
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
+        },
+      }
+    );
 
     setNewAwards([
       { name: "", description: "", rank: 1, quantity: 1, prize: 0 },
@@ -101,13 +110,21 @@ function AwardManagementPage() {
     awardId: string,
     updateData: UpdateAwardRequest
   ) => {
-    await updateMutation.mutateAsync(updateData);
+    await updateMutation.mutateAsync(updateData, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
+      },
+    });
     setEditingAward(null);
   };
 
   const handleDeleteAward = async (awardId: string) => {
     if (confirm(t.confirmDeleteAward)) {
-      deleteMutation.mutate(awardId);
+      deleteMutation.mutate(awardId, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
+        },
+      });
     }
   };
 
@@ -252,7 +269,8 @@ function AwardManagementPage() {
                               <input
                                 type="number"
                                 value={award.prize}
-                                step={100000}
+                                step={100_000}
+                                min={0}
                                 onChange={(e) =>
                                   updateNewAward(
                                     index,
@@ -401,6 +419,8 @@ function AwardManagementPage() {
                                         prize: Number(e.target.value),
                                       })
                                     }
+                                    step={100_000}
+                                    min={0}
                                     className="staff-input w-full pr-20"
                                   />
                                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">

@@ -3,10 +3,11 @@
 import { GuardianChild, WhoAmI } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useGetUserAchievements } from "@/apis/achievements";
-import { useGetMySubmissions, useGetUserSubmissions } from "@/apis/paintings";
+import { useGetMySubmissions, useGetUserSubmissions, useGetPaintingEvaluations } from "@/apis/paintings";
+import { PaintingEvaluation, CompetitorSubmission } from "@/types/painting";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -14,36 +15,7 @@ interface GuardianProfileScreenProps {
   isLoadingChildren: boolean;
 }
 
-interface Submission {
-  paintingId: string;
-  roundId: string;
-  contestId: number;
-  competitorId: string;
-  description: string;
-  title: string;
-  imageUrl: string;
-  submissionDate: string;
-  isPassed: boolean | null;
-  status: string;
-  awardId: string | null;
-  createdAt: string;
-  updatedAt: string;
-  contest: {
-    contestId: number;
-    title: string;
-    description: string;
-    bannerUrl: string;
-    numOfAward: number;
-    round2Quantity: number;
-    numberOfTablesRound2: number;
-    isScheduleEnforced: boolean;
-    ruleUrl: string | null;
-    startDate: string;
-    endDate: string;
-    status: string;
-    createdBy: string;
-  };
-}
+
 
 // GUARDIAN PROFILE SCREEN COMPONENT
 export default function GuardianProfileScreen({
@@ -61,6 +33,8 @@ export default function GuardianProfileScreen({
     "submitted"
   );
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewingPaintingDetail, setViewingPaintingDetail] = useState(false);
+  const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(null);
   const itemsPerPage = 2;
 
   // Fetch achievements for selected child (hook is safe to call with undefined)
@@ -72,12 +46,183 @@ export default function GuardianProfileScreen({
   // Reset page when child or tab changes
   useEffect(() => {
     setCurrentPage(1);
+    setViewingPaintingDetail(false);
+    setSelectedPaintingId(null);
   }, [selectedChild, modalActiveTab]);
 
   // Fetch submissions for selected child (guardian API expects competitor UUID)
   const { data: childSubmissions, isLoading: isLoadingChildSubmissions } = useGetUserSubmissions(
     selectedChild?.userId
   );
+
+  // Fetch evaluations for selected painting
+  const { data: paintingEvaluations, isLoading: isLoadingEvaluations } = useGetPaintingEvaluations(
+    selectedPaintingId || ""
+  );
+
+  // Handle viewing painting evaluation details
+  const handleViewPaintingDetail = (paintingId: string) => {
+    setSelectedPaintingId(paintingId);
+    setViewingPaintingDetail(true);
+  };
+
+  const handleBackToSubmissions = () => {
+    setViewingPaintingDetail(false);
+    setSelectedPaintingId(null);
+  };
+
+  // Component for displaying painting evaluation details
+  function PaintingEvaluationDetail({ 
+    evaluations, 
+    selectedSubmission, 
+    onBack 
+  }: { 
+    evaluations: PaintingEvaluation[] | null | undefined; 
+    selectedSubmission: CompetitorSubmission | undefined;
+    onBack: () => void;
+  }) {
+    if (!selectedSubmission) return null;
+
+    return (
+      <div className="space-y-6">
+        {/* Header with back button */}
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={onBack}
+            className="flex cursor-pointer items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Quay lại danh sách</span>
+          </button>
+        </div>
+
+        {/* Painting Info */}
+        <div className="bg-gray-50 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-black mb-4">Thông tin tranh</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Tên tranh</p>
+              <p className="text-black">{selectedSubmission.title}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Cuộc thi</p>
+              <p className="text-black">{selectedSubmission.contestTitle || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Ngày nộp</p>
+              <p className="text-black">
+                {selectedSubmission.submissionDate ? new Date(selectedSubmission.submissionDate).toLocaleDateString("vi-VN") : "-"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-600">Trạng thái</p>
+              <span className={`text-xs px-2 py-1 rounded ${
+                selectedSubmission.status === 'APPROVED' || selectedSubmission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                selectedSubmission.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
+                selectedSubmission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
+                selectedSubmission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                selectedSubmission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {selectedSubmission.status === 'APPROVED' || selectedSubmission.status === 'ACCEPTED' ? 'Đã duyệt' : 
+                 selectedSubmission.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
+                 selectedSubmission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
+                 selectedSubmission.status === 'PENDING' ? 'Chờ xử lý' :
+                 selectedSubmission.status === 'REJECTED' ? 'Từ chối' :
+                 selectedSubmission.status}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Evaluations */}
+        <div>
+          <h3 className="text-lg font-semibold text-black mb-4">Đánh giá từ giám khảo</h3>
+          {isLoadingEvaluations ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+              <p className="text-[#423137] mt-2">Đang tải đánh giá...</p>
+            </div>
+          ) : evaluations && evaluations.length > 0 ? (
+            <div className="space-y-4">
+              {evaluations.map((evaluation) => (
+                <div key={evaluation.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="font-medium text-black">{evaluation.examinerName}</p>
+                      <p className="text-sm text-gray-600">
+                        Đánh giá ngày: {new Date(evaluation.evaluationDate).toLocaleDateString("vi-VN")}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {evaluation.scoreRound1 && (
+                        <p className="text-lg font-semibold text-blue-600">
+                          Điểm vòng 1: {evaluation.scoreRound1}/10
+                        </p>
+                      )}
+                      {evaluation.scoreRound2 && (
+                        <p className="text-lg font-semibold text-green-600">
+                          Điểm vòng 2: {evaluation.scoreRound2}/10
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Detailed scores for round 2 */}
+                  {(evaluation.creativityScore || evaluation.compositionScore || 
+                    evaluation.colorScore || evaluation.technicalScore || evaluation.aestheticScore) && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+                      {evaluation.creativityScore && (
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Sáng tạo</p>
+                          <p className="font-medium">{evaluation.creativityScore}/10</p>
+                        </div>
+                      )}
+                      {evaluation.compositionScore && (
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Bố cục</p>
+                          <p className="font-medium">{evaluation.compositionScore}/10</p>
+                        </div>
+                      )}
+                      {evaluation.colorScore && (
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Màu sắc</p>
+                          <p className="font-medium">{evaluation.colorScore}/10</p>
+                        </div>
+                      )}
+                      {evaluation.technicalScore && (
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Kỹ thuật</p>
+                          <p className="font-medium">{evaluation.technicalScore}/10</p>
+                        </div>
+                      )}
+                      {evaluation.aestheticScore && (
+                        <div className="text-center">
+                          <p className="text-xs text-gray-600">Thẩm mỹ</p>
+                          <p className="font-medium">{evaluation.aestheticScore}/10</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {evaluation.feedback && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 mb-1">Nhận xét:</p>
+                      <p className="text-black bg-gray-50 p-3 rounded">{evaluation.feedback}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              Chưa có đánh giá nào cho tranh này.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   // Xử lý dữ liệu từ authUser, dùng fallback
   const profile = {
@@ -94,21 +239,21 @@ export default function GuardianProfileScreen({
   };
 
   // Child component that renders submission directly (no need for detail fetch since API returns full data)
-  function SubmissionItem({ submission }: { submission: Submission }) {
-    const imageUrl = submission.imageUrl;
-    const contestTitle = submission.contest?.title || "N/A";
+  function SubmissionItem({ submission, onClick }: { submission: CompetitorSubmission; onClick?: () => void }) {
+    const contestTitle = submission.contestTitle || "N/A";
 
     return (
-      <div className="overflow-hidden border border-gray-200 rounded-lg">
+      <div
+        className={`overflow-hidden border border-gray-200 rounded-lg ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+        onClick={onClick}
+      >
         <div className="relative h-48 w-full bg-gray-200">
-          {imageUrl ? (
-            // Use the imageUrl directly from the submission
+          {submission.imageUrl ? (
             <Image
-              src={imageUrl}
+              src={submission.imageUrl}
               alt={submission.title || "Tranh"}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-t"
+              fill
+              className="object-cover"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-gray-500">
@@ -130,10 +275,18 @@ export default function GuardianProfileScreen({
           <div className="flex justify-between items-center mt-2">
             <span className={`text-xs px-2 py-1 rounded ${
               submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+              submission.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
+              submission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
               submission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-red-100 text-red-800'
+              submission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
             }`}>
-              {submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'Đã duyệt' : submission.status === 'PENDING' ? 'Chờ duyệt' : submission.status}
+              {submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'Đã duyệt' : 
+               submission.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
+               submission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
+               submission.status === 'PENDING' ? 'Chờ xử lý' :
+               submission.status === 'REJECTED' ? 'Từ chối' :
+               submission.status}
             </span>
           </div>
         </div>
@@ -254,20 +407,24 @@ export default function GuardianProfileScreen({
               {/* Tab Content */}
               <div className="p-6 overflow-y-auto max-h-[60vh]">
                 {/* Tab "Tranh đã nộp" */}
-                {modalActiveTab === "submitted" && (
+                {modalActiveTab === "submitted" && !viewingPaintingDetail && (
                   <div>
                     {isLoadingChildSubmissions ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
                         <p className="text-[#423137] mt-2">Đang tải tranh đã nộp...</p>
                       </div>
-                    ) : Array.isArray(childSubmissions) && childSubmissions.length > 0 ? (
+                    ) : childSubmissions && Array.isArray(childSubmissions) && childSubmissions.length > 0 ? (
                       <div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                           {childSubmissions
                             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                            .map((submission: Submission) => (
-                              <SubmissionItem key={submission.paintingId} submission={submission} />
+                            .map((submission: CompetitorSubmission) => (
+                              <SubmissionItem 
+                                key={submission.paintingId} 
+                                submission={submission}
+                                onClick={() => handleViewPaintingDetail(submission.paintingId)}
+                              />
                             ))}
                         </div>
                         {/* Pagination */}
@@ -301,6 +458,15 @@ export default function GuardianProfileScreen({
                   </div>
                 )}
 
+                {/* Painting Evaluation Detail View */}
+                {modalActiveTab === "submitted" && viewingPaintingDetail && (
+                  <PaintingEvaluationDetail
+                    evaluations={paintingEvaluations}
+                    selectedSubmission={Array.isArray(childSubmissions) ? childSubmissions.find(sub => sub.paintingId === selectedPaintingId) : undefined}
+                    onBack={handleBackToSubmissions}
+                  />
+                )}
+
                 {/* Tab "Giải thưởng" */}
                 {modalActiveTab === "awards" && (
                   <div>
@@ -313,8 +479,19 @@ export default function GuardianProfileScreen({
                       <div className="grid grid-cols-1 gap-4">
                         {childAchievementsResp.data.achievements.map((a) => (
                           <div key={a.paintingId} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
-                            <div className="h-20 w-20 relative flex-shrink-0">
-                              <Image src={a.paintingImage || ""} alt={a.paintingTitle} layout="fill" objectFit="cover" className="rounded" />
+                            <div className="h-20 w-20 relative flex-shrink-0 bg-gray-200 rounded overflow-hidden">
+                              {a.paintingImage ? (
+                                <Image 
+                                  src={a.paintingImage} 
+                                  alt={a.paintingTitle} 
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                  🎨
+                                </div>
+                              )}
                             </div>
                             <div className="flex-1">
                               <div className="font-medium text-black">{a.paintingTitle}</div>

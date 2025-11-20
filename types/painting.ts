@@ -31,18 +31,58 @@ export interface Painting {
 }
 
 export interface TopPainting {
-  paintingId: string;
-  title: string;
-  imageUrl: string;
-  competitorId: string;
-  competitorName: string;
-  avgScoreRound2: number;
-  evaluationCount: number;
-  status: PaintingStatus;
   table: string;
   roundId: string;
-  createdAt: string;
-  award: Award | null;
+  paintings: {
+    paintingId: string;
+    title: string;
+    imageUrl: string;
+    competitorId: string;
+    competitorName: string;
+    avgScoreRound2: number;
+    avgCreativityScore: number;
+    avgCompositionScore: number;
+    avgColorScore: number;
+    avgTechnicalScore: number;
+    avgAestheticScore: number;
+    evaluationCount: number;
+    status: PaintingStatus;
+    table: string;
+    roundId: string;
+    award: {
+      awardId: string;
+      name: string;
+      description: string;
+      rank: number;
+      prize: string;
+    };
+    createdAt: string;
+  }[];
+  topPainting: {
+    paintingId: string;
+    title: string;
+    imageUrl: string;
+    competitorId: string;
+    competitorName: string;
+    avgScoreRound2: number;
+    avgCreativityScore: number;
+    avgCompositionScore: number;
+    avgColorScore: number;
+    avgTechnicalScore: number;
+    avgAestheticScore: number;
+    evaluationCount: number;
+    status: PaintingStatus;
+    table: string;
+    roundId: string;
+    award: {
+      awardId: string;
+      name: string;
+      description: string;
+      rank: number;
+      prize: string;
+    };
+    createdAt: string;
+  };
 }
 
 export interface Round2ImageRequest {
@@ -61,6 +101,7 @@ export interface CompetitorSubmission {
   submissionDate: string;
   status: string;
   averageScore: number;
+  imageUrl?: string;
 }
 
 export interface CompetitorSubmissionsResponse {
@@ -92,4 +133,28 @@ export interface Submission {
     phone: string | null;
     username: string;
   };
+}
+
+export interface PaintingEvaluation {
+  id: string;
+  paintingId: string;
+  examinerId: string;
+  scoreRound1: number | null;
+  scoreRound2: number | null;
+  creativityScore: number | null;
+  compositionScore: number | null;
+  colorScore: number | null;
+  technicalScore: number | null;
+  aestheticScore: number | null;
+  feedback: string | null;
+  evaluationDate: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  examiner: {
+    examinerId: string;
+    specialization: string | null;
+    assignedScheduleId: number;
+  };
+  examinerName: string;
 }

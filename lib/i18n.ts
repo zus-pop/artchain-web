@@ -144,7 +144,7 @@ export const translations = {
     signInNow: "Sign In Now",
 
     // Dashboard
-    dashboard: "Dashboard",
+    dashboard: "Tổng quan",
     staffDashboard: "Staff Dashboard",
     adminDashboard: "Admin Dashboard",
     contestManagement: "Quản Lý Cuộc Thi",
@@ -248,8 +248,10 @@ export const translations = {
     selected: "Đã Chọn",
     acceptAll: "Chấp Nhận Tất Cả",
     accepting: "Đang Chấp Nhận...",
-    noPendingSubmissionsSelected: "Không có bài nộp đang chờ nào được chọn để chấp nhận.",
-    acceptAllSelectedPending: "Chấp nhận tất cả ${count} bài nộp đang chờ đã chọn?",
+    noPendingSubmissionsSelected:
+      "Không có bài nộp đang chờ nào được chọn để chấp nhận.",
+    acceptAllSelectedPending:
+      "Chấp nhận tất cả ${count} bài nộp đang chờ đã chọn?",
 
     // Admin Dashboard
     totalUsersAdmin: "Tổng Người Dùng",
@@ -494,6 +496,8 @@ export const translations = {
     numberOfTablesRound2: "Số bảng vòng 2",
     disabledWhenNoCompetitors: "Vô hiệu hóa khi không có thí sinh",
     competitorsDivideTables: "thí sinh chia bảng",
+    competitorsDivisionMessage:
+      "{count} thí sinh sẽ được chia thành {tables} bảng ({perTable} mỗi bảng)",
     topCompetitors: "Số Thí Sinh Xuất Sắc",
     numberOfTables: "Số Bảng",
     saveContest: "Lưu Cuộc Thi",
@@ -504,6 +508,10 @@ export const translations = {
     contestIdLabelDetail: "ID Cuộc Thi:",
     contestIdLabel: "ID Cuộc Thi:",
     round2CompetitorsLabel: "Số thí sinh vòng 2",
+    round2Configuration: "Cấu Hình Vòng 2",
+    bannerPreview: "Xem Trước Banner",
+    currentFile: "Tệp hiện tại:",
+    pdfPreview: "Xem Trước PDF",
     roundDates: "Ngày Vòng",
     files: "Tệp",
     bannerImage: "Hình Ảnh Banner",
@@ -534,13 +542,25 @@ export const translations = {
     roundEndAfterStart: "Ngày kết thúc vòng phải sau ngày bắt đầu vòng",
     submissionDeadlineRequired: "Hạn nộp là bắt buộc",
     submissionAfterRoundStart: "Hạn nộp phải sau ngày bắt đầu vòng",
+    submissionBeforeRoundEnd: "Hạn nộp phải trước hoặc bằng ngày kết thúc vòng",
     resultDateRequired: "Ngày công bố kết quả là bắt buộc",
     originalDeadlineRequired: "Hạn gửi bản gốc là bắt buộc",
-    topCompetitorsMin: "Số thí sinh xuất sắc phải ít nhất là 0",
+    topCompetitorsMin: "Số thí sinh xuất sắc phải ít nhất là 1",
     topCompetitorsMax: "Số thí sinh xuất sắc quá cao",
-    tablesMin: "Số bảng phải ít nhất là 0",
-    tablesMax: "Tối đa 26 bảng cho vòng 2",
+    tablesMin: "Số bảng phải ít nhất là 3",
+    tablesMax: "Tối đa 6 bảng cho vòng 2",
     competitorsEvenlyDivided: "Thí sinh phải được chia đều vào các bảng",
+
+    // Date Range Validation
+    roundStartWithinContest:
+      "Ngày bắt đầu vòng phải nằm trong khoảng thời gian cuộc thi",
+    roundEndWithinContest:
+      "Ngày kết thúc vòng phải nằm trong khoảng thời gian cuộc thi",
+    submissionWithinContest: "Hạn nộp phải nằm trong khoảng thời gian cuộc thi",
+    resultDateWithinContest:
+      "Ngày công bố kết quả phải nằm trong khoảng thời gian cuộc thi",
+    originalDeadlineWithinContest:
+      "Hạn gửi bản gốc phải nằm trong khoảng thời gian cuộc thi",
 
     // User Form Validation
     usernameMinLength: "Tên đăng nhập phải có ít nhất 3 ký tự",
@@ -916,12 +936,39 @@ export const translations = {
 
     // Contest Detail Page
     confirmDeleteRoundDetail: "Bạn có chắc chắn muốn xóa vòng thi này?",
+
+    // Qualified Paintings Review
+    round1QualifiedPaintingsReview: "Đánh giá tranh vòng 1 đủ điều kiện",
+    round1QualifiedPaintingsReviewDesc:
+      "Đánh giá tranh vòng 1 đủ điều kiện và quản lý trạng thái nộp bản gốc. Sử dụng giao diện này để theo dõi những nghệ sĩ nào đã nộp bản gốc trước khi tiến hành vòng 2.",
+    originalPending: "Bản gốc đang chờ",
+    artistLabel: "Tác giả",
+    emailLabel: "Email",
+    scoreLabel: "Điểm",
+    reviewsLabel: "Đánh giá",
+    originalArtworkSubmitted: "Đã nộp bản gốc",
+    originalSubmittedStatus: "Đã nộp bản gốc",
+    originalNotSubmittedStatus: "Chưa nộp bản gốc",
+    acceptedStatus: "Đã chấp nhận",
+    rejectedStatus: "Đã từ chối",
+    pendingReviewStatus: "Đang chờ duyệt",
+    totalQualified: "Tổng số đủ điều kiện",
+    noQualifiedPaintingsFound: "Không tìm thấy tranh đủ điều kiện nào.",
+    closeDialog: "Đóng",
+    confirmUpdate: "Xác nhận cập nhật",
+    confirmUpdateDescription: "Bạn có chắc chắn muốn",
+    markAsSubmitted: "đánh dấu là đã nộp",
+    markAsNotSubmitted: "đánh dấu là chưa nộp",
+    originalSubmissionForPainting: "bản gốc cho tranh",
+    confirmBtn: "Xác nhận",
+    updatingStatus: "Đang cập nhật...",
+    qualifiedPaintings: "Các tranh đạt yêu cầu",
     contestDetailTitle: "Chi Tiết Cuộc Thi",
     contestIdRequiredDetail: "Cần có ID cuộc thi",
     loadingContestDetailsDetail: "Đang tải chi tiết cuộc thi...",
     contestNotFoundDetail: "Không tìm thấy cuộc thi",
-    editContestDetail: "Chỉnh Sửa Cuộc Thi",
-    publishContestDetail: "Xuất Bản Cuộc Thi",
+    editContestDetail: "Chỉnh Sửa",
+    publishContestDetail: "Xuất Bản",
     descriptionDetail: "Mô Tả",
     contestInformationDetail: "Thông Tin Cuộc Thi",
     startDateDetail: "Ngày Bắt Đầu",
@@ -963,9 +1010,28 @@ export const translations = {
     cancelDetail: "Hủy",
     publishingDetail: "Đang xuất bản...",
     publishDetail: "Xuất Bản",
+    cannotPublishWithoutAwards:
+      "Không thể xuất bản cuộc thi khi chưa cấu hình giải thưởng hoặc có giá trị giải thưởng bằng 0",
+    configureAwardsBeforePublishing:
+      "Vui lòng cấu hình giải thưởng với giá trị phù hợp trước khi xuất bản cuộc thi.",
+    awardsMustBeConfiguredBeforePublishing:
+      "Giải thưởng phải được cấu hình trước khi xuất bản cuộc thi",
+    allAwardsMustHavePrizeValues:
+      "Tất cả giải thưởng phải có giá trị được đặt trước khi xuất bản",
+    publishContestToMakeVisible:
+      "Xuất bản cuộc thi để hiển thị cho người tham gia",
     createRound2Detail: "Tạo Vòng 2",
+    round2Date: "Ngày Vòng 2",
+    dateConstraints: "Ràng buộc ngày tháng",
+    contestStart: "Ngày bắt đầu cuộc thi",
+    contestEnd: "Ngày kết thúc cuộc thi",
+    round1Results: "Kết quả Vòng 1",
+    validRange: "Khoảng thời gian hợp lệ",
+    round2DateHelp:
+      "Ngày phải sau khi công bố kết quả Vòng 1 và trong khoảng thời gian cuộc thi",
     createRound2ConfirmDetail:
       "Bạn có chắc chắn muốn tạo vòng 2 với cài đặt hiện tại?",
+    round2Quantity: "Số lượng vòng 2",
     numberOfTablesDetail: "Số Bảng",
     currentContestSettingDetail: "Cài Đặt Số Bảng Của Cuộc Thi Hiện Tại",
     tablesDetail: "bảng",
@@ -986,6 +1052,10 @@ export const translations = {
     sendEmailAnnouncement: "Gửi thông báo qua email",
     sendingEmail: "Đang gửi email...",
     emailAnnouncementSent: "Đã gửi thông báo qua email thành công",
+    allAwardSlotsMustBeFilledMismatchTooltip:
+      "Tất cả ô giải thưởng phải được điền và tất cả giải thưởng phải khớp với tranh được bình chọn nhiều nhất trước khi công bố kết quả",
+    allAwardSlotsMustBeFilledEmailMismatchTooltip:
+      "Tất cả ô giải thưởng phải được điền và tất cả giải thưởng phải khớp với tranh được bình chọn nhiều nhất trước khi gửi email",
     topPaintings: "Tranh Xuất Sắc",
     loadingPaintings: "Đang tải tranh...",
     noTopPaintingsAvailable: "Chưa có tranh xuất sắc nào",
@@ -993,7 +1063,7 @@ export const translations = {
     unassigned: "Chưa Trao",
     remove: "Xóa",
     removing: "Đang xóa...",
-    assignAward: "Trao Giải Thưởng:",
+    assignAward: "Trao Giải:",
     noAwardsAvailable: "Không có giải thưởng nào khả dụng",
     availableAwards: "Giải Thưởng Khả Dụng",
     assigned: "đã trao",
@@ -1081,7 +1151,6 @@ export const translations = {
       "Chúng tôi rất vui mừng được công bố người thắng cuộc của",
     winnersSection: "Người Thắng Cuộc",
     artworkLabel: "Tác Phẩm:",
-    artistLabel: "Tác giả:",
     prizeLabel: "Giải Thưởng:",
     contestSummary: "Tóm Tắt Cuộc Thi",
     totalWinners: "Tổng Số Người Thắng Cuộc:",
@@ -1101,10 +1170,12 @@ export const translations = {
     topAwardsSummary: "Tóm Tắt Giải Thưởng Xuất Sắc",
     votedAwardsSummary: "Tóm Tắt Giải Thưởng Được Bình Chọn",
     assignedStatus: "Đã Trao",
+    correctStatus: "Khớp",
+    mismatchStatus: "Không Khớp",
+    mismatchesFound: "không khớp được tìm thấy",
     assigningAwardStatus: "Đang Trao...",
-    assignAwardButton: "Trao Giải Thưởng",
-    slotsFullStatus: "Đầy Ô",
-    noMatchingAwardStatus: "Không Có Giải Thưởng Phù Hợp",
+    assignAwardButton: "Trao",
+    noMatchingAwardStatus: "Không Có Giải Thưởng",
     overallProgress: "Tiến Độ Tổng Thể",
     allAwardsAssignedReady:
       "Tất cả giải thưởng đã được trao! Sẵn sàng công bố kết quả.",
@@ -1112,13 +1183,21 @@ export const translations = {
     voteResultsTab: "Kết Quả Bình Chọn",
     byArtist: "Bởi",
     averageScoreLabel: "Điểm Trung Bình:",
-    scoreLabel: "Điểm:",
     evaluationsLabel: "Đánh giá:",
     removeAwardTitle: "Xóa Giải Thưởng",
+    cannotRemoveTopVotedTitle:
+      "Không thể xóa - đây là tranh được bình chọn nhiều nhất",
     votesLabel: "Phiếu bầu:",
     assignedLabel: "Đã trao:",
     totalVotesLabel: "Tổng phiếu bầu:",
+    topVotesLabel: "Phiếu bầu cao nhất:",
     completeStatus: "Hoàn thành",
+    scoreBreakdown: "Phân Tích Điểm",
+    creativity: "Sáng Tạo",
+    composition: "Bố Cục",
+    color: "Màu Sắc",
+    technical: "Kỹ Thuật",
+    aesthetic: "Thẩm Mỹ",
 
     // Admin Accounts Management
     accountManagement: "Quản Lý Tài Khoản",
@@ -1148,6 +1227,21 @@ export const translations = {
     titleLabel: "Tiêu đề",
     updating: "Đang cập nhật",
     update: "Cập nhật",
+
+    // Vote Results Awards Management
+    currentlyAssignedTo: "Hiện tại được trao cho bức tranh",
+    currentlyAssigned: "Đã Trao",
+    noAssignmentYet: "Chưa có trao thưởng",
+    topVotedPainting: "Tranh được bình chọn nhiều nhất",
+    topVoted: "Được bình chọn nhiều nhất",
+    reassignToTopVoted: "Trao lại cho tranh được bình chọn nhiều nhất",
+    reassignToTop: "Trao lại",
+    assignToTopVoted: "Trao",
+    awardSlotsFull: "Đầy ô giải thưởng",
+    currentWinner: "Người Thắng",
+    reassignAward: "Trao lại giải thưởng",
+    reassign: "Trao lại",
+    noVotesYet: "Chưa có phiếu bầu",
   },
   en: {
     // Header
@@ -1578,6 +1672,8 @@ export const translations = {
     numberOfTablesRound2: "Number of tables round 2",
     disabledWhenNoCompetitors: "Disabled when no competitors",
     competitorsDivideTables: "competitors divide tables",
+    competitorsDivisionMessage:
+      "{count} competitors will be divided into {tables} tables ({perTable} per table)",
     topCompetitors: "Top Competitors",
     numberOfTables: "Number of Tables",
     saveContest: "Save Contest",
@@ -1588,6 +1684,10 @@ export const translations = {
     contestIdLabelDetail: "Contest ID:",
     contestIdLabel: "Contest ID:",
     round2CompetitorsLabel: "Round 2 competitors",
+    round2Configuration: "Round 2 Configuration",
+    bannerPreview: "Banner Preview",
+    currentFile: "Current file:",
+    pdfPreview: "PDF Preview",
     roundDates: "Round Dates",
     files: "Files",
     bannerImage: "Banner Image",
@@ -1619,13 +1719,24 @@ export const translations = {
     submissionDeadlineRequired: "Submission deadline is required",
     submissionAfterRoundStart:
       "Submission deadline must be after round start date",
+    submissionBeforeRoundEnd:
+      "Submission deadline must be before or equal to round end date",
     resultDateRequired: "Result announcement date is required",
     originalDeadlineRequired: "Original deadline is required",
-    topCompetitorsMin: "Number of top competitors must be at least 0",
+    topCompetitorsMin: "Number of top competitors must be at least 1",
     topCompetitorsMax: "Number of top competitors is too high",
-    tablesMin: "Number of tables must be at least 0",
-    tablesMax: "Maximum 26 tables for round 2",
+    tablesMin: "Number of tables must be at least 3",
+    tablesMax: "Maximum 6 tables for round 2",
     competitorsEvenlyDivided: "Competitors must be evenly divided among tables",
+
+    // Date Range Validation
+    roundStartWithinContest: "Round start date must be within contest dates",
+    roundEndWithinContest: "Round end date must be within contest dates",
+    submissionWithinContest: "Submission deadline must be within contest dates",
+    resultDateWithinContest:
+      "Result announcement date must be within contest dates",
+    originalDeadlineWithinContest:
+      "Original deadline must be within contest dates",
 
     // User Form Validation
     usernameMinLength: "Username must be at least 3 characters",
@@ -2001,8 +2112,8 @@ export const translations = {
     contestIdRequiredDetail: "Contest ID required",
     loadingContestDetailsDetail: "Loading contest details...",
     contestNotFoundDetail: "Contest not found",
-    editContestDetail: "Edit Contest",
-    publishContestDetail: "Publish Contest",
+    editContestDetail: "Edit",
+    publishContestDetail: "Publish",
     descriptionDetail: "Description",
     contestInformationDetail: "Contest Information",
     startDateDetail: "Start Date",
@@ -2045,15 +2156,61 @@ export const translations = {
     cancelDetail: "Cancel",
     publishingDetail: "Publishing...",
     publishDetail: "Publish",
+    cannotPublishWithoutAwards:
+      "Cannot publish contest without awards configured or with zero prize values",
+    configureAwardsBeforePublishing:
+      "Please configure awards with proper prize values before publishing the contest.",
+    awardsMustBeConfiguredBeforePublishing:
+      "Awards must be configured before publishing the contest",
+    allAwardsMustHavePrizeValues:
+      "All awards must have prize values set before publishing",
+    publishContestToMakeVisible:
+      "Publish contest to make it visible to participants",
     createRound2Detail: "Create Round 2",
+    round2Date: "Round 2 Date",
+    dateConstraints: "Date Constraints",
+    contestStart: "Contest Start",
+    contestEnd: "Contest End",
+    round1Results: "Round 1 Results",
+    validRange: "Valid Range",
+    round2DateHelp:
+      "Date must be after Round 1 results announcement and within contest dates",
     createRound2ConfirmDetail:
       "Are you sure you want to create round 2 with current settings?",
+    round2Quantity: "Round 2 Quantity",
     numberOfTablesDetail: "Number of Tables",
     currentContestSettingDetail: "Current Contest Tables Setting",
     tablesDetail: "tables",
     enterNumberOfTablesDetail: "Enter number of tables",
     creatingDetail: "Creating...",
     createRound2BtnDetail: "Create Round 2",
+
+    // Qualified Paintings Review
+    round1QualifiedPaintingsReview: "Round 1 Qualified Paintings Review",
+    round1QualifiedPaintingsReviewDesc:
+      "Review round 1 qualified paintings and manage original artwork submission status. Use this interface to track which artists have submitted original artworks before proceeding to round 2.",
+    originalPending: "Original Pending",
+    artistLabel: "Artist",
+    emailLabel: "Email",
+    scoreLabel: "Score",
+    reviewsLabel: "Reviews",
+    originalArtworkSubmitted: "Original Artwork Submitted",
+    originalSubmittedStatus: "Original Submitted",
+    originalNotSubmittedStatus: "Original Not Submitted",
+    acceptedStatus: "Accepted",
+    rejectedStatus: "Rejected",
+    pendingReviewStatus: "Pending Review",
+    totalQualified: "Total Qualified",
+    noQualifiedPaintingsFound: "No qualified paintings found.",
+    closeDialog: "Close",
+    confirmUpdate: "Confirm Update",
+    confirmUpdateDescription: "Are you sure you want to",
+    markAsSubmitted: "mark as submitted",
+    markAsNotSubmitted: "mark as not submitted",
+    originalSubmissionForPainting: "the original submission for the painting",
+    confirmBtn: "Confirm",
+    updatingStatus: "Updating...",
+    qualifiedPaintings: "Qualified Paintings",
 
     // Awards Management
     awardsManagement: "Awards Management",
@@ -2068,6 +2225,10 @@ export const translations = {
     sendEmailAnnouncement: "Send Email Announcement",
     sendingEmail: "Sending email...",
     emailAnnouncementSent: "Email announcement sent successfully",
+    allAwardSlotsMustBeFilledMismatchTooltip:
+      "All award slots must be filled and all awards must match the highest voted paintings before announcing results",
+    allAwardSlotsMustBeFilledEmailMismatchTooltip:
+      "All award slots must be filled and all awards must match the highest voted paintings before sending email",
     topPaintings: "Top Paintings",
     loadingPaintings: "Loading paintings...",
     noTopPaintingsAvailable: "No top paintings available",
@@ -2159,7 +2320,6 @@ export const translations = {
     thrilledToAnnounceWinners: "We're thrilled to announce the winners of",
     winnersSection: "Winners",
     artworkLabel: "Artwork:",
-    artistLabel: "Artist:",
     prizeLabel: "Prize:",
     contestSummary: "Contest Summary",
     totalWinners: "Total Winners:",
@@ -2178,23 +2338,33 @@ export const translations = {
     topAwardsSummary: "Top Awards Summary",
     votedAwardsSummary: "Voted Awards Summary",
     assignedStatus: "Assigned",
+    correctStatus: "Correct",
+    mismatchStatus: "Mismatch",
+    mismatchesFound: "mismatches found",
     assigningAwardStatus: "Assigning...",
-    assignAwardButton: "Assign Award",
-    slotsFullStatus: "Slots Full",
-    noMatchingAwardStatus: "No Matching Award",
+    assignAwardButton: "Assign",
+    noMatchingAwardStatus: "No Award",
     overallProgress: "Overall Progress",
     allAwardsAssignedReady: "All awards assigned! Ready to announce results.",
     topPaintingsTab: "Top Paintings",
     voteResultsTab: "Vote Results",
     byArtist: "By",
     averageScoreLabel: "Average Score:",
-    scoreLabel: "Score:",
     evaluationsLabel: "Evaluations:",
     removeAwardTitle: "Remove Award",
+    cannotRemoveTopVotedTitle:
+      "Cannot remove - this is the highest voted painting",
     votesLabel: "Votes:",
     assignedLabel: "Assigned:",
     totalVotesLabel: "Total Votes:",
+    topVotesLabel: "Top Votes:",
     completeStatus: "Complete",
+    scoreBreakdown: "Score Breakdown",
+    creativity: "Creativity",
+    composition: "Composition",
+    color: "Color",
+    technical: "Technical",
+    aesthetic: "Aesthetic",
 
     // Admin Accounts Management
     accountManagement: "Account Management",
@@ -2269,7 +2439,23 @@ export const translations = {
     acceptAll: "Accept All",
     accepting: "Accepting...",
     noPendingSubmissionsSelected: "No pending submissions selected to accept.",
-    acceptAllSelectedPending: "Accept all ${count} selected pending submissions?",
+    acceptAllSelectedPending:
+      "Accept all ${count} selected pending submissions?",
+
+    // Vote Results Awards Management
+    currentlyAssignedTo: "Currently assigned to painting",
+    currentlyAssigned: "Assigned",
+    noAssignmentYet: "No assignment yet",
+    topVotedPainting: "Top Voted Painting",
+    topVoted: "Top Voted",
+    reassignToTopVoted: "Reassign to Top Voted",
+    reassignToTop: "Reassign",
+    assignToTopVoted: "Assign",
+    awardSlotsFull: "Slots Full",
+    currentWinner: "Winner",
+    reassignAward: "Reassign Award",
+    reassign: "Reassign",
+    noVotesYet: "No Votes Yet",
   },
 } as const;
 

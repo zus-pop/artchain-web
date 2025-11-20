@@ -4,8 +4,9 @@ import { WhoAmI } from "@/types";
 import Image from "next/image";
 import { useState } from "react";
 import { Lang } from "../../lib/i18n";
-import { useGetMySubmissions } from "@/apis/paintings";
+import { useGetMySubmissions, useGetPaintingEvaluations } from "@/apis/paintings";
 import { useGetUserAchievements } from "@/apis/achievements";
+import { PaintingEvaluation, Painting } from "@/types/painting";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -19,6 +20,10 @@ export default function CompetitorProfileScreen({
   const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
     "submitted"
   );
+  
+  // State for evaluation detail dialog
+  const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(null);
+  const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
 
   // Fetch submissions data
   const { data: submissions } = useGetMySubmissions();
@@ -28,6 +33,22 @@ export default function CompetitorProfileScreen({
     authUser?.userId,
     activeTab === "awards"
   );
+
+  // Fetch evaluations for selected painting
+  const { data: paintingEvaluations, isLoading: isLoadingEvaluations } = useGetPaintingEvaluations(
+    selectedPaintingId || ""
+  );
+
+  // Handle viewing painting evaluation details
+  const handleViewPaintingDetail = (paintingId: string) => {
+    setSelectedPaintingId(paintingId);
+    setIsEvaluationDialogOpen(true);
+  };
+
+  const handleCloseEvaluationDialog = () => {
+    setIsEvaluationDialogOpen(false);
+    setSelectedPaintingId(null);
+  };
 
   // Map submissions data to the required format
   const submittedArtworks = submissions ? submissions.map(painting => ({
@@ -156,7 +177,11 @@ export default function CompetitorProfileScreen({
           {activeTab === "submitted" && (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {submittedArtworks.map((art) => (
-                <div key={art.id} className="overflow-hidden">
+                <div 
+                  key={art.id} 
+                  className="overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => handleViewPaintingDetail(art.id)}
+                >
                   <div className="relative h-56 w-full">
                     <Image
                       src={art.imageUrl}
@@ -168,7 +193,7 @@ export default function CompetitorProfileScreen({
                   </div>
                   <div className="py-2">
                     <p className="text-sm text-black">
-                      Ngày nộp: {art.submissionDate}
+                      Ngày nộp: {new Date(art.submissionDate).toLocaleDateString("vi-VN")}
                     </p>
                     <p className="mt-1 font-medium text-black">
                       Cuộc thi: {art.competitionName}
@@ -229,6 +254,166 @@ export default function CompetitorProfileScreen({
             </div>
           )}
         </div>
+
+        {/* Evaluation Detail Dialog */}
+        {isEvaluationDialogOpen && selectedPaintingId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={handleCloseEvaluationDialog}
+            />
+            <div className="relative z-10 w-full max-w-4xl rounded bg-white shadow-lg max-h-[90vh] overflow-hidden">
+              <div className="flex items-start justify-between p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-black">
+                  Đánh giá tranh
+                </h3>
+                <button
+                  className="text-black cursor-pointer hover:text-gray-600"
+                  onClick={handleCloseEvaluationDialog}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[70vh]">
+                {/* Painting Info */}
+                {submissions && (
+                  <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                    <h3 className="text-lg font-semibold text-black mb-4">Thông tin tranh</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {(() => {
+                        const painting = submissions.find(s => s.paintingId === selectedPaintingId);
+                        if (!painting) return null;
+                        return (
+                          <>
+                            <div>
+                              <p className="text-sm font-medium text-gray-600">Tên tranh</p>
+                              <p className="text-black">{painting.title}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-600">Cuộc thi</p>
+                              <p className="text-black">{painting.contest?.title || "N/A"}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-600">Ngày nộp</p>
+                              <p className="text-black">
+                                {painting.submissionDate ? new Date(painting.submissionDate).toLocaleDateString("vi-VN") : "-"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-600">Trạng thái</p>
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                painting.status === 'APPROVED' || painting.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                                painting.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
+                                painting.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
+                                painting.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                                painting.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {painting.status === 'APPROVED' || painting.status === 'ACCEPTED' ? 'Đã duyệt' : 
+                                 painting.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
+                                 painting.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
+                                 painting.status === 'PENDING' ? 'Chờ xử lý' :
+                                 painting.status === 'REJECTED' ? 'Từ chối' :
+                                 painting.status}
+                              </span>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Evaluations */}
+                <div>
+                  <h3 className="text-lg font-semibold text-black mb-4">Đánh giá từ giám khảo</h3>
+                  {isLoadingEvaluations ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
+                      <p className="text-[#423137] mt-2">Đang tải đánh giá...</p>
+                    </div>
+                  ) : paintingEvaluations && paintingEvaluations.length > 0 ? (
+                    <div className="space-y-4">
+                      {paintingEvaluations.map((evaluation) => (
+                        <div key={evaluation.id} className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <p className="font-medium text-black">{evaluation.examinerName}</p>
+                              <p className="text-sm text-gray-600">
+                                Đánh giá ngày: {new Date(evaluation.evaluationDate).toLocaleDateString("vi-VN")}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              {evaluation.scoreRound1 && (
+                                <p className="text-lg font-semibold text-blue-600">
+                                  Điểm vòng 1: {evaluation.scoreRound1}/10
+                                </p>
+                              )}
+                              {evaluation.scoreRound2 && (
+                                <p className="text-lg font-semibold text-green-600">
+                                  Điểm vòng 2: {evaluation.scoreRound2}/10
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Detailed scores for round 2 */}
+                          {(evaluation.creativityScore || evaluation.compositionScore || 
+                            evaluation.colorScore || evaluation.technicalScore || evaluation.aestheticScore) && (
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+                              {evaluation.creativityScore && (
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-600">Sáng tạo</p>
+                                  <p className="font-medium">{evaluation.creativityScore}/10</p>
+                                </div>
+                              )}
+                              {evaluation.compositionScore && (
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-600">Bố cục</p>
+                                  <p className="font-medium">{evaluation.compositionScore}/10</p>
+                                </div>
+                              )}
+                              {evaluation.colorScore && (
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-600">Màu sắc</p>
+                                  <p className="font-medium">{evaluation.colorScore}/10</p>
+                                </div>
+                              )}
+                              {evaluation.technicalScore && (
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-600">Kỹ thuật</p>
+                                  <p className="font-medium">{evaluation.technicalScore}/10</p>
+                                </div>
+                              )}
+                              {evaluation.aestheticScore && (
+                                <div className="text-center">
+                                  <p className="text-xs text-gray-600">Thẩm mỹ</p>
+                                  <p className="font-medium">{evaluation.aestheticScore}/10</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {evaluation.feedback && (
+                            <div>
+                              <p className="text-sm font-medium text-gray-600 mb-1">Nhận xét:</p>
+                              <p className="text-black bg-gray-50 p-3 rounded">{evaluation.feedback}</p>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      Chưa có đánh giá nào cho tranh này.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

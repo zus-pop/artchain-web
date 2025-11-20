@@ -45,8 +45,11 @@ export default function ContestsPage() {
     itemsPerPage
   );
 
+  // Filter out draft contests
+  const filteredContests = contests?.filter(contest => contest.status !== 'DRAFT') || [];
+
   // Calculate total pages (assuming we have all data, adjust if API returns total count)
-  const totalPages = contests && contests.length === itemsPerPage ? currentPage + 1 : currentPage;
+  const totalPages = filteredContests && filteredContests.length === itemsPerPage ? currentPage + 1 : currentPage;
 
   const filterOptions: { label: string; value: ContestStatus | undefined }[] = [
     { label: "Tất cả", value: undefined },
@@ -173,7 +176,7 @@ export default function ContestsPage() {
 
         {/* Contests Grid */}
         <AnimatePresence mode="wait">
-          {contests && contests.length > 0 ? (
+          {filteredContests && filteredContests.length > 0 ? (
             <motion.div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
               initial={{ opacity: 0 }}
@@ -181,7 +184,7 @@ export default function ContestsPage() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4 }}
             >
-              {contests.map((contest, index) => (
+              {filteredContests.map((contest, index) => (
                 <motion.div
                   key={contest.contestId}
                   initial={{ opacity: 0, y: 20 }}
@@ -264,7 +267,7 @@ export default function ContestsPage() {
         </AnimatePresence>
 
         {/* Pagination */}
-        {contests && contests.length > 0 && (
+        {filteredContests && filteredContests.length > 0 && (
           <motion.div
             className="flex justify-center items-center gap-2 mt-12 mb-8"
             initial={{ opacity: 0, y: 20 }}
@@ -316,9 +319,9 @@ export default function ContestsPage() {
 
             <button
               onClick={() => setCurrentPage((prev) => prev + 1)}
-              disabled={contests.length < itemsPerPage}
+              disabled={filteredContests.length < itemsPerPage}
               className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                contests.length < itemsPerPage
+                filteredContests.length < itemsPerPage
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                   : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
               }`}

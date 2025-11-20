@@ -471,6 +471,7 @@ export function ExaminersDialog({
                             <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3">
                               <Calendar
                                 mode="single"
+                                captionLayout="dropdown"
                                 selected={(() => {
                                   const schedule = examinerSchedules[
                                     examiner.examinerId

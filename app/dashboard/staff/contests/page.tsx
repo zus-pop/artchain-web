@@ -195,20 +195,6 @@ export default function ContestsManagementPage() {
                     icon: <IconCircleCheck className="h-6 w-6" />,
                     variant: "warning",
                   },
-                  {
-                    title: t.totalRounds,
-                    value: totalRounds,
-                    subtitle: t.allCompetitionRounds,
-                    icon: <IconUsers className="h-6 w-6" />,
-                    variant: "success",
-                  },
-                  {
-                    title: t.totalAwards,
-                    value: totalAwards,
-                    subtitle: t.prizesToBeAwarded,
-                    icon: <IconTrophy className="h-6 w-6" />,
-                    variant: "primary",
-                  },
                 ]}
               />
 

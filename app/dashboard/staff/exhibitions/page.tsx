@@ -201,20 +201,6 @@ export default function ExhibitionsPage() {
                     icon: <IconCalendar className="h-6 w-6" />,
                     variant: "warning",
                   },
-                  {
-                    title: t.totalPaintings,
-                    value: totalPaintings,
-                    subtitle: t.paintingsOnDisplay,
-                    icon: <IconPalette className="h-6 w-6" />,
-                    variant: "success",
-                  },
-                  {
-                    title: t.completed,
-                    value: completedExhibitions,
-                    subtitle: t.finishedExhibitions,
-                    icon: <IconPalette className="h-6 w-6" />,
-                    variant: "primary",
-                  },
                 ]}
               />
 

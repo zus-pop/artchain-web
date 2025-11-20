@@ -21,6 +21,8 @@ interface DatePickerProps {
   error?: string;
   disabled?: boolean;
   className?: string;
+  min?: string;
+  max?: string;
 }
 
 export function DatePicker({
@@ -31,6 +33,8 @@ export function DatePicker({
   error,
   disabled = false,
   className,
+  min,
+  max,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const generatedId = React.useId();
@@ -76,11 +80,17 @@ export function DatePicker({
             <Calendar
               mode="single"
               selected={date}
+              captionLayout="dropdown"
               onSelect={handleDateSelect}
-              disabled={(date) =>
-                date > new Date() || date < new Date("1900-01-01")
-              }
-              initialFocus
+              hidden={(date) => {
+                const minDate = min ? new Date(min) : new Date("1900-01-01");
+                const maxDate = max ? new Date(max) : new Date();
+                return date > maxDate || date < minDate;
+              }}
+              startMonth={min ? new Date(min) : new Date("1900-01-01")}
+              endMonth={max ? new Date(max) : new Date()}
+              autoFocus
+              showOutsideDays
             />
           </PopoverContent>
         </Popover>
@@ -128,6 +138,9 @@ export function DatePicker({
           </div>
         )}
       </div>
+
+      {/* Error message below date picker */}
+      {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
     </div>
   );
 }

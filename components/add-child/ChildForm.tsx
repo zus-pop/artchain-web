@@ -55,7 +55,22 @@ const childFormSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Mật khẩu xác nhận không khớp",
     path: ["confirmPassword"],
-  });
+  })
+  .refine(
+    (data) => {
+      if (!data.birthday || !data.grade) return true;
+      const birthYear = new Date(data.birthday).getFullYear();
+      const currentYear = new Date().getFullYear();
+      const age = currentYear - birthYear;
+      const gradeNum = parseInt(data.grade);
+      const expectedAge = gradeNum + 5; // Lớp 1 = 6 tuổi, lớp 2 = 7 tuổi, v.v.
+      return Math.abs(age - expectedAge) <= 4; // Sai số tối đa 4 năm
+    },
+    {
+      message: "Tuổi không phù hợp với lớp học (sai số tối đa 4 năm)",
+      path: ["birthday"],
+    }
+  );
 
 export type ChildFormData = z.infer<typeof childFormSchema>;
 
@@ -81,6 +96,8 @@ export function ChildForm({
     handleSubmit,
     formState: { errors, isValid },
     reset,
+    watch,
+    setValue,
   } = useForm<ChildFormData>({
     mode: "all",
     resolver: zodResolver(childFormSchema),
@@ -97,34 +114,47 @@ export function ChildForm({
     },
   });
 
-  // Reset form when initialData changes or drawer opens/closes
-  useEffect(() => {
-    if (open && initialData) {
-      reset({
-        username: initialData.username || "",
-        password: initialData.password || "",
-        confirmPassword: initialData.password || "", // Use password as confirmPassword for editing
-        fullName: initialData.fullName || "",
-        email: initialData.email || "",
-        birthday: initialData.birthday || "",
-        schoolName: initialData.schoolName || "",
-        ward: initialData.ward || "",
-        grade: initialData.grade || "",
-      });
-    } else if (!open) {
-      reset({
-        username: "",
-        password: "",
-        confirmPassword: "",
-        fullName: "",
-        email: "",
-        birthday: "",
-        schoolName: "",
-        ward: "",
-        grade: "",
-      });
+  // Watch birthday field for dynamic grade options
+  const watchedBirthday = watch("birthday");
+
+  // Calculate valid grade range based on birthday
+  const getValidGrades = () => {
+    if (!watchedBirthday) {
+      // If no birthday selected, show all grades 1-9
+      return Array.from({ length: 9 }, (_, i) => i + 1);
     }
-  }, [open, initialData, reset]);
+
+    const birthYear = new Date(watchedBirthday).getFullYear();
+    const currentYear = new Date().getFullYear();
+    const age = currentYear - birthYear;
+
+    // Expected grade = age - 5 (since grade 1 = 6 years old)
+    const expectedGrade = age - 5;
+
+    // Allow grades within a reasonable range (considering the 4-year tolerance from validation)
+    const minGrade = Math.max(1, expectedGrade - 2);
+    const maxGrade = Math.min(9, expectedGrade + 2);
+
+    const validGrades = [];
+    for (let grade = minGrade; grade <= maxGrade; grade++) {
+      validGrades.push(grade);
+    }
+
+    return validGrades.length > 0
+      ? validGrades
+      : Array.from({ length: 9 }, (_, i) => i + 1);
+  };
+
+  const validGrades = getValidGrades();
+
+  // Clear grade selection if it's no longer valid when birthday changes
+  useEffect(() => {
+    const currentGrade = watch("grade");
+    if (currentGrade && !validGrades.includes(parseInt(currentGrade))) {
+      // Reset grade if it's not in the valid range
+      setValue("grade", "");
+    }
+  }, [watchedBirthday, setValue, validGrades, watch]);
 
   const handleFormSubmit = (data: ChildFormData) => {
     onSubmit({
@@ -139,17 +169,10 @@ export function ChildForm({
     label: ward.name,
   }));
 
-  const gradeOptions = [
-    { value: "1", label: "Lớp 1" },
-    { value: "2", label: "Lớp 2" },
-    { value: "3", label: "Lớp 3" },
-    { value: "4", label: "Lớp 4" },
-    { value: "5", label: "Lớp 5" },
-    { value: "6", label: "Lớp 6" },
-    { value: "7", label: "Lớp 7" },
-    { value: "8", label: "Lớp 8" },
-    { value: "9", label: "Lớp 9" },
-  ];
+  const gradeOptions = validGrades.map((grade) => ({
+    value: grade.toString(),
+    label: `Lớp ${grade}`,
+  }));
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -269,6 +292,8 @@ export function ChildForm({
                         }}
                         placeholder="Chọn ngày sinh *"
                         error={errors.birthday?.message}
+                        min={`${new Date().getFullYear() - 16}-01-01`}
+                        max={`${new Date().getFullYear() - 4}-12-31`}
                       />
                     )}
                   />
