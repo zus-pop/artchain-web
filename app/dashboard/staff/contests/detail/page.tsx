@@ -1499,7 +1499,7 @@ function ContestDetailContent() {
             <button
               onClick={() => {
                 if (!round2Date) {
-                  toast.error("Please select a date for Round 2");
+                  toast.error("Hãy chọn ngày cho vòng 2");
                   return;
                 }
                 createRound2Mutation.mutate({
