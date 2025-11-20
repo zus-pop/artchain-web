@@ -611,3 +611,12 @@
 .animate-delay-600 {
   animation-delay: 0.6s;
 }
+
+/* Hide browser's password reveal button */
+input[type="password"]::-webkit-reveal-password-button {
+  display: none;
+}
+
+input[type="password"]::-ms-reveal {
+  display: none;
+}

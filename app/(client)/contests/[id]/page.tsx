@@ -563,7 +563,15 @@ export default function ContestDetailPage() {
                 Ngày thi dự kiến
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                11-12-2025
+                {(() => {
+                  const date = new Date(contest.startDate);
+                  date.setDate(date.getDate() + 2);
+                  return date.toLocaleDateString("vi-VN", {
+                    day: "numeric",
+                    month: "numeric",
+                    year: "numeric",
+                  });
+                })()}
               </p>
             </div>
           </div>

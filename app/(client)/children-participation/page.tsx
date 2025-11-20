@@ -96,17 +96,6 @@ function ChildrenParticipation() {
             <ArrowLeft className="h-5 w-5" />
             <span className="font-medium">Quay lại</span>
           </Link>
-          <div className="text-end">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Chọn con em tham gia
-            </h1>
-            <p className="text-gray-700">
-              Chọn con em để nộp bài dự thi cho cuộc thi{" "}
-              <span className="font-semibold text-[#FF6E1A]">
-                {contest.title}
-              </span>
-            </p>
-          </div>
         </div>
 
         {/* Contest Info */}

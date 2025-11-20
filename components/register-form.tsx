@@ -372,10 +372,10 @@ export function RegisterForm({
             {translations.back || "Quay lại"}
           </button>
           {/* Title */}
-          <h1 className="text-5xl text-black leading-tight mb-6 ">
+          <h1 className="text-4xl font-medium text-black leading-tight mb-6 ">
             {selectedRole === "competitor"
               ? "Đăng ký thí sinh"
-              : "Đăng ký giám hộ"}
+              : "Đăng ký làm người đại diện"}
           </h1>
 
           {/* Guardian Form */}
@@ -385,8 +385,8 @@ export function RegisterForm({
               className="flex flex-col"
             >
               {/* Full Name and Email - 2 columns */}
-              <div className="grid grid-cols-1 gap-4">
-                <div className="grid gap-2">
+              <div className="grid grid-cols-1">
+                <div className="grid">
                   <label
                     className="text-base font-medium text-black"
                     htmlFor="guardian-fullName"
@@ -411,7 +411,7 @@ export function RegisterForm({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
+                <div className="grid">
                   <label
                     className="text-base font-medium text-black"
                     htmlFor="guardian-email"
@@ -438,8 +438,8 @@ export function RegisterForm({
               </div>
 
               {/* Username and Password - 2 columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                <div className="grid gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid">
                   <label
                     className="text-base font-medium text-black"
                     htmlFor="guardian-username"
@@ -464,7 +464,7 @@ export function RegisterForm({
                   </p>
                 </div>
 
-                <div className="grid gap-2">
+                <div className="grid">
                   <label
                     className="text-base font-medium text-black"
                     htmlFor="guardian-password"
@@ -507,7 +507,7 @@ export function RegisterForm({
               </div>
 
               {/* Confirm Password - Full width */}
-              <div className="grid gap-2 mt-2">
+              <div className="grid">
                 <label
                   className="text-base font-medium text-black"
                   htmlFor="guardian-confirmPassword"
