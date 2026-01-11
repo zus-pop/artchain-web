@@ -1,10 +1,8 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store";
 
-// const baseURL = process.env.NEXT_PUBLIC_API_URL || "https://rflz4357-3001.asse.devtunnels.ms/api";
 const baseURL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://api.artchain.io.vn/api";
+  `${process.env.NEXT_PUBLIC_API_URL}/api` || "https://api.artchain.io.vn/api";
 
 if (process.env.NODE_ENV === "development") {
   console.log("🔧 myAxios baseURL:", baseURL);

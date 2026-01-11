@@ -5,6 +5,7 @@ import {
   CreateExhibitionRequest,
   DeletePaintingToExhibitionRequest,
   Exhibition,
+  UpdatePaintingInExhibitionRequest,
 } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -156,6 +157,29 @@ export function useGetExhibitionById(id: string) {
         `/exhibitions/${id}`
       );
       return response.data;
+    },
+  });
+}
+
+export function updateExhibition3D() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (
+      updatePaintingInExhibitionRequest: UpdatePaintingInExhibitionRequest
+    ) => {
+      const { exhibitionId, ...data } = updatePaintingInExhibitionRequest;
+      const response = await myAxios.patch(
+        `/exhibitions/${exhibitionId}/paintings`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["exhibition"] });
+      toast.success("Cập nhật triễn lãm 3D thành công");
+    },
+    onError: (_) => {
+      toast.error("Cập nhật triễn lãm 3D thất bại");
     },
   });
 }

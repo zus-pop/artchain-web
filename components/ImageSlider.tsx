@@ -4,7 +4,8 @@
 import React, { useState } from "react";
 import "./ImageSlider.css";
 import Image from "next/image";
-import { useGetExhibitionById, useGetExhibitions } from "@/apis/exhibition";
+import Link from "next/link";
+import { useGetExhibitionById, useGetExhibitions } from "../apis/exhibition";
 import ImageDialog from "./ImageDialog";
 
 // ------------------------------------
@@ -21,8 +22,17 @@ interface ImageItem {
   award?: string;
   addedAt?: string;
   description?: string;
-  competitor?: { fullName?: string; schoolName?: string; grade?: string } | null;
-  awardObj?: { awardId?: number | string; name?: string; prize?: string; rank?: number } | null;
+  competitor?: {
+    fullName?: string;
+    schoolName?: string;
+    grade?: string;
+  } | null;
+  awardObj?: {
+    awardId?: number | string;
+    name?: string;
+    prize?: string;
+    rank?: number;
+  } | null;
   paintingTitle?: string;
 }
 
@@ -31,33 +41,41 @@ interface ImageItem {
 // ------------------------------------
 const ImageSlider: React.FC = () => {
   const { data: exhibitions } = useGetExhibitions();
-  const [selectedExhibitionId, setSelectedExhibitionId] = useState<string | null>(null);
-  const { data: exhibitionData, isLoading } = useGetExhibitionById(selectedExhibitionId || "");
+  const [selectedExhibitionId, setSelectedExhibitionId] = useState<
+    string | null
+  >(null);
+  const { data: exhibitionData, isLoading } = useGetExhibitionById(
+    selectedExhibitionId || ""
+  );
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Filter active exhibitions
-  const activeExhibitions = exhibitions?.data?.filter(ex => ex.status === "ACTIVE") || [];
+  const activeExhibitions =
+    exhibitions?.data?.filter((ex) => ex.status === "ACTIVE") || [];
 
   // Map exhibition paintings to ImageItem format
-  const images: ImageItem[] = exhibitionData?.data?.exhibitionPaintings?.map((painting, index) => ({
-    id: index + 1,
-    full: painting.imageUrl || "",
-    thumb: painting.imageUrl || "",
-    title: painting.competitor.fullName,
-    paintingTitle: painting.title,
-    date: painting.addedAt ? new Date(painting.addedAt).toLocaleDateString("vi-VN") : undefined,
-    addedAt: painting.addedAt,
-    school: painting.competitor.schoolName,
-    description: painting.description,
-    competitor: {
-      fullName: painting.competitor.fullName,
-      schoolName: painting.competitor.schoolName,
-      grade: painting.competitor.grade,
-    },
-    award: painting.award?.name,
-    awardObj: painting.award || null,
-  })) || [];
+  const images: ImageItem[] =
+    exhibitionData?.data?.exhibitionPaintings?.map((painting, index) => ({
+      id: index + 1,
+      full: painting.imageUrl || "",
+      thumb: painting.imageUrl || "",
+      title: painting.competitor.fullName,
+      paintingTitle: painting.title,
+      date: painting.addedAt
+        ? new Date(painting.addedAt).toLocaleDateString("vi-VN")
+        : undefined,
+      addedAt: painting.addedAt,
+      school: painting.competitor.schoolName,
+      description: painting.description,
+      competitor: {
+        fullName: painting.competitor.fullName,
+        schoolName: painting.competitor.schoolName,
+        grade: painting.competitor.grade,
+      },
+      award: painting.award?.name,
+      awardObj: painting.award || null,
+    })) || [];
 
   const handleImageClick = (image: ImageItem) => {
     setSelectedImage(image);
@@ -88,12 +106,22 @@ const ImageSlider: React.FC = () => {
                 </option>
               ))}
             </select>
+            {selectedExhibitionId && (
+              <Link
+                href={`/exhibition/${selectedExhibitionId}/3d`}
+                className="px-6 py-2 bg-[#FF6E1A] text-white rounded-md hover:bg-[#e55a0f] transition-colors font-medium"
+              >
+                Xem 3D
+              </Link>
+            )}
           </div>
         </div>
 
         {!selectedExhibitionId ? (
           <div className="text-center py-20">
-            <p className="text-[#423137]">Vui lòng chọn một cuộc triển lãm để xem bộ sưu tập</p>
+            <p className="text-[#423137]">
+              Vui lòng chọn một cuộc triển lãm để xem bộ sưu tập
+            </p>
           </div>
         ) : isLoading ? (
           <div className="flex justify-center items-center py-20">
@@ -106,35 +134,54 @@ const ImageSlider: React.FC = () => {
         ) : (
           <div
             className="slider"
-            style={{
-              '--width': '400px',
-              '--height': '250px',
-              '--quantity': images.length,
-            } as React.CSSProperties}
+            style={
+              {
+                "--width": "400px",
+                "--height": "250px",
+                "--quantity": images.length,
+              } as React.CSSProperties
+            }
           >
             <div className="list">
               {images.map((img, idx) => (
                 <div
                   key={img.id}
                   className="item"
-                  style={{
-                    '--position': idx + 1,
-                  } as React.CSSProperties}
+                  style={
+                    {
+                      "--position": idx + 1,
+                    } as React.CSSProperties
+                  }
                 >
                   <div className="item-content">
                     <div
                       className="relative w-full overflow-hidden border border-[#e6e0da] cursor-pointer"
-                      style={{ height: 'var(--height)' } as React.CSSProperties}
+                      style={{ height: "var(--height)" } as React.CSSProperties}
                       onClick={() => handleImageClick(img)}
                     >
-                      <Image src={img.full} alt={img.title} fill className="object-cover" />
+                      <Image
+                        src={img.full}
+                        alt={img.title}
+                        fill
+                        className="object-cover"
+                      />
                     </div>
-                    
+
                     {/* Caption below image */}
                     <div className="mt-3 px-2">
-                      <h3 className="text-lg font-bold text-[#111827] leading-tight">{img.title}</h3>
-                      {img.school && <div className="text-sm text-[#423137] mt-1 leading-tight">{img.school}</div>}
-                      {img.award && <div className="text-sm text-[#423137] mt-1 leading-tight">{img.award}</div>}
+                      <h3 className="text-lg font-bold text-[#111827] leading-tight">
+                        {img.title}
+                      </h3>
+                      {img.school && (
+                        <div className="text-sm text-[#423137] mt-1 leading-tight">
+                          {img.school}
+                        </div>
+                      )}
+                      {img.award && (
+                        <div className="text-sm text-[#423137] mt-1 leading-tight">
+                          {img.award}
+                        </div>
+                      )}
                     </div>
                   </div>
 
