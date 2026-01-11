@@ -94,7 +94,7 @@ function Exhibition3DScene({
           });
         return obj;
       })(),
-      { collapsed: true } // Optional: starts collapsed
+      { collapsed: true }
     ),
   });
 
@@ -306,17 +306,21 @@ export default function Exhibition3DPage({
   );
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  const { isOpenGuide } = useControls({
-    "Chế độ xem": buttonGroup({
-      Camera: () => (state.viewMode = "camera"),
-      "Góc nhìn thứ nhất": () => (state.viewMode = "first person"),
-      "Góc nhìn thứ ba": () => (state.viewMode = "third person"),
-    }),
-    isOpenGuide: {
-      value: true,
-      label: "Hướng dẫn điều khiển",
+  const { isOpenGuide } = useControls(
+    {
+      "Chế độ xem": buttonGroup({
+        Camera: () => (state.viewMode = "camera"),
+        "Góc nhìn thứ nhất": () => (state.viewMode = "first person"),
+        "Góc nhìn thứ ba": () => (state.viewMode = "third person"),
+      }),
+      isOpenGuide: {
+        value: true,
+        label: "Hướng dẫn điều khiển",
+        disabled: state.viewMode === "camera",
+      },
     },
-  });
+    [state.viewMode]
+  );
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (snap.viewMode !== "camera" && event.key.toLowerCase() === "t") {

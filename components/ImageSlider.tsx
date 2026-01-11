@@ -97,7 +97,7 @@ const ImageSlider: React.FC = () => {
             <select
               onChange={(e) => setSelectedExhibitionId(e.target.value || null)}
               value={selectedExhibitionId || ""}
-              className="px-4 py-2 border border-[#e6e0da] rounded-md bg-white text-[#423137]"
+              className="px-4 py-2 border border-[#e6e0da] rounded-xs bg-white text-[#423137]"
             >
               <option value="">Chọn triển lãm</option>
               {activeExhibitions.map((ex) => (
@@ -109,7 +109,7 @@ const ImageSlider: React.FC = () => {
             {selectedExhibitionId && (
               <Link
                 href={`/exhibition/${selectedExhibitionId}/3d`}
-                className="px-6 py-2 bg-[#FF6E1A] text-white rounded-md hover:bg-[#e55a0f] transition-colors font-medium"
+                className="px-6 py-2 bg-[#FF6E1A] rounded-xs text-white hover:bg-[#e55a0f] transition-colors font-medium"
               >
                 Xem 3D
               </Link>
