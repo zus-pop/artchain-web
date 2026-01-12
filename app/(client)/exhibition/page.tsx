@@ -1,12 +1,11 @@
-import ImageSlider from '@/components/ImageSlider'
-import React from 'react'
+import ImageSlider from "@/components/ImageSlider";
 
 const page = () => {
   return (
-    <div className='w-screen h-screen overflow-hidden'>
+    <div className="w-screen h-screen overflow-hidden">
       <ImageSlider />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

@@ -50,6 +50,9 @@ export interface ExhibitionPainting {
     grade: string;
   };
   addedAt: string;
+  position: number[] | null;
+  rotation: [number, number, number, string?] | null;
+  scale: number[] | null;
 }
 
 export interface AddPaintingToExhibitionRequest {
@@ -60,6 +63,18 @@ export interface AddPaintingToExhibitionRequest {
 export interface DeletePaintingToExhibitionRequest {
   exhibitionId: string;
   paintingId: string;
+}
+
+export interface UpdatePaintingInExhibitionRequest {
+  exhibitionId: string;
+  data: Exhibition3DItem[];
+}
+
+export interface Exhibition3DItem {
+  paintingId: string;
+  position: number[] | null;
+  rotation: [number, number, number, string?] | null;
+  scale: number[] | null;
 }
 
 export type ExhibitionStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "CANCEL";
