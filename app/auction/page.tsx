@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { ArrowUpRight, Timer, Hammer, Search, ArrowRight, Heart } from 'lucide-react';
 import GlassSurface from '@/components/GlassSurface';
 
@@ -58,7 +59,7 @@ export default function ModernArtAuction() {
       </div>
 
       {/* 1. Nav Bar */}
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50">
+      {/* <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50">
       <GlassSurface
           width="100%"
           height="auto"
@@ -91,7 +92,7 @@ export default function ModernArtAuction() {
             </button>
           </div>
         </GlassSurface>
-      </nav>
+      </nav> */}
 
       {/* ================= SECTION 01: HERO ================= */}
       <section id="section-01" className="relative pt-40 pb-20 px-[5%] max-w-[1600px] mx-auto grid grid-cols-12 gap-6 min-h-[90vh]">
@@ -109,19 +110,19 @@ export default function ModernArtAuction() {
           <div className="max-w-xs ml-auto lg:mr-20">
             <p className="text-xs uppercase tracking-[0.2em] font-bold mb-4 opacity-40">Giới thiệu phiên đấu giá</p>
             <p className="text-sm leading-relaxed opacity-70 italic">
-              "Nơi những giá trị tinh thần được hữu hình hóa qua từng nét vẽ khung ngang, mở rộng tầm nhìn về nghệ thuật đương đại."
+              "Nơi hội tụ những kiệt tác nghệ thuật đương đại. Sàn đấu giá uy tín, minh bạch, kết nối nhà sưu tập và nghệ sĩ tài năng."
             </p>
           </div>
         </div>
 
         <div className="col-span-12 lg:col-span-4 mt-10 lg:mt-0">
-          <div className="relative aspect-[3/4] lg:aspect-auto lg:h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl">
+          <div className="relative aspect-[3/4] lg:aspect-auto lg:h-[600px] overflow-hidden shadow-2xl">
             <img 
               src="https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=1000" 
               className="w-full h-full object-cover"
               alt="Main Art"
             />
-            <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-lg">
+            <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 shadow-lg">
                 <span className="text-[10px] font-black uppercase tracking-widest">Tác phẩm tiêu biểu</span>
             </div>
           </div>
@@ -137,18 +138,20 @@ export default function ModernArtAuction() {
             </div>
 
             {/* Nội dung chính của Section 2 (Bọc trong thẻ trắng) */}
-            <div className="col-span-12 lg:col-span-11 bg-white rounded-[4rem] shadow-sm p-8 lg:p-16">
+            <div className="col-span-12 lg:col-span-11 bg-white shadow-sm p-8 lg:p-16">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
                 <div className="max-w-xl">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Landscape Collection</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Bộ sưu tập đặc biệt</span>
                     <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">
-                    Tuyển tập <br /> Tranh khung ngang
+                    Tranh phong cảnh <br /> đương đại
                     </h2>
                 </div>
-                <button className="flex items-center gap-2 font-bold text-sm uppercase tracking-widest pb-2 border-b-2 border-[#f07d44] hover:gap-4 transition-all">
-                    Xem tất cả <ArrowRight size={16} />
-                </button>
+                <Link href="/auction/list">
+                  <button className="flex items-center gap-2 font-bold text-sm uppercase tracking-widest pb-2 border-b-2 border-[#f07d44] hover:gap-4 transition-all">
+                      Xem tất cả <ArrowRight size={16} />
+                  </button>
+                </Link>
                 </div>
 
                 {/* The Grid */}
@@ -156,15 +159,15 @@ export default function ModernArtAuction() {
                 {/* Hàng 1: Featured Landscape */}
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
                     <div className="md:col-span-8 group">
-                    <div className="relative aspect-[21/9] rounded-[2.5rem] overflow-hidden bg-gray-100 shadow-md">
+                    <div className="relative aspect-[21/9] overflow-hidden bg-gray-100 shadow-md">
                         <img 
                         src="https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1500" 
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-1000"
                         alt="Featured Art"
                         />
                         <div className="absolute top-6 left-6 flex gap-2">
-                        <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 rounded-full animate-pulse shadow-lg">LIVE</div>
-                        <div className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 shadow-sm">
+                        <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div>
+                        <div className="bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold flex items-center gap-1 shadow-sm">
                             <Timer size={12} /> 02:45:12
                         </div>
                         </div>
@@ -176,10 +179,10 @@ export default function ModernArtAuction() {
                     </div>
 
                     <div className="md:col-span-4 flex flex-col justify-end h-full">
-                    <div className="bg-[#1a1a1a] text-white p-10 rounded-[2.5rem] flex flex-col justify-between aspect-square md:aspect-auto md:h-full shadow-xl">
+                    <div className="bg-[#1a1a1a] text-white p-10 flex flex-col justify-between aspect-square md:aspect-auto md:h-full shadow-xl">
                         <div>
-                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4">Thông tin đấu giá</p>
-                        <p className="text-sm opacity-80 leading-relaxed">Tác phẩm nghệ thuật đương đại sử dụng chất liệu tổng hợp, mô phỏng sự chuyển động của cực quang.</p>
+                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4">Thông tin tác phẩm</p>
+                        <p className="text-sm opacity-80 leading-relaxed">Sơn dầu trên canvas, 120x80cm. Tác phẩm độc bản, được nghệ sĩ ký tên và đóng dấu chứng thực. Đi kèm giấy chứng nhận nguồn gốc.</p>
                         </div>
                         <div className="mt-10">
                         <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-[#f07d44]">Giá khởi điểm</p>
@@ -193,13 +196,13 @@ export default function ModernArtAuction() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {[1, 2, 3].map((i) => (
                     <div key={i} className="group flex flex-col">
-                        <div className="aspect-video rounded-[2rem] overflow-hidden mb-6 shadow-md relative bg-gray-50">
+                        <div className="aspect-video overflow-hidden mb-6 shadow-md relative bg-gray-50">
                         <img 
                             src={`https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=800&sig=${i}`} 
                             className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                            <div className="bg-white p-4 rounded-full shadow-xl"><ArrowUpRight size={20} /></div>
+                            <div className="bg-white p-4 shadow-xl"><ArrowUpRight size={20} /></div>
                         </div>
                         </div>
                         <div className="px-2">
@@ -227,24 +230,31 @@ export default function ModernArtAuction() {
 
             {/* Nội dung chính của Section 3 */}
             <div className="col-span-12 lg:col-span-11">
-                <div className="mb-20 pl-4 lg:pl-0">
-                    <h2 className="text-6xl font-serif font-bold text-slate-900 leading-tight">Live Bidding</h2>
-                    <p className="text-slate-400 mt-4 max-w-sm">Các tác phẩm đang được đấu giá trực tiếp trên sàn. Hãy sở hữu ngay di sản của bạn.</p>
+                <div className="mb-20 pl-4 lg:pl-0 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div>
+                    <h2 className="text-6xl font-serif font-bold text-slate-900 leading-tight">Đấu giá trực tiếp</h2>
+                    <p className="text-slate-400 mt-4 max-w-sm">Các tác phẩm nghệ thuật đang được đấu giá trực tuyến. Tham gia ngay để sở hữu những kiệt tác độc đáo cho bộ sưu tập của bạn.</p>
+                  </div>
+                  <Link href="/auction/list">
+                    <button className="bg-white border-2 border-[#FF6E1A] text-[#FF6E1A] px-8 py-4 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#FF6E1A] hover:text-white transition-all whitespace-nowrap flex items-center gap-3">
+                      Xem tất cả <ArrowRight size={16} />
+                    </button>
+                  </Link>
                 </div>
 
                 <div className="flex flex-col gap-20">
                 {[
-                    { id: 1, title: "Morning Fog over the Thames", artist: "J.M.W. Turner, 1844", bid: "$2,400,000", time: "04h 22m", status: "LIVE NOW", img: "https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=1200" },
-                    { id: 2, title: "Valley of the Yosemite", artist: "Albert Bierstadt, 1864", bid: "$850,000", time: "06h 15m", status: "", img: "https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1200" }
+                    { id: 1, title: "Sương sớm trên sông Hương", artist: "Nguyễn Văn Minh, 2024", bid: "42.500.000đ", time: "04h 22m", status: "ĐANG ĐẤU GIÁ", img: "https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=1200" },
+                    { id: 2, title: "Thung lũng mây", artist: "Lê Thanh Hương, 2023", bid: "28.900.000đ", time: "06h 15m", status: "", img: "https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1200" }
                 ].map((item) => (
                     <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center border-b border-slate-200 pb-20 last:border-0 px-4 lg:px-0">
                     {/* Ảnh bên trái */}
                     <div className="lg:col-span-7 relative group">
-                        <div className="aspect-video rounded-2xl overflow-hidden shadow-xl bg-gray-100">
-                        <img src={item.img} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt={item.title} />
+                        <div className="aspect-video overflow-hidden shadow-xl bg-gray-100">
+                        <img src={item.img} className="w-full h-full object-cover" alt={item.title} />
                         </div>
                         {item.status && (
-                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded text-[9px] font-black uppercase tracking-widest shadow-sm">
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[9px] font-bold text-[#FF6E1A] uppercase tracking-widest shadow-sm">
                             {item.status}
                         </div>
                         )}
@@ -267,10 +277,10 @@ export default function ModernArtAuction() {
                         </div>
 
                         <div className="flex gap-4">
-                        <button className="flex-1 bg-[#1a1a1a] text-white py-5 rounded-xl font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
+                        <button className="flex-1 bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
                             Đặt giá thầu <Hammer size={16} />
                         </button>
-                        <button className="p-5 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
+                        <button className="p-5 border border-slate-200 rounded-md hover:bg-slate-50 transition">
                             <Heart size={20} className="text-slate-400" />
                         </button>
                         </div>
