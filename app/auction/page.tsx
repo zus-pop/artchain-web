@@ -40,7 +40,7 @@ export default function ModernArtAuction() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
+    <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative animate-in fade-in duration-1000">
       
       {/* Quick Action Navigation Sidebar */}
       <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4 hidden lg:flex">

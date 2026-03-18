@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Timer, Heart, Filter, Search, Eye, Hammer, TrendingUp } from 'lucide-react';
 
 interface AuctionItem {
@@ -156,7 +157,7 @@ export default function AuctionListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white">
+    <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white animate-in fade-in slide-in-from-bottom-4 duration-1000">
       
       {/* Header Section */}
       <section className="relative pt-32 pb-16 px-[5%] max-w-[1600px] mx-auto">
@@ -233,9 +234,11 @@ export default function AuctionListPage() {
         {/* Auction Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {auctionItems.map((item) => (
-            <div
+            <Link
               key={item.id}
-              className="group bg-white overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+              href={`/auction/${item.id}`}
+              className="group bg-white overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 block"
+            >
               {/* Image */}
               <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                 <img
@@ -250,7 +253,13 @@ export default function AuctionListPage() {
                 </div>
 
                 {/* Favorite Button */}
-                <button className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition hover:scale-110">
+                <button 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // Handle favorite logic
+                  }}
+                  className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition hover:scale-110"
+                >
                   <Heart size={18} className="text-gray-600" />
                 </button>
 
@@ -301,12 +310,12 @@ export default function AuctionListPage() {
                   </div>
                 </div>
 
-                <button className="w-full bg-[#1a1a1a] text-white py-3 rounded-md font-bold text-xs uppercase tracking-[0.25em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-2 shadow-lg group-hover:shadow-xl">
-                  Đặt giá thầu
+                <div className="w-full bg-[#1a1a1a] text-white py-3 rounded-md font-bold text-xs uppercase tracking-[0.25em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-2 shadow-lg group-hover:shadow-xl">
+                  Chi tiết & Đặt giá
                   <Hammer size={14} />
-                </button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
