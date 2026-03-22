@@ -14,6 +14,11 @@ const STATUS_CONFIG: Record<
   AuctionStatus,
   { label: string; className: string; dot: string }
 > = {
+  PENDING: {
+    label: "CHỜ PHÊ DUYỆT",
+    className: "bg-yellow-500 text-white",
+    dot: "bg-yellow-400",
+  },
   UPCOMING: {
     label: "SẮP DIỄN RA",
     className: "bg-blue-500 text-white",
@@ -40,7 +45,7 @@ function timeLabel(auction: Auction) {
   if (auction.status === "ACTIVE") {
     return `Còn ${formatDistanceToNow(new Date(auction.endTime), { locale: vi })}`;
   }
-  if (auction.status === "UPCOMING") {
+  if (auction.status === "UPCOMING" || auction.status === "PENDING") {
     return `Bắt đầu ${formatDistanceToNow(new Date(auction.startTime), {
       addSuffix: true,
       locale: vi,
@@ -55,14 +60,14 @@ function timeLabel(auction: Auction) {
 // Grab the first painting image for the card thumbnail
 function getThumb(auction: Auction) {
   return (
-    auction.paintings?.[0]?.painting?.imageUrl ||
+    auction.auctionPaintings?.[0]?.painting?.imageUrl ||
     "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"
   );
 }
 
 function getTopPrice(auction: Auction) {
-  if (!auction.paintings?.length) return null;
-  return Math.max(...auction.paintings.map((p) => p.currentPrice || p.startingPrice));
+  if (!auction.auctionPaintings?.length) return null;
+  return Math.max(...auction.auctionPaintings.map((p) => p.currentBid || p.basePrice));
 }
 
 const fmt = (n: number) =>

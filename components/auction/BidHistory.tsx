@@ -58,7 +58,7 @@ export default function BidHistory({ bids, highlightUserId }: BidHistoryProps) {
           >
             <div className="flex flex-col">
               <span className={`font-black ${isLatest ? "text-white" : "text-[#1a1a1a]"}`}>
-                {bid.userName ?? `Người dùng #${bid.userId.slice(-4)}`}
+                {bid.userName || (bid.userId ? `Người dùng #${bid.userId.slice(-4)}` : "Đang tải...") }
               </span>
               <span
                 className={`text-[10px] font-medium uppercase tracking-wider ${

@@ -3,24 +3,26 @@ import React, { useState } from "react";
 import { Hammer, TrendingUp } from "lucide-react";
 
 interface BidFormProps {
-  auctionId: string;
-  auctionPaintingId: string;
+  auctionId: string | number;
+  auctionPaintingId: string | number;
   currentPrice: number;
+  bidStep?: number;
   onBid: (amount: number) => void;
   isLoading?: boolean;
   disabled?: boolean;
 }
 
-const QUICK_INCREMENTS = [500_000, 1_000_000, 2_000_000, 5_000_000];
-
 export default function BidForm({
   currentPrice,
+  bidStep = 500_000,
   onBid,
   isLoading,
   disabled,
 }: BidFormProps) {
-  const minBid = currentPrice + 500_000;
+  const minBid = currentPrice + bidStep;
   const [amount, setAmount] = useState(minBid);
+
+  const QUICK_INCREMENTS = [bidStep, bidStep * 2, bidStep * 5, bidStep * 10];
 
   const fmt = (n: number) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);

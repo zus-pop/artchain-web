@@ -11,6 +11,7 @@ import {
   TrendingUp,
   CheckCircle,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useGetAuctionById, useJoinAuction, usePlaceBid } from "@/apis/auction";
 import { useAuctionSocket } from "@/hooks/useAuctionSocket";
 import BidForm from "@/components/auction/BidForm";
@@ -26,6 +27,7 @@ function useCountdown(targetDate: string) {
 
   useEffect(() => {
     const tick = () => {
+      if (!targetDate) return;
       const diff = new Date(targetDate).getTime() - Date.now();
       if (diff <= 0) { setTimeLeft("00:00:00"); return; }
       const dur = intervalToDuration({ start: 0, end: diff });
@@ -46,14 +48,17 @@ function useCountdown(targetDate: string) {
 function StatusBadge({ status }: { status: AuctionStatus }) {
   const map: Record<AuctionStatus, { label: string; className: string }> = {
     ACTIVE:    { label: "Đang đấu giá", className: "bg-green-100 text-green-800 border-green-200" },
+    ONGOING:   { label: "Đang diễn ra", className: "bg-green-100 text-green-800 border-green-200" },
     UPCOMING:  { label: "Sắp diễn ra",  className: "bg-blue-100 text-blue-800 border-blue-200" },
+    PENDING:   { label: "Chờ phê duyệt", className: "bg-yellow-100 text-yellow-800 border-yellow-200" },
     ENDED:     { label: "Đã kết thúc",  className: "bg-gray-100 text-gray-600 border-gray-200" },
-    CANCELLED: { label: "Đã hủy",       className: "bg-red-100 text-red-700 border-red-200" },
+    CANCELLED: { label: "Đã hủy",        className: "bg-red-100 text-red-700 border-red-200" },
   };
   const { label, className } = map[status] ?? map.ENDED;
+  const isLive = status === "ACTIVE" || status === "ONGOING";
   return (
     <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border ${className}`}>
-      {status === "ACTIVE" && (
+      {isLive && (
         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
       )}
       {label}
@@ -75,7 +80,7 @@ function PaintingTab({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+      className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
         selected
           ? "border-[#f07d44] bg-orange-50"
           : "border-transparent hover:border-gray-200 bg-white"
@@ -83,19 +88,19 @@ function PaintingTab({
     >
       <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
         <img
-          src={p.painting.imageUrl}
+          src={p.painting.imageUrl || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=200"}
           alt={p.painting.title}
           className="w-full h-full object-cover"
         />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="font-black text-sm leading-tight line-clamp-1">{p.painting.title}</p>
         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-          {fmt(p.currentPrice || p.startingPrice)}
+          {fmt(p.currentBid)}
         </p>
       </div>
       {selected && (
-        <CheckCircle size={18} className="text-[#f07d44] flex-shrink-0 ml-auto" />
+        <CheckCircle size={18} className="text-[#f07d44] flex-shrink-0" />
       )}
     </button>
   );
@@ -110,46 +115,113 @@ export default function AuctionDetailPage() {
   const { user } = useAuthStore();
   const userId = user?.userId;
 
-  // Local bid history for the selected painting (merged from WS + initial data)
   const [localBids, setLocalBids] = useState<Bid[]>([]);
-  // Track current prices per painting
   const [prices, setPrices] = useState<Record<string, number>>({});
-  // Selected painting index
   const [selectedIdx, setSelectedIdx] = useState(0);
-  // Track if user has joined
   const [hasJoined, setHasJoined] = useState(false);
 
-  // Initialize prices from API
+  // Initialize prices and join status from API
   useEffect(() => {
-    if (!auction?.paintings) return;
-    const map: Record<string, number> = {};
-    auction.paintings.forEach((p) => {
-      map[p.auctionPaintingId] = p.currentPrice || p.startingPrice;
-    });
-    setPrices(map);
-  }, [auction]);
+    if (!auction) return;
+    console.log("🔄 Auction data updated/refetched:", auction.status);
+    
+    if (auction.auctionPaintings) {
+      const map: Record<string, number> = {};
+      
+      auction.auctionPaintings.forEach((p) => {
+        const idStr = String(p.auctionPaintingId);
+        map[idStr] = p.currentBid;
+      });
+      
+      // Update prices from API (only if the new value is strictly greater)
+      setPrices((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        Object.keys(map).forEach(id => {
+          const apiVal = map[id];
+          const currentVal = prev[id] || 0;
+          if (apiVal > currentVal) {
+            console.log(`💰 Price updated via API for ${id}: ${currentVal} -> ${apiVal}`);
+            next[id] = apiVal;
+            changed = true;
+          }
+        });
+        return changed ? next : prev;
+      });
 
-  // WebSocket
+      // Initialize local bids only if empty
+      if (localBids.length === 0) {
+        const initialBids: Bid[] = [];
+        auction.auctionPaintings.forEach((p) => {
+          if (p.currentBidderId && p.currentBid) {
+            initialBids.push({
+              bidId: `initial-${p.auctionPaintingId}`,
+              auctionId: String(auction.auctionId),
+              auctionPaintingId: String(p.auctionPaintingId),
+              userId: p.currentBidderId,
+              userName: p.currentBidder?.fullName || p.currentBidder?.username || `Người dùng #${p.currentBidderId.slice(-4)}`,
+              amount: p.currentBid,
+              createdAt: p.updatedAt || auction.updatedAt || new Date().toISOString(),
+            });
+          }
+        });
+        if (initialBids.length > 0) {
+          console.log("📜 Initialized bid history from API:", initialBids.length);
+          setLocalBids(initialBids);
+        }
+      }
+    }
+
+    if (userId && auction.auctionParticipants) {
+      const joined = auction.auctionParticipants.some(p => p.userId === userId);
+      if (joined !== hasJoined) {
+        console.log("👤 Join status changed:", joined);
+        setHasJoined(joined);
+      }
+    }
+  }, [auction, userId, hasJoined, localBids.length]);
+
   const handleBidPlaced = useCallback(
     (event: BidPlacedEvent) => {
-      // Update price
-      setPrices((prev) => ({
-        ...prev,
-        [event.auctionPaintingId]: event.amount,
-      }));
-      // Add to local bid list
-      setLocalBids((prev) => [
-        ...prev,
-        {
-          bidId: event.bidId,
-          auctionId: event.auctionId,
-          auctionPaintingId: event.auctionPaintingId,
-          userId: event.userId,
-          userName: event.userName,
-          amount: event.amount,
-          createdAt: event.createdAt,
-        },
-      ]);
+      console.log("🔨 HANDLING WS BID:", event.amount);
+      const idStr = String(event.auctionPaintingId);
+      
+      // 1. Update price for animation
+      setPrices((prev) => {
+        console.log(`⚡ WebSocket price update for ${idStr}: ${prev[idStr]} -> ${event.amount}`);
+        return {
+          ...prev,
+          [idStr]: event.amount,
+        };
+      });
+
+      // 2. Add to bid history with duplicate check
+      setLocalBids((prev) => {
+        if (prev.some(b => b.bidId === event.bidId)) {
+          console.log("⏭️ Duplicate bid ignored:", event.bidId);
+          return prev;
+        }
+
+        // Try to find the username from participants list
+        let resolvedUserName = event.userName;
+        if (!resolvedUserName && auction?.auctionParticipants) {
+          const participant = auction.auctionParticipants.find(p => p.userId === event.userId);
+          resolvedUserName = participant?.user?.fullName || participant?.user?.username || participant?.fullName;
+        }
+
+        return [
+          {
+            bidId: event.bidId,
+            auctionId: String(event.auctionId),
+            auctionPaintingId: idStr,
+            userId: event.userId,
+            userName: resolvedUserName,
+            amount: event.amount,
+            createdAt: event.createdAt,
+          },
+          ...prev,
+        ];
+      });
     },
     []
   );
@@ -160,29 +232,34 @@ export default function AuctionDetailPage() {
     onStatusChanged: () => refetch(),
   });
 
-  const paintings = auction?.paintings ?? [];
+  const paintings = auction?.auctionPaintings ?? [];
   const selectedPainting = paintings[selectedIdx];
+  const selectedIdStr = selectedPainting ? String(selectedPainting.auctionPaintingId) : "";
   const currentPrice = selectedPainting
-    ? prices[selectedPainting.auctionPaintingId] ??
-      selectedPainting.currentPrice ??
-      selectedPainting.startingPrice
+    ? prices[selectedIdStr] ?? selectedPainting.currentBid
     : 0;
 
-  // Bids for selected painting
+  console.log("💎 RENDER PRICE:", {
+    selectedIdStr,
+    priceInState: prices[selectedIdStr],
+    apiBid: selectedPainting?.currentBid,
+    finalPrice: currentPrice,
+    allPrices: prices
+  });
+
   const visibleBids = localBids.filter(
-    (b) => b.auctionPaintingId === selectedPainting?.auctionPaintingId
+    (b) => String(b.auctionPaintingId) === selectedIdStr
   );
 
-  const countdownTarget =
-    auction?.status === "ACTIVE" ? auction.endTime : (auction?.startTime ?? "");
-  const countdown = useCountdown(countdownTarget);
+  const isAuctionLive = auction?.status === "ACTIVE" || auction?.status === "ONGOING";
+  const countdownTarget = isAuctionLive ? auction?.endTime : (auction?.startTime ?? "");
+  const countdown = useCountdown(countdownTarget || "");
 
   const handleBid = async (amount: number) => {
     if (!selectedPainting) return;
     await bidMutation.mutateAsync({
-      auctionId,
       auctionPaintingId: selectedPainting.auctionPaintingId,
-      amount,
+      bidAmount: amount,
     });
   };
 
@@ -191,7 +268,8 @@ export default function AuctionDetailPage() {
     setHasJoined(true);
   };
 
-  // ── Loading ──────────────────────────────────────────────────────────────
+  const currentBidCount = visibleBids.length || (selectedPainting?.currentBidderId ? 1 : 0);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#eae6e0] flex items-center justify-center">
@@ -229,7 +307,6 @@ export default function AuctionDetailPage() {
           </Link>
 
           <div className="flex items-center gap-4">
-            {/* Participants */}
             <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold opacity-50">
               <Users size={14} />
               {participantCount > 0
@@ -237,26 +314,20 @@ export default function AuctionDetailPage() {
                 : `${auction.participantCount ?? 0} người tham gia`}
             </div>
 
-            {/* WS indicator */}
-            <div
-              className={`flex items-center gap-1.5 text-xs font-bold ${
-                isConnected ? "text-green-600" : "text-gray-400"
-              }`}
-            >
+            <div className={`flex items-center gap-1.5 text-xs font-bold ${isConnected ? "text-green-600" : "text-gray-400"}`}>
               {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
               {isConnected ? "Kết nối" : "Offline"}
             </div>
 
-            {/* Status */}
             <StatusBadge status={auction.status} />
           </div>
         </div>
       </div>
 
       {/* ── Main content ────────────────────────────────────────────────── */}
-      <main className="pt-20 px-[5%] max-w-[1600px] mx-auto pb-20">
-        {/* Hero */}
-        <div className="py-10 md:py-16">
+      <main className="pt-24 px-[5%] max-w-[1600px] mx-auto pb-20">
+        {/* Header */}
+        <div className="mb-12">
           <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-3">
             {auction.title}
           </h1>
@@ -272,9 +343,7 @@ export default function AuctionDetailPage() {
               <Timer size={20} className="text-[#f07d44]" />
               <div>
                 <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">
-                  {auction.status === "ACTIVE"
-                    ? "Kết thúc sau"
-                    : "Bắt đầu sau"}
+                  {isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau"}
                 </p>
                 <p className="text-2xl font-black tracking-widest">{countdown}</p>
               </div>
@@ -282,28 +351,9 @@ export default function AuctionDetailPage() {
           )}
         </div>
 
-        {/* Join button (show if not yet joined) */}
-        {auction.status === "ACTIVE" && !hasJoined && (
-          <div className="mb-10 p-6 bg-orange-50 border-2 border-[#f07d44]/20 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <p className="font-black text-lg">Tham gia phiên đấu giá</p>
-              <p className="text-sm opacity-60 mt-0.5">
-                Bạn cần tham gia để có thể đặt giá
-              </p>
-            </div>
-            <button
-              onClick={handleJoin}
-              disabled={joinMutation.isPending}
-              className="bg-[#f07d44] hover:bg-[#d96a30] disabled:opacity-50 text-white px-8 py-3 rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg shadow-orange-200 whitespace-nowrap"
-            >
-              {joinMutation.isPending ? "Đang tham gia…" : "Tham gia ngay"}
-            </button>
-          </div>
-        )}
-
-        {/* Three-column layout */}
+        {/* Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* LEFT: Painting list */}
+          {/* LEFT: Paintings list */}
           <div className="lg:col-span-3 space-y-2">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-3">
               Các tác phẩm ({paintings.length})
@@ -313,124 +363,130 @@ export default function AuctionDetailPage() {
                 key={p.auctionPaintingId}
                 p={{
                   ...p,
-                  currentPrice: prices[p.auctionPaintingId] ?? p.currentPrice ?? p.startingPrice,
+                  currentBid: prices[String(p.auctionPaintingId)] ?? p.currentBid,
                 }}
                 selected={idx === selectedIdx}
                 onClick={() => setSelectedIdx(idx)}
               />
             ))}
-            {paintings.length === 0 && (
-              <p className="text-sm opacity-40 italic">Chưa có tác phẩm nào</p>
-            )}
           </div>
 
-          {/* CENTER: Selected painting image */}
+          {/* CENTER: Image & Info */}
           <div className="lg:col-span-6">
             {selectedPainting ? (
-              <div>
-                <div className="aspect-[4/3] lg:aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl bg-gray-100 relative">
+              <div className="space-y-6">
+                <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl bg-gray-100">
                   <img
-                    src={selectedPainting.painting.imageUrl}
+                    src={selectedPainting.painting.imageUrl || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"}
                     alt={selectedPainting.painting.title}
                     className="w-full h-full object-cover"
                   />
-                  {/* Live indicator */}
-                  {auction.status === "ACTIVE" && (
+                  {isAuctionLive && (
                     <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                       <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                       Live
                     </div>
                   )}
-                  {/* Current price overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-6">
+                  {/* Price display with animation */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-8">
                     <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">
                       Giá hiện tại
                     </p>
-                    <p className="text-3xl font-black text-white flex items-center gap-2">
-                      {new Intl.NumberFormat("vi-VN").format(currentPrice)}đ
-                      <TrendingUp size={20} className="text-[#f07d44]" />
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={currentPrice}
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -20, opacity: 0 }}
+                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                          className="text-4xl font-black text-[#f07d44]"
+                        >
+                          {new Intl.NumberFormat("vi-VN").format(currentPrice)}đ
+                        </motion.div>
+                      </AnimatePresence>
+                      <TrendingUp size={24} className="text-white opacity-40" />
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-6 bg-white rounded-2xl p-6 shadow-sm">
-                  <h2 className="text-2xl font-black uppercase tracking-tight mb-1">
+                <div className="bg-white rounded-2xl p-8 shadow-sm">
+                  <h2 className="text-3xl font-black uppercase tracking-tight mb-2">
                     {selectedPainting.painting.title}
                   </h2>
-                  {selectedPainting.painting.competitorName && (
-                    <p className="text-sm text-[#f07d44] font-bold uppercase tracking-widest opacity-70">
-                      {selectedPainting.painting.competitorName}
-                    </p>
-                  )}
-                  {selectedPainting.painting.description && (
-                    <p className="text-sm opacity-60 mt-3 leading-relaxed">
-                      {selectedPainting.painting.description}
-                    </p>
-                  )}
-                  <div className="mt-4 flex gap-6 text-xs">
+                  <p className="text-sm text-[#f07d44] font-bold uppercase tracking-widest opacity-80 mb-4">
+                    ID Họa sĩ: {selectedPainting.painting.competitorId}
+                  </p>
+                  <p className="text-sm opacity-60 leading-relaxed mb-6">
+                    {selectedPainting.painting.description || "Không có mô tả cho tác phẩm này."}
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-8 pt-6 border-t border-gray-100">
                     <div>
-                      <p className="font-bold uppercase tracking-widest opacity-40 mb-1">
-                        Giá khởi điểm
-                      </p>
-                      <p className="font-black text-lg">
-                        {new Intl.NumberFormat("vi-VN").format(
-                          selectedPainting.startingPrice
-                        )}đ
-                      </p>
+                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Giá khởi điểm</p>
+                      <p className="text-xl font-black">{new Intl.NumberFormat("vi-VN").format(selectedPainting.basePrice)}đ</p>
                     </div>
                     <div>
-                      <p className="font-bold uppercase tracking-widest opacity-40 mb-1">
-                        Lượt đặt giá
-                      </p>
-                      <p className="font-black text-lg">{visibleBids.length}</p>
+                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Lượt đặt giá</p>
+                      <p className="text-xl font-black">{currentBidCount}</p>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="aspect-video bg-white rounded-2xl flex items-center justify-center opacity-30">
-                <p className="text-sm font-black uppercase tracking-widest">
-                  Chọn tác phẩm
-                </p>
+              <div className="aspect-square bg-white rounded-2xl flex items-center justify-center opacity-30 border-2 border-dashed border-gray-300">
+                <p className="font-black uppercase tracking-widest">Chọn tác phẩm để xem</p>
               </div>
             )}
           </div>
 
-          {/* RIGHT: Bid panel */}
+          {/* RIGHT: Bidding Panel */}
           <div className="lg:col-span-3 space-y-6">
-            {/* Bid form */}
-            {selectedPainting && auction.status === "ACTIVE" && (
+            {selectedPainting && isAuctionLive && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-4">
-                  Đặt giá thầu
+                  Phòng đấu giá
                 </p>
-                <BidForm
-                  auctionId={auctionId}
-                  auctionPaintingId={selectedPainting.auctionPaintingId}
-                  currentPrice={currentPrice}
-                  onBid={handleBid}
-                  isLoading={bidMutation.isPending}
-                  disabled={auction.status !== "ACTIVE"}
-                />
+                {hasJoined ? (
+                  <BidForm
+                    auctionId={String(auctionId)}
+                    auctionPaintingId={String(selectedPainting.auctionPaintingId)}
+                    currentPrice={currentPrice}
+                    bidStep={selectedPainting.bidStep}
+                    onBid={handleBid}
+                    isLoading={bidMutation.isPending}
+                    disabled={!isAuctionLive}
+                  />
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-xs text-center opacity-60">Bạn cần tham gia để đặt giá thầu.</p>
+                    <button
+                      onClick={handleJoin}
+                      disabled={joinMutation.isPending}
+                      className="w-full bg-[#f07d44] hover:bg-[#d96a30] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest transition shadow-lg shadow-orange-100"
+                    >
+                      {joinMutation.isPending ? "Đang tham gia..." : "Tham gia ngay"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Bid history */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-                  Lịch sử đặt giá
+                  Lịch sử thầu
                 </p>
                 {isConnected && (
-                  <span className="flex items-center gap-1 text-[10px] text-green-600 font-bold">
+                  <div className="flex items-center gap-1.5 text-[10px] text-green-600 font-bold uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    Trực tiếp
-                  </span>
+                    Live
+                  </div>
                 )}
               </div>
               <BidHistory
                 bids={visibleBids}
-                highlightUserId={userId ?? undefined}
+                highlightUserId={userId}
               />
             </div>
           </div>

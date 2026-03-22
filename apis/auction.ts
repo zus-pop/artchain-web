@@ -15,7 +15,8 @@ export function useGetAuctions() {
     queryKey: ["auctions"],
     queryFn: async () => {
       const res = await myAxios.get("/auctions");
-      return res.data;
+      // Check if response has data.data (wrapped in ApiResponse) or is raw Auction[]
+      return res.data?.data ?? res.data ?? [];
     },
     staleTime: 30 * 1000, // 30 seconds (auctions change fast)
     refetchOnWindowFocus: true,
@@ -73,7 +74,7 @@ export function useAddPaintingToAuction(auctionId: string) {
 }
 
 // ─── POST /auctions/:auctionId/join ──────────────────────────────────────────
-export function useJoinAuction(auctionId: string) {
+export function useJoinAuction(auctionId: string | number) {
   const queryClient = useQueryClient();
   return useMutation<unknown, Error, void>({
     mutationFn: async () => {
@@ -82,7 +83,7 @@ export function useJoinAuction(auctionId: string) {
     },
     onSuccess: () => {
       toast.success("Bạn đã tham gia phiên đấu giá!");
-      queryClient.invalidateQueries({ queryKey: ["auction", auctionId] });
+      queryClient.invalidateQueries({ queryKey: ["auction", String(auctionId)] });
     },
     onError: (err: any) => {
       toast.error(err?.message ?? "Tham gia thất bại");
@@ -98,9 +99,9 @@ export function usePlaceBid() {
       const res = await myAxios.post("/auctions/bids", data);
       return res.data;
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       toast.success("Đặt giá thành công!");
-      queryClient.invalidateQueries({ queryKey: ["auction", variables.auctionId] });
+      queryClient.invalidateQueries({ queryKey: ["auction"] });
     },
     onError: (err: any) => {
       toast.error(err?.message ?? "Đặt giá thất bại");
