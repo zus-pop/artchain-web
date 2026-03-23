@@ -1,21 +1,25 @@
 "use client";
 
+import { useGetUserAchievements } from "@/apis/achievements";
+import {
+  useGetPaintingEvaluations,
+  useGetUserSubmissions,
+} from "@/apis/paintings";
+import CertificateViewer from "@/components/award/CertificateViewer";
+import { formatCurrency } from "@/lib/utils";
 import { GuardianChild, WhoAmI } from "@/types";
+import { AchievementItem } from "@/types/achievement";
+import { CompetitorSubmission, PaintingEvaluation } from "@/types/painting";
+import { ArrowLeft, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, ArrowLeft } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useGetUserAchievements } from "@/apis/achievements";
-import { useGetMySubmissions, useGetUserSubmissions, useGetPaintingEvaluations } from "@/apis/paintings";
-import { PaintingEvaluation, CompetitorSubmission } from "@/types/painting";
+import { useEffect, useState } from "react";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
   guardianChildren: GuardianChild[] | undefined;
   isLoadingChildren: boolean;
 }
-
-
 
 // GUARDIAN PROFILE SCREEN COMPONENT
 export default function GuardianProfileScreen({
@@ -27,21 +31,27 @@ export default function GuardianProfileScreen({
     "children" | "competitions" | "progress" | "about"
   >("children");
   const [selectedChild, setSelectedChild] = useState<GuardianChild | null>(
-    null
+    null,
   );
   const [modalActiveTab, setModalActiveTab] = useState<"submitted" | "awards">(
-    "submitted"
+    "submitted",
   );
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingPaintingDetail, setViewingPaintingDetail] = useState(false);
-  const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(null);
+  const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(
+    null,
+  );
+
+  // State for award detail dialog
+  const [selectedAchievement, setSelectedAchievement] =
+    useState<AchievementItem | null>(null);
+  const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
+  const [isCertificateViewerOpen, setIsCertificateViewerOpen] = useState(false);
   const itemsPerPage = 2;
 
   // Fetch achievements for selected child (hook is safe to call with undefined)
-  const { data: childAchievementsResp, isLoading: isLoadingChildAchievements } = useGetUserAchievements(
-    selectedChild?.userId,
-    modalActiveTab === "awards"
-  );
+  const { data: childAchievementsResp, isLoading: isLoadingChildAchievements } =
+    useGetUserAchievements(selectedChild?.userId, modalActiveTab === "awards");
 
   // Reset page when child or tab changes
   useEffect(() => {
@@ -51,14 +61,12 @@ export default function GuardianProfileScreen({
   }, [selectedChild, modalActiveTab]);
 
   // Fetch submissions for selected child (guardian API expects competitor UUID)
-  const { data: childSubmissions, isLoading: isLoadingChildSubmissions } = useGetUserSubmissions(
-    selectedChild?.userId
-  );
+  const { data: childSubmissions, isLoading: isLoadingChildSubmissions } =
+    useGetUserSubmissions(selectedChild?.userId);
 
   // Fetch evaluations for selected painting
-  const { data: paintingEvaluations, isLoading: isLoadingEvaluations } = useGetPaintingEvaluations(
-    selectedPaintingId || ""
-  );
+  const { data: paintingEvaluations, isLoading: isLoadingEvaluations } =
+    useGetPaintingEvaluations(selectedPaintingId || "");
 
   // Handle viewing painting evaluation details
   const handleViewPaintingDetail = (paintingId: string) => {
@@ -71,13 +79,32 @@ export default function GuardianProfileScreen({
     setSelectedPaintingId(null);
   };
 
+  // Handle viewing award details
+  const handleViewAwardDetail = (achievement: AchievementItem) => {
+    setSelectedAchievement(achievement);
+    setIsAwardDialogOpen(true);
+  };
+
+  const handleCloseAwardDialog = () => {
+    setIsAwardDialogOpen(false);
+    setSelectedAchievement(null);
+  };
+
+  const handleOpenCertificateViewer = () => {
+    setIsCertificateViewerOpen(true);
+  };
+
+  const handleCloseCertificateViewer = () => {
+    setIsCertificateViewerOpen(false);
+  };
+
   // Component for displaying painting evaluation details
-  function PaintingEvaluationDetail({ 
-    evaluations, 
-    selectedSubmission, 
-    onBack 
-  }: { 
-    evaluations: PaintingEvaluation[] | null | undefined; 
+  function PaintingEvaluationDetail({
+    evaluations,
+    selectedSubmission,
+    onBack,
+  }: {
+    evaluations: PaintingEvaluation[] | null | undefined;
     selectedSubmission: CompetitorSubmission | undefined;
     onBack: () => void;
   }) {
@@ -98,7 +125,9 @@ export default function GuardianProfileScreen({
 
         {/* Painting Info */}
         <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-black mb-4">Thông tin tranh</h3>
+          <h3 className="text-lg font-semibold text-black mb-4">
+            Thông tin tranh
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-600">Tên tranh</p>
@@ -106,30 +135,50 @@ export default function GuardianProfileScreen({
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Cuộc thi</p>
-              <p className="text-black">{selectedSubmission.contestTitle || "N/A"}</p>
+              <p className="text-black">
+                {selectedSubmission.contestTitle || "N/A"}
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Ngày nộp</p>
               <p className="text-black">
-                {selectedSubmission.submissionDate ? new Date(selectedSubmission.submissionDate).toLocaleDateString("vi-VN") : "-"}
+                {selectedSubmission.submissionDate
+                  ? new Date(
+                      selectedSubmission.submissionDate,
+                    ).toLocaleDateString("vi-VN")
+                  : "-"}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Trạng thái</p>
-              <span className={`text-xs px-2 py-1 rounded ${
-                selectedSubmission.status === 'APPROVED' || selectedSubmission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                selectedSubmission.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
-                selectedSubmission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
-                selectedSubmission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                selectedSubmission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {selectedSubmission.status === 'APPROVED' || selectedSubmission.status === 'ACCEPTED' ? 'Đã duyệt' : 
-                 selectedSubmission.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
-                 selectedSubmission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
-                 selectedSubmission.status === 'PENDING' ? 'Chờ xử lý' :
-                 selectedSubmission.status === 'REJECTED' ? 'Từ chối' :
-                 selectedSubmission.status}
+              <span
+                className={`text-xs px-2 py-1 rounded ${
+                  selectedSubmission.status === "APPROVED" ||
+                  selectedSubmission.status === "ACCEPTED"
+                    ? "bg-green-100 text-green-800"
+                    : selectedSubmission.status === "ORIGINAL_SUBMITTED"
+                      ? "bg-blue-100 text-blue-800"
+                      : selectedSubmission.status === "NOT_SUBMITTED_ORIGINAL"
+                        ? "bg-orange-100 text-orange-800"
+                        : selectedSubmission.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : selectedSubmission.status === "REJECTED"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                {selectedSubmission.status === "APPROVED" ||
+                selectedSubmission.status === "ACCEPTED"
+                  ? "Đã duyệt"
+                  : selectedSubmission.status === "ORIGINAL_SUBMITTED"
+                    ? "Đã nộp bản gốc"
+                    : selectedSubmission.status === "NOT_SUBMITTED_ORIGINAL"
+                      ? "Chưa nộp bản gốc"
+                      : selectedSubmission.status === "PENDING"
+                        ? "Chờ xử lý"
+                        : selectedSubmission.status === "REJECTED"
+                          ? "Từ chối"
+                          : selectedSubmission.status}
               </span>
             </div>
           </div>
@@ -137,7 +186,9 @@ export default function GuardianProfileScreen({
 
         {/* Evaluations */}
         <div>
-          <h3 className="text-lg font-semibold text-black mb-4">Đánh giá từ giám khảo</h3>
+          <h3 className="text-lg font-semibold text-black mb-4">
+            Đánh giá từ giám khảo
+          </h3>
           {isLoadingEvaluations ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
@@ -146,12 +197,20 @@ export default function GuardianProfileScreen({
           ) : evaluations && evaluations.length > 0 ? (
             <div className="space-y-4">
               {evaluations.map((evaluation) => (
-                <div key={evaluation.id} className="border border-gray-200 rounded-lg p-4">
+                <div
+                  key={evaluation.id}
+                  className="border border-gray-200 rounded-lg p-4"
+                >
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <p className="font-medium text-black">{evaluation.examinerName}</p>
+                      <p className="font-medium text-black">
+                        {evaluation.examinerName}
+                      </p>
                       <p className="text-sm text-gray-600">
-                        Đánh giá ngày: {new Date(evaluation.evaluationDate).toLocaleDateString("vi-VN")}
+                        Đánh giá ngày:{" "}
+                        {new Date(evaluation.evaluationDate).toLocaleDateString(
+                          "vi-VN",
+                        )}
                       </p>
                     </div>
                     <div className="text-right">
@@ -169,37 +228,50 @@ export default function GuardianProfileScreen({
                   </div>
 
                   {/* Detailed scores for round 2 */}
-                  {(evaluation.creativityScore || evaluation.compositionScore || 
-                    evaluation.colorScore || evaluation.technicalScore || evaluation.aestheticScore) && (
+                  {(evaluation.creativityScore ||
+                    evaluation.compositionScore ||
+                    evaluation.colorScore ||
+                    evaluation.technicalScore ||
+                    evaluation.aestheticScore) && (
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
                       {evaluation.creativityScore && (
                         <div className="text-center">
                           <p className="text-xs text-gray-600">Sáng tạo</p>
-                          <p className="font-medium">{evaluation.creativityScore}/10</p>
+                          <p className="font-medium">
+                            {evaluation.creativityScore}/10
+                          </p>
                         </div>
                       )}
                       {evaluation.compositionScore && (
                         <div className="text-center">
                           <p className="text-xs text-gray-600">Bố cục</p>
-                          <p className="font-medium">{evaluation.compositionScore}/10</p>
+                          <p className="font-medium">
+                            {evaluation.compositionScore}/10
+                          </p>
                         </div>
                       )}
                       {evaluation.colorScore && (
                         <div className="text-center">
                           <p className="text-xs text-gray-600">Màu sắc</p>
-                          <p className="font-medium">{evaluation.colorScore}/10</p>
+                          <p className="font-medium">
+                            {evaluation.colorScore}/10
+                          </p>
                         </div>
                       )}
                       {evaluation.technicalScore && (
                         <div className="text-center">
                           <p className="text-xs text-gray-600">Kỹ thuật</p>
-                          <p className="font-medium">{evaluation.technicalScore}/10</p>
+                          <p className="font-medium">
+                            {evaluation.technicalScore}/10
+                          </p>
                         </div>
                       )}
                       {evaluation.aestheticScore && (
                         <div className="text-center">
                           <p className="text-xs text-gray-600">Thẩm mỹ</p>
-                          <p className="font-medium">{evaluation.aestheticScore}/10</p>
+                          <p className="font-medium">
+                            {evaluation.aestheticScore}/10
+                          </p>
                         </div>
                       )}
                     </div>
@@ -207,8 +279,12 @@ export default function GuardianProfileScreen({
 
                   {evaluation.feedback && (
                     <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Nhận xét:</p>
-                      <p className="text-black bg-gray-50 p-3 rounded">{evaluation.feedback}</p>
+                      <p className="text-sm font-medium text-gray-600 mb-1">
+                        Nhận xét:
+                      </p>
+                      <p className="text-black bg-gray-50 p-3 rounded">
+                        {evaluation.feedback}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -239,12 +315,18 @@ export default function GuardianProfileScreen({
   };
 
   // Child component that renders submission directly (no need for detail fetch since API returns full data)
-  function SubmissionItem({ submission, onClick }: { submission: CompetitorSubmission; onClick?: () => void }) {
+  function SubmissionItem({
+    submission,
+    onClick,
+  }: {
+    submission: CompetitorSubmission;
+    onClick?: () => void;
+  }) {
     const contestTitle = submission.contestTitle || "N/A";
 
     return (
       <div
-        className={`overflow-hidden border border-gray-200 rounded-lg ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+        className={`overflow-hidden border border-gray-200 rounded-lg ${onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
         onClick={onClick}
       >
         <div className="relative h-48 w-full bg-gray-200">
@@ -268,25 +350,44 @@ export default function GuardianProfileScreen({
         </div>
         <div className="p-4">
           <p className="text-sm text-black">
-            Ngày nộp: {submission.submissionDate ? new Date(submission.submissionDate).toLocaleDateString("vi-VN") : "-"}
+            Ngày nộp:{" "}
+            {submission.submissionDate
+              ? new Date(submission.submissionDate).toLocaleDateString("vi-VN")
+              : "-"}
           </p>
-          <p className="mt-1 font-medium text-black">Cuộc thi: {contestTitle}</p>
+          <p className="mt-1 font-medium text-black">
+            Cuộc thi: {contestTitle}
+          </p>
           <p className="text-sm text-gray-600 mt-1">{submission.title}</p>
           <div className="flex justify-between items-center mt-2">
-            <span className={`text-xs px-2 py-1 rounded ${
-              submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-              submission.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
-              submission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
-              submission.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-              submission.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-              'bg-gray-100 text-gray-800'
-            }`}>
-              {submission.status === 'APPROVED' || submission.status === 'ACCEPTED' ? 'Đã duyệt' : 
-               submission.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
-               submission.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
-               submission.status === 'PENDING' ? 'Chờ xử lý' :
-               submission.status === 'REJECTED' ? 'Từ chối' :
-               submission.status}
+            <span
+              className={`text-xs px-2 py-1 rounded ${
+                submission.status === "APPROVED" ||
+                submission.status === "ACCEPTED"
+                  ? "bg-green-100 text-green-800"
+                  : submission.status === "ORIGINAL_SUBMITTED"
+                    ? "bg-blue-100 text-blue-800"
+                    : submission.status === "NOT_SUBMITTED_ORIGINAL"
+                      ? "bg-orange-100 text-orange-800"
+                      : submission.status === "PENDING"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : submission.status === "REJECTED"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {submission.status === "APPROVED" ||
+              submission.status === "ACCEPTED"
+                ? "Đã duyệt"
+                : submission.status === "ORIGINAL_SUBMITTED"
+                  ? "Đã nộp bản gốc"
+                  : submission.status === "NOT_SUBMITTED_ORIGINAL"
+                    ? "Chưa nộp bản gốc"
+                    : submission.status === "PENDING"
+                      ? "Chờ xử lý"
+                      : submission.status === "REJECTED"
+                        ? "Từ chối"
+                        : submission.status}
             </span>
           </div>
         </div>
@@ -412,18 +513,29 @@ export default function GuardianProfileScreen({
                     {isLoadingChildSubmissions ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
-                        <p className="text-[#423137] mt-2">Đang tải tranh đã nộp...</p>
+                        <p className="text-[#423137] mt-2">
+                          Đang tải tranh đã nộp...
+                        </p>
                       </div>
-                    ) : childSubmissions && Array.isArray(childSubmissions) && childSubmissions.length > 0 ? (
+                    ) : childSubmissions &&
+                      Array.isArray(childSubmissions) &&
+                      childSubmissions.length > 0 ? (
                       <div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                           {childSubmissions
-                            .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                            .slice(
+                              (currentPage - 1) * itemsPerPage,
+                              currentPage * itemsPerPage,
+                            )
                             .map((submission: CompetitorSubmission) => (
-                              <SubmissionItem 
-                                key={submission.paintingId} 
+                              <SubmissionItem
+                                key={submission.paintingId}
                                 submission={submission}
-                                onClick={() => handleViewPaintingDetail(submission.paintingId)}
+                                onClick={() =>
+                                  handleViewPaintingDetail(
+                                    submission.paintingId,
+                                  )
+                                }
                               />
                             ))}
                         </div>
@@ -431,18 +543,37 @@ export default function GuardianProfileScreen({
                         {childSubmissions.length > itemsPerPage && (
                           <div className="flex justify-center items-center space-x-2">
                             <button
-                              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                              onClick={() =>
+                                setCurrentPage(Math.max(1, currentPage - 1))
+                              }
                               disabled={currentPage === 1}
                               className="px-3 cursor-pointer py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
                             >
                               Trước
                             </button>
                             <span className="text-sm text-gray-600">
-                              Trang {currentPage} / {Math.ceil(childSubmissions.length / itemsPerPage)}
+                              Trang {currentPage} /{" "}
+                              {Math.ceil(
+                                childSubmissions.length / itemsPerPage,
+                              )}
                             </span>
                             <button
-                              onClick={() => setCurrentPage(Math.min(Math.ceil(childSubmissions.length / itemsPerPage), currentPage + 1))}
-                              disabled={currentPage === Math.ceil(childSubmissions.length / itemsPerPage)}
+                              onClick={() =>
+                                setCurrentPage(
+                                  Math.min(
+                                    Math.ceil(
+                                      childSubmissions.length / itemsPerPage,
+                                    ),
+                                    currentPage + 1,
+                                  ),
+                                )
+                              }
+                              disabled={
+                                currentPage ===
+                                Math.ceil(
+                                  childSubmissions.length / itemsPerPage,
+                                )
+                              }
                               className="px-3 cursor-pointer py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
                             >
                               Sau
@@ -452,7 +583,9 @@ export default function GuardianProfileScreen({
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-black">Chưa có tranh nào được nộp.</p>
+                        <p className="text-black">
+                          Chưa có tranh nào được nộp.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -462,7 +595,13 @@ export default function GuardianProfileScreen({
                 {modalActiveTab === "submitted" && viewingPaintingDetail && (
                   <PaintingEvaluationDetail
                     evaluations={paintingEvaluations}
-                    selectedSubmission={Array.isArray(childSubmissions) ? childSubmissions.find(sub => sub.paintingId === selectedPaintingId) : undefined}
+                    selectedSubmission={
+                      Array.isArray(childSubmissions)
+                        ? childSubmissions.find(
+                            (sub) => sub.paintingId === selectedPaintingId,
+                          )
+                        : undefined
+                    }
                     onBack={handleBackToSubmissions}
                   />
                 )}
@@ -473,17 +612,24 @@ export default function GuardianProfileScreen({
                     {isLoadingChildAchievements ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
-                        <p className="text-[#423137] mt-2">Đang tải giải thưởng...</p>
+                        <p className="text-[#423137] mt-2">
+                          Đang tải giải thưởng...
+                        </p>
                       </div>
-                    ) : childAchievementsResp && childAchievementsResp.data.achievements.length > 0 ? (
+                    ) : childAchievementsResp &&
+                      childAchievementsResp.data.achievements.length > 0 ? (
                       <div className="grid grid-cols-1 gap-4">
                         {childAchievementsResp.data.achievements.map((a) => (
-                          <div key={a.paintingId} className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+                          <div
+                            key={a.paintingId}
+                            className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                            onClick={() => handleViewAwardDetail(a)}
+                          >
                             <div className="h-20 w-20 relative flex-shrink-0 bg-gray-200 rounded overflow-hidden">
                               {a.paintingImage ? (
-                                <Image 
-                                  src={a.paintingImage} 
-                                  alt={a.paintingTitle} 
+                                <Image
+                                  src={a.paintingImage}
+                                  alt={a.paintingTitle}
                                   fill
                                   className="object-cover"
                                 />
@@ -494,10 +640,23 @@ export default function GuardianProfileScreen({
                               )}
                             </div>
                             <div className="flex-1">
-                              <div className="font-medium text-black">{a.paintingTitle}</div>
-                              <div className="text-sm text-[#423137]">Cuộc thi: {a.contest?.title || "-"}</div>
-                              <div className="text-sm text-[#423137]">Giải: {a.award?.name || "-"}</div>
-                              <div className="text-sm text-[#423137]">Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}</div>
+                              <div className="font-medium text-black">
+                                {a.paintingTitle}
+                              </div>
+                              <div className="text-sm text-[#423137]">
+                                Cuộc thi: {a.contest?.title || "-"}
+                              </div>
+                              <div className="text-sm text-[#423137]">
+                                Giải: {a.award?.name || "-"}
+                              </div>
+                              <div className="text-sm text-[#423137]">
+                                Ngày:{" "}
+                                {a.achievedDate
+                                  ? new Date(a.achievedDate).toLocaleDateString(
+                                      "vi-VN",
+                                    )
+                                  : "-"}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -510,6 +669,182 @@ export default function GuardianProfileScreen({
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Award Detail Dialog */}
+        {isAwardDialogOpen && selectedAchievement && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={handleCloseAwardDialog}
+            />
+            <div className="relative z-10 w-full max-w-4xl rounded bg-white shadow-lg max-h-[90vh] overflow-hidden">
+              <div className="flex items-start justify-between p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-black">
+                  Chi tiết giải thưởng
+                </h3>
+                <button
+                  className="text-black cursor-pointer hover:text-gray-600"
+                  onClick={handleCloseAwardDialog}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[70vh]">
+                {/* Painting Info */}
+                <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-black">
+                      Thông tin tranh
+                    </h3>
+                    <button
+                      onClick={handleOpenCertificateViewer}
+                      className="inline-flex cursor-pointer items-center rounded bg-[#423137] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                    >
+                      Xem chứng chỉ
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Tên tranh
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.paintingTitle}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Cuộc thi
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.contest?.title || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Ngày đạt giải
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.achievedDate
+                          ? new Date(
+                              selectedAchievement.achievedDate,
+                            ).toLocaleDateString("vi-VN")
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Giải thưởng
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.award?.name || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedAchievement.paintingImage && (
+                    <div className="mt-4">
+                      <img
+                        src={selectedAchievement.paintingImage}
+                        alt={selectedAchievement.paintingTitle}
+                        className="w-full max-h-64 object-cover rounded"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Award Details */}
+                {selectedAchievement.award && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-black mb-4">
+                      Chi tiết giải thưởng
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            Tên giải
+                          </p>
+                          <p className="text-black">
+                            {selectedAchievement.award.name}
+                          </p>
+                        </div>
+                        {selectedAchievement.award.rank && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">
+                              Hạng
+                            </p>
+                            <p className="text-black">
+                              {selectedAchievement.award.rank}
+                            </p>
+                          </div>
+                        )}
+                        {selectedAchievement.award.prize && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">
+                              Giải thưởng
+                            </p>
+                            <p className="text-black">
+                              {formatCurrency(
+                                Number(selectedAchievement.award.prize),
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {selectedAchievement.award.description && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            Mô tả
+                          </p>
+                          <p className="text-black bg-gray-50 p-3 rounded">
+                            {selectedAchievement.award.description}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isCertificateViewerOpen && selectedAchievement && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-8 md:py-10">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={handleCloseCertificateViewer}
+            />
+            <div className="relative z-10 w-full max-w-6xl max-h-full overflow-y-auto rounded bg-white p-4 shadow-lg">
+              <div className="mb-3 flex items-center justify-between border-b border-gray-200 pb-3">
+                <h3 className="text-lg font-semibold text-black">Chứng chỉ</h3>
+                <button
+                  className="cursor-pointer text-black hover:text-gray-600"
+                  onClick={handleCloseCertificateViewer}
+                >
+                  ✕
+                </button>
+              </div>
+              <CertificateViewer
+                backgroundImage="/certificate.png"
+                data={{
+                  userName: selectedChild?.fullName || "Học sinh",
+                  awardName: selectedAchievement.award?.name || "Giải thưởng",
+                  awardRank: selectedAchievement.award?.rank,
+                  contestName: selectedAchievement.contest?.title || "Cuộc thi",
+                  date: selectedAchievement.achievedDate
+                    ? new Date(
+                        selectedAchievement.achievedDate,
+                      ).toLocaleDateString("vi-VN")
+                    : "-",
+                  certificateId: `${selectedAchievement.paintingId}-${selectedAchievement.award?.awardId ?? "N/A"}`,
+                  description: selectedAchievement.award?.description,
+                }}
+              />
             </div>
           </div>
         )}
