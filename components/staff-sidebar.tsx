@@ -159,6 +159,21 @@ export function StaffSidebar({
           },
         ],
       },
+      {
+        title: t.auctionManagement,
+        url: "/dashboard/staff/auctions",
+        icon: IconTrophy, // Using IconTrophy as a fallback if IconGavel is not available, or I can try to import it
+        items: [
+          {
+            title: t.allAuctions,
+            url: "/dashboard/staff/auctions",
+          },
+          {
+            title: t.createAuction,
+            url: "/dashboard/staff/auctions/create",
+          },
+        ],
+      },
     ],
     navSecondary: [],
   };
