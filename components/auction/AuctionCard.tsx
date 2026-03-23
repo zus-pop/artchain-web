@@ -29,6 +29,11 @@ const STATUS_CONFIG: Record<
     className: "bg-green-500 text-white",
     dot: "bg-white animate-pulse",
   },
+  ONGOING: {
+    label: "ĐANG DIỄN RA",
+    className: "bg-green-600 text-white",
+    dot: "bg-white animate-pulse",
+  },
   ENDED: {
     label: "ĐÃ KẾT THÚC",
     className: "bg-gray-400 text-white",
@@ -123,7 +128,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
             {auction.title}
           </h3>
           <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mb-3">
-            {auction.paintings?.length ?? 0} tác phẩm
+            {auction.auctionPaintings?.length ?? 0} tác phẩm
           </p>
 
           {topPrice !== null && (
