@@ -45,37 +45,29 @@ export function useAuctionSocket({
 
     socketRef.current = socket;
 
-    socket.onAny((event, ...args) => {
-      console.log(`🔥 [ANY EVENT]: ${event}`, args);
-    });
+
 
     socket.on("connect", () => {
       setIsConnected(true);
-      console.log("🌐 Socket connected (Namespace: auction):", socket.id);
       
       const idStr = String(auctionId);
       const idNum = Number(auctionId);
-      
-      console.log("📤 Joining auction room:", idStr);
       
       // Official event from docs: joinAuction
       socket.emit("joinAuction", { auctionId: idStr });
       socket.emit("joinAuction", { auctionId: idNum });
     });
 
-    socket.on("disconnect", (reason) => {
+    socket.on("disconnect", () => {
       setIsConnected(false);
-      console.log("🔌 Socket disconnected:", reason);
     });
 
-    socket.on("connect_error", (error) => {
-      console.error("❌ Socket connection error:", error.message);
+    socket.on("connect_error", () => {
+      // Quietly handle connection errors
     });
 
     // Listen for official backend events with flexible mapping
     const handleNewBid = (rawEvent: any) => {
-      console.log("🔥 RAW WS EVENT:", rawEvent);
-      
       // Standardize the event structure based on live logs
       const event: BidPlacedEvent = {
         bidId: rawEvent.bidId || rawEvent.id || `ws-${Date.now()}`,
@@ -87,28 +79,18 @@ export function useAuctionSocket({
         createdAt: rawEvent.createdAt || new Date().toISOString(),
       };
 
-      console.log("🔨 MAPPED WS BID:", event);
       if (event.amount > 0) {
         onBidPlacedRef.current?.(event);
-      } else {
-        console.warn("⚠️ Received WS bid with 0 or undefined amount", rawEvent);
       }
     };
 
     socket.on("newBid", handleNewBid);
     socket.on("bidPlaced", handleNewBid);
-    socket.on("joinedAuction", (data) => console.log("✅ Joined auction successfully:", data));
-    socket.on("userJoined", (data) => console.log("👤 Someone joined auction:", data));
-    socket.on("bidError", (err) => console.error("⚠️ Bid Error from server:", err));
-    socket.on("error", (err) => console.error("❌ Socket error event:", err));
-
     socket.on("auctionStatusChanged", (data: AuctionStatusChangedEvent) => {
-      console.log("📢 Auction status changed:", data);
-      onStatusChangedRef.current?.(data); // Changed to use ref
+      onStatusChangedRef.current?.(data);
     });
 
     socket.on("participantCount", (count: number) => {
-      console.log("👥 Participant count updated:", count);
       setParticipantCount(count);
     });
 

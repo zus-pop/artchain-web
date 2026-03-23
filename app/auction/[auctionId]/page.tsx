@@ -123,7 +123,6 @@ export default function AuctionDetailPage() {
   // Initialize prices and join status from API
   useEffect(() => {
     if (!auction) return;
-    console.log("🔄 Auction data updated/refetched:", auction.status);
     
     if (auction.auctionPaintings) {
       const map: Record<string, number> = {};
@@ -141,7 +140,6 @@ export default function AuctionDetailPage() {
           const apiVal = map[id];
           const currentVal = prev[id] || 0;
           if (apiVal > currentVal) {
-            console.log(`💰 Price updated via API for ${id}: ${currentVal} -> ${apiVal}`);
             next[id] = apiVal;
             changed = true;
           }
@@ -166,7 +164,6 @@ export default function AuctionDetailPage() {
           }
         });
         if (initialBids.length > 0) {
-          console.log("📜 Initialized bid history from API:", initialBids.length);
           setLocalBids(initialBids);
         }
       }
@@ -175,7 +172,6 @@ export default function AuctionDetailPage() {
     if (userId && auction.auctionParticipants) {
       const joined = auction.auctionParticipants.some(p => p.userId === userId);
       if (joined !== hasJoined) {
-        console.log("👤 Join status changed:", joined);
         setHasJoined(joined);
       }
     }
@@ -183,12 +179,10 @@ export default function AuctionDetailPage() {
 
   const handleBidPlaced = useCallback(
     (event: BidPlacedEvent) => {
-      console.log("🔨 HANDLING WS BID:", event.amount);
       const idStr = String(event.auctionPaintingId);
       
       // 1. Update price for animation
       setPrices((prev) => {
-        console.log(`⚡ WebSocket price update for ${idStr}: ${prev[idStr]} -> ${event.amount}`);
         return {
           ...prev,
           [idStr]: event.amount,
@@ -198,7 +192,6 @@ export default function AuctionDetailPage() {
       // 2. Add to bid history with duplicate check
       setLocalBids((prev) => {
         if (prev.some(b => b.bidId === event.bidId)) {
-          console.log("⏭️ Duplicate bid ignored:", event.bidId);
           return prev;
         }
 
@@ -223,7 +216,7 @@ export default function AuctionDetailPage() {
         ];
       });
     },
-    []
+    [auction?.auctionParticipants]
   );
 
   const { isConnected, participantCount } = useAuctionSocket({
@@ -238,14 +231,6 @@ export default function AuctionDetailPage() {
   const currentPrice = selectedPainting
     ? prices[selectedIdStr] ?? selectedPainting.currentBid
     : 0;
-
-  console.log("💎 RENDER PRICE:", {
-    selectedIdStr,
-    priceInState: prices[selectedIdStr],
-    apiBid: selectedPainting?.currentBid,
-    finalPrice: currentPrice,
-    allPrices: prices
-  });
 
   const visibleBids = localBids.filter(
     (b) => String(b.auctionPaintingId) === selectedIdStr

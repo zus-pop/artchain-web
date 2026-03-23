@@ -53,11 +53,14 @@ export interface CreateAuctionRequest {
   description?: string;
   startTime: string;
   endTime: string;
+  auctioneerId?: string;
 }
 
 export interface AddPaintingToAuctionRequest {
   paintingId: string;
-  startingPrice: number;
+  basePrice: number;
+  ceilPrice?: number;
+  bidStep?: number;
 }
 
 export interface PlaceBidRequest {

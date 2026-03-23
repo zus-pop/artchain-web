@@ -108,3 +108,21 @@ export function usePlaceBid() {
     },
   });
 }
+// ─── PATCH /auctions/:auctionId/status ──────────────────────────────────────
+export function useUpdateAuctionStatus(auctionId: string) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { status: string }>({
+    mutationFn: async (data) => {
+      const res = await myAxios.patch(`/auctions/${auctionId}/status`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật trạng thái thành công!");
+      queryClient.invalidateQueries({ queryKey: ["auction", auctionId] });
+      queryClient.invalidateQueries({ queryKey: ["auctions"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Cập nhật trạng thái thất bại");
+    },
+  });
+}
