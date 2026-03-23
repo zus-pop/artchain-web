@@ -1,12 +1,17 @@
 "use client";
 
+import { useGetUserAchievements } from "@/apis/achievements";
+import {
+  useGetMySubmissions,
+  useGetPaintingEvaluations,
+} from "@/apis/paintings";
+import CertificateViewer from "@/components/award/CertificateViewer";
+import { formatCurrency } from "@/lib/utils";
 import { WhoAmI } from "@/types";
+import { AchievementItem } from "@/types/achievement";
 import Image from "next/image";
 import { useState } from "react";
 import { Lang } from "../../lib/i18n";
-import { useGetMySubmissions, useGetPaintingEvaluations } from "@/apis/paintings";
-import { useGetUserAchievements } from "@/apis/achievements";
-import { PaintingEvaluation, Painting } from "@/types/painting";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -18,26 +23,31 @@ export default function CompetitorProfileScreen({
 }: CompetitorProfileScreenProps) {
   // State để quản lý tab đang active
   const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
-    "submitted"
+    "submitted",
   );
-  
+
   // State for evaluation detail dialog
-  const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(null);
+  const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(
+    null,
+  );
   const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false);
+
+  // State for award detail dialog
+  const [selectedAchievement, setSelectedAchievement] =
+    useState<AchievementItem | null>(null);
+  const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
+  const [isCertificateViewerOpen, setIsCertificateViewerOpen] = useState(false);
 
   // Fetch submissions data
   const { data: submissions } = useGetMySubmissions();
 
   // Fetch achievements for this competitor only when awards tab is active
-  const { data: achievementsResp, isLoading: isLoadingAchievements } = useGetUserAchievements(
-    authUser?.userId,
-    activeTab === "awards"
-  );
+  const { data: achievementsResp, isLoading: isLoadingAchievements } =
+    useGetUserAchievements(authUser?.userId, activeTab === "awards");
 
   // Fetch evaluations for selected painting
-  const { data: paintingEvaluations, isLoading: isLoadingEvaluations } = useGetPaintingEvaluations(
-    selectedPaintingId || ""
-  );
+  const { data: paintingEvaluations, isLoading: isLoadingEvaluations } =
+    useGetPaintingEvaluations(selectedPaintingId || "");
 
   // Handle viewing painting evaluation details
   const handleViewPaintingDetail = (paintingId: string) => {
@@ -50,13 +60,33 @@ export default function CompetitorProfileScreen({
     setSelectedPaintingId(null);
   };
 
+  const handleViewAwardDetail = (achievement: AchievementItem) => {
+    setSelectedAchievement(achievement);
+    setIsAwardDialogOpen(true);
+  };
+
+  const handleCloseAwardDialog = () => {
+    setIsAwardDialogOpen(false);
+    setSelectedAchievement(null);
+  };
+
+  const handleOpenCertificateViewer = () => {
+    setIsCertificateViewerOpen(true);
+  };
+
+  const handleCloseCertificateViewer = () => {
+    setIsCertificateViewerOpen(false);
+  };
+
   // Map submissions data to the required format
-  const submittedArtworks = submissions ? submissions.map(painting => ({
-    id: painting.paintingId,
-    imageUrl: painting.imageUrl,
-    submissionDate: painting.submissionDate,
-    competitionName: painting.contest.title,
-  })) : [];
+  const submittedArtworks = submissions
+    ? submissions.map((painting) => ({
+        id: painting.paintingId,
+        imageUrl: painting.imageUrl,
+        submissionDate: painting.submissionDate,
+        competitionName: painting.contest.title,
+      }))
+    : [];
 
   // Xử lý dữ liệu từ authUser, dùng fallback là dữ liệu trong ảnh
   // LƯU Ý: Kiểu WhoAmI của bạn có thể không có 'class', bạn cần thêm vào nếu muốn dùng
@@ -177,8 +207,8 @@ export default function CompetitorProfileScreen({
           {activeTab === "submitted" && (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {submittedArtworks.map((art) => (
-                <div 
-                  key={art.id} 
+                <div
+                  key={art.id}
                   className="overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => handleViewPaintingDetail(art.id)}
                 >
@@ -193,7 +223,8 @@ export default function CompetitorProfileScreen({
                   </div>
                   <div className="py-2">
                     <p className="text-sm text-black">
-                      Ngày nộp: {new Date(art.submissionDate).toLocaleDateString("vi-VN")}
+                      Ngày nộp:{" "}
+                      {new Date(art.submissionDate).toLocaleDateString("vi-VN")}
                     </p>
                     <p className="mt-1 font-medium text-black">
                       Cuộc thi: {art.competitionName}
@@ -214,10 +245,15 @@ export default function CompetitorProfileScreen({
                 </div>
               ) : (
                 <div>
-                  {achievementsResp && achievementsResp.data.achievements.length > 0 ? (
+                  {achievementsResp &&
+                  achievementsResp.data.achievements.length > 0 ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                       {achievementsResp.data.achievements.map((a) => (
-                        <div key={a.paintingId} className="overflow-hidden">
+                        <div
+                          key={a.paintingId}
+                          className="overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => handleViewAwardDetail(a)}
+                        >
                           <div className="relative h-56 w-full">
                             <Image
                               src={a.paintingImage || ""}
@@ -238,7 +274,12 @@ export default function CompetitorProfileScreen({
                               Giải: {a.award?.name || "-"}
                             </p>
                             <p className="text-sm text-black">
-                              Ngày: {a.achievedDate ? new Date(a.achievedDate).toLocaleDateString("vi-VN") : "-"}
+                              Ngày:{" "}
+                              {a.achievedDate
+                                ? new Date(a.achievedDate).toLocaleDateString(
+                                    "vi-VN",
+                                  )
+                                : "-"}
                             </p>
                           </div>
                         </div>
@@ -279,43 +320,77 @@ export default function CompetitorProfileScreen({
                 {/* Painting Info */}
                 {submissions && (
                   <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-semibold text-black mb-4">Thông tin tranh</h3>
+                    <h3 className="text-lg font-semibold text-black mb-4">
+                      Thông tin tranh
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {(() => {
-                        const painting = submissions.find(s => s.paintingId === selectedPaintingId);
+                        const painting = submissions.find(
+                          (s) => s.paintingId === selectedPaintingId,
+                        );
                         if (!painting) return null;
                         return (
                           <>
                             <div>
-                              <p className="text-sm font-medium text-gray-600">Tên tranh</p>
+                              <p className="text-sm font-medium text-gray-600">
+                                Tên tranh
+                              </p>
                               <p className="text-black">{painting.title}</p>
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-600">Cuộc thi</p>
-                              <p className="text-black">{painting.contest?.title || "N/A"}</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-600">Ngày nộp</p>
+                              <p className="text-sm font-medium text-gray-600">
+                                Cuộc thi
+                              </p>
                               <p className="text-black">
-                                {painting.submissionDate ? new Date(painting.submissionDate).toLocaleDateString("vi-VN") : "-"}
+                                {painting.contest?.title || "N/A"}
                               </p>
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-600">Trạng thái</p>
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                painting.status === 'APPROVED' || painting.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                                painting.status === 'ORIGINAL_SUBMITTED' ? 'bg-blue-100 text-blue-800' :
-                                painting.status === 'NOT_SUBMITTED_ORIGINAL' ? 'bg-orange-100 text-orange-800' :
-                                painting.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                painting.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {painting.status === 'APPROVED' || painting.status === 'ACCEPTED' ? 'Đã duyệt' : 
-                                 painting.status === 'ORIGINAL_SUBMITTED' ? 'Đã nộp bản gốc' :
-                                 painting.status === 'NOT_SUBMITTED_ORIGINAL' ? 'Chưa nộp bản gốc' :
-                                 painting.status === 'PENDING' ? 'Chờ xử lý' :
-                                 painting.status === 'REJECTED' ? 'Từ chối' :
-                                 painting.status}
+                              <p className="text-sm font-medium text-gray-600">
+                                Ngày nộp
+                              </p>
+                              <p className="text-black">
+                                {painting.submissionDate
+                                  ? new Date(
+                                      painting.submissionDate,
+                                    ).toLocaleDateString("vi-VN")
+                                  : "-"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-600">
+                                Trạng thái
+                              </p>
+                              <span
+                                className={`text-xs px-2 py-1 rounded ${
+                                  painting.status === "APPROVED" ||
+                                  painting.status === "ACCEPTED"
+                                    ? "bg-green-100 text-green-800"
+                                    : painting.status === "ORIGINAL_SUBMITTED"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : painting.status ===
+                                          "NOT_SUBMITTED_ORIGINAL"
+                                        ? "bg-orange-100 text-orange-800"
+                                        : painting.status === "PENDING"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : painting.status === "REJECTED"
+                                            ? "bg-red-100 text-red-800"
+                                            : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {painting.status === "APPROVED" ||
+                                painting.status === "ACCEPTED"
+                                  ? "Đã duyệt"
+                                  : painting.status === "ORIGINAL_SUBMITTED"
+                                    ? "Đã nộp bản gốc"
+                                    : painting.status ===
+                                        "NOT_SUBMITTED_ORIGINAL"
+                                      ? "Chưa nộp bản gốc"
+                                      : painting.status === "PENDING"
+                                        ? "Chờ xử lý"
+                                        : painting.status === "REJECTED"
+                                          ? "Từ chối"
+                                          : painting.status}
                               </span>
                             </div>
                           </>
@@ -327,21 +402,33 @@ export default function CompetitorProfileScreen({
 
                 {/* Evaluations */}
                 <div>
-                  <h3 className="text-lg font-semibold text-black mb-4">Đánh giá từ giám khảo</h3>
+                  <h3 className="text-lg font-semibold text-black mb-4">
+                    Đánh giá từ giám khảo
+                  </h3>
                   {isLoadingEvaluations ? (
                     <div className="text-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#423137] mx-auto"></div>
-                      <p className="text-[#423137] mt-2">Đang tải đánh giá...</p>
+                      <p className="text-[#423137] mt-2">
+                        Đang tải đánh giá...
+                      </p>
                     </div>
                   ) : paintingEvaluations && paintingEvaluations.length > 0 ? (
                     <div className="space-y-4">
                       {paintingEvaluations.map((evaluation) => (
-                        <div key={evaluation.id} className="border border-gray-200 rounded-lg p-4">
+                        <div
+                          key={evaluation.id}
+                          className="border border-gray-200 rounded-lg p-4"
+                        >
                           <div className="flex justify-between items-start mb-3">
                             <div>
-                              <p className="font-medium text-black">{evaluation.examinerName}</p>
+                              <p className="font-medium text-black">
+                                {evaluation.examinerName}
+                              </p>
                               <p className="text-sm text-gray-600">
-                                Đánh giá ngày: {new Date(evaluation.evaluationDate).toLocaleDateString("vi-VN")}
+                                Đánh giá ngày:{" "}
+                                {new Date(
+                                  evaluation.evaluationDate,
+                                ).toLocaleDateString("vi-VN")}
                               </p>
                             </div>
                             <div className="text-right">
@@ -359,37 +446,60 @@ export default function CompetitorProfileScreen({
                           </div>
 
                           {/* Detailed scores for round 2 */}
-                          {(evaluation.creativityScore || evaluation.compositionScore || 
-                            evaluation.colorScore || evaluation.technicalScore || evaluation.aestheticScore) && (
+                          {(evaluation.creativityScore ||
+                            evaluation.compositionScore ||
+                            evaluation.colorScore ||
+                            evaluation.technicalScore ||
+                            evaluation.aestheticScore) && (
                             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
                               {evaluation.creativityScore && (
                                 <div className="text-center">
-                                  <p className="text-xs text-gray-600">Sáng tạo</p>
-                                  <p className="font-medium">{evaluation.creativityScore}/10</p>
+                                  <p className="text-xs text-gray-600">
+                                    Sáng tạo
+                                  </p>
+                                  <p className="font-medium">
+                                    {evaluation.creativityScore}/10
+                                  </p>
                                 </div>
                               )}
                               {evaluation.compositionScore && (
                                 <div className="text-center">
-                                  <p className="text-xs text-gray-600">Bố cục</p>
-                                  <p className="font-medium">{evaluation.compositionScore}/10</p>
+                                  <p className="text-xs text-gray-600">
+                                    Bố cục
+                                  </p>
+                                  <p className="font-medium">
+                                    {evaluation.compositionScore}/10
+                                  </p>
                                 </div>
                               )}
                               {evaluation.colorScore && (
                                 <div className="text-center">
-                                  <p className="text-xs text-gray-600">Màu sắc</p>
-                                  <p className="font-medium">{evaluation.colorScore}/10</p>
+                                  <p className="text-xs text-gray-600">
+                                    Màu sắc
+                                  </p>
+                                  <p className="font-medium">
+                                    {evaluation.colorScore}/10
+                                  </p>
                                 </div>
                               )}
                               {evaluation.technicalScore && (
                                 <div className="text-center">
-                                  <p className="text-xs text-gray-600">Kỹ thuật</p>
-                                  <p className="font-medium">{evaluation.technicalScore}/10</p>
+                                  <p className="text-xs text-gray-600">
+                                    Kỹ thuật
+                                  </p>
+                                  <p className="font-medium">
+                                    {evaluation.technicalScore}/10
+                                  </p>
                                 </div>
                               )}
                               {evaluation.aestheticScore && (
                                 <div className="text-center">
-                                  <p className="text-xs text-gray-600">Thẩm mỹ</p>
-                                  <p className="font-medium">{evaluation.aestheticScore}/10</p>
+                                  <p className="text-xs text-gray-600">
+                                    Thẩm mỹ
+                                  </p>
+                                  <p className="font-medium">
+                                    {evaluation.aestheticScore}/10
+                                  </p>
                                 </div>
                               )}
                             </div>
@@ -397,8 +507,12 @@ export default function CompetitorProfileScreen({
 
                           {evaluation.feedback && (
                             <div>
-                              <p className="text-sm font-medium text-gray-600 mb-1">Nhận xét:</p>
-                              <p className="text-black bg-gray-50 p-3 rounded">{evaluation.feedback}</p>
+                              <p className="text-sm font-medium text-gray-600 mb-1">
+                                Nhận xét:
+                              </p>
+                              <p className="text-black bg-gray-50 p-3 rounded">
+                                {evaluation.feedback}
+                              </p>
                             </div>
                           )}
                         </div>
@@ -411,6 +525,182 @@ export default function CompetitorProfileScreen({
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Award Detail Dialog */}
+        {isAwardDialogOpen && selectedAchievement && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={handleCloseAwardDialog}
+            />
+            <div className="relative z-10 w-full max-w-4xl rounded bg-white shadow-lg max-h-[90vh] overflow-hidden">
+              <div className="flex items-start justify-between p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-black">
+                  Chi tiết giải thưởng
+                </h3>
+                <button
+                  className="text-black cursor-pointer hover:text-gray-600"
+                  onClick={handleCloseAwardDialog}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[70vh]">
+                {/* Painting Info */}
+                <div className="bg-gray-50 rounded-lg p-6 mb-6">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold text-black">
+                      Thông tin tranh
+                    </h3>
+                    <button
+                      onClick={handleOpenCertificateViewer}
+                      className="inline-flex cursor-pointer items-center rounded bg-[#423137] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                    >
+                      Xem chứng chỉ
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Tên tranh
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.paintingTitle}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Cuộc thi
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.contest?.title || "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Ngày đạt giải
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.achievedDate
+                          ? new Date(
+                              selectedAchievement.achievedDate,
+                            ).toLocaleDateString("vi-VN")
+                          : "-"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">
+                        Giải thưởng
+                      </p>
+                      <p className="text-black">
+                        {selectedAchievement.award?.name || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedAchievement.paintingImage && (
+                    <div className="mt-4">
+                      <img
+                        src={selectedAchievement.paintingImage}
+                        alt={selectedAchievement.paintingTitle}
+                        className="w-full max-h-64 object-cover rounded"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Award Details */}
+                {selectedAchievement.award && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-black mb-4">
+                      Chi tiết giải thưởng
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            Tên giải
+                          </p>
+                          <p className="text-black">
+                            {selectedAchievement.award.name}
+                          </p>
+                        </div>
+                        {selectedAchievement.award.rank && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">
+                              Hạng
+                            </p>
+                            <p className="text-black">
+                              {selectedAchievement.award.rank}
+                            </p>
+                          </div>
+                        )}
+                        {selectedAchievement.award.prize && (
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">
+                              Giải thưởng
+                            </p>
+                            <p className="text-black">
+                              {formatCurrency(
+                                Number(selectedAchievement.award.prize),
+                              )}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {selectedAchievement.award.description && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">
+                            Mô tả
+                          </p>
+                          <p className="text-black bg-gray-50 p-3 rounded">
+                            {selectedAchievement.award.description}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isCertificateViewerOpen && selectedAchievement && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center px-4 py-8 md:py-10">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={handleCloseCertificateViewer}
+            />
+            <div className="relative z-10 w-full max-w-6xl max-h-full overflow-y-auto rounded bg-white p-4 shadow-lg">
+              <div className="mb-3 flex items-center justify-between border-b border-gray-200 pb-3">
+                <h3 className="text-lg font-semibold text-black">Chứng chỉ</h3>
+                <button
+                  className="cursor-pointer text-black hover:text-gray-600"
+                  onClick={handleCloseCertificateViewer}
+                >
+                  ✕
+                </button>
+              </div>
+              <CertificateViewer
+                backgroundImage="/certificate.png"
+                data={{
+                  userName: authUser?.fullName || "Học sinh",
+                  awardName: selectedAchievement.award?.name || "Giải thưởng",
+                  awardRank: selectedAchievement.award?.rank,
+                  contestName: selectedAchievement.contest?.title || "Cuộc thi",
+                  date: selectedAchievement.achievedDate
+                    ? new Date(
+                        selectedAchievement.achievedDate,
+                      ).toLocaleDateString("vi-VN")
+                    : "-",
+                  certificateId: `${selectedAchievement.paintingId}-${selectedAchievement.award?.awardId ?? "N/A"}`,
+                  description: selectedAchievement.award?.description,
+                }}
+              />
             </div>
           </div>
         )}
