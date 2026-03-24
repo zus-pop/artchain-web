@@ -78,6 +78,16 @@ export interface Bid {
   createdAt: string;
 }
 
+export interface AuctionListQuery {
+  status?: AuctionStatus;
+  startFrom?: string;
+  startTo?: string;
+  endFrom?: string;
+  endTo?: string;
+  page?: number;
+  limit?: number;
+}
+
 // WebSocket event payloads
 export interface BidPlacedEvent {
   bidId: string;

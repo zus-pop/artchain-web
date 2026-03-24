@@ -1,6 +1,7 @@
 import myAxios from "@/lib/custom-axios";
 import {
   Auction,
+  AuctionListQuery,
   CreateAuctionRequest,
   AddPaintingToAuctionRequest,
   PlaceBidRequest,
@@ -10,11 +11,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // ─── GET /auctions ───────────────────────────────────────────────────────────
-export function useGetAuctions() {
+export function useGetAuctions(params?: AuctionListQuery) {
   return useQuery<Auction[]>({
-    queryKey: ["auctions"],
+    queryKey: ["auctions", params ?? {}],
     queryFn: async () => {
-      const res = await myAxios.get("/auctions");
+      const res = await myAxios.get("/auctions", { params });
       // Check if response has data.data (wrapped in ApiResponse) or is raw Auction[]
       return res.data?.data ?? res.data ?? [];
     },

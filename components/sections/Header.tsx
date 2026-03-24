@@ -10,8 +10,8 @@ import {
   ChevronDown,
   Globe,
   LogOut,
-  Settings,
   User,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import GlassSurface from "@/components/GlassSurface";
@@ -90,6 +90,18 @@ const Header: React.FC<ArtistNavigationProps> = ({
     const name = getDisplayName();
     return name.charAt(0).toUpperCase();
   };
+
+  const getWalletBalance = () => {
+    const rawBalance =
+      (displayUser as any)?.walletBalance ??
+      (displayUser as any)?.balance ??
+      (displayUser as any)?.wallet?.balance ??
+      0;
+    const parsed = typeof rawBalance === "number" ? rawBalance : Number(rawBalance);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const walletBalanceText = `${new Intl.NumberFormat("vi-VN").format(getWalletBalance())}đ`;
 
   const handleLogout = () => {
     logout();
@@ -292,6 +304,10 @@ const Header: React.FC<ArtistNavigationProps> = ({
                       {getAvatarInitial()}
                     </div>
                     <span className="max-w-32 truncate">{getDisplayName()}</span>
+                    <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      <Wallet className="h-3 w-3" />
+                      {walletBalanceText}
+                    </span>
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
                         isUserDropdownOpen ? "rotate-180" : ""
@@ -349,18 +365,17 @@ const Header: React.FC<ArtistNavigationProps> = ({
                             <span>Hồ sơ cá nhân</span>
                           </Link>
 
-                          <button
-                            onClick={() => {
-                              setIsUserDropdownOpen(false);
-                            }}
+                          <Link
+                            href="/me/orders"
+                            onClick={() => setIsUserDropdownOpen(false)}
                             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                           >
-                            <Settings className="h-4 w-4" />
-                            <span>Cài đặt</span>
-                          </button>
+                            <Wallet className="h-4 w-4" />
+                            <span>Đơn hàng</span>
+                          </Link>
 
                           <div className="border-t border-gray-100 my-1"></div>
-
+ 
                           <button
                             onClick={() => {
                               handleLogout();

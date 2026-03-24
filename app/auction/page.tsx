@@ -1,11 +1,21 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Timer, Hammer, Search, ArrowRight, Heart } from 'lucide-react';
-import GlassSurface from '@/components/GlassSurface';
+import { ArrowUpRight, Timer, Hammer, ArrowRight, Heart } from 'lucide-react';
+import { useGetAuctions } from '@/apis/auction';
 
 export default function ModernArtAuction() {
   const [activeSection, setActiveSection] = useState('section-01');
+  const currentYear = new Date().getFullYear();
+  const { data: ongoingAuctions = [], isLoading: isLoadingOngoing } = useGetAuctions({
+    status: 'ONGOING',
+    startFrom: `${currentYear}-01-01`,
+    startTo: `${currentYear}-12-31`,
+    endFrom: `${currentYear}-01-01`,
+    endTo: `${currentYear}-12-31`,
+    page: 1,
+    limit: 10,
+  });
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -38,6 +48,43 @@ export default function ModernArtAuction() {
       isActive ? 'text-[#f07d44] opacity-100' : 'text-gray-300 opacity-20'
     }`;
   };
+
+  const formatVnd = (amount: number) => `${new Intl.NumberFormat('vi-VN').format(amount)}đ`;
+
+  const getTimeLeft = (endTime: string) => {
+    const diff = new Date(endTime).getTime() - Date.now();
+    if (diff <= 0) return 'Đã kết thúc';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+
+    if (days > 0) return `${days}d ${hours}h`;
+    return `${hours}h ${minutes}m`;
+  };
+
+  const liveItems = ongoingAuctions.slice(0, 2).map((auction) => {
+    const leadPainting = (auction.auctionPaintings ?? []).reduce((best, current) => {
+      if (!best) return current;
+      return (current.currentBid ?? 0) > (best.currentBid ?? 0) ? current : best;
+    }, auction.auctionPaintings?.[0]);
+
+    const competitorId = leadPainting?.painting?.competitorId;
+    const shortCompetitorId = competitorId ? competitorId.slice(-6) : null;
+
+    return {
+      id: auction.auctionId,
+      title: leadPainting?.painting?.title || auction.title,
+      artist: shortCompetitorId
+        ? `Tác giả ID: ${shortCompetitorId}`
+        : auction.auctioneer?.fullName || 'Không rõ tác giả',
+      bid: formatVnd(leadPainting?.currentBid ?? leadPainting?.basePrice ?? 0),
+      time: getTimeLeft(auction.endTime),
+      status: 'ĐANG ĐẤU GIÁ',
+      img: leadPainting?.painting?.imageUrl || 'https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=1200',
+      watchers: auction.participantCount ?? 0,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
@@ -243,10 +290,18 @@ export default function ModernArtAuction() {
                 </div>
 
                 <div className="flex flex-col gap-20">
-                {[
-                    { id: 1, title: "Sương sớm trên sông Hương", artist: "Nguyễn Văn Minh, 2024", bid: "42.500.000đ", time: "04h 22m", status: "ĐANG ĐẤU GIÁ", img: "https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=1200" },
-                    { id: 2, title: "Thung lũng mây", artist: "Lê Thanh Hương, 2023", bid: "28.900.000đ", time: "06h 15m", status: "", img: "https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1200" }
-                ].map((item) => (
+                {isLoadingOngoing ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                      <div key={i} className="bg-white h-[360px] animate-pulse rounded-md" />
+                    ))}
+                  </div>
+                ) : liveItems.length === 0 ? (
+                  <div className="py-20 text-center border border-slate-200 bg-white/60">
+                    <p className="text-lg font-bold uppercase tracking-wider text-slate-500">Hiện chưa có phiên đấu giá ongoing</p>
+                  </div>
+                ) : (
+                  liveItems.map((item) => (
                     <div key={item.id} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center border-b border-slate-200 pb-20 last:border-0 px-4 lg:px-0">
                     {/* Ảnh bên trái */}
                     <div className="lg:col-span-7 relative group">
@@ -285,11 +340,12 @@ export default function ModernArtAuction() {
                         </button>
                         </div>
                         <p className="mt-6 text-[11px] text-slate-400 font-medium flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> 14 người đang theo dõi lô tranh này
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> {item.watchers} người đang theo dõi lô tranh này
                         </p>
                     </div>
                     </div>
-                ))}
+                  ))
+                )}
                 </div>
             </div>
         </div>
