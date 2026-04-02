@@ -44,10 +44,20 @@ const STATUS_CONFIG: Record<
     className: "bg-red-500 text-white",
     dot: "bg-white",
   },
+  LIVE: {
+    label: "ĐANG ĐẤU GIÁ",
+    className: "bg-green-500 text-white",
+    dot: "bg-white animate-pulse",
+  },
+  END: {
+    label: "ĐÃ KẾT THÚC",
+    className: "bg-gray-400 text-white",
+    dot: "bg-white",
+  },
 };
 
 function timeLabel(auction: Auction) {
-  if (auction.status === "ACTIVE") {
+  if (auction.status === "ACTIVE" || auction.status === "LIVE" || auction.status === "ONGOING") {
     return `Còn ${formatDistanceToNow(new Date(auction.endTime), { locale: vi })}`;
   }
   if (auction.status === "UPCOMING" || auction.status === "PENDING") {

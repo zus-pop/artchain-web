@@ -3,16 +3,12 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, Timer, Hammer, ArrowRight, Heart } from 'lucide-react';
 import { useGetAuctions } from '@/apis/auction';
+import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 
 export default function ModernArtAuction() {
   const [activeSection, setActiveSection] = useState('section-01');
   const currentYear = new Date().getFullYear();
-  const { data: ongoingAuctions = [], isLoading: isLoadingOngoing } = useGetAuctions({
-    status: 'ONGOING',
-    startFrom: `${currentYear}-01-01`,
-    startTo: `${currentYear}-12-31`,
-    endFrom: `${currentYear}-01-01`,
-    endTo: `${currentYear}-12-31`,
+  const { data: allAuctions = [], isLoading } = useGetAuctions({
     page: 1,
     limit: 10,
   });
@@ -63,7 +59,13 @@ export default function ModernArtAuction() {
     return `${hours}h ${minutes}m`;
   };
 
-  const liveItems = ongoingAuctions.slice(0, 2).map((auction) => {
+  const auctionsToDisplay = allAuctions.filter(a => 
+    ["LIVE", "ONGOING", "ACTIVE", "END", "ENDED"].includes(a.status)
+  );
+
+  const liveItems = auctionsToDisplay.filter(a => 
+    ["LIVE", "ONGOING", "ACTIVE"].includes(a.status)
+  ).slice(0, 3).map((auction) => {
     const leadPainting = (auction.auctionPaintings ?? []).reduce((best, current) => {
       if (!best) return current;
       return (current.currentBid ?? 0) > (best.currentBid ?? 0) ? current : best;
@@ -71,6 +73,10 @@ export default function ModernArtAuction() {
 
     const competitorId = leadPainting?.painting?.competitorId;
     const shortCompetitorId = competitorId ? competitorId.slice(-6) : null;
+
+    const statusLabel = auction.status === "LIVE" || auction.status === "ONGOING" || auction.status === "ACTIVE" 
+      ? "ĐANG ĐẤU GIÁ" 
+      : "ĐÃ KẾT THÚC";
 
     return {
       id: auction.auctionId,
@@ -80,7 +86,7 @@ export default function ModernArtAuction() {
         : auction.auctioneer?.fullName || 'Không rõ tác giả',
       bid: formatVnd(leadPainting?.currentBid ?? leadPainting?.basePrice ?? 0),
       time: getTimeLeft(auction.endTime),
-      status: 'ĐANG ĐẤU GIÁ',
+      status: statusLabel,
       img: leadPainting?.painting?.imageUrl || 'https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=1200',
       watchers: auction.participantCount ?? 0,
     };
@@ -88,7 +94,7 @@ export default function ModernArtAuction() {
 
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
-      
+      <HeaderWrapper />
       {/* Quick Action Navigation Sidebar */}
       <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4 hidden lg:flex">
         {['section-01', 'section-02', 'section-03'].map((section, index) => (
@@ -105,41 +111,7 @@ export default function ModernArtAuction() {
         ))}
       </div>
 
-      {/* 1. Nav Bar */}
-      {/* <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-7xl z-50">
-      <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={50}
-          backgroundOpacity={0.58}
-          blur={5}
-          saturation={3}
-          brightness={54}
-          opacity={1}
-          displace={0.5}
-          distortionScale={-180}
-          redOffset={0}
-          greenOffset={10}
-          blueOffset={20}
-          className="max-w-7xl w-full"
-          style={{ justifyContent: "flex-start" }}
-        >
-            
-          <div className="text-xl font-black tracking-tighter uppercase">Nét Vẽ Xanh</div>
-          <div className="hidden lg:flex gap-10 text-[11px] uppercase tracking-widest font-bold opacity-70">
-            <a href="#" className="hover:opacity-100 transition">Cuộc thi</a>
-            <a href="#" className="hover:opacity-100 transition">Đấu giá</a>
-            <a href="#" className="hover:opacity-100 transition">Triển lãm</a>
-            <a href="#" className="hover:opacity-100 transition">Về chúng tôi</a>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-black/5 rounded-full transition"><Search size={20} /></button>
-            <button className="bg-[#f07d44] text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-orange-200 hover:scale-105 transition">
-              Tham gia
-            </button>
-          </div>
-        </GlassSurface>
-      </nav> */}
+
 
       {/* ================= SECTION 01: HERO ================= */}
       <section id="section-01" className="relative pt-40 pb-20 px-[5%] max-w-[1600px] mx-auto grid grid-cols-12 gap-6 min-h-[90vh]">
@@ -290,7 +262,7 @@ export default function ModernArtAuction() {
                 </div>
 
                 <div className="flex flex-col gap-20">
-                {isLoadingOngoing ? (
+                {isLoading ? (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {Array.from({ length: 2 }).map((_, i) => (
                       <div key={i} className="bg-white h-[360px] animate-pulse rounded-md" />

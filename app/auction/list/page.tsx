@@ -3,13 +3,15 @@ import React, { useState } from "react";
 import { Filter, Search } from "lucide-react";
 import AuctionCard from "@/components/auction/AuctionCard";
 import { useGetAuctions } from "@/apis/auction";
-import { AuctionStatus } from "@/types/auction";
+import { AuctionStatus, Auction } from "@/types/auction";
+import { useAuth } from "@/hooks";
 
-const STATUS_FILTERS: { id: string; label: string; value?: AuctionStatus }[] = [
+const STATUS_FILTERS: { id: string; label: string; value?: AuctionStatus[] }[] = [
   { id: "all", label: "Tất cả" },
-  { id: "active", label: "Đang diễn ra", value: "ACTIVE" },
-  { id: "upcoming", label: "Sắp diễn ra", value: "UPCOMING" },
-  { id: "ended", label: "Đã kết thúc", value: "ENDED" },
+  { id: "active", label: "Đang diễn ra", value: ["ACTIVE", "LIVE", "ONGOING"] },
+  { id: "upcoming", label: "Sắp diễn ra", value: ["UPCOMING", "PENDING"] },
+  { id: "ended", label: "Đã kết thúc", value: ["ENDED", "END"] },
+  { id: "draft", label: "Bản nháp", value: ["DRAFT"] },
 ];
 
 export default function AuctionListPage() {
@@ -17,19 +19,27 @@ export default function AuctionListPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: auctions, isLoading, isError } = useGetAuctions();
+  const { user } = useAuth();
+  const isStaff = user?.role === "STAFF" || user?.role === "ADMIN";
 
-  const filtered = (auctions ?? []).filter((a) => {
+  const availableFilters = STATUS_FILTERS.filter(f => f.id !== "draft" || isStaff);
+
+  const filtered = (auctions ?? []).filter((a: Auction) => {
+    // Hide DRAFT from regular users entirely if they are not staff
+    if (a.status === "DRAFT" && !isStaff) return false;
+
+    const selectedFilter = STATUS_FILTERS.find((f) => f.id === statusFilter);
     const matchesStatus =
       statusFilter === "all" ||
-      a.status === STATUS_FILTERS.find((f) => f.id === statusFilter)?.value;
+      (selectedFilter?.value && selectedFilter.value.includes(a.status));
     const matchesSearch =
       !searchQuery ||
       a.title.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
-  const activeCount = (auctions ?? []).filter((a) => a.status === "ACTIVE").length;
-  const endingSoonCount = (auctions ?? []).filter((a) => a.status === "UPCOMING").length;
+  const activeCount = (auctions ?? []).filter((a: Auction) => ["ACTIVE", "LIVE", "ONGOING"].includes(a.status)).length;
+  const endingSoonCount = (auctions ?? []).filter((a: Auction) => ["UPCOMING", "PENDING"].includes(a.status)).length;
 
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white">
@@ -76,7 +86,7 @@ export default function AuctionListPage() {
                 <Filter size={16} />
                 Trạng thái:
               </div>
-              {STATUS_FILTERS.map((f) => (
+              {availableFilters.map((f) => (
                 <button
                   key={f.id}
                   onClick={() => setStatusFilter(f.id)}

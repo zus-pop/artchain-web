@@ -1,4 +1,4 @@
-export type AuctionStatus = "PENDING" | "UPCOMING" | "ACTIVE" | "ONGOING" | "ENDED" | "CANCELLED";
+export type AuctionStatus = "DRAFT" | "PENDING" | "UPCOMING" | "ACTIVE" | "ONGOING" | "ENDED" | "CANCELLED" | "LIVE" | "END";
 
 export interface AuctionPainting {
   auctionPaintingId: string | number;
@@ -7,6 +7,7 @@ export interface AuctionPainting {
   basePrice: number;
   ceilPrice?: number;
   bidStep?: number;
+  auctionDurationMinutes?: number;
   currentBid: number;
   currentBidderId?: string | null;
   isSold?: boolean;
@@ -61,6 +62,7 @@ export interface AddPaintingToAuctionRequest {
   basePrice: number;
   ceilPrice?: number;
   bidStep?: number;
+  auctionDurationMinutes?: number;
 }
 
 export interface PlaceBidRequest {
@@ -102,4 +104,28 @@ export interface BidPlacedEvent {
 export interface AuctionStatusChangedEvent {
   auctionId: string;
   status: AuctionStatus;
+}
+
+export interface WonPainting {
+  auctionPaintingId: number;
+  auctionId: number;
+  auctionTitle: string;
+  auctionEndTime: string;
+  finalBid: number;
+  painting: {
+    paintingId: string;
+    roundId: number;
+    contestId: number;
+    competitorId: string;
+    ownerId: string;
+    description: string;
+    title: string;
+    imageUrl: string;
+    submissionDate: string | null;
+    isPassed: boolean | null;
+    status: string;
+    awardId: number;
+    createdAt: string;
+    updatedAt: string;
+  };
 }

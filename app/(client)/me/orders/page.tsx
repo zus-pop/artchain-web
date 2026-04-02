@@ -48,7 +48,7 @@ const holdAmount = subtotal + shipping;
 
 export default function OrdersMockPage() {
   return (
-    <main className="min-h-screen bg-[#f5f6f8] px-4 pt-28 pb-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#EAE6E0] px-4 pt-28 pb-10 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

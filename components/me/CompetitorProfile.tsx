@@ -11,6 +11,8 @@ import { WhoAmI } from "@/types";
 import { AchievementItem } from "@/types/achievement";
 import Image from "next/image";
 import { useState } from "react";
+import WonPaintings from "./WonPaintings";
+import { useGetWonPaintings } from "@/apis/auction";
 import { Lang } from "../../lib/i18n";
 
 interface CompetitorProfileScreenProps {
@@ -22,7 +24,7 @@ export default function CompetitorProfileScreen({
   authUser,
 }: CompetitorProfileScreenProps) {
   // State để quản lý tab đang active
-  const [activeTab, setActiveTab] = useState<"submitted" | "awards">(
+  const [activeTab, setActiveTab] = useState<"submitted" | "awards" | "orders">(
     "submitted",
   );
 
@@ -197,6 +199,21 @@ export default function CompetitorProfileScreen({
               >
                 Giải thưởng
               </button>
+
+              {/* Tab Đơn hàng */}
+              <button
+                onClick={() => setActiveTab("orders")}
+                className={`
+                  ${
+                    activeTab === "orders"
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:border-black hover:text-black"
+                  }
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Đơn hàng
+              </button>
             </nav>
           </div>
         </div>
@@ -293,6 +310,11 @@ export default function CompetitorProfileScreen({
                 </div>
               )}
             </div>
+          )}
+
+          {/* Nội dung tab "Đơn hàng" */}
+          {activeTab === "orders" && (
+            <WonPaintings userId={authUser?.userId} />
           )}
         </div>
 

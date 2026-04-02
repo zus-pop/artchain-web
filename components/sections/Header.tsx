@@ -11,6 +11,7 @@ import {
   Globe,
   LogOut,
   User,
+  Archive,
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
@@ -122,7 +123,8 @@ const Header: React.FC<ArtistNavigationProps> = ({
     () => [
       { label: t.home, href: "/", active: true },
       { label: t.contests, href: "/contests" },
-      { label: t.posts, href: "/posts" },
+      { label: t.auction, href: "/auction" },
+      // { label: t.posts, href: "/posts" },
       { label: t.campaignTitle, href: "/campaigns" },
       { label: t.gallery, href: "/gallery" },
     ],
@@ -370,8 +372,17 @@ const Header: React.FC<ArtistNavigationProps> = ({
                             onClick={() => setIsUserDropdownOpen(false)}
                             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                           >
-                            <Wallet className="h-4 w-4" />
+                            <Archive className="h-4 w-4" />
                             <span>Đơn hàng</span>
+                          </Link>
+
+                          <Link
+                            href="/me/wallet"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          >
+                            <Wallet className="h-4 w-4" />
+                            <span>Ví của tôi</span>
                           </Link>
 
                           <div className="border-t border-gray-100 my-1"></div>

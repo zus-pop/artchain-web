@@ -48,14 +48,17 @@ function useCountdown(targetDate: string) {
 function StatusBadge({ status }: { status: AuctionStatus }) {
   const map: Record<AuctionStatus, { label: string; className: string }> = {
     ACTIVE:    { label: "Đang đấu giá", className: "bg-green-100 text-green-800 border-green-200" },
+    LIVE:      { label: "Đang trực tiếp", className: "bg-orange-100 text-orange-800 border-orange-200" },
     ONGOING:   { label: "Đang diễn ra", className: "bg-green-100 text-green-800 border-green-200" },
     UPCOMING:  { label: "Sắp diễn ra",  className: "bg-blue-100 text-blue-800 border-blue-200" },
     PENDING:   { label: "Chờ phê duyệt", className: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+    DRAFT:     { label: "Bản nháp", className: "bg-gray-100 text-gray-500 border-gray-200" },
     ENDED:     { label: "Đã kết thúc",  className: "bg-gray-100 text-gray-600 border-gray-200" },
+    END:       { label: "Kết thúc",  className: "bg-gray-100 text-gray-600 border-gray-200" },
     CANCELLED: { label: "Đã hủy",        className: "bg-red-100 text-red-700 border-red-200" },
   };
   const { label, className } = map[status] ?? map.ENDED;
-  const isLive = status === "ACTIVE" || status === "ONGOING";
+  const isLive = status === "ACTIVE" || status === "ONGOING" || status === "LIVE";
   return (
     <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border ${className}`}>
       {isLive && (
@@ -236,7 +239,7 @@ export default function AuctionDetailPage() {
     (b) => String(b.auctionPaintingId) === selectedIdStr
   );
 
-  const isAuctionLive = auction?.status === "ACTIVE" || auction?.status === "ONGOING";
+  const isAuctionLive = auction?.status === "ACTIVE" || auction?.status === "ONGOING" || auction?.status === "LIVE";
   const countdownTarget = isAuctionLive ? auction?.endTime : (auction?.startTime ?? "");
   const countdown = useCountdown(countdownTarget || "");
 
@@ -406,7 +409,7 @@ export default function AuctionDetailPage() {
                     {selectedPainting.painting.description || "Không có mô tả cho tác phẩm này."}
                   </p>
                   
-                  <div className="grid grid-cols-2 gap-8 pt-6 border-t border-gray-100">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-6 border-t border-gray-100">
                     <div>
                       <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Giá khởi điểm</p>
                       <p className="text-xl font-black">{new Intl.NumberFormat("vi-VN").format(selectedPainting.basePrice)}đ</p>
@@ -414,6 +417,10 @@ export default function AuctionDetailPage() {
                     <div>
                       <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Lượt đặt giá</p>
                       <p className="text-xl font-black">{currentBidCount}</p>
+                    </div>
+                    <div className="md:col-span-1">
+                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Thời lượng</p>
+                      <p className="text-xl font-black">{selectedPainting.auctionDurationMinutes || "--"} phút</p>
                     </div>
                   </div>
                 </div>
@@ -432,28 +439,47 @@ export default function AuctionDetailPage() {
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-4">
                   Phòng đấu giá
                 </p>
-                {hasJoined ? (
-                  <BidForm
-                    auctionId={String(auctionId)}
-                    auctionPaintingId={String(selectedPainting.auctionPaintingId)}
-                    currentPrice={currentPrice}
-                    bidStep={selectedPainting.bidStep}
-                    onBid={handleBid}
-                    isLoading={bidMutation.isPending}
-                    disabled={!isAuctionLive}
-                  />
-                ) : (
-                  <div className="space-y-4">
-                    <p className="text-xs text-center opacity-60">Bạn cần tham gia để đặt giá thầu.</p>
-                    <button
-                      onClick={handleJoin}
-                      disabled={joinMutation.isPending}
-                      className="w-full bg-[#f07d44] hover:bg-[#d96a30] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest transition shadow-lg shadow-orange-100"
-                    >
-                      {joinMutation.isPending ? "Đang tham gia..." : "Tham gia ngay"}
-                    </button>
-                  </div>
-                )}
+                {(() => {
+                  const isParticipant = hasJoined || (!!userId && !!auction?.auctionParticipants?.some(p => String(p.userId) === String(userId)));
+                  
+                  if (isParticipant) {
+                    return (
+                      <BidForm
+                        auctionId={String(auctionId)}
+                        auctionPaintingId={String(selectedPainting.auctionPaintingId)}
+                        currentPrice={currentPrice}
+                        bidStep={selectedPainting.bidStep}
+                        onBid={handleBid}
+                        isLoading={bidMutation.isPending}
+                        disabled={!isAuctionLive}
+                      />
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-4">
+                      <p className="text-xs text-center opacity-60">
+                        {userId ? "Bạn cần tham gia để đặt giá thầu." : "Vui lòng đăng nhập để tham gia đấu giá."}
+                      </p>
+                      {userId ? (
+                        <button
+                          onClick={handleJoin}
+                          disabled={joinMutation.isPending}
+                          className="w-full bg-[#f07d44] hover:bg-[#d96a30] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest transition shadow-lg shadow-orange-100 disabled:opacity-50"
+                        >
+                          {joinMutation.isPending ? "Đang tham gia..." : "Tham gia ngay"}
+                        </button>
+                      ) : (
+                        <Link
+                          href="/auth"
+                          className="block w-full bg-[#1a1a1a] hover:bg-black text-white py-4 rounded-xl font-black text-sm text-center uppercase tracking-widest transition shadow-lg"
+                        >
+                          Đăng nhập
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

@@ -48,6 +48,7 @@ export function useAuctionSocket({
 
 
     socket.on("connect", () => {
+      console.log("WebSocket [CONNECTED] ID:", socket.id);
       setIsConnected(true);
       
       const idStr = String(auctionId);
@@ -58,16 +59,18 @@ export function useAuctionSocket({
       socket.emit("joinAuction", { auctionId: idNum });
     });
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (reason) => {
+      console.log("WebSocket [DISCONNECTED] Reason:", reason);
       setIsConnected(false);
     });
 
-    socket.on("connect_error", () => {
-      // Quietly handle connection errors
+    socket.on("connect_error", (error) => {
+      console.error("WebSocket [CONNECTION ERROR]:", error);
     });
 
     // Listen for official backend events with flexible mapping
     const handleNewBid = (rawEvent: any) => {
+      console.log("WebSocket [newBid]:", rawEvent);
       // Standardize the event structure based on live logs
       const event: BidPlacedEvent = {
         bidId: rawEvent.bidId || rawEvent.id || `ws-${Date.now()}`,
@@ -87,10 +90,12 @@ export function useAuctionSocket({
     socket.on("newBid", handleNewBid);
     socket.on("bidPlaced", handleNewBid);
     socket.on("auctionStatusChanged", (data: AuctionStatusChangedEvent) => {
+      console.log("WebSocket [auctionStatusChanged]:", data);
       onStatusChangedRef.current?.(data);
     });
 
     socket.on("participantCount", (count: number) => {
+      console.log("WebSocket [participantCount]:", count);
       setParticipantCount(count);
     });
 

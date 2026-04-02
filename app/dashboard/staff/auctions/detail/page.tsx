@@ -5,12 +5,14 @@ import {
   useAddPaintingToAuction,
   useGetAuctionById,
   useUpdateAuctionStatus,
+  useEndAuction,
 } from "@/apis/auction";
 import { getAllStaffContests } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
 import {
@@ -24,6 +26,7 @@ import {
   IconTrophy,
   IconX,
   IconUsers,
+  IconCircleCheck,
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -45,7 +48,20 @@ function AuctionDetailContent() {
   const [showAddPaintingDialog, setShowAddPaintingDialog] = useState(false);
   
   // Pricing state for each selected painting
-  const [paintingPrices, setPaintingPrices] = useState<Record<string, { basePrice: number; ceilPrice: number; bidStep: number }>>({});
+  const [paintingPrices, setPaintingPrices] = useState<Record<string, { basePrice: number; ceilPrice: number; bidStep: number; auctionDurationMinutes: number }>>({});
+
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: "primary" | "destructive" | "warning";
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  });
 
   // Fetch auction details
   const { data: auction, isLoading: auctionLoading } = useGetAuctionById(auctionId || "");
@@ -66,16 +82,41 @@ function AuctionDetailContent() {
   const addPaintingMutation = useAddPaintingToAuction(auctionId || "");
 
   // Mutation for updating auction status
-  const updateStatusMutation = useUpdateAuctionStatus(auctionId || "");
+  const updateStatusMutation = useUpdateAuctionStatus();
 
-  const handleOpenAuction = async () => {
-    if (!window.confirm(t.confirmOpenAuction)) return;
-    
-    try {
-      await updateStatusMutation.mutateAsync({ status: "ONGOING" });
-    } catch (error) {
-      console.error("Failed to open auction:", error);
-    }
+  const handleUpdateStatus = async (newStatus: string, title: string, description: string, variant: "primary" | "destructive" | "warning" = "warning") => {
+    setConfirmConfig({
+      isOpen: true,
+      title,
+      description,
+      variant,
+      onConfirm: async () => {
+        try {
+          await updateStatusMutation.mutateAsync({ auctionId: auctionId || "", status: newStatus });
+        } catch (error) {
+          console.error(`Failed to update status to ${newStatus}:`, error);
+        }
+      },
+    });
+  };
+
+  // Mutation for ending auction
+  const endAuctionMutation = useEndAuction();
+
+  const handleEndAuction = async () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: t.endAuction,
+      description: t.confirmEndAuction,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await endAuctionMutation.mutateAsync(auctionId || "");
+        } catch (error) {
+          console.error("Failed to end auction:", error);
+        }
+      },
+    });
   };
 
   const handleAddPaintings = async () => {
@@ -83,12 +124,13 @@ function AuctionDetailContent() {
 
     try {
       for (const paintingId of selectedPaintingIds) {
-        const prices = paintingPrices[paintingId] || { basePrice: 0, ceilPrice: 0, bidStep: 0 };
+        const prices = paintingPrices[paintingId] || { basePrice: 0, ceilPrice: 0, bidStep: 0, auctionDurationMinutes: 15 };
         await addPaintingMutation.mutateAsync({
           paintingId,
           basePrice: prices.basePrice,
           ceilPrice: prices.ceilPrice,
           bidStep: prices.bidStep,
+          auctionDurationMinutes: prices.auctionDurationMinutes || 15,
         });
       }
       setSelectedPaintingIds([]);
@@ -105,7 +147,7 @@ function AuctionDetailContent() {
     setPaintingPrices((prev) => ({
       ...prev,
       [paintingId]: {
-        ...(prev[paintingId] || { basePrice: 0, ceilPrice: 0, bidStep: 0 }),
+        ...(prev[paintingId] || { basePrice: 0, ceilPrice: 0, bidStep: 0, auctionDurationMinutes: 15 }),
         [field]: numValue,
       },
     }));
@@ -135,15 +177,22 @@ function AuctionDetailContent() {
     );
   }
 
+  const canAddPainting = auction.status === "DRAFT";
+
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ACTIVE":
       case "ONGOING":
+      case "LIVE":
         return "staff-badge-active";
       case "PENDING":
       case "UPCOMING":
         return "staff-badge-pending";
+      case "DRAFT":
+        return "staff-badge-neutral";
       case "ENDED":
+      case "END":
         return "staff-badge-neutral";
       case "CANCELLED":
         return "staff-badge-rejected";
@@ -208,16 +257,32 @@ function AuctionDetailContent() {
                 </div>
 
                 <div className="flex flex-col gap-3 min-w-[200px]">
-                  <button
-                    onClick={() => setShowAddPaintingDialog(true)}
-                    className="staff-btn-primary flex items-center justify-center gap-2 py-3"
-                  >
-                    <IconPlus className="h-5 w-5" />
-                    {t.addPaintingToAuction}
-                  </button>
-                  {auction.status !== "ONGOING" && auction.status !== "ENDED" && auction.status !== "CANCELLED" && (
+                  {canAddPainting && (
                     <button
-                      onClick={handleOpenAuction}
+                      onClick={() => setShowAddPaintingDialog(true)}
+                      className="staff-btn-primary flex items-center justify-center gap-2 py-3"
+                    >
+                      <IconPlus className="h-5 w-5" />
+                      {t.addPaintingToAuction}
+                    </button>
+                  )}
+                  {auction.status === "DRAFT" && (
+                    <button
+                      onClick={() => handleUpdateStatus("UPCOMING", t.openUpcomingNow, t.confirmOpenUpcoming, "primary")}
+                      disabled={updateStatusMutation.isPending}
+                      className="staff-btn-secondary flex items-center justify-center gap-2 py-3 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all font-black uppercase tracking-widest text-[10px]"
+                    >
+                      {updateStatusMutation.isPending ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                      ) : (
+                        <IconCalendar className="h-5 w-5" />
+                      )}
+                      {t.openUpcomingNow}
+                    </button>
+                  )}
+                  {auction.status === "UPCOMING" && (
+                    <button
+                      onClick={() => handleUpdateStatus("LIVE", t.openLiveNow, t.confirmOpenLive, "warning")}
                       disabled={updateStatusMutation.isPending}
                       className="staff-btn-secondary flex items-center justify-center gap-2 py-3 border-orange-200 bg-orange-50 hover:bg-orange-100 text-orange-700 transition-all font-black uppercase tracking-widest text-[10px]"
                     >
@@ -226,7 +291,21 @@ function AuctionDetailContent() {
                       ) : (
                         <IconHammer className="h-5 w-5" />
                       )}
-                      {t.openAuctionNow}
+                      {t.openLiveNow}
+                    </button>
+                  )}
+                  {auction.status === "ONGOING" && (
+                    <button
+                      onClick={handleEndAuction}
+                      disabled={endAuctionMutation.isPending}
+                      className="staff-btn-secondary flex items-center justify-center gap-2 py-3 border-red-200 bg-red-50 hover:bg-red-100 text-red-700 transition-all font-black uppercase tracking-widest text-[10px]"
+                    >
+                      {endAuctionMutation.isPending ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <IconCircleCheck className="h-5 w-5" />
+                      )}
+                      {t.endAuction}
                     </button>
                   )}
                 </div>
@@ -338,6 +417,12 @@ function AuctionDetailContent() {
                                   {auctionPainting.basePrice?.toLocaleString()} VND
                                 </span>
                               </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t.auctionDuration || "Duration"}</span>
+                                <span className="text-xs font-black text-gray-600">
+                                  {auctionPainting.auctionDurationMinutes || "--"} {t.minutes || "Min"}
+                                </span>
+                              </div>
                               <div className="flex items-center justify-between border-t border-dashed border-[#e6e2da] pt-2">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t.currentBid}</span>
                                 <span className="text-sm font-black text-red-500">
@@ -357,13 +442,15 @@ function AuctionDetailContent() {
                     </div>
                     <h3 className="text-lg font-bold staff-text-secondary uppercase">{t.noPaintingsInAuction}</h3>
                     <p className="text-sm text-gray-400 mt-2 mb-6">{t.selectPaintingsToAdd}</p>
-                    <button
-                      onClick={() => setShowAddPaintingDialog(true)}
-                      className="staff-btn-primary inline-flex items-center gap-2"
-                    >
-                      <IconPlus className="h-4 w-4" />
-                      {t.addPaintingToAuction}
-                    </button>
+                    {canAddPainting && (
+                      <button
+                        onClick={() => setShowAddPaintingDialog(true)}
+                        className="staff-btn-primary inline-flex items-center gap-2"
+                      >
+                        <IconPlus className="h-4 w-4" />
+                        {t.addPaintingToAuction}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -575,6 +662,16 @@ function AuctionDetailContent() {
                                           />
                                        </div>
                                     </div>
+                                    <div>
+                                       <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.auctionDuration || "Duration"} (Min)</label>
+                                       <input 
+                                          type="number"
+                                          value={prices.auctionDurationMinutes || 15}
+                                          onChange={(e) => handlePriceChange(id, "auctionDurationMinutes", e.target.value)}
+                                          className="w-full px-2 py-1 text-xs border border-[#e6e2da] rounded focus:ring-1 focus:ring-blue-500 outline-none"
+                                          placeholder="15"
+                                       />
+                                    </div>
                                  </div>
                               </div>
                            )
@@ -614,6 +711,18 @@ function AuctionDetailContent() {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={() => {
+          confirmConfig.onConfirm();
+          setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        }}
+        title={confirmConfig.title}
+        description={confirmConfig.description}
+        variant={confirmConfig.variant}
+        isLoading={updateStatusMutation.isPending || endAuctionMutation.isPending}
+      />
     </div>
   );
 }

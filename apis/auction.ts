@@ -1,6 +1,8 @@
 import myAxios from "@/lib/custom-axios";
 import {
   Auction,
+  AuctionPainting,
+  WonPainting,
   AuctionListQuery,
   CreateAuctionRequest,
   AddPaintingToAuctionRequest,
@@ -110,20 +112,51 @@ export function usePlaceBid() {
   });
 }
 // ─── PATCH /auctions/:auctionId/status ──────────────────────────────────────
-export function useUpdateAuctionStatus(auctionId: string) {
+export function useUpdateAuctionStatus() {
   const queryClient = useQueryClient();
-  return useMutation<unknown, Error, { status: string }>({
-    mutationFn: async (data) => {
-      const res = await myAxios.patch(`/auctions/${auctionId}/status`, data);
+  return useMutation<unknown, Error, { auctionId: string | number; status: string }>({
+    mutationFn: async ({ auctionId, status }) => {
+      const res = await myAxios.patch(`/auctions/${auctionId}/status`, { status });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, { auctionId }) => {
       toast.success("Cập nhật trạng thái thành công!");
-      queryClient.invalidateQueries({ queryKey: ["auction", auctionId] });
+      queryClient.invalidateQueries({ queryKey: ["auction", String(auctionId)] });
       queryClient.invalidateQueries({ queryKey: ["auctions"] });
     },
     onError: (err: any) => {
       toast.error(err?.message ?? "Cập nhật trạng thái thất bại");
     },
+  });
+}
+
+// ─── PATCH /auctions/:auctionId/end ─────────────────────────────────────────
+export function useEndAuction() {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, string>({
+    mutationFn: async (auctionId: string) => {
+      const res = await myAxios.patch(`/auctions/${auctionId}/end`);
+      return res.data;
+    },
+    onSuccess: (_, auctionId) => {
+      toast.success("Kết thúc phiên đấu giá thành công!");
+      queryClient.invalidateQueries({ queryKey: ["auction", auctionId] });
+      queryClient.invalidateQueries({ queryKey: ["auctions"] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Kết thúc phiên đấu giá thất bại");
+    },
+  });
+}
+// ─── GET /auctions/users/:userId/won-paintings ──────────────────────────
+export function useGetWonPaintings(userId?: string) {
+  return useQuery<WonPainting[]>({
+    queryKey: ["won-paintings", userId],
+    queryFn: async () => {
+      const res = await myAxios.get(`/auctions/users/${userId}/won-paintings`);
+      return res.data?.data ?? res.data ?? [];
+    },
+    enabled: !!userId,
+    staleTime: 60 * 1000,
   });
 }

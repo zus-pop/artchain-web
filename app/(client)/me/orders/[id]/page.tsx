@@ -146,7 +146,7 @@ export default function OrderDetailPage() {
   const resolvedActiveStage = order.shippingStages.every(s => s.done) ? order.shippingStages.length - 1 : activeStageIndex;
 
   return (
-    <main className="min-h-screen bg-[#f8f9fb] px-4 pt-24 pb-16 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[#EAE6E0] px-4 pt-24 pb-16 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
         
         {/* Header điều hướng */}

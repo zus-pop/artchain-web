@@ -1,11 +1,12 @@
 "use client";
 
-import { useGetAuctions } from "@/apis/auction";
+import { useGetAuctions, useEndAuction } from "@/apis/auction";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { StatsCards } from "@/components/staff/StatsCards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Auction, AuctionStatus } from "@/types/auction";
 import {
   IconCircleCheck,
@@ -44,6 +45,36 @@ export default function AuctionsManagementPage() {
     error,
   } = useGetAuctions();
 
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+    variant?: "primary" | "destructive" | "warning";
+  }>({
+    isOpen: false,
+    title: t.endAuction,
+    description: t.confirmEndAuction,
+    onConfirm: () => {},
+    variant: "destructive",
+  });
+
+  const endAuctionMutation = useEndAuction();
+
+  const handleEndAuction = async (auctionId: string | number) => {
+    setConfirmConfig((prev) => ({
+      ...prev,
+      isOpen: true,
+      onConfirm: async () => {
+        try {
+          await endAuctionMutation.mutateAsync(String(auctionId));
+        } catch (error) {
+          console.error("Failed to end auction:", error);
+        }
+      },
+    }));
+  };
+
   // Client-side filtering and search
   const filteredAuctions = auctions.filter((auction: Auction) => {
     const matchesSearch = auction.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -62,24 +93,31 @@ export default function AuctionsManagementPage() {
 
   const statusOptions: (AuctionStatus | "ALL")[] = [
     "ALL",
+    "DRAFT",
     "PENDING",
     "UPCOMING",
     "ACTIVE",
     "ONGOING",
+    "LIVE",
     "ENDED",
+    "END",
     "CANCELLED",
   ];
 
   const getStatusBadgeColor = (status: AuctionStatus) => {
     switch (status) {
+      case "DRAFT":
+        return "staff-badge-neutral";
       case "PENDING":
         return "staff-badge-neutral";
       case "UPCOMING":
         return "staff-badge-pending";
       case "ACTIVE":
       case "ONGOING":
+      case "LIVE":
         return "staff-badge-active";
       case "ENDED":
+      case "END":
         return "staff-badge-approved";
       case "CANCELLED":
         return "staff-badge-rejected";
@@ -96,8 +134,10 @@ export default function AuctionsManagementPage() {
         return IconClock;
       case "ACTIVE":
       case "ONGOING":
+      case "LIVE":
         return IconHammer;
       case "ENDED":
+      case "END":
         return IconCircleCheck;
       case "CANCELLED":
         return IconCircleX;
@@ -106,8 +146,10 @@ export default function AuctionsManagementPage() {
     }
   };
 
-  const activeAuctionsCount = auctions.filter((a: Auction) => a.status === "ACTIVE" || a.status === "ONGOING").length;
-  const pendingAuctionsCount = auctions.filter((a: Auction) => a.status === "PENDING" || a.status === "UPCOMING").length;
+  const activeAuctionsCount = auctions.filter((a: Auction) => ["ACTIVE", "ONGOING", "LIVE"].includes(a.status)).length;
+  const upcomingAuctionsCount = auctions.filter((a: Auction) => a.status === "UPCOMING").length;
+  const endedAuctionsCount = auctions.filter((a: Auction) => ["ENDED", "END"].includes(a.status)).length;
+  const pendingAuctionsCount = auctions.filter((a: Auction) => a.status === "DRAFT").length;
 
   useEffect(() => {
     setCurrentPage(1);
@@ -164,6 +206,20 @@ export default function AuctionsManagementPage() {
                     variant: "info",
                   },
                   {
+                    title: t.pendingAuctions,
+                    value: pendingAuctionsCount,
+                    subtitle: t.pending,
+                    icon: <IconClock className="h-6 w-6" />,
+                    variant: "warning",
+                  },
+                  {
+                    title: t.upcomingAuctions,
+                    value: upcomingAuctionsCount,
+                    subtitle: t.upcoming,
+                    icon: <IconClock className="h-6 w-6" />,
+                    variant: "purple",
+                  },
+                  {
                     title: t.activeAuctions,
                     value: activeAuctionsCount,
                     subtitle: t.currentlyRunning,
@@ -171,11 +227,11 @@ export default function AuctionsManagementPage() {
                     variant: "success",
                   },
                   {
-                    title: t.pendingAuctions,
-                    value: pendingAuctionsCount,
-                    subtitle: t.pending,
-                    icon: <IconClock className="h-6 w-6" />,
-                    variant: "warning",
+                    title: t.completedAuctions,
+                    value: endedAuctionsCount,
+                    subtitle: t.ended,
+                    icon: <IconCircleCheck className="h-6 w-6" />,
+                    variant: "destructive",
                   },
                 ]}
               />
@@ -299,6 +355,20 @@ export default function AuctionsManagementPage() {
                                 >
                                   <IconEye className="h-5 w-5" />
                                 </Link>
+                                {auction.status === "ONGOING" && (
+                                  <button
+                                    onClick={() => handleEndAuction(auction.auctionId)}
+                                    className="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50 transition-all inline-block"
+                                    title={t.endAuction}
+                                    disabled={endAuctionMutation.isPending}
+                                  >
+                                    {endAuctionMutation.isPending ? (
+                                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
+                                    ) : (
+                                      <IconCircleCheck className="h-5 w-5" />
+                                    )}
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           );
@@ -374,6 +444,15 @@ export default function AuctionsManagementPage() {
           </div>
         </div>
       </SidebarInset>
+      <ConfirmDialog
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        description={confirmConfig.description}
+        variant={confirmConfig.variant}
+        isLoading={endAuctionMutation.isPending}
+      />
     </SidebarProvider>
   );
 }
