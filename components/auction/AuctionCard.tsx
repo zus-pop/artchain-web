@@ -14,6 +14,11 @@ const STATUS_CONFIG: Record<
   AuctionStatus,
   { label: string; className: string; dot: string }
 > = {
+  DRAFT: {
+    label: "BẢN NHÁP",
+    className: "bg-slate-500 text-white",
+    dot: "bg-slate-200",
+  },
   PENDING: {
     label: "CHỜ PHÊ DUYỆT",
     className: "bg-yellow-500 text-white",
