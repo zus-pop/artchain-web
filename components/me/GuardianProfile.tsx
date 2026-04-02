@@ -404,7 +404,7 @@ export default function GuardianProfileScreen({
           alt="Banner"
           layout="fill"
           objectFit="cover"
-          className="bg-gradient-to-r from-blue-100 via-pink-100 to-orange-100"
+          className="bg-linear-to-r from-blue-100 via-pink-100 to-orange-100"
         />
       </div>
 
@@ -415,7 +415,7 @@ export default function GuardianProfileScreen({
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-8 mt-[7vh]">
             {/* Left side: Avatar và Tên */}
             <div className="flex items-end">
-              <div className="relative h-32 w-32 flex-shrink-0 sm:h-40 sm:w-40">
+              <div className="relative h-32 w-32 shrink-0 sm:h-40 sm:w-40">
                 <Image
                   src={profile.avatarUrl}
                   alt={profile.name}
@@ -625,7 +625,7 @@ export default function GuardianProfileScreen({
                             className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                             onClick={() => handleViewAwardDetail(a)}
                           >
-                            <div className="h-20 w-20 relative flex-shrink-0 bg-gray-200 rounded overflow-hidden">
+                            <div className="h-20 w-20 relative shrink-0 bg-gray-200 rounded overflow-hidden">
                               {a.paintingImage ? (
                                 <Image
                                   src={a.paintingImage}
@@ -700,12 +700,33 @@ export default function GuardianProfileScreen({
                     <h3 className="text-lg font-semibold text-black">
                       Thông tin tranh
                     </h3>
-                    <button
-                      onClick={handleOpenCertificateViewer}
-                      className="inline-flex cursor-pointer items-center rounded bg-[#423137] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                    >
-                      Xem chứng chỉ
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleOpenCertificateViewer}
+                        className="inline-flex cursor-pointer items-center rounded bg-[#423137] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                      >
+                        Xem chứng chỉ
+                      </button>
+                      {selectedChild?.userId ? (
+                        <Link
+                          href={{
+                            pathname: "/mint-nft",
+                            query: {
+                              paintingId: selectedAchievement.paintingId,
+                              competitorUserId: selectedChild.userId,
+                            },
+                          }}
+                          onClick={handleCloseAwardDialog}
+                          className="inline-flex items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                        >
+                          Mint NFT
+                        </Link>
+                      ) : (
+                        <span className="inline-flex cursor-not-allowed items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white opacity-50">
+                          Mint NFT
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -945,7 +966,7 @@ export default function GuardianProfileScreen({
                   {guardianChildren.map((child) => (
                     <div
                       key={child.userId}
-                      className="p-8 border border-[#423137] rounded-sm bg-[#F2F2F2] overflow-hidden aspect-video lg:aspect-[487/251] cursor-pointer"
+                      className="p-8 border border-[#423137] rounded-sm bg-[#F2F2F2] overflow-hidden aspect-video lg:aspect-487/251 cursor-pointer"
                       onClick={() => setSelectedChild(child)}
                     >
                       <div className="flex items-center space-x-3 mb-3">

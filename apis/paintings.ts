@@ -1,12 +1,13 @@
 import myAxios from "@/lib/custom-axios";
 import { ApiResponse } from "@/types";
 import {
+  CompetitorSubmission,
+  MintNFTRequest,
+  MintNFTResponse,
   Painting,
+  PaintingEvaluation,
   Round2ImageRequest,
   TopPainting,
-  CompetitorSubmissionsResponse,
-  PaintingEvaluation,
-  CompetitorSubmission,
 } from "@/types/painting";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -43,7 +44,7 @@ export function useGetUserSubmissions(userId?: string) {
       if (!userId) return null;
       try {
         const response = await myAxios.get(
-          `/guardians/competitor/${userId}/submissions`
+          `/guardians/competitor/${userId}/submissions`,
         );
         // API returns array directly, not wrapped in CompetitorSubmissionsResponse
         return response.data as CompetitorSubmission[];
@@ -89,7 +90,7 @@ export const getStaffPendingSubmissions = async (params?: {
 // GET /api/staff/contests/submissions/{paintingId} - Get submission by ID
 export const getStaffSubmissionById = async (paintingId: string) => {
   const response = await myAxios.get(
-    `/staff/contests/submissions/${paintingId}`
+    `/staff/contests/submissions/${paintingId}`,
   );
   return response.data;
 };
@@ -101,11 +102,11 @@ export const reviewStaffSubmission = async (
     reviewNote?: string;
     score?: number;
     feedback?: string;
-  }
+  },
 ) => {
   const response = await myAxios.patch(
     `/staff/contests/submissions/${paintingId}/review`,
-    data
+    data,
   );
   return response.data;
 };
@@ -115,11 +116,11 @@ export const acceptStaffSubmission = async (
   paintingId: string,
   data?: {
     acceptNote?: string;
-  }
+  },
 ) => {
   const response = await myAxios.patch(
     `/staff/contests/submissions/${paintingId}/accept`,
-    data
+    data,
   );
   return response.data;
 };
@@ -130,11 +131,11 @@ export const rejectStaffSubmission = async (
   data: {
     rejectReason: string;
     rejectNote?: string;
-  }
+  },
 ) => {
   const response = await myAxios.patch(
     `/staff/contests/submissions/${paintingId}/reject`,
-    data
+    data,
   );
   return response.data;
 };
@@ -149,7 +150,7 @@ export function useGetRound2TopByContestId(contestId: string) {
           params: {
             contestId: contestId,
           },
-        }
+        },
       );
       return response.data;
     },
@@ -181,7 +182,7 @@ export function useUploadRound2Painting() {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
       return response.data;
     },
@@ -210,7 +211,7 @@ export function useGetPaintingEvaluations(paintingId: string) {
       if (!paintingId) return null;
       try {
         const response = await myAxios.get(
-          `/paintings/${paintingId}/evaluations`
+          `/paintings/${paintingId}/evaluations`,
         );
         return response.data as PaintingEvaluation[];
       } catch (error) {
@@ -221,5 +222,17 @@ export function useGetPaintingEvaluations(paintingId: string) {
     enabled: !!paintingId,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
+  });
+}
+
+export function useMintNFT() {
+  return useMutation({
+    mutationFn: async (mintNFTRequest: MintNFTRequest) => {
+      const response = await myAxios.post<MintNFTResponse>(
+        "/mint-nft",
+        mintNFTRequest,
+      );
+      return response.data;
+    },
   });
 }

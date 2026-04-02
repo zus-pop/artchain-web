@@ -6,12 +6,13 @@ import {
   useGetPaintingEvaluations,
 } from "@/apis/paintings";
 import CertificateViewer from "@/components/award/CertificateViewer";
+import { Lang } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/utils";
 import { WhoAmI } from "@/types";
 import { AchievementItem } from "@/types/achievement";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
-import { Lang } from "../../lib/i18n";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -556,12 +557,26 @@ export default function CompetitorProfileScreen({
                     <h3 className="text-lg font-semibold text-black">
                       Thông tin tranh
                     </h3>
-                    <button
-                      onClick={handleOpenCertificateViewer}
-                      className="inline-flex cursor-pointer items-center rounded bg-[#423137] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                    >
-                      Xem chứng chỉ
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleOpenCertificateViewer}
+                        className="inline-flex cursor-pointer items-center rounded bg-[#423137] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                      >
+                        Xem chứng chỉ
+                      </button>
+                      <Link
+                        href={{
+                          pathname: "/mint-nft",
+                          query: {
+                            paintingId: selectedAchievement.paintingId,
+                          },
+                        }}
+                        onClick={handleCloseAwardDialog}
+                        className="inline-flex items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+                      >
+                        Mint NFT
+                      </Link>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

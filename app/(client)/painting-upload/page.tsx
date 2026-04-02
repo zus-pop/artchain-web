@@ -1,10 +1,20 @@
 "use client";
 
+import { ErrorModal } from "@/components/ErrorModal";
+import Loader from "@/components/Loaders";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/hooks";
 import { useUploadPainting } from "@/hooks/use-upload-painting";
 import { useUserById } from "@/hooks/use-user-by-id";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,8 +26,6 @@ import { Suspense, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useAuth } from "../../../hooks";
-import Loader from "@/components/Loaders";
 
 const SIZE = 10;
 //                     B      KB    MB
@@ -44,18 +52,28 @@ const paintingUploadSchema = z.object({
     .instanceof(File, { message: "Vui lòng chọn ảnh tranh vẽ" })
     .refine(
       (file) => file.size <= MAX_FILE_SIZE,
-      `Kích thước ảnh không được vượt quá ${SIZE}MB`
+      `Kích thước ảnh không được vượt quá ${SIZE}MB`,
     )
     .refine(
       (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
       `Chỉ hỗ trợ định dạng: ${ACCEPTED_IMAGE_TYPES.map(
-        (t) => `.${t.substring(t.indexOf("/") + 1)}`
-      ).join(", ")}`
+        (t) => `.${t.substring(t.indexOf("/") + 1)}`,
+      ).join(", ")}`,
     )
     .optional(),
 });
 
 type PaintingUploadForm = z.infer<typeof paintingUploadSchema>;
+
+interface UploadRetryPayload {
+  title: string;
+  description?: string;
+  file: File;
+  contestId: string;
+  roundId: string;
+  competitorId: string;
+  ignoreAiCheck: boolean;
+}
 
 export default function PaintingUploadSuspense() {
   return (
@@ -83,8 +101,12 @@ function PaintingUpload() {
   const { isAuthenticated } = useAuth();
   const { data: currentUser, isLoading, isError } = useUserById(competitorId);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [lastPayload, setLastPayload] = useState<UploadRetryPayload | null>(
+    null,
+  );
 
-  const { mutate, isPending } = useUploadPainting();
+  const { mutate, isPending, errorModalOpen, setErrorModalOpen, errorMessage } =
+    useUploadPainting();
 
   // Watch the image field to update preview
   const watchedImage = watch("image");
@@ -123,14 +145,35 @@ function PaintingUpload() {
       return;
     }
 
-    mutate({
+    const payload: UploadRetryPayload = {
       title: data.title,
       description: data.description,
       file: data.image,
       contestId: contestId,
       roundId: roundId!,
       competitorId: currentUser.userId.toString(),
-    });
+      ignoreAiCheck: false,
+    };
+
+    setLastPayload(payload);
+    mutate(payload);
+  };
+
+  const handleConfirmUpload = () => {
+    if (!lastPayload) {
+      return;
+    }
+
+    setErrorModalOpen(false);
+    mutate({ ...lastPayload, ignoreAiCheck: true });
+  };
+
+  const handleResubmitNewPainting = () => {
+    setErrorModalOpen(false);
+    setLastPayload(null);
+    setValue("image", undefined);
+    setImagePreview(null);
+    toast.info("Bạn có thể chọn ảnh khác để nộp lại bài thi.");
   };
 
   if (!isAuthenticated) {
@@ -419,7 +462,7 @@ function PaintingUpload() {
                                       const reader = new FileReader();
                                       reader.onload = (e) => {
                                         setImagePreview(
-                                          e.target?.result as string
+                                          e.target?.result as string,
                                         );
                                       };
                                       reader.readAsDataURL(file);
@@ -492,6 +535,44 @@ function PaintingUpload() {
             </div>
           </div>
         </form>
+        <ErrorModal
+          title="Không nộp được bài thi!"
+          isOpen={errorModalOpen}
+          onOpenChange={setErrorModalOpen}
+          errorMessage={errorMessage}
+          confirmQuestion="Bạn muốn vẫn gửi bài thi hiện tại hay chọn tranh khác để nộp lại?"
+          onConfirmUpload={handleConfirmUpload}
+          onResubmit={handleResubmitNewPainting}
+        />
+
+        <Dialog open={isPending} onOpenChange={() => {}}>
+          <DialogContent
+            className="max-w-md"
+            onEscapeKeyDown={(event) => event.preventDefault()}
+            onInteractOutside={(event) => event.preventDefault()}
+          >
+            <DialogHeader className="space-y-3">
+              <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#FF6E1A]/20 border-t-[#FF6E1A]" />
+              <DialogTitle className="text-center text-[#1f1f1f]">
+                Đang gửi bài thi của bạn
+              </DialogTitle>
+              <DialogDescription className="text-center text-[#4b4b4b]">
+                Vui lòng chờ trong giây lát. Hệ thống đang xử lý yêu cầu gửi bài
+                thi.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="rounded-none border border-[#FF6E1A]/40 bg-red-50 p-4">
+              <h4 className="mb-1 text-sm font-bold text-[#FF6E1A]">
+                Lưu ý quan trọng
+              </h4>
+              <p className="text-sm leading-relaxed text-[#FF6E1A]">
+                Sau khi gửi bài thi, bạn không thể chỉnh sửa hoặc thay đổi. Vui
+                lòng kiểm tra kỹ tất cả thông tin trước khi gửi.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
