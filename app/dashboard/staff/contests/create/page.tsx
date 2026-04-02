@@ -26,6 +26,12 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+const addDays = (dateString: string, days: number) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + days);
+  return formatDateForInput(date);
+};
+
 // Zod validation schema with translations
 const createContestSchema = (t: Lang) =>
   z
@@ -37,7 +43,7 @@ const createContestSchema = (t: Lang) =>
         .max(2000, t.descriptionTooLong),
       round2Quantity: z
         .number()
-        .min(1, t.topCompetitorsMin)
+        .min(6, t.topCompetitorsMin)
         .max(100, t.topCompetitorsMax),
       numberOfTablesRound2: z.number().min(3, t.tablesMin).max(6, t.tablesMax),
       startDate: z
@@ -53,16 +59,16 @@ const createContestSchema = (t: Lang) =>
         .refine(
           (file) =>
             file && file instanceof File && file.size <= 5 * 1024 * 1024, // 5MB
-          t.bannerTooLarge
+          t.bannerTooLarge,
         )
         .refine(
           (file) =>
             file &&
             file instanceof File &&
             ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
-              file.type
+              file.type,
             ),
-          t.bannerInvalidType
+          t.bannerInvalidType,
         ),
       rule: z
         .any()
@@ -70,12 +76,12 @@ const createContestSchema = (t: Lang) =>
         .refine(
           (file) =>
             file && file instanceof File && file.size <= 20 * 1024 * 1024, // 20MB
-          t.rulesTooLarge
+          t.rulesTooLarge,
         )
         .refine(
           (file) =>
             file && file instanceof File && file.type === "application/pdf",
-          t.rulesInvalidType
+          t.rulesInvalidType,
         ),
       roundStartDate: z.string().min(1, t.roundStartRequired),
       roundEndDate: z.string().min(1, t.roundEndRequired),
@@ -89,13 +95,26 @@ const createContestSchema = (t: Lang) =>
     })
     .refine(
       (data) => {
+        if (!data.roundStartDate || !data.startDate) return true;
+        return (
+          new Date(data.roundStartDate).getTime() ===
+          new Date(data.startDate).getTime()
+        );
+      },
+      {
+        message: "Round 1 start date must match contest start date",
+        path: ["roundStartDate"],
+      },
+    )
+    .refine(
+      (data) => {
         if (!data.roundEndDate || !data.roundStartDate) return true;
         return new Date(data.roundEndDate) > new Date(data.roundStartDate);
       },
       {
         message: t.roundEndAfterStart,
         path: ["roundEndDate"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -108,7 +127,7 @@ const createContestSchema = (t: Lang) =>
       {
         message: t.submissionAfterRoundStart,
         path: ["roundSubmissionDeadline"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -120,7 +139,7 @@ const createContestSchema = (t: Lang) =>
       {
         message: t.submissionBeforeRoundEnd,
         path: ["roundSubmissionDeadline"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -133,19 +152,19 @@ const createContestSchema = (t: Lang) =>
       {
         message: t.resultDateWithinContest,
         path: ["roundResultAnnounceDate"],
-      }
+      },
     )
     .refine(
       (data) => {
         if (!data.roundResultAnnounceDate || !data.roundEndDate) return true;
         return (
-          new Date(data.roundResultAnnounceDate) <= new Date(data.roundEndDate)
+          new Date(data.roundResultAnnounceDate) >= new Date(data.roundEndDate)
         );
       },
       {
         message: t.resultDateWithinContest,
         path: ["roundResultAnnounceDate"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -159,7 +178,7 @@ const createContestSchema = (t: Lang) =>
       {
         message: t.originalDeadlineWithinContest,
         path: ["roundSendOriginalDeadline"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -172,7 +191,35 @@ const createContestSchema = (t: Lang) =>
       {
         message: t.originalDeadlineWithinContest,
         path: ["roundSendOriginalDeadline"],
-      }
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.roundSendOriginalDeadline || !data.roundSubmissionDeadline)
+          return true;
+        return (
+          new Date(data.roundSendOriginalDeadline) >
+          new Date(data.roundSubmissionDeadline)
+        );
+      },
+      {
+        message: t.originalDeadlineWithinContest,
+        path: ["roundSendOriginalDeadline"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.roundResultAnnounceDate || !data.roundSendOriginalDeadline)
+          return true;
+        return (
+          new Date(data.roundResultAnnounceDate) >=
+          new Date(data.roundSendOriginalDeadline)
+        );
+      },
+      {
+        message: t.resultDateWithinContest,
+        path: ["roundResultAnnounceDate"],
+      },
     )
     .refine(
       (data) => {
@@ -189,7 +236,7 @@ const createContestSchema = (t: Lang) =>
       {
         message: t.competitorsEvenlyDivided,
         path: ["numberOfTablesRound2"],
-      }
+      },
     );
 
 type CreateContestFormData = z.infer<ReturnType<typeof createContestSchema>>;
@@ -212,8 +259,8 @@ export default function CreateContestPage() {
     mode: "all",
     resolver: zodResolver(createContestSchema(t)),
     defaultValues: {
-      round2Quantity: 0,
-      numberOfTablesRound2: 0,
+      round2Quantity: 6,
+      numberOfTablesRound2: 3,
     },
   });
 
@@ -224,6 +271,8 @@ export default function CreateContestPage() {
   const watchedEndDate = watch("endDate");
   const watchedRoundStartDate = watch("roundStartDate");
   const watchedRoundEndDate = watch("roundEndDate");
+  const watchedRoundSubmissionDeadline = watch("roundSubmissionDeadline");
+  const watchedRoundSendOriginalDeadline = watch("roundSendOriginalDeadline");
   const watchedRule = watch("rule");
   const watchedNumberOfTablesRound2 = watch("numberOfTablesRound2");
 
@@ -241,6 +290,15 @@ export default function CreateContestPage() {
   }, [bannerPreview]);
 
   // Update numberOfTablesRound2 when round2Quantity changes
+  React.useEffect(() => {
+    if (watchedStartDate) {
+      setValue("roundStartDate", watchedStartDate, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+    }
+  }, [watchedStartDate, setValue]);
+
   React.useEffect(() => {
     if (watchedRound2Quantity === 0) {
       setValue("numberOfTablesRound2", 0);
@@ -306,7 +364,7 @@ export default function CreateContestPage() {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["awards"] });
           },
-        }
+        },
       );
       router.push("/dashboard/staff/contests");
     },
@@ -334,7 +392,7 @@ export default function CreateContestPage() {
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    field: "banner" | "rule"
+    field: "banner" | "rule",
   ) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -531,7 +589,7 @@ export default function CreateContestPage() {
                             onChange={(e) =>
                               onChange(e.target.value || undefined)
                             }
-                            disabled={!watchedStartDate}
+                            disabled
                             min={
                               watchedStartDate
                                 ? formatDateForInput(new Date(watchedStartDate))
@@ -576,11 +634,13 @@ export default function CreateContestPage() {
                             min={
                               watchedRoundStartDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
+                                    new Date(watchedRoundStartDate),
                                   )
                                 : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
+                                  ? formatDateForInput(
+                                      new Date(watchedStartDate),
+                                    )
+                                  : todayString
                             }
                             max={
                               watchedEndDate
@@ -623,20 +683,22 @@ export default function CreateContestPage() {
                             min={
                               watchedRoundStartDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
+                                    new Date(watchedRoundStartDate),
                                   )
                                 : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
+                                  ? formatDateForInput(
+                                      new Date(watchedStartDate),
+                                    )
+                                  : todayString
                             }
                             max={
                               watchedRoundEndDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundEndDate)
+                                    new Date(watchedRoundEndDate),
                                   )
                                 : watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
-                                : undefined
+                                  ? formatDateForInput(new Date(watchedEndDate))
+                                  : undefined
                             }
                             className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                               !watchedRoundStartDate || !watchedRoundEndDate
@@ -649,57 +711,6 @@ export default function CreateContestPage() {
                       {errors.roundSubmissionDeadline && (
                         <p className="text-red-500 text-sm mt-1">
                           {errors.roundSubmissionDeadline.message}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
-                        {t.resultAnnouncementDate}
-                      </label>
-                      <Controller
-                        name="roundResultAnnounceDate"
-                        control={control}
-                        render={({ field: { onChange, value, ...field } }) => (
-                          <input
-                            type="date"
-                            {...field}
-                            value={value || ""}
-                            onKeyDown={(e) => e.preventDefault()}
-                            onChange={(e) =>
-                              onChange(e.target.value || undefined)
-                            }
-                            disabled={
-                              !watchedRoundStartDate || !watchedRoundEndDate
-                            }
-                            min={
-                              watchedRoundStartDate
-                                ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
-                                  )
-                                : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
-                            }
-                            max={
-                              watchedRoundEndDate
-                                ? formatDateForInput(
-                                    new Date(watchedRoundEndDate)
-                                  )
-                                : watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
-                                : undefined
-                            }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              !watchedRoundStartDate || !watchedRoundEndDate
-                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
-                                : ""
-                            }`}
-                          />
-                        )}
-                      />
-                      {errors.roundResultAnnounceDate && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.roundResultAnnounceDate.message}
                         </p>
                       )}
                     </div>
@@ -720,28 +731,34 @@ export default function CreateContestPage() {
                               onChange(e.target.value || undefined)
                             }
                             disabled={
-                              !watchedRoundStartDate || !watchedRoundEndDate
+                              !watchedRoundSubmissionDeadline ||
+                              !watchedRoundEndDate
                             }
                             min={
-                              watchedRoundStartDate
-                                ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
-                                  )
-                                : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
+                              watchedRoundSubmissionDeadline
+                                ? addDays(watchedRoundSubmissionDeadline, 1)
+                                : watchedRoundStartDate
+                                  ? formatDateForInput(
+                                      new Date(watchedRoundStartDate),
+                                    )
+                                  : watchedStartDate
+                                    ? formatDateForInput(
+                                        new Date(watchedStartDate),
+                                      )
+                                    : todayString
                             }
                             max={
                               watchedRoundEndDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundEndDate)
+                                    new Date(watchedRoundEndDate),
                                   )
                                 : watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
-                                : undefined
+                                  ? formatDateForInput(new Date(watchedEndDate))
+                                  : undefined
                             }
                             className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              !watchedRoundStartDate || !watchedRoundEndDate
+                              !watchedRoundSubmissionDeadline ||
+                              !watchedRoundEndDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
                             }`}
@@ -751,6 +768,67 @@ export default function CreateContestPage() {
                       {errors.roundSendOriginalDeadline && (
                         <p className="text-red-500 text-sm mt-1">
                           {errors.roundSendOriginalDeadline.message}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                        {t.resultAnnouncementDate}
+                      </label>
+                      <Controller
+                        name="roundResultAnnounceDate"
+                        control={control}
+                        render={({ field: { onChange, value, ...field } }) => (
+                          <input
+                            type="date"
+                            {...field}
+                            value={value || ""}
+                            onKeyDown={(e) => e.preventDefault()}
+                            onChange={(e) =>
+                              onChange(e.target.value || undefined)
+                            }
+                            disabled={
+                              !watchedRoundSendOriginalDeadline ||
+                              !watchedRoundEndDate
+                            }
+                            min={
+                              watchedRoundEndDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundEndDate),
+                                  )
+                                : watchedRoundSendOriginalDeadline
+                                  ? formatDateForInput(
+                                      new Date(
+                                        watchedRoundSendOriginalDeadline,
+                                      ),
+                                    )
+                                  : watchedRoundStartDate
+                                    ? formatDateForInput(
+                                        new Date(watchedRoundStartDate),
+                                      )
+                                    : watchedStartDate
+                                      ? formatDateForInput(
+                                          new Date(watchedStartDate),
+                                        )
+                                      : todayString
+                            }
+                            max={
+                              watchedEndDate
+                                ? formatDateForInput(new Date(watchedEndDate))
+                                : undefined
+                            }
+                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                              !watchedRoundSendOriginalDeadline ||
+                              !watchedRoundEndDate
+                                ? "opacity-50 bg-gray-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                          />
+                        )}
+                      />
+                      {errors.roundResultAnnounceDate && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.roundResultAnnounceDate.message}
                         </p>
                       )}
                     </div>
@@ -778,7 +856,7 @@ export default function CreateContestPage() {
                               const value = parseInt(e.target.value) || 0;
                               field.onChange(value);
                             }}
-                            min="0"
+                            min="6"
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         )}
@@ -804,11 +882,11 @@ export default function CreateContestPage() {
                               const value = parseInt(e.target.value) || 0;
                               field.onChange(value);
                             }}
-                            disabled={watchedRound2Quantity === 0}
+                            disabled={watchedRound2Quantity < 6}
                             step={1}
                             className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                             placeholder={
-                              watchedRound2Quantity === 0
+                              watchedRound2Quantity < 6
                                 ? "0"
                                 : (() => {
                                     const divisors = [];
@@ -844,18 +922,18 @@ export default function CreateContestPage() {
                             {t.competitorsDivisionMessage
                               .replace(
                                 "{count}",
-                                watchedRound2Quantity.toString()
+                                watchedRound2Quantity.toString(),
                               )
                               .replace(
                                 "{tables}",
-                                watchedNumberOfTablesRound2.toString()
+                                watchedNumberOfTablesRound2.toString(),
                               )
                               .replace(
                                 "{perTable}",
                                 Math.floor(
                                   watchedRound2Quantity /
-                                    watchedNumberOfTablesRound2
-                                ).toString()
+                                    watchedNumberOfTablesRound2,
+                                ).toString(),
                               )}
                           </p>
                         )}

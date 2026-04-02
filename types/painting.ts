@@ -1,4 +1,3 @@
-import { Award } from "./award";
 import { Contest } from "./contest";
 import { PaintingStatus } from "./dashboard";
 
@@ -157,4 +156,14 @@ export interface PaintingEvaluation {
     assignedScheduleId: number;
   };
   examinerName: string;
+}
+
+export interface MintNFTRequest {
+  paintingId: string;
+  receiver: string;
+}
+
+export interface MintNFTResponse {
+  transaction_hash: string;
+  cid: string;
 }
