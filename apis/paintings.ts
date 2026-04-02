@@ -229,7 +229,7 @@ export function useMintNFT() {
   return useMutation({
     mutationFn: async (mintNFTRequest: MintNFTRequest) => {
       const response = await myAxios.post<MintNFTResponse>(
-        "/mint-nft",
+        "/nft/mint",
         mintNFTRequest,
       );
       return response.data;

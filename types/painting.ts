@@ -159,11 +159,11 @@ export interface PaintingEvaluation {
 }
 
 export interface MintNFTRequest {
-  imageUrl: string;
+  paintingId: string;
   receiver: string;
 }
 
 export interface MintNFTResponse {
-    transaction_hash: string;
-    cid: string;
+  transaction_hash: string;
+  cid: string;
 }

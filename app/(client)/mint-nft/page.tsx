@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { CompetitorSubmission, Painting } from "@/types/painting";
 import { AxiosError } from "axios";
-import { ChevronLeft, Copy, ExternalLink } from "lucide-react";
+import { CheckCircle2, ChevronLeft, Copy, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -122,7 +122,7 @@ export default function MintNFTPage() {
   }, [hasTouchedWallet, walletAddress]);
 
   const canSubmit =
-    Boolean(mintContext?.imageUrl) &&
+    Boolean(paintingId) &&
     Boolean(walletAddress.trim()) &&
     !walletError &&
     !isPending &&
@@ -140,7 +140,7 @@ export default function MintNFTPage() {
   const handleSubmit = () => {
     setHasTouchedWallet(true);
 
-    if (!mintContext?.imageUrl) {
+    if (!paintingId) {
       toast.error("Không tìm thấy dữ liệu tranh để mint NFT.");
       return;
     }
@@ -152,7 +152,7 @@ export default function MintNFTPage() {
     setSubmitError(null);
     mutate(
       {
-        imageUrl: mintContext.imageUrl,
+        paintingId,
         receiver: walletAddress.trim(),
       },
       {
@@ -298,47 +298,47 @@ export default function MintNFTPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card className="border border-[#e6e2da] bg-[#fffdf9] shadow-md">
-            <CardHeader className="pt-7 pb-4">
-              <CardTitle className="text-xl text-[#423137]">
-                Thông tin tác phẩm
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-1 pb-7">
-              <div className="relative h-72 w-full overflow-hidden rounded border border-[#e6e2da] bg-black/5">
-                <Image
-                  src={mintContext.imageUrl}
-                  alt={mintContext.paintingTitle || "Painting"}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="space-y-3 text-[#423137]">
-                <p className="leading-relaxed">
-                  <span className="font-semibold">Tác phẩm:</span>{" "}
-                  {mintContext.paintingTitle || "-"}
-                </p>
-                <p className="leading-relaxed">
-                  <span className="font-semibold">Cuộc thi:</span>{" "}
-                  {mintContext.contestTitle || "-"}
-                </p>
-                <p className="leading-relaxed">
-                  <span className="font-semibold">Giải thưởng:</span>{" "}
-                  {mintContext.awardName || "-"}
-                  {mintContext.awardRank
-                    ? ` (Hạng ${mintContext.awardRank})`
-                    : ""}
-                </p>
-                <p className="leading-relaxed">
-                  <span className="font-semibold">Chủ sở hữu:</span>{" "}
-                  {mintContext.receiverName || "-"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        {!mintResult ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <Card className="border border-[#e6e2da] bg-[#fffdf9] shadow-md">
+              <CardHeader className="pt-7 pb-4">
+                <CardTitle className="text-xl text-[#423137]">
+                  Thông tin tác phẩm
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-1 pb-7">
+                <div className="relative h-72 w-full overflow-hidden rounded border border-[#e6e2da] bg-black/5">
+                  <Image
+                    src={mintContext.imageUrl}
+                    alt={mintContext.paintingTitle || "Painting"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="space-y-3 text-[#423137]">
+                  <p className="leading-relaxed">
+                    <span className="font-semibold">Tác phẩm:</span>{" "}
+                    {mintContext.paintingTitle || "-"}
+                  </p>
+                  <p className="leading-relaxed">
+                    <span className="font-semibold">Cuộc thi:</span>{" "}
+                    {mintContext.contestTitle || "-"}
+                  </p>
+                  <p className="leading-relaxed">
+                    <span className="font-semibold">Giải thưởng:</span>{" "}
+                    {mintContext.awardName || "-"}
+                    {mintContext.awardRank
+                      ? ` (Hạng ${mintContext.awardRank})`
+                      : ""}
+                  </p>
+                  <p className="leading-relaxed">
+                    <span className="font-semibold">Chủ sở hữu:</span>{" "}
+                    {mintContext.receiverName || "-"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-          {!mintResult && (
             <Card className="border border-[#e6e2da] bg-[#fffdf9] shadow-md">
               <CardHeader className="pt-7 pb-4">
                 <CardTitle className="text-xl text-[#423137]">
@@ -407,87 +407,26 @@ export default function MintNFTPage() {
                 )}
               </CardContent>
             </Card>
-          )}
-        </div>
-
-        {mintResult && (
-          <Card className="mt-6 border border-[#dbe7d4] bg-[#f6fbf2] shadow-md">
-            <CardHeader className="pt-7 pb-4">
-              <CardTitle className="text-xl text-[#2d6a4f]">
-                Mint NFT thành công
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-1 pb-7 text-[#23453b]">
-              <div className="space-y-2">
-                <p className="text-sm font-semibold">Transaction Hash</p>
-                <div className="flex flex-wrap items-start gap-2 rounded border border-[#cde2c1] bg-white p-3 sm:p-4">
-                  <p className="break-all text-sm">
-                    {mintResult.transaction_hash}
-                  </p>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="cursor-pointer"
-                    onClick={() =>
-                      copyText(mintResult.transaction_hash, "transaction hash")
-                    }
-                  >
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <p className="text-sm font-semibold">CID</p>
-                <div className="flex flex-wrap items-start gap-2 rounded border border-[#cde2c1] bg-white p-3 sm:p-4">
-                  <a
-                    href={`https://${mintResult.cid}` || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="break-all text-sm text-[#2d6a4f] underline underline-offset-2"
-                  >
-                    {mintResult.cid}
-                  </a>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="cursor-pointer"
-                    onClick={() => copyText(`https://${mintResult.cid}`, "cid")}
-                  >
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </Button>
-                  <a
-                    href={`https://${mintResult.cid}` || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-[#2d6a4f] hover:underline"
-                  >
-                    Mở IPFS
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </a>
-                </div>
-              </div>
-
-              {mintResult.cid && (
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold">
-                    Xem trước nội dung IPFS
-                  </p>
-                  <div className="overflow-hidden rounded border border-[#cde2c1] bg-white">
-                    <iframe
-                      src={`https://${mintResult.cid}`}
-                      title="IPFS Preview"
-                      className="h-[360px] w-full"
-                    />
+          </div>
+        ) : (
+          <Card className="mt-2 overflow-hidden border border-[#dbe7d4] bg-[#f6fbf2] shadow-md">
+            <div className="border-b border-[#cde2c1] bg-linear-to-r from-[#edf8e7] to-[#f6fbf2] px-6 py-6 sm:px-8">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 rounded-full bg-[#2d6a4f]/10 p-2 text-[#2d6a4f]">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#2d6a4f]">
+                      Mint NFT thành công
+                    </h2>
+                    <p className="mt-1 text-sm text-[#2d6a4f]/80">
+                      Giao dịch đã được ghi nhận. Bạn có thể lưu lại hash và CID
+                      để tra cứu sau.
+                    </p>
                   </div>
                 </div>
-              )}
 
-              <div className="flex flex-wrap items-center gap-3">
                 <Button
                   type="button"
                   onClick={() => {
@@ -498,7 +437,80 @@ export default function MintNFTPage() {
                   Về hồ sơ
                 </Button>
               </div>
+            </div>
+
+            <CardContent className="grid gap-4 p-6 text-[#23453b] sm:grid-cols-2 sm:p-8">
+              <div className="space-y-2 rounded border border-[#cde2c1] bg-white p-4">
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#2d6a4f]/80">
+                  Transaction Hash
+                </p>
+                <p className="break-all text-sm">
+                  {mintResult.transaction_hash}
+                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="cursor-pointer px-0 text-[#2d6a4f] hover:bg-transparent"
+                  onClick={() =>
+                    copyText(mintResult.transaction_hash, "transaction hash")
+                  }
+                >
+                  <Copy className="h-4 w-4" />
+                  Sao chép hash
+                </Button>
+              </div>
+
+              <div className="space-y-2 rounded border border-[#cde2c1] bg-white p-4">
+                <p className="text-sm font-semibold uppercase tracking-wide text-[#2d6a4f]/80">
+                  CID
+                </p>
+                <a
+                  href={`https://${mintResult.cid}` || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block break-all text-sm text-[#2d6a4f] underline underline-offset-2"
+                >
+                  {mintResult.cid}
+                </a>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer px-0 text-[#2d6a4f] hover:bg-transparent"
+                    onClick={() => copyText(mintResult.cid, "cid")}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Sao chép CID
+                  </Button>
+                  <a
+                    href={`https://${mintResult.cid}` || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-sm text-[#2d6a4f] hover:underline"
+                  >
+                    Mở liên kết
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
             </CardContent>
+
+            {mintResult.cid && (
+              <div className="border-t border-[#cde2c1] px-6 pb-6 pt-4 sm:px-8 sm:pb-8">
+                <p className="mb-3 text-sm font-semibold text-[#2d6a4f]">
+                  Xem trước nội dung
+                </p>
+                <div className="overflow-hidden rounded border border-[#cde2c1] bg-white shadow-sm">
+                  <iframe
+                    src={`https://${mintResult.cid}`}
+                    title="IPFS Preview"
+                    className="h-[420px] w-full"
+                  />
+                </div>
+              </div>
+            )}
           </Card>
         )}
       </div>
