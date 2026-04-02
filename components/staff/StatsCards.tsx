@@ -5,7 +5,7 @@ export interface StatCard {
   value: string | number;
   subtitle?: string;
   icon: React.ReactNode;
-  variant: "info" | "warning" | "success" | "primary";
+  variant: "info" | "warning" | "success" | "primary" | "destructive" | "purple";
 }
 
 interface StatsCardsProps {
@@ -23,6 +23,10 @@ export function StatsCards({ stats }: StatsCardsProps) {
         return "staff-stat-success";
       case "primary":
         return "staff-stat-primary";
+      case "destructive":
+        return "staff-stat-destructive";
+      case "purple":
+        return "staff-stat-purple";
       default:
         return "staff-stat-info";
     }

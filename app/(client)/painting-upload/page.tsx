@@ -345,7 +345,7 @@ function PaintingUpload() {
                       Đang gửi bài thi...
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 cursor-pointer">
                       <IconUpload className="h-5 w-5" />
                       Gửi bài thi
                     </div>

@@ -205,19 +205,11 @@ const NewsCardSmall = ({
 
 // --- Component Chính Của Trang ---
 export default function Page() {
-  const navItems = ["Trang chủ", "Cuộc thi", "Bài viết", "Chiến dịch", "Triển lãm"];
-
-  const sectionIds = ["hero", "contest", "news", "campaigns"];
 
   const router = useRouter();
 
   // Scroll to top state and function
   const [showScrollTop, setShowScrollTop] = useState(false);
-
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
 
   useEffect(() => {
     const handleScroll = () => setShowScrollTop(window.scrollY > 300);
@@ -225,76 +217,15 @@ export default function Page() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Active section state for header highlighting
-  const [activeSection, setActiveSection] = useState("hero");
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY + 200; // offset to detect section earlier
-      const sections = sectionIds.map((id) => ({
-        id,
-        offset: document.getElementById(id)?.offsetTop || 0,
-      }));
-      const current = sections
-        .reverse()
-        .find((section) => scrollY >= section.offset);
-      setActiveSection(current?.id || "hero");
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    // Set initial active section
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Auth hooks
   const { isAuthenticated, user } = useAuth();
-  const { data: userData } = useMeQuery();
-  const logout = useAuthStore((state) => state.logout);
   useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
+    if (!isAuthenticated) return;
     // Redirect based on user role
     if (user?.role === "ADMIN" || user?.role === "STAFF") {
       router.replace("/dashboard");
-      return;
     }
   }, [isAuthenticated, user, router]);
-  // Use userData from API if available, fallback to store user
-  const displayUser = userData || user;
-
-  // Dropdown state
-  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const userDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Handle click outside dropdowns
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userDropdownRef.current &&
-        !userDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsUserDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // Helper functions for user display
-  const getDisplayName = () => {
-    return displayUser?.fullName || "User";
-  };
-
-  const getAvatarInitial = () => getDisplayName().charAt(0).toUpperCase();
-
-  const handleLogout = () => {
-    logout();
-    router.push("/auth");
-  };
 
   // Fetch active contest for contest info section
   const { data: activeContests, isLoading: isLoadingContest } =
@@ -370,184 +301,7 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro)">
-      {/* --- Header --- */}
-      <div className="fixed top-2 sm:top-5 left-2 sm:left-4 right-2 sm:right-4 lg:left-0 lg:right-0 z-50 flex justify-center">
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={50}
-          backgroundOpacity={0.58}
-          blur={5}
-          saturation={3}
-          brightness={54}
-          opacity={1}
-          displace={0.5}
-          distortionScale={180}
-          redOffset={0}
-          greenOffset={10}
-          blueOffset={20}
-          className="max-w-7xl w-full overflow-visible"
-          style={{ justifyContent: "flex-start" }}
-        >
-          <div className="w-full cursor-pointer px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
-            <img
-              src="/images/newlogo.png"
-              alt="Artchain Logo"
-              className="w-10 h-10 sm:w-12 sm:h-12 object-contain shrink-0"
-            />
-            <nav className="hidden lg:flex gap-9">
-              {navItems.map((item, index) => (
-                <button
-                  key={item}
-                  onClick={() => {
-                    if (item === "Triển lãm") {
-                      router.push("/gallery");
-                    } else {
-                      scrollToSection(sectionIds[index]);
-                    }
-                  }}
-                  className={`relative cursor-pointer text-sm font-medium whitespace-nowrap text-black hover:text-black pb-1 transition-all duration-300 ease-in-out ${
-                    activeSection === sectionIds[index]
-                      ? "transform -translate-y-0.5"
-                      : ""
-                  }`}
-                >
-                  {item}
-                  <span
-                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-black transition-transform duration-300 ease-in-out origin-center ${
-                      activeSection === sectionIds[index]
-                        ? "scale-x-100"
-                        : "scale-x-0"
-                    }`}
-                  ></span>
-                </button>
-              ))}
-            </nav>
 
-            {/* Mobile menu button */}
-            <button className="lg:hidden p-2 text-black hover:text-black">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-
-            {isAuthenticated ? (
-              <div className="relative" ref={userDropdownRef}>
-                <button
-                  onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                  className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-                >
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
-                      displayUser?.role === "GUARDIAN" ? "bg-green-600" : "bg-red-600"
-                    }`}
-                  >
-                    {getAvatarInitial()}
-                  </div>
-                  <span className="max-w-32 truncate">{getDisplayName()}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform duration-200 ${
-                      isUserDropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                <AnimatePresence>
-                  {isUserDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 25,
-                      }}
-                      className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-60"
-                    >
-                      <div className="p-4 border-b border-gray-100">
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
-                                displayUser?.role === "GUARDIAN" ? "bg-green-600" : "bg-red-600"
-                              }`}
-                            >
-                              {getAvatarInitial()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                {getDisplayName()}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {displayUser?.role === "GUARDIAN"
-                                  ? "Người đại diện"
-                                  : "Thí sinh"}
-                              </p>
-                              <p className="text-xs text-gray-400 truncate">
-                                {displayUser?.email || "email@example.com"}
-                              </p>
-                            </div>
-                          </div>
-                      </div>
-
-                      <div className="py-2">
-                        <Link
-                          href="/me"
-                          onClick={() => setIsUserDropdownOpen(false)}
-                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                        >
-                          <User className="h-4 w-4" />
-                          <span>Hồ sơ cá nhân</span>
-                        </Link>
-
-                        <button
-                          onClick={() => {
-                            setIsUserDropdownOpen(false);
-                          }}
-                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                        >
-                          <Settings className="h-4 w-4" />
-                          <span>Cài đặt</span>
-                        </button>
-
-                        <div className="border-t border-gray-100 my-1"></div>
-
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setIsUserDropdownOpen(false);
-                          }}
-                          className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          <span>Đăng xuất</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <button
-                onClick={() => router.push("/auth")}
-                className="hidden cursor-pointer rounded-sm sm:block bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] transition-colors whitespace-nowrap"
-              >
-                Tham gia ngay
-              </button>
-            )}
-          </div>
-        </GlassSurface>
-      </div>
 
       <main>
         {/* --- Hero Section --- */}

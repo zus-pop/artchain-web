@@ -14,6 +14,8 @@ import { ArrowLeft, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import WonPaintings from "./WonPaintings";
+import { useGetWonPaintings } from "@/apis/auction";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -28,7 +30,7 @@ export default function GuardianProfileScreen({
   isLoadingChildren,
 }: GuardianProfileScreenProps) {
   const [activeTab, setActiveTab] = useState<
-    "children" | "competitions" | "progress" | "about"
+    "children" | "orders" | "competitions" | "progress" | "about"
   >("children");
   const [selectedChild, setSelectedChild] = useState<GuardianChild | null>(
     null,
@@ -921,6 +923,21 @@ export default function GuardianProfileScreen({
                 Thí sinh
               </button>
 
+              {/* Tab Đơn hàng */}
+              <button
+                onClick={() => setActiveTab("orders")}
+                className={`
+                  ${
+                    activeTab === "orders"
+                      ? "border-black text-black"
+                      : "border-transparent text-black hover:border-black hover:text-black"
+                  }
+                  whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
+                `}
+              >
+                Đơn hàng
+              </button>
+
               {/* Tab Thông tin */}
               <button
                 onClick={() => setActiveTab("about")}
@@ -1021,6 +1038,11 @@ export default function GuardianProfileScreen({
             </div>
           )}
 
+          {/* Nội dung tab "Đơn hàng" */}
+          {activeTab === "orders" && (
+            <WonPaintings userId={authUser?.userId} />
+          )}
+
           {/* Nội dung tab "Thông tin" */}
           {activeTab === "about" && (
             <div className="space-y-4">
@@ -1045,6 +1067,11 @@ export default function GuardianProfileScreen({
                 </p>
               </div>
             </div>
+          )}
+
+          {/* Nội dung tab "Đơn hàng" */}
+          {activeTab === "orders" && (
+            <WonPaintings userId={authUser?.userId} />
           )}
         </div>
       </div>
