@@ -4,29 +4,28 @@
 
 import { usePathname } from "next/navigation";
 import Header from "./Header";
+import AuctionHeader from "./AuctionHeader";
 
 // Định nghĩa các đường dẫn bạn muốn ẩn header
-const HIDDEN_PATHS = ["/","/auth"]; // Trang chủ
-
-// Định nghĩa các đường dẫn và giá trị defaultTab tương ứng
-// contest: 1, gallery: 2, prizes: 3
-// const ACTIVE_PATHS_TABS: { [key: string]: number } = {
-//   "/contests": 1,
-//   "/gallery": 2,
-//   "/prizes": 3,
-// };
+const HIDDEN_PATHS = ["/auth"]; 
 
 export function HeaderWrapper() {
   const pathname = usePathname();
-  const isHidden = HIDDEN_PATHS.includes(pathname);
-  // const defaultTab = ACTIVE_PATHS_TABS[pathname];
-  // const isActive = defaultTab !== undefined;
+  const isHidden =
+    HIDDEN_PATHS.includes(pathname) || pathname.match(/\/exhibition\/\d+\/3d/);
 
   if (isHidden) {
     return null;
   }
-  // if (isActive) {
-  //   return <ArtistNavigation defaultTab={defaultTab} />;
-  // }
+
+  // Nếu là trang đấu giá, chúc mừng, hoặc ví
+  if (
+    pathname.startsWith("/auction") || 
+    pathname.startsWith("/congratulation") ||
+    pathname.startsWith("/me/wallet")
+  ) {
+    return <AuctionHeader />;
+  }
+
   return <Header />;
 }

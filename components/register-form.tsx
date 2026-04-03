@@ -15,6 +15,14 @@ import { IconSchool, IconUsers } from "@tabler/icons-react";
 import Checkbox from "./Checkbox";
 import Image from "next/image";
 import { Eye, EyeOff } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // Schema for Guardian (Người đại diện)
 const guardianSchema = z
@@ -90,6 +98,8 @@ export function RegisterForm({
   const [showForm, setShowForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRegisterSuccessOpen, setIsRegisterSuccessOpen] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
   const { wards } = useWards();
 
   // Guardian form
@@ -132,7 +142,19 @@ export function RegisterForm({
     },
   });
 
-  const { mutate, isPending } = useRegisterMutation(onToggle);
+  const { mutate, isPending } = useRegisterMutation((payload) => {
+    setRegisteredEmail(payload.email);
+    setIsRegisterSuccessOpen(true);
+  });
+
+  const handleCloseSuccessDialog = () => {
+    setIsRegisterSuccessOpen(false);
+  };
+
+  const handleConfirmSuccess = () => {
+    setIsRegisterSuccessOpen(false);
+    router.push("/");
+  };
 
   // Watch birthday field for dynamic grade options
   const watchedBirthday = competitorWatch("birthday");
@@ -340,15 +362,51 @@ export function RegisterForm({
 
   // Form screen (giữ nguyên)
   return (
-    <div
-      className={cn(
-        "h-screen overflow-hidden grid grid-cols-1 md:grid-cols-2",
-        className
-      )}
-      {...props}
-    >
-      {/* CỘT BÊN TRÁI (Biểu mẫu) */}
-      <div className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-hidden min-h-screen">
+    <>
+      <Dialog
+        open={isRegisterSuccessOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseSuccessDialog();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[460px] border-none shadow-2xl p-0 overflow-hidden bg-[#fffdf9]">
+          <div className="h-2 w-full bg-orange-500" />
+          <div className="p-6">
+            <DialogHeader className="space-y-3">
+              <DialogTitle className="text-xl font-black text-[#1a1a1a] uppercase tracking-tight">
+                Đăng ký thành công
+              </DialogTitle>
+              <DialogDescription className="text-base text-gray-600 font-medium leading-relaxed">
+                Vui lòng kiểm tra email
+                <span className="font-bold text-[#1a1a1a]"> {registeredEmail} </span>
+                để kích hoạt tài khoản trước khi đăng nhập.
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="mt-8">
+              <button
+                type="button"
+                onClick={handleConfirmSuccess}
+                className="w-full font-black uppercase tracking-widest text-xs h-11 px-4 bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-gray-200/50 cursor-pointer"
+              >
+                Xác nhận
+              </button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div
+        className={cn(
+          "h-screen overflow-hidden grid grid-cols-1 md:grid-cols-2",
+          className
+        )}
+        {...props}
+      >
+        {/* CỘT BÊN TRÁI (Biểu mẫu) */}
+        <div className="flex flex-col justify-center bg-[#EAE6E0] p-8 sm:p-12 md:p-16 overflow-y-hidden min-h-screen">
         <div className="w-full max-w-sm mx-auto">
           {/* Back button */}
           <button
@@ -915,17 +973,18 @@ export function RegisterForm({
             </div>
           )}
         </div>
-      </div>
+        </div>
 
-      {/* CỘT BÊN PHẢI (Hình ảnh) */}
-      <div className="hidden md:block relative w-full h-full overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1548811579-017cf2a4268b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%D&auto=format&fit=crop&q=80&w=1289"
-          alt="Statue"
-          fill
-          className="object-cover"
-        />
+        {/* CỘT BÊN PHẢI (Hình ảnh) */}
+        <div className="hidden md:block relative w-full h-full overflow-hidden">
+          <Image
+            src="https://images.unsplash.com/photo-1548811579-017cf2a4268b?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%D&auto=format&fit=crop&q=80&w=1289"
+            alt="Statue"
+            fill
+            className="object-cover"
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

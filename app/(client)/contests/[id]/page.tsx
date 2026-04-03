@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { VotedPaining } from "@/types/vote";
+import { Button } from "../../../../components/ui/button";
 
 type VotedPainting = VotedPaining["paintings"][0];
 
@@ -208,8 +209,6 @@ export default function ContestDetailPage() {
     );
   }
 
-  
-
   return (
     <div className="min-h-screen bg-[#EAE6E0] pt-16 sm:pt-20 px-4 sm:px-6 lg:px-8 text-black">
       <div className="max-w-7xl mx-auto py-6 sm:py-8">
@@ -325,38 +324,43 @@ export default function ContestDetailPage() {
             </div>
 
             <div className="flex gap-4">
-              {/* Nút Tải quy định thi - chỉ hiển thị khi ACTIVE */}
-              {contest.status === "ACTIVE" && (
+              {
                 <button
                   onClick={() => setShowEmbeddedPdf((s) => !s)}
-                  className="flex items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#b8aaaa] text-black font-medium text-base hover:bg-[#FF6E1A]/10 hover:border-[#FF6E1A] transition-colors duration-200 shadow-sm"
+                  className="flex cursor-pointer items-center justify-center flex-1 px-4 py-2 bg-transparent border border-[#b8aaaa] text-black font-medium text-base hover:bg-[#FF6E1A]/10 hover:border-[#FF6E1A] transition-colors duration-200 shadow-sm"
                 >
                   {showEmbeddedPdf ? "Ẩn xem quy định thi" : "Xem quy định thi"}
                 </button>
-              )}
+              }
 
-              {/* Nút Tham gia cuộc thi - disable if competitor has uploaded */}
               {user?.role === "COMPETITOR" ? (
-                <button
-                  disabled={hasUploaded}
-                  onClick={() => {
-                    if (!hasUploaded) {
-                      window.location.href = `/painting-upload?contestId=${
-                        contest.contestId
-                      }&roundId=${
-                        contest.rounds.find((r) => r.name === "ROUND_1")
-                          ?.roundId
-                      }&competitorId=${user.userId}`;
-                    }
-                  }}
-                  className={`flex-1 text-white text-center py-3 px-6 font-medium transition-all duration-200 shadow-sm ${
-                    hasUploaded
-                      ? "bg-gray-400 cursor-not-allowed opacity-60"
-                      : "bg-[#FF6E1A] hover:bg-orange-400"
-                  }`}
-                >
-                  {hasUploaded ? "Đã tham gia" : "Tham gia cuộc thi"}
-                </button>
+                hasUploaded ? (
+                  <span className="flex-1 text-white text-center py-3 px-6 font-medium transition-all duration-200 shadow-sm bg-gray-400 cursor-not-allowed opacity-60">
+                    Đã tham gia
+                  </span>
+                ) : (
+                  <Link
+                    className={`flex-1 cursor-pointer rounded-none bg-[#FF6E1A] text-white text-center py-4 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm ${
+                      contest.status !== "ACTIVE"
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }`}
+                    aria-disabled={contest.status !== "ACTIVE"}
+                    tabIndex={contest.status !== "ACTIVE" ? -1 : undefined}
+                    href={{
+                      pathname: "/painting-upload",
+                      query: {
+                        contestId: contest.contestId,
+                        roundId: contest.rounds.find(
+                          (r) => r.name === "ROUND_1"
+                        )?.roundId,
+                        competitorId: user.userId,
+                      },
+                    }}
+                  >
+                    Tham gia cuộc thi
+                  </Link>
+                )
               ) : (
                 <Link
                   href={
@@ -372,7 +376,13 @@ export default function ContestDetailPage() {
                         }
                       : "/auth"
                   }
-                  className="flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm"
+                  className={`flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm ${
+                    contest.status !== "ACTIVE"
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }`}
+                  aria-disabled={contest.status !== "ACTIVE"}
+                  tabIndex={contest.status !== "ACTIVE" ? -1 : undefined}
                 >
                   Tham gia cuộc thi
                 </Link>
@@ -455,7 +465,6 @@ export default function ContestDetailPage() {
               Chưa có giải thưởng được công bố chính thức
             </p>
           )}
-
         </motion.div>
 
         {/* Timeline Section */}
@@ -596,47 +605,62 @@ export default function ContestDetailPage() {
               <label className="block text-base font-semibold text-black mb-3">
                 Chọn giải thưởng:
               </label>
-              {votedAwardData?.data?.awards && votedAwardData.data.awards.length > 0 ? (
+              {votedAwardData?.data?.awards &&
+              votedAwardData.data.awards.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {votedAwardData.data.awards.map((award: { awardId: string; name: string; description: string; rank: number; prize: string; quantity: number; totalVotes: number }) => (
-                    <button
-                      key={award.awardId}
-                      onClick={() => setSelectedAwardId(String(award.awardId))}
-                      className={`p-4 cursor-pointer sm:p-5 border-2 text-left transition-all duration-200 ${
-                        selectedAwardId === String(award.awardId)
-                          ? "border-[#FF6E1A] bg-[#FF6E1A]/10"
-                          : "bg-[#EAE6E0] border-[#d7cfc9] hover:shadow-sm"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-black text-base sm:text-lg">
-                          {award.name}
-                        </h4>
-                        <Trophy
-                          className={`w-5 h-5 ${
-                            selectedAwardId === String(award.awardId)
-                              ? "text-[#FF6E1A]"
-                              : "text-gray-400"
-                          }`}
-                        />
-                      </div>
-                      <p className="text-sm text-gray-700 mb-2">
-                        {award.description}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-gray-600">
-                        {award.prize ? (
-                          <span>Giải: {formatVND(award.prize)}</span>
-                        ) : (
-                          <span>chưa có giải thưởng được công bố chính thức</span>
-                        )}
-                      </div>
-                      <div className="mt-2 text-xs text-gray-500">
-                        {typeof award.totalVotes !== 'undefined' && (
-                          <span>{award.totalVotes} bình chọn</span>
-                        )}
-                      </div>
-                    </button>
-                  ))}
+                  {votedAwardData.data.awards.map(
+                    (award: {
+                      awardId: string;
+                      name: string;
+                      description: string;
+                      rank: number;
+                      prize: string;
+                      quantity: number;
+                      totalVotes: number;
+                    }) => (
+                      <button
+                        key={award.awardId}
+                        onClick={() =>
+                          setSelectedAwardId(String(award.awardId))
+                        }
+                        className={`p-4 cursor-pointer sm:p-5 border-2 text-left transition-all duration-200 ${
+                          selectedAwardId === String(award.awardId)
+                            ? "border-[#FF6E1A] bg-[#FF6E1A]/10"
+                            : "bg-[#EAE6E0] border-[#d7cfc9] hover:shadow-sm"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-black text-base sm:text-lg">
+                            {award.name}
+                          </h4>
+                          <Trophy
+                            className={`w-5 h-5 ${
+                              selectedAwardId === String(award.awardId)
+                                ? "text-[#FF6E1A]"
+                                : "text-gray-400"
+                            }`}
+                          />
+                        </div>
+                        <p className="text-sm text-gray-700 mb-2">
+                          {award.description}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-gray-600">
+                          {award.prize ? (
+                            <span>Giải: {formatVND(award.prize)}</span>
+                          ) : (
+                            <span>
+                              chưa có giải thưởng được công bố chính thức
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-2 text-xs text-gray-500">
+                          {typeof award.totalVotes !== "undefined" && (
+                            <span>{award.totalVotes} bình chọn</span>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  )}
                 </div>
               ) : (
                 <p className="text-center text-gray-600 py-8">
@@ -801,7 +825,9 @@ export default function ContestDetailPage() {
                   disabled={submitVoteMutation.isPending}
                   className="flex-1 px-4 py-2 bg-[#FF6E1A] text-white font-medium hover:bg-[#FF833B] transition-colors disabled:opacity-50"
                 >
-                  {submitVoteMutation.isPending ? "Đang bình chọn..." : "Xác nhận"}
+                  {submitVoteMutation.isPending
+                    ? "Đang bình chọn..."
+                    : "Xác nhận"}
                 </button>
               </div>
             </motion.div>

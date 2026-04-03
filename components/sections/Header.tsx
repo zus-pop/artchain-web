@@ -10,8 +10,9 @@ import {
   ChevronDown,
   Globe,
   LogOut,
-  Settings,
   User,
+  Archive,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import GlassSurface from "@/components/GlassSurface";
@@ -90,6 +91,18 @@ const Header: React.FC<ArtistNavigationProps> = ({
     const name = getDisplayName();
     return name.charAt(0).toUpperCase();
   };
+
+  const getWalletBalance = () => {
+    const rawBalance =
+      (displayUser as any)?.walletBalance ??
+      (displayUser as any)?.balance ??
+      (displayUser as any)?.wallet?.balance ??
+      0;
+    const parsed = typeof rawBalance === "number" ? rawBalance : Number(rawBalance);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
+
+  const walletBalanceText = `${new Intl.NumberFormat("vi-VN").format(getWalletBalance())}đ`;
 
   const handleLogout = () => {
     logout();
@@ -274,13 +287,20 @@ const Header: React.FC<ArtistNavigationProps> = ({
               </svg>
             </button>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/auction"
+                className="text-sm font-medium text-black hover:text-[#FF6E1A] transition-colors whitespace-nowrap"
+              >
+                Switch to Auction
+              </Link>
+
               {/* Keep existing right-side actions (auth + language) */}
               {isAuthenticated ? (
                 <div className="relative" ref={userDropdownRef}>
                   <button
                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                    className="flex items-center space-x-2 rounded-lg px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                   >
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
@@ -291,7 +311,11 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     >
                       {getAvatarInitial()}
                     </div>
-                    <span className="max-w-32 truncate">{getDisplayName()}</span>
+                    {/* <span className="max-w-32 truncate">{getDisplayName()}</span> */}
+                    {/* <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      <Wallet className="h-3 w-3" />
+                      {walletBalanceText}
+                    </span> */}
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
                         isUserDropdownOpen ? "rotate-180" : ""
@@ -349,24 +373,32 @@ const Header: React.FC<ArtistNavigationProps> = ({
                             <span>Hồ sơ cá nhân</span>
                           </Link>
 
-                          <button
-                            onClick={() => {
-                              setIsUserDropdownOpen(false);
-                            }}
+                          {/* <Link
+                            href="/me/orders"
+                            onClick={() => setIsUserDropdownOpen(false)}
                             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                           >
-                            <Settings className="h-4 w-4" />
-                            <span>Cài đặt</span>
-                          </button>
+                            <Archive className="h-4 w-4" />
+                            <span>Đơn hàng</span>
+                          </Link>
+
+                          <Link
+                            href="/me/wallet"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                          >
+                            <Wallet className="h-4 w-4" />
+                            <span>Ví của tôi</span>
+                          </Link> */}
 
                           <div className="border-t border-gray-100 my-1"></div>
-
+ 
                           <button
                             onClick={() => {
                               handleLogout();
                               setIsUserDropdownOpen(false);
                             }}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
+                            className="flex cursor-pointer w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
                           >
                             <LogOut className="h-4 w-4" />
                             <span>Đăng xuất</span>

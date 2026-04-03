@@ -5,13 +5,14 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { ExhibitionStatus } from "@/types/exhibition";
-import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
+import { formatDate } from "@/lib/utils";
+import { useLanguageStore } from "@/store/language-store";
+import { ExhibitionStatus } from "@/types/exhibition";
 import {
   IconArrowLeft,
   IconCalendar,
-  IconClock,
+  IconCube,
   IconEdit,
   IconEye,
   IconPalette,
@@ -19,12 +20,10 @@ import {
   IconPlus,
   IconTrash,
   IconTrophy,
-  IconUsers,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
 import { use } from "react";
-import { formatDate } from "../../../../../lib/utils";
 
 export default function ExhibitionDetailPage({
   params,
@@ -219,22 +218,29 @@ export default function ExhibitionDetailPage({
                         </p>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <Link
                           href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/edit`}
-                          className="staff-btn-secondary flex items-center gap-2"
+                          className="staff-btn-secondary flex items-center justify-center gap-2"
                         >
                           <IconEdit className="h-4 w-4" />
                           {t.editExhibition}
                         </Link>
                         <button
                           onClick={handleDeleteExhibition}
-                          className="staff-btn-danger flex items-center gap-2"
+                          className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
                           disabled={deleteExhibitionMutation.isPending}
                         >
                           <IconTrash className="h-4 w-4" />
                           {t.deleteExhibition}
                         </button>
+                        <Link
+                          href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/3d`}
+                          className="col-span-2 bg-linear-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                        >
+                          <IconCube className="h-5 w-5" />
+                          {t.view3DExhibition}
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -294,7 +300,7 @@ export default function ExhibitionDetailPage({
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Main Content */}
-                  <div className="lg:col-span-2 space-y-6">
+                  <div className="lg:col-span-3 space-y-6">
                     {/* Exhibition Paintings Gallery */}
                     <div className="staff-card p-3">
                       <div className="flex items-center justify-between mb-6">
@@ -312,13 +318,6 @@ export default function ExhibitionDetailPage({
                             </p>
                           </div>
                         </div>
-                        {/* <Link
-                          href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/paintings`}
-                          className="staff-btn-primary flex items-center gap-2"
-                        >
-                          <IconPlus className="h-4 w-4" />
-                          {t.managePaintings}
-                        </Link> */}
                       </div>
 
                       {exhibition.exhibitionPaintings &&
@@ -420,9 +419,8 @@ export default function ExhibitionDetailPage({
                     </div>
                   </div>
 
-                  {/* Sidebar */}
-                  <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-                    {/* Exhibition Timeline */}
+                  {/* Exhibition Timeline */}
+                  {/* <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <div className="staff-card p-6">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-blue-100">
@@ -493,7 +491,6 @@ export default function ExhibitionDetailPage({
                       </div>
                     </div>
 
-                    {/* Quick Actions */}
                     <div className="staff-card p-6">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-green-100">
@@ -532,7 +529,6 @@ export default function ExhibitionDetailPage({
                       </div>
                     </div>
 
-                    {/* Exhibition Status */}
                     <div className="staff-card p-6">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-orange-100">
@@ -581,7 +577,7 @@ export default function ExhibitionDetailPage({
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

@@ -30,14 +30,8 @@ const childFormSchema = z
         /^[a-zA-Z0-9_]+$/,
         "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới"
       ),
-    password: z
-      .string()
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Mật khẩu phải chứa ít nhất 1 chữ thường, 1 chữ hoa và 1 số"
-      ),
-    confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
+    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    confirmPassword: z.string().min(6, "Vui lòng xác nhận mật khẩu"),
     fullName: z
       .string()
       .min(2, "Họ và tên phải có ít nhất 2 ký tự")
@@ -46,7 +40,7 @@ const childFormSchema = z
         /^[a-zA-ZÀ-ỹ\s]+$/,
         "Họ và tên chỉ được chứa chữ cái và khoảng trắng"
       ),
-    email: z.string().email("Địa chỉ email không hợp lệ"),
+    email: z.email("Địa chỉ email không hợp lệ"),
     birthday: z.string().min(1, "Vui lòng chọn ngày sinh"),
     schoolName: z.string().min(1, "Vui lòng nhập tên trường"),
     ward: z.string().min(1, "Vui lòng chọn phường/xã"),
@@ -95,7 +89,6 @@ export function ChildForm({
     control,
     handleSubmit,
     formState: { errors, isValid },
-    reset,
     watch,
     setValue,
   } = useForm<ChildFormData>({

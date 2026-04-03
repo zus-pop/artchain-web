@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  cacheMaxMemorySize: 256 * 1024 * 1024, // 256 MB,
   images: {
     remotePatterns: [
       {

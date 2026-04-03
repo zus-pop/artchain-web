@@ -301,6 +301,22 @@
     @apply bg-linear-to-br from-blue-500 to-indigo-500 text-white p-3 shadow-md;
   }
 
+  .staff-stat-destructive {
+    @apply bg-linear-to-br from-red-50 to-rose-50 border-2 border-red-100;
+  }
+
+  .staff-stat-destructive .stat-icon {
+    @apply bg-linear-to-br from-red-500 to-rose-500 text-white p-3 shadow-md;
+  }
+
+  .staff-stat-purple {
+    @apply bg-linear-to-br from-purple-50 to-indigo-50 border-2 border-purple-100;
+  }
+
+  .staff-stat-purple .stat-icon {
+    @apply bg-linear-to-br from-purple-500 to-indigo-500 text-white p-3 shadow-md;
+  }
+
   .staff-btn-primary {
     @apply bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-6 py-3 font-bold hover:from-[#c9443f] hover:to-[#d96d63] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
   }
@@ -619,4 +635,8 @@ input[type="password"]::-webkit-reveal-password-button {
 
 input[type="password"]::-ms-reveal {
   display: none;
+}
+
+button {
+  cursor: pointer;
 }
