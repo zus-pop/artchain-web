@@ -225,6 +225,24 @@ export function useGetPaintingEvaluations(paintingId: string) {
   });
 }
 
+export function useGetPaintingById(paintingId: string) {
+  return useQuery({
+    queryKey: ["painting", paintingId],
+    queryFn: async () => {
+      if (!paintingId) return null;
+      try {
+        const response = await myAxios.get(`/paintings/${paintingId}`);
+        return response.data as Painting;
+      } catch (error) {
+        console.error("Error fetching painting detail:", error);
+        throw error;
+      }
+    },
+    enabled: !!paintingId,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useMintNFT() {
   return useMutation({
     mutationFn: async (mintNFTRequest: MintNFTRequest) => {

@@ -1,5 +1,5 @@
 import { Contest } from "./contest";
-import { PaintingStatus } from "./dashboard";
+import { PaintingStatus, User } from "./dashboard";
 
 export interface PaintingUploadRequest {
   title: string;
@@ -27,6 +27,14 @@ export interface Painting {
   status: string;
   createdAt: string;
   updatedAt: string;
+  competitor: {
+    user: User;
+  };
+  award?: {
+    awardId: string;
+    name: string;
+  };
+  nft?: NFT;
 }
 
 export interface TopPainting {
@@ -164,6 +172,13 @@ export interface MintNFTRequest {
 }
 
 export interface MintNFTResponse {
-  transaction_hash: string;
+  transactionHash: string;
   cid: string;
+  tokenId: string;
+}
+
+export interface NFT {
+  transactionHash: string;
+  cid: string;
+  tokenId: string;
 }
