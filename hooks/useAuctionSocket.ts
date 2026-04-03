@@ -25,6 +25,7 @@ export function useAuctionSocket({
   const [participantCount, setParticipantCount] = useState(0);
   const { accessToken } = useAuthStore();
 
+  // Stable callbacks via ref to avoid re-subscribing on every render
   const onBidPlacedRef = useRef(onBidPlaced);
   const onStatusChangedRef = useRef(onStatusChanged);
   useEffect(() => { onBidPlacedRef.current = onBidPlaced; }, [onBidPlaced]);
@@ -33,76 +34,56 @@ export function useAuctionSocket({
   useEffect(() => {
     if (!auctionId) return;
 
-    // Using the official namespace 'auction' from backend docs
-    const socket = io(`${WS_URL}/auction`, {
-      auth: { 
-        token: accessToken,
-        Authorization: `Bearer ${accessToken}` 
-      },
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
+    const socket = io(WS_URL, {
+      auth: { token: accessToken },
+      transports: ["websocket"],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
     });
 
     socketRef.current = socket;
 
-
-
     socket.on("connect", () => {
-      console.log("WebSocket [CONNECTED] ID:", socket.id);
       setIsConnected(true);
-      
-      const idStr = String(auctionId);
-      const idNum = Number(auctionId);
-      
-      // Official event from docs: joinAuction
-      socket.emit("joinAuction", { auctionId: idStr });
-      socket.emit("joinAuction", { auctionId: idNum });
+      console.log("🔌 Socket connected:", socket.id);
+      // join the auction room
+      socket.emit("join-auction", { auctionId: String(auctionId) });
     });
 
     socket.on("disconnect", (reason) => {
-      console.log("WebSocket [DISCONNECTED] Reason:", reason);
+      console.log("🔌 Socket disconnected:", reason);
       setIsConnected(false);
     });
 
-    socket.on("connect_error", (error) => {
-      console.error("WebSocket [CONNECTION ERROR]:", error);
+    // Real-time bid event from server
+    socket.on("bid-placed", (data: BidPlacedEvent) => {
+      console.log("🎨 New bid received (bid-placed):", data);
+      onBidPlacedRef.current?.(data);
     });
 
-    // Listen for official backend events with flexible mapping
-    const handleNewBid = (rawEvent: any) => {
-      console.log("WebSocket [newBid]:", rawEvent);
-      // Standardize the event structure based on live logs
-      const event: BidPlacedEvent = {
-        bidId: rawEvent.bidId || rawEvent.id || `ws-${Date.now()}`,
-        auctionId: String(rawEvent.auctionId || ""),
-        auctionPaintingId: String(rawEvent.auctionPaintingId || ""),
-        userId: rawEvent.bidderId || rawEvent.userId || rawEvent.user_id || rawEvent.user?.userId || rawEvent.user?.id || "",
-        userName: rawEvent.userName || rawEvent.user?.fullName || rawEvent.user?.name || "",
-        amount: Number(rawEvent.currentBid || rawEvent.bidAmount || rawEvent.amount || 0),
-        createdAt: rawEvent.createdAt || new Date().toISOString(),
-      };
+    socket.on("bidPlaced", (data: BidPlacedEvent) => {
+      console.log("🎨 New bid received (bidPlaced):", data);
+      onBidPlacedRef.current?.(data);
+    });
 
-      if (event.amount > 0) {
-        onBidPlacedRef.current?.(event);
-      }
-    };
-
-    socket.on("newBid", handleNewBid);
-    socket.on("bidPlaced", handleNewBid);
-    socket.on("auctionStatusChanged", (data: AuctionStatusChangedEvent) => {
-      console.log("WebSocket [auctionStatusChanged]:", data);
+    // Auction status change  (ACTIVE → ENDED etc.)
+    socket.on("auction-status-changed", (data: AuctionStatusChangedEvent) => {
+      console.log("🚩 Status changed (auction-status-changed):", data);
       onStatusChangedRef.current?.(data);
     });
 
-    socket.on("participantCount", (count: number) => {
-      console.log("WebSocket [participantCount]:", count);
-      setParticipantCount(count);
+    socket.on("auctionStatusChanged", (data: AuctionStatusChangedEvent) => {
+      console.log("🚩 Status changed (auctionStatusChanged):", data);
+      onStatusChangedRef.current?.(data);
     });
 
-    return () => {
-      socket.emit("leave-auction", { auctionId: String(auctionId) });
-      socket.disconnect();
-    };
+    // join the auction room
+    socket.on("connect", () => {
+      setIsConnected(true);
+      console.log("🔌 Socket connected:", socket.id);
+      socket.emit("join-auction", { auctionId: String(auctionId) });
+      socket.emit("joinAuction", { auctionId: String(auctionId) });
+    });
   }, [auctionId, accessToken]);
 
   const emit = useCallback((event: string, data: unknown) => {

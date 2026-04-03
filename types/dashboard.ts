@@ -112,6 +112,9 @@ export type PaintingStatus =
   | "REJECTED"
   | "ORIGINAL_SUBMITTED"
   | "NOT_SUBMITTED_ORIGINAL"
+  | "SOLD"
+  | "REOPEN"
+  | "INAUCTION"
   | "";
 
 export interface Painting {

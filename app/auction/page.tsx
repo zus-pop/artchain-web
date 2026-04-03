@@ -11,6 +11,7 @@ export default function ModernArtAuction() {
   const { data: allAuctions = [], isLoading } = useGetAuctions({
     page: 1,
     limit: 10,
+    status: "LIVE" as any,
   });
 
   useEffect(() => {
@@ -59,20 +60,21 @@ export default function ModernArtAuction() {
     return `${hours}h ${minutes}m`;
   };
 
-  const auctionsToDisplay = allAuctions.filter(a => 
-    ["LIVE", "ONGOING", "ACTIVE", "END", "ENDED"].includes(a.status)
+  // Logic to separate featured and other auctions
+  const sortedAuctions = [...allAuctions].sort((a, b) => 
+    (b.auctionPaintings?.length || 0) - (a.auctionPaintings?.length || 0)
   );
 
-  const liveItems = auctionsToDisplay.filter(a => 
-    ["LIVE", "ONGOING", "ACTIVE"].includes(a.status)
-  ).slice(0, 3).map((auction) => {
-    const leadPainting = (auction.auctionPaintings ?? []).reduce((best, current) => {
+  const featuredAuction = sortedAuctions[0];
+  const section3Auctions = sortedAuctions.slice(1);
+
+  const formatAuctionItem = (auction: any) => {
+    const leadPainting = (auction.auctionPaintings ?? []).reduce((best: any, current: any) => {
       if (!best) return current;
       return (current.currentBid ?? 0) > (best.currentBid ?? 0) ? current : best;
     }, auction.auctionPaintings?.[0]);
 
-    const competitorId = leadPainting?.painting?.competitorId;
-    const shortCompetitorId = competitorId ? competitorId.slice(-6) : null;
+    const artistName = leadPainting?.painting?.competitorName || auction.auctioneer?.fullName || 'Nghệ sĩ';
 
     const statusLabel = auction.status === "LIVE" || auction.status === "ONGOING" || auction.status === "ACTIVE" 
       ? "ĐANG ĐẤU GIÁ" 
@@ -80,17 +82,19 @@ export default function ModernArtAuction() {
 
     return {
       id: auction.auctionId,
-      title: leadPainting?.painting?.title || auction.title,
-      artist: shortCompetitorId
-        ? `Tác giả ID: ${shortCompetitorId}`
-        : auction.auctioneer?.fullName || 'Không rõ tác giả',
+      title: auction.title,
+      paintingTitle: leadPainting?.painting?.title || "Không có tiêu đề",
+      artist: `Họa sĩ: ${artistName}`,
       bid: formatVnd(leadPainting?.currentBid ?? leadPainting?.basePrice ?? 0),
       time: getTimeLeft(auction.endTime),
       status: statusLabel,
       img: leadPainting?.painting?.imageUrl || 'https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=1200',
       watchers: auction.participantCount ?? 0,
     };
-  });
+  };
+
+  const liveItems = sortedAuctions.map(formatAuctionItem);
+  const featuredItem = featuredAuction ? formatAuctionItem(featuredAuction) : null;
 
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
@@ -161,9 +165,9 @@ export default function ModernArtAuction() {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
                 <div className="max-w-xl">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Bộ sưu tập đặc biệt</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Phiên đáng giá được đề xuất</span>
                     <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">
-                    Tranh phong cảnh <br /> đương đại
+                      {featuredItem?.title || "Không có phiên đấu giá"}
                     </h2>
                 </div>
                 <Link href="/auction/list">
@@ -175,65 +179,78 @@ export default function ModernArtAuction() {
 
                 {/* The Grid */}
                 <div className="flex flex-col gap-16">
-                {/* Hàng 1: Featured Landscape */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-                    <div className="md:col-span-8 group">
-                    <div className="relative aspect-[21/9] overflow-hidden bg-gray-100 shadow-md">
-                        <img 
-                        src="https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1500" 
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-1000"
-                        alt="Featured Art"
-                        />
-                        <div className="absolute top-6 left-6 flex gap-2">
-                        <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div>
-                        <div className="bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold flex items-center gap-1 shadow-sm">
-                            <Timer size={12} /> 02:45:12
-                        </div>
-                        </div>
-                    </div>
-                    <div className="mt-8">
-                        <h3 className="text-4xl font-black uppercase italic leading-none mb-3">Vũ điệu của ánh sáng</h3>
-                        <p className="text-sm opacity-60 leading-relaxed font-medium uppercase tracking-widest text-[#f07d44]">Họa sĩ: Trần Thế Vinh</p>
-                    </div>
-                    </div>
+                  {featuredAuction ? (
+                    <>
+                      {/* Hàng 1: Featured Main Item */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+                          <div className="md:col-span-8 group">
+                          <Link href={`/auction/${featuredAuction.auctionId}`}>
+                            <div className="relative aspect-[21/9] overflow-hidden bg-gray-100 shadow-md">
+                                <img 
+                                src={featuredItem?.img} 
+                                className="w-full h-full object-cover group-hover:scale-105 transition duration-1000"
+                                alt={featuredItem?.paintingTitle}
+                                />
+                                <div className="absolute top-6 left-6 flex gap-2">
+                                <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div>
+                                <div className="bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold flex items-center gap-1 shadow-sm text-black">
+                                    <Timer size={12} /> {featuredItem?.time}
+                                </div>
+                                </div>
+                            </div>
+                          </Link>
+                          <div className="mt-8">
+                              <h3 className="text-4xl font-black uppercase italic leading-none mb-3 line-clamp-1">{featuredItem?.paintingTitle}</h3>
+                              <p className="text-sm opacity-60 leading-relaxed font-medium uppercase tracking-widest text-[#f07d44]">{featuredItem?.artist}</p>
+                          </div>
+                          </div>
 
-                    <div className="md:col-span-4 flex flex-col justify-end h-full">
-                    <div className="bg-[#1a1a1a] text-white p-10 flex flex-col justify-between aspect-square md:aspect-auto md:h-full shadow-xl">
-                        <div>
-                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4">Thông tin tác phẩm</p>
-                        <p className="text-sm opacity-80 leading-relaxed">Sơn dầu trên canvas, 120x80cm. Tác phẩm độc bản, được nghệ sĩ ký tên và đóng dấu chứng thực. Đi kèm giấy chứng nhận nguồn gốc.</p>
-                        </div>
-                        <div className="mt-10">
-                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-[#f07d44]">Giá khởi điểm</p>
-                        <p className="text-3xl font-black">25,400,000đ</p>
-                        </div>
-                    </div>
-                    </div>
-                </div>
+                          <div className="md:col-span-4 flex flex-col justify-end h-full">
+                          <div className="bg-[#1a1a1a] text-white p-10 flex flex-col justify-between aspect-square md:aspect-auto md:h-full shadow-xl">
+                              <div>
+                              <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-4">Thông tin phiên đấu giá</p>
+                              <p className="text-sm opacity-80 leading-relaxed text-balance line-clamp-4">{featuredAuction.description || "Phiên đấu giá nghệ thuật đương đại quy tụ những tác phẩm xuất sắc nhất từ các nghệ sĩ tài năng."}</p>
+                              </div>
+                              <div className="mt-10">
+                              <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-[#f07d44]">Giá hiện tại cao nhất</p>
+                              <p className="text-3xl font-black">{featuredItem?.bid}</p>
+                              </div>
+                          </div>
+                          </div>
+                      </div>
 
-                {/* Hàng 2: Secondary Items */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    {[1, 2, 3].map((i) => (
-                    <div key={i} className="group flex flex-col">
-                        <div className="aspect-video overflow-hidden mb-6 shadow-md relative bg-gray-50">
-                        <img 
-                            src={`https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=800&sig=${i}`} 
-                            className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
-                        />
-                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                            <div className="bg-white p-4 shadow-xl"><ArrowUpRight size={20} /></div>
+                      {/* Hàng 2: Secondary Items (Limit to 3) */}
+                      {featuredAuction.auctionPaintings && featuredAuction.auctionPaintings.length > 1 && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                            {featuredAuction.auctionPaintings.slice(1, 4).map((ap: any, i: number) => (
+                            <Link key={ap.auctionPaintingId} href={`/auction/${featuredAuction.auctionId}`} className="group flex flex-col">
+                                <div className="aspect-video overflow-hidden mb-6 shadow-md relative bg-gray-50">
+                                <img 
+                                    src={ap.painting?.imageUrl || "https://images.unsplash.com/photo-1501472312651-726afe119ff1?q=80&w=800"} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
+                                    alt={ap.painting?.title}
+                                />
+                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                    <div className="bg-white p-4 shadow-xl text-black"><ArrowUpRight size={20} /></div>
+                                </div>
+                                </div>
+                                <div className="px-2">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h4 className="text-lg font-black uppercase tracking-tight line-clamp-1">{ap.painting?.title}</h4>
+                                    <span className="font-bold text-[#f07d44]">{new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(ap.currentBid || ap.basePrice)}</span>
+                                </div>
+                                <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] line-clamp-1">Lô #{String(i+2).padStart(3, '0')} — {ap.painting?.competitorName || "Nghệ sĩ"}</p>
+                                </div>
+                            </Link>
+                            ))}
                         </div>
-                        </div>
-                        <div className="px-2">
-                        <div className="flex justify-between items-start mb-2">
-                            <h4 className="text-lg font-black uppercase tracking-tight">Landscape Art #{i}</h4>
-                            <span className="font-bold text-[#f07d44]">8.0M</span>
-                        </div>
-                        <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">Lô #00{i+1} — Họa sĩ: Minh Tú</p>
-                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="py-20 text-center bg-gray-50 border-2 border-dashed border-gray-200">
+                      <p className="text-sm font-bold uppercase text-gray-400">Không có dữ liệu phiên đấu giá diễn ra</p>
                     </div>
-                    ))}
-                </div>
+                  )}
                 </div>
             </div>
         </div>
@@ -304,12 +321,11 @@ export default function ModernArtAuction() {
                         </div>
 
                         <div className="flex gap-4">
-                        <button className="flex-1 bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
-                            Đặt giá thầu <Hammer size={16} />
-                        </button>
-                        <button className="p-5 border border-slate-200 rounded-md hover:bg-slate-50 transition">
-                            <Heart size={20} className="text-slate-400" />
-                        </button>
+                          <Link href={`/auction/${item.id}`} className="flex-1">
+                            <button className="w-full bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
+                                Đặt giá thầu <Hammer size={16} />
+                            </button>
+                          </Link>
                         </div>
                         <p className="mt-6 text-[11px] text-slate-400 font-medium flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> {item.watchers} người đang theo dõi lô tranh này

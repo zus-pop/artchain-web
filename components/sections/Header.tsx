@@ -123,8 +123,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
     () => [
       { label: t.home, href: "/", active: true },
       { label: t.contests, href: "/contests" },
-      { label: t.auction, href: "/auction" },
-      // { label: t.posts, href: "/posts" },
+      { label: t.posts, href: "/posts" },
       { label: t.campaignTitle, href: "/campaigns" },
       { label: t.gallery, href: "/gallery" },
     ],
@@ -288,13 +287,20 @@ const Header: React.FC<ArtistNavigationProps> = ({
               </svg>
             </button>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-4">
+              <Link 
+                href="/auction"
+                className="text-sm font-medium text-black hover:text-[#FF6E1A] transition-colors whitespace-nowrap"
+              >
+                Switch to Auction
+              </Link>
+
               {/* Keep existing right-side actions (auth + language) */}
               {isAuthenticated ? (
                 <div className="relative" ref={userDropdownRef}>
                   <button
                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                    className="flex items-center space-x-2 rounded-lg px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                   >
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
@@ -305,11 +311,11 @@ const Header: React.FC<ArtistNavigationProps> = ({
                     >
                       {getAvatarInitial()}
                     </div>
-                    <span className="max-w-32 truncate">{getDisplayName()}</span>
-                    <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    {/* <span className="max-w-32 truncate">{getDisplayName()}</span> */}
+                    {/* <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
                       <Wallet className="h-3 w-3" />
                       {walletBalanceText}
-                    </span>
+                    </span> */}
                     <ChevronDown
                       className={`h-4 w-4 transition-transform duration-200 ${
                         isUserDropdownOpen ? "rotate-180" : ""
@@ -392,7 +398,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                               handleLogout();
                               setIsUserDropdownOpen(false);
                             }}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
+                            className="flex cursor-pointer w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
                           >
                             <LogOut className="h-4 w-4" />
                             <span>Đăng xuất</span>

@@ -41,7 +41,7 @@ export function ConfirmDialog({
         <div className={cn(
           "h-2 w-full",
           variant === "destructive" ? "bg-red-500" : 
-          variant === "warning" ? "bg-orange-500" : "bg-blue-500"
+          variant === "warning" ? "bg-orange-500" : "bg-orange-500"
         )} />
         
         <div className="p-6">
@@ -70,7 +70,7 @@ export function ConfirmDialog({
               className={cn(
                 "flex-[2] sm:flex-none font-black uppercase tracking-widest text-xs h-11 shadow-lg shadow-gray-200/50",
                 variant === "warning" && "bg-orange-500 hover:bg-orange-600 text-white",
-                variant === "primary" && "bg-blue-600 hover:bg-blue-700 text-white"
+                variant === "primary" && "bg-orange-500 hover:bg-orange-600 text-white"
               )}
             >
               {isLoading ? (
