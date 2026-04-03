@@ -13,24 +13,25 @@ export default function CongratulationPage() {
   const [mounted, setMounted] = useState(false);
   const [showLottie, setShowLottie] = useState(true);
 
+  const [winningData, setWinningData] = useState<any>(null);
+
   useEffect(() => {
     setMounted(true);
+    // Move dynamic data generation here to avoid hydration mismatch
+    setWinningData({
+      paintingTitle: "Vũ điệu của ánh sáng",
+      artist: "Trần Thế Vinh",
+      finalBid: 25400000,
+      imageUrl: "https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1500",
+      auctionTitle: "Phiên đấu giá tranh phong cảnh đương đại 2026",
+      transactionId: "ART-2026-X892",
+      date: new Date().toLocaleDateString('vi-VN', { 
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric' 
+      })
+    });
   }, []);
-
-  // Mock data
-  const winningData = {
-    paintingTitle: "Vũ điệu của ánh sáng",
-    artist: "Trần Thế Vinh",
-    finalBid: 25400000,
-    imageUrl: "https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1500",
-    auctionTitle: "Phiên đấu giá tranh phong cảnh đương đại 2026",
-    transactionId: "ART-2026-X892",
-    date: new Date().toLocaleDateString('vi-VN', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric' 
-    })
-  };
 
   const formatVnd = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -52,7 +53,7 @@ export default function CongratulationPage() {
            {Array.from({ length: 40 }).map((_, i) => (
              <div 
                key={i}
-               className="absolute animate-bounce"
+               className="absolute animate-confetti-fall"
                style={{
                  top: `-20px`,
                  left: `${Math.random() * 100}%`,
@@ -124,11 +125,11 @@ export default function CongratulationPage() {
             >
                <div>
                   <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mb-1">Mã giao dịch</p>
-                  <p className="font-mono text-sm font-bold tracking-wider">{winningData.transactionId}</p>
+                  <p className="font-mono text-sm font-bold tracking-wider">{winningData?.transactionId}</p>
                </div>
                <div>
                   <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mb-1">Ngày mua</p>
-                  <p className="text-sm font-bold">{winningData.date}</p>
+                  <p className="text-sm font-bold">{winningData?.date}</p>
                </div>
             </motion.div>
           </div>
@@ -144,15 +145,15 @@ export default function CongratulationPage() {
                      className="object-cover group-hover:scale-105 transition-transform duration-1000"
                    />
                 </div>
-                <h2 className="text-2xl font-black uppercase tracking-tight mb-2">{winningData.paintingTitle}</h2>
-                <p className="text-sm font-medium text-[#f07d44] uppercase tracking-widest mb-6">Họa sĩ: {winningData.artist}</p>
+                <h2 className="text-2xl font-black uppercase tracking-tight mb-2">{winningData?.paintingTitle}</h2>
+                <p className="text-sm font-medium text-[#f07d44] uppercase tracking-widest mb-6">Họa sĩ: {winningData?.artist}</p>
                 
                 <div className="bg-[#fcfbf9] border border-[#e6e2da] p-6 rounded-xl">
                    <div className="flex justify-between items-center mb-2">
                       <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Giá thầu cuối</span>
                       <span className="bg-green-100 text-green-700 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">Winner Bid</span>
                    </div>
-                   <p className="text-3xl font-black text-slate-900">{formatVnd(winningData.finalBid)}</p>
+                   <p className="text-3xl font-black text-slate-900">{winningData ? formatVnd(winningData.finalBid) : ""}</p>
                 </div>
              </div>
 
@@ -193,12 +194,12 @@ export default function CongratulationPage() {
       </footer>
       
       <style jsx global>{`
-        @keyframes bounce {
+        @keyframes confettiFall {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(100vh) rotate(360deg); }
         }
-        .animate-bounce {
-          animation: bounce linear infinite;
+        .animate-confetti-fall {
+          animation: confettiFall linear infinite;
         }
       `}</style>
 
