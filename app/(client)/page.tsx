@@ -329,7 +329,7 @@ export default function Page() {
               >
                 CUỘC THI <br />
                 NÉT VẼ XANH <br />
-                2025
+                2026
               </AnimatedContainer>
               <AnimatedContainer
                 className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-black leading-relaxed"
@@ -886,7 +886,7 @@ export default function Page() {
                       className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
-                      Nét Vẽ Xanh 2025
+                      Nét Vẽ Xanh 2026
                     </a>
                   </li>
                   <li>
@@ -965,7 +965,7 @@ export default function Page() {
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <p className="text-gray-400 text-xs sm:text-sm text-center md:text-left">
-                &copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.
+                &copy; 2026 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.
               </p>
               <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
                 <a

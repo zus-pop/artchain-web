@@ -142,8 +142,11 @@ function AuctionDetailContent() {
     }
   };
 
-  const handlePriceChange = (paintingId: string, field: string, value: string) => {
-    const numValue = parseInt(value) || 0;
+   const handlePriceChange = (paintingId: string, field: string, value: string) => {
+    // For numeric fields, strip all non-digits
+    const cleanValue = value.replace(/\D/g, "");
+    const numValue = parseInt(cleanValue) || 0;
+    
     setPaintingPrices((prev) => ({
       ...prev,
       [paintingId]: {
@@ -151,6 +154,11 @@ function AuctionDetailContent() {
         [field]: numValue,
       },
     }));
+  };
+
+  const formatVND = (value: number | undefined) => {
+    if (!value) return "";
+    return new Intl.NumberFormat('vi-VN').format(value);
   };
 
   if (auctionLoading) {
@@ -270,10 +278,10 @@ function AuctionDetailContent() {
                     <button
                       onClick={() => handleUpdateStatus("UPCOMING", t.openUpcomingNow, t.confirmOpenUpcoming, "primary")}
                       disabled={updateStatusMutation.isPending}
-                      className="staff-btn-secondary flex items-center justify-center gap-2 py-3 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all font-black uppercase tracking-widest text-[10px]"
+                      className="staff-btn-secondary flex items-center justify-center gap-2 py-3 border-orange-200 bg-orange-50 hover:bg-orange-100 text-orange-700 transition-all font-black uppercase tracking-widest text-[10px]"
                     >
                       {updateStatusMutation.isPending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
                       ) : (
                         <IconCalendar className="h-5 w-5" />
                       )}
@@ -521,64 +529,86 @@ function AuctionDetailContent() {
                             <h4 className="text-[10px] font-black uppercase tracking-widest staff-text-secondary">{award.name}</h4>
                           </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {award.paintings?.map((painting) => {
-                              const isSelected = selectedPaintingIds.includes(painting.paintingId);
-                              const isAlreadyInAuction = auction.auctionPaintings?.some(
-                                (ap) => ap.paintingId === painting.paintingId
-                              );
+                      {[...(award.paintings || [])].sort((a, b) => {
+                        const priority: Record<string, number> = { REOPEN: 1, ACCEPTED: 2, INAUCTION: 3, SOLD: 4 };
+                        return (priority[a.status || ""] || 99) - (priority[b.status || ""] || 99);
+                      }).map((painting) => {
+                        const isSelected = selectedPaintingIds.includes(painting.paintingId);
+                        const isAlreadyInAuction = auction.auctionPaintings?.some(
+                          (ap) => ap.paintingId === painting.paintingId
+                        ) || painting.status === "INAUCTION";
+                        const isSold = painting.status === "SOLD";
+                        const isAddable = (painting.status === "REOPEN" || painting.status === "ACCEPTED") && !isAlreadyInAuction;
 
-                              return (
-                                <div
-                                  key={painting.paintingId}
-                                  onClick={() => {
-                                    if (isAlreadyInAuction) return;
-                                    if (isSelected) {
-                                      setSelectedPaintingIds((prev) => prev.filter((id) => id !== painting.paintingId));
-                                    } else {
-                                      setSelectedPaintingIds((prev) => [...prev, painting.paintingId]);
-                                    }
-                                  }}
-                                  className={`group relative aspect-square bg-gray-50 border-2 transition-all cursor-pointer overflow-hidden ${
-                                    isAlreadyInAuction
-                                      ? "opacity-40 grayscale cursor-not-allowed border-transparent"
-                                      : isSelected
-                                      ? "border-blue-600 ring-2 ring-blue-100 shadow-md"
-                                      : "border-transparent hover:border-gray-300"
-                                  }`}
-                                >
-                                  {painting.imageUrl ? (
-                                    <Image
-                                      src={painting.imageUrl}
-                                      alt={painting.title}
-                                      fill
-                                      className="object-cover"
-                                    />
-                                  ) : (
-                                    <div className="flex items-center justify-center h-full">
-                                      <IconPhoto className="h-6 w-6 text-gray-200" />
-                                    </div>
-                                  )}
-                                  
-                                  {isAlreadyInAuction ? (
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                      <span className="bg-black text-[8px] font-black text-white px-1.5 py-0.5 uppercase tracking-tighter rounded">
-                                        {t.addedToAuction}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <div className={`absolute top-1 right-1 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
-                                      isSelected ? "bg-blue-600 border-blue-600 text-white" : "bg-white/80 border-gray-300"
-                                    }`}>
-                                      {isSelected && <IconPlus className="h-2 w-2" />}
-                                    </div>
-                                  )}
+                        return (
+                          <div
+                            key={painting.paintingId}
+                            onClick={() => {
+                              if (!isAddable) return;
+                              if (isSelected) {
+                                setSelectedPaintingIds((prev) => prev.filter((id) => id !== painting.paintingId));
+                              } else {
+                                setSelectedPaintingIds((prev) => [...prev, painting.paintingId]);
+                              }
+                            }}
+                            className={`group relative aspect-square bg-gray-50 border-2 transition-all cursor-pointer overflow-hidden ${
+                              !isAddable
+                                ? "opacity-40 grayscale cursor-not-allowed border-transparent"
+                                : isSelected
+                                ? "border-blue-600 ring-2 ring-blue-100 shadow-md"
+                                : "border-transparent hover:border-gray-300"
+                            }`}
+                          >
+                            {painting.imageUrl ? (
+                              <Image
+                                src={painting.imageUrl}
+                                alt={painting.title}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-center h-full">
+                                <IconPhoto className="h-6 w-6 text-gray-200" />
+                              </div>
+                            )}
 
-                                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5">
-                                    <p className="text-[9px] text-white font-bold truncate">{painting.title}</p>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                            {painting.status && (
+                              <div className="absolute top-1 left-1 z-10">
+                                <span className={`text-[8px] font-black text-white px-1.5 py-0.5 uppercase tracking-tighter rounded-sm ${
+                                  painting.status === "SOLD" ? "bg-red-500" : 
+                                  painting.status === "REOPEN" ? "bg-blue-500" : 
+                                  painting.status === "INAUCTION" ? "bg-purple-500" :
+                                  painting.status === "ACCEPTED" ? "bg-emerald-500" : "bg-gray-500"
+                                } shadow-sm`}>
+                                  {painting.status}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {isAlreadyInAuction || painting.status === "INAUCTION" ? (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <span className="bg-black text-[8px] font-black text-white px-1.5 py-0.5 uppercase tracking-tighter rounded">
+                                  {painting.status === "INAUCTION" ? (t as any).inAuction || "IN AUCTION" : t.addedToAuction}
+                                </span>
+                              </div>
+                            ) : isSold ? (
+                                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                                {/* Visually indicated by opacity and badge */}
+                              </div>
+                            ) : (
+                              <div className={`absolute top-1 right-1 w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                                isSelected ? "bg-blue-600 border-blue-600 text-white" : "bg-white/80 border-gray-300"
+                              }`}>
+                                {isSelected && <IconPlus className="h-2 w-2" />}
+                              </div>
+                            )}
+
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-1.5 pt-4">
+                              <p className="text-[9px] text-white font-bold truncate">{painting.title}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
                           </div>
                         </div>
                       ))}
@@ -633,8 +663,8 @@ function AuctionDetailContent() {
                                     <div>
                                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.basePrice} (VND)</label>
                                        <input 
-                                          type="number"
-                                          value={prices.basePrice}
+                                          type="text"
+                                          value={formatVND(prices.basePrice)}
                                           onChange={(e) => handlePriceChange(id, "basePrice", e.target.value)}
                                           className="w-full px-2 py-1 text-xs border border-[#e6e2da] rounded focus:ring-1 focus:ring-blue-500 outline-none"
                                           placeholder="1,000,000"
@@ -642,20 +672,20 @@ function AuctionDetailContent() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                        <div>
-                                          <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.ceilPrice || "Ceil Price"}</label>
+                                          <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.auctionDuration || "Duration"}</label>
                                           <input 
                                              type="number"
-                                             value={prices.ceilPrice}
-                                             onChange={(e) => handlePriceChange(id, "ceilPrice", e.target.value)}
+                                             value={prices.auctionDurationMinutes || ""}
+                                          onChange={(e) => handlePriceChange(id, "auctionDurationMinutes", e.target.value)}
                                              className="w-full px-2 py-1 text-xs border border-[#e6e2da] rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                                             placeholder="10,000,000"
+                                             placeholder="15"
                                           />
                                        </div>
                                        <div>
                                           <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.bidStep || "Bid Step"}</label>
                                           <input 
-                                             type="number"
-                                             value={prices.bidStep}
+                                             type="text"
+                                             value={formatVND(prices.bidStep)}
                                              onChange={(e) => handlePriceChange(id, "bidStep", e.target.value)}
                                              className="w-full px-2 py-1 text-xs border border-[#e6e2da] rounded focus:ring-1 focus:ring-blue-500 outline-none"
                                              placeholder="100,000"
@@ -663,13 +693,13 @@ function AuctionDetailContent() {
                                        </div>
                                     </div>
                                     <div>
-                                       <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.auctionDuration || "Duration"} (Min)</label>
+                                       <label className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.ceilPrice || "Ceil Price"}</label>
                                        <input 
-                                          type="number"
-                                          value={prices.auctionDurationMinutes || 15}
-                                          onChange={(e) => handlePriceChange(id, "auctionDurationMinutes", e.target.value)}
+                                          type="text"
+                                          value={formatVND(prices.ceilPrice)}
+                                             onChange={(e) => handlePriceChange(id, "ceilPrice", e.target.value)}
                                           className="w-full px-2 py-1 text-xs border border-[#e6e2da] rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                                          placeholder="15"
+                                          placeholder="10,000,000"
                                        />
                                     </div>
                                  </div>
@@ -685,17 +715,17 @@ function AuctionDetailContent() {
                     <span>{t.selectedText}:</span>
                     <span className="text-blue-600">{selectedPaintingIds.length}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => setShowAddPaintingDialog(false)}
-                      className="flex-1 py-2 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 transition-colors border border-[#e6e2da] rounded"
+                      className="flex-1 staff-btn-outline py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-900"
                     >
                       {t.cancel}
                     </button>
                     <button
                       disabled={selectedPaintingIds.length === 0 || addPaintingMutation.isPending}
                       onClick={handleAddPaintings}
-                      className="flex-[2] staff-btn-primary py-2 flex items-center justify-center gap-2"
+                      className="flex-1 staff-btn-primary py-2 flex items-center justify-center gap-2 text-[10px]"
                     >
                       {addPaintingMutation.isPending ? (
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
