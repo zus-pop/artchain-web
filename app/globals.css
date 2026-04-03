@@ -636,3 +636,7 @@ input[type="password"]::-webkit-reveal-password-button {
 input[type="password"]::-ms-reveal {
   display: none;
 }
+
+button {
+  cursor: pointer;
+}
