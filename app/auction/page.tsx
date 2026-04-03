@@ -1,13 +1,13 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Timer, Hammer, ArrowRight, Heart } from 'lucide-react';
+import { ArrowUpRight, Timer, Hammer, ArrowRight } from 'lucide-react';
 import { useGetAuctions } from '@/apis/auction';
 import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 
 export default function ModernArtAuction() {
   const [activeSection, setActiveSection] = useState('section-01');
-  const currentYear = new Date().getFullYear();
+  const [mounted, setMounted] = useState(false);
   const { data: allAuctions = [], isLoading } = useGetAuctions({
     page: 1,
     limit: 10,
@@ -15,6 +15,7 @@ export default function ModernArtAuction() {
   });
 
   useEffect(() => {
+    setMounted(true);
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -96,6 +97,8 @@ export default function ModernArtAuction() {
   const liveItems = sortedAuctions.map(formatAuctionItem);
   const featuredItem = featuredAuction ? formatAuctionItem(featuredAuction) : null;
 
+  if (!mounted) return null;
+
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
       <HeaderWrapper />
@@ -165,7 +168,7 @@ export default function ModernArtAuction() {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
                 <div className="max-w-xl">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Phiên đáng giá được đề xuất</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Phiên đấu giá được đề xuất</span>
                     <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">
                       {featuredItem?.title || "Không có phiên đấu giá"}
                     </h2>

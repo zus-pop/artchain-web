@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
-import { IconTrophy, IconConfetti, IconArrowRight, IconChecks, IconHome, IconHistory } from '@tabler/icons-react';
+import { IconTrophy, IconConfetti, IconArrowRight, IconHome } from '@tabler/icons-react';
 import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 import congratulationAnimation from '@/public/load/congratulation.json';
 
@@ -145,7 +145,7 @@ export default function CongratulationPage() {
                    />
                 </div>
                 <h2 className="text-2xl font-black uppercase tracking-tight mb-2">{winningData.paintingTitle}</h2>
-                <p className="text-sm font-medium text-[#f07d44] uppercase tracking-widest mb-6">Học sĩ: {winningData.artist}</p>
+                <p className="text-sm font-medium text-[#f07d44] uppercase tracking-widest mb-6">Họa sĩ: {winningData.artist}</p>
                 
                 <div className="bg-[#fcfbf9] border border-[#e6e2da] p-6 rounded-xl">
                    <div className="flex justify-between items-center mb-2">
@@ -157,11 +157,6 @@ export default function CongratulationPage() {
              </div>
 
              <div className="space-y-3">
-                {/* <Link href="/dashboard/customer/orders">
-                  <button className="w-full bg-[#1a1a1a] text-white py-4 rounded-xl font-bold text-xs uppercase tracking-[0.2em] hover:bg-[#333] transition-all flex items-center justify-center gap-3 shadow-lg group">
-                    Tiến hành thanh toán <IconChecks size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </Link> */}
                 
                 <div className="flex gap-3">
                   <Link href="/auction" className="flex-1">
