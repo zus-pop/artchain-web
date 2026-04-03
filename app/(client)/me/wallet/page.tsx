@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import {
   ArrowDownLeft,
@@ -55,8 +53,6 @@ const transactions: Transaction[] = [
 const weekData = [80, 130, 100, 170, 140, 185, 150];
 
 export default function WalletPage() {
-  const [depositAmount, setDepositAmount] = React.useState("");
-
   const maxY = Math.max(...weekData);
   const points = weekData
     .map((value, index) => {
@@ -68,8 +64,6 @@ export default function WalletPage() {
 
   const balance = 8640000;
   const formattedBalance = new Intl.NumberFormat("vi-VN").format(balance);
-
-  const presets = [50000, 100000, 200000, 500000, 1000000, 2000000];
 
   return (
     <main className="min-h-screen bg-[#EAE6E0] px-4 pb-16 pt-24 sm:px-6 lg:px-8">
@@ -281,64 +275,29 @@ export default function WalletPage() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-full blur-3xl -mr-12 -mt-12" />
-              <div className="relative">
-                <h4 className="mb-4 text-sm font-black uppercase tracking-wider text-gray-900">
-                  Nạp tiền nhanh
-                </h4>
-                <div className="space-y-4">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={depositAmount}
-                      onChange={(e) => setDepositAmount(e.target.value)}
-                      placeholder="Nhập số tiền"
-                      className="w-full rounded-xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-lg font-black text-gray-900 outline-none transition focus:border-[#FF6E1A] focus:bg-white"
-                    />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-gray-400">đ</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {presets.map((amount) => (
-                      <button
-                        key={amount}
-                        onClick={() => setDepositAmount(amount.toString())}
-                        className="rounded-lg border-2 border-gray-50 py-2.5 text-[11px] font-black text-gray-600 transition hover:border-[#FF6E1A] hover:bg-orange-50 hover:text-[#FF6E1A]"
-                      >
-                        {new Intl.NumberFormat("vi-VN").format(amount / 1000)}k
-                      </button>
-                    ))}
-                  </div>
-                  <button className="w-full rounded-xl bg-[#FF6E1A] py-3.5 text-sm font-black text-white shadow-lg shadow-orange-200 transition hover:bg-[#e65a00] hover:scale-[1.02] active:scale-[0.98]">
-                    Nạp tiền ngay
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            {/* <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
               <h4 className="mb-4 text-sm font-black uppercase tracking-wider text-gray-900">
                 Hành động nhanh
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-gray-900 px-3 py-3 text-xs font-bold text-white hover:bg-gray-800 transition">
+                <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF6E1A] px-3 py-2.5 text-xs font-bold text-white hover:bg-[#ff833b]">
+                  <Plus size={14} />
+                  Nạp tiền
+                </button>
+                <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50">
                   <Landmark size={14} />
                   Rút tiền
                 </button>
-                <button className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-100 bg-white px-3 py-3 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">
-                  <History size={14} />
-                  Lịch sử
-                </button>
-                <button className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-100 bg-white px-3 py-3 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">
+                <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50">
                   <CreditCard size={14} />
-                  Thẻ
+                  Lịch sử nạp
                 </button>
-                <button className="inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-100 bg-white px-3 py-3 text-xs font-bold text-gray-700 hover:bg-gray-50 transition">
+                <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50">
                   <Wallet size={14} />
-                  Cài đặt
+                  Thông tin ví
                 </button>
               </div>
-            </section> */}
+            </section>
           </div>
         </div>
       </div>

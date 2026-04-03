@@ -5,6 +5,8 @@ import AuctionCard from "@/components/auction/AuctionCard";
 import { useGetAuctions } from "@/apis/auction";
 import { AuctionStatus, Auction } from "@/types/auction";
 import { useAuth } from "@/hooks";
+import { HeaderWrapper } from "@/components/sections/HeaderWrapper";
+import { useEffect } from "react";
 
 const STATUS_FILTERS: { id: string; label: string; value?: AuctionStatus[] }[] = [
   { id: "all", label: "Tất cả" },
@@ -17,9 +19,17 @@ const STATUS_FILTERS: { id: string; label: string; value?: AuctionStatus[] }[] =
 export default function AuctionListPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: auctions, isLoading, isError } = useGetAuctions();
   const { user } = useAuth();
+  
+  if (!mounted) return null;
+
   const isStaff = user?.role === "STAFF" || user?.role === "ADMIN";
 
   const availableFilters = STATUS_FILTERS.filter(f => f.id !== "draft" || isStaff);
@@ -43,6 +53,7 @@ export default function AuctionListPage() {
 
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white">
+      <HeaderWrapper />
       {/* Header Section */}
       <section className="relative pt-32 pb-16 px-[5%] max-w-[1600px] mx-auto">
         <div className="mb-12">
