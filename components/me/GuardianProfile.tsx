@@ -15,7 +15,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import WonPaintings from "./WonPaintings";
-import { useGetWonPaintings } from "@/apis/auction";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -721,11 +720,11 @@ export default function GuardianProfileScreen({
                           onClick={handleCloseAwardDialog}
                           className="inline-flex items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                         >
-                          Mint NFT
+                          NFT
                         </Link>
                       ) : (
                         <span className="inline-flex cursor-not-allowed items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white opacity-50">
-                          Mint NFT
+                          NFT
                         </span>
                       )}
                     </div>
@@ -1039,9 +1038,7 @@ export default function GuardianProfileScreen({
           )}
 
           {/* Nội dung tab "Đơn hàng" */}
-          {activeTab === "orders" && (
-            <WonPaintings userId={authUser?.userId} />
-          )}
+          {activeTab === "orders" && <WonPaintings userId={authUser?.userId} />}
 
           {/* Nội dung tab "Thông tin" */}
           {activeTab === "about" && (
@@ -1070,9 +1067,7 @@ export default function GuardianProfileScreen({
           )}
 
           {/* Nội dung tab "Đơn hàng" */}
-          {activeTab === "orders" && (
-            <WonPaintings userId={authUser?.userId} />
-          )}
+          {activeTab === "orders" && <WonPaintings userId={authUser?.userId} />}
         </div>
       </div>
     </div>

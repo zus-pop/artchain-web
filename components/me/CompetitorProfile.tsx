@@ -593,7 +593,7 @@ export default function CompetitorProfileScreen({
                         onClick={handleCloseAwardDialog}
                         className="inline-flex items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                       >
-                        Mint NFT
+                        NFT
                       </Link>
                     </div>
                   </div>
