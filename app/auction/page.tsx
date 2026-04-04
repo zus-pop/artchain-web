@@ -178,9 +178,6 @@ export default function ModernArtAuction() {
               className="w-full h-full object-cover"
               alt="Main Art"
             />
-            <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 shadow-lg">
-                <span className="text-[10px] font-black uppercase tracking-widest">Tác phẩm tiêu biểu</span>
-            </div>
           </div>
         </motion.div>
       </section>
@@ -371,7 +368,7 @@ export default function ModernArtAuction() {
                           <div className="flex gap-4">
                             <Link href={`/auction/${item.id}`} className="flex-1">
                               <button className="w-full bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
-                                  Đặt giá thầu <Hammer size={16} />
+                                  Đấu giá ngay <Hammer size={16} />
                               </button>
                             </Link>
                           </div>

@@ -40,6 +40,22 @@ export default function AddChildPage() {
   };
 
   const handleFormSubmit = (childData: ChildFormData & { id?: string }) => {
+    // Check for duplicate username or email in the current list
+    const isDuplicate = children.some((child) => {
+      // If editing, skip the current child
+      if (editingChild && child.id === editingChild.id) return false;
+
+      return (
+        child.username.toLowerCase() === childData.username.toLowerCase() ||
+        child.email.toLowerCase() === childData.email.toLowerCase()
+      );
+    });
+
+    if (isDuplicate) {
+      toast.error("Tên đăng nhập hoặc Email đã tồn tại trong danh sách!");
+      return false;
+    }
+
     if (editingChild) {
       // Update existing child
       setChildren((prev) =>
@@ -49,13 +65,16 @@ export default function AddChildPage() {
             : child
         )
       );
+      toast.success("Đã cập nhật thông tin con em");
     } else {
       // Add new child
       setChildren((prev) => [
         ...prev,
         { ...childData, id: Date.now().toString() },
       ]);
+      toast.success("Đã thêm con em vào danh sách");
     }
+    return true;
   };
 
   const handleSubmitAll = async () => {

@@ -72,7 +72,7 @@ interface ChildFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: ChildFormData & { id?: string };
-  onSubmit: (data: ChildFormData & { id?: string }) => void;
+  onSubmit: (data: ChildFormData & { id?: string }) => boolean; // Changed to boolean
   isEditing?: boolean;
 }
 
@@ -91,6 +91,7 @@ export function ChildForm({
     formState: { errors, isValid },
     watch,
     setValue,
+    reset,
   } = useForm<ChildFormData>({
     mode: "all",
     resolver: zodResolver(childFormSchema),
@@ -106,6 +107,29 @@ export function ChildForm({
       grade: "",
     },
   });
+
+  // Sync form with initialData when drawer opens or initialData changes
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        reset({
+          ...initialData,
+        });
+      } else {
+        reset({
+          username: "",
+          password: "",
+          confirmPassword: "",
+          fullName: "",
+          email: "",
+          birthday: "",
+          schoolName: "",
+          ward: "",
+          grade: "",
+        });
+      }
+    }
+  }, [initialData, open, reset]);
 
   // Watch birthday field for dynamic grade options
   const watchedBirthday = watch("birthday");
@@ -150,11 +174,15 @@ export function ChildForm({
   }, [watchedBirthday, setValue, validGrades, watch]);
 
   const handleFormSubmit = (data: ChildFormData) => {
-    onSubmit({
+    const success = onSubmit({
       ...data,
       id: initialData?.id,
     });
-    onOpenChange(false);
+    
+    if (success) {
+      onOpenChange(false);
+    }
+    // If not successful (duplicate error), keep it open for user to fix
   };
 
   const wardOptions = wards.map((ward) => ({
