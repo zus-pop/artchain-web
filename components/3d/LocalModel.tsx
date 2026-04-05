@@ -28,7 +28,7 @@ interface LocalModelProps {
   clearLocalChatMessage: () => void;
 }
 
-const LocalModel = ({
+export const LocalModel = ({
   hairColor,
   skinColor,
   mode,
@@ -55,7 +55,7 @@ const LocalModel = ({
       { name: "action3", keys: ["3"] },
       { name: "action4", keys: ["KeyF"] },
     ],
-    []
+    [],
   );
 
   const characterURL = "/chibi_guy/scene.gltf";
@@ -97,7 +97,7 @@ const LocalModel = ({
       const currentPos = localModelRef.current.group.translation();
       localModelRef.current.group.setTranslation(
         { x: currentPos.x, y: 4, z: currentPos.z },
-        true
+        true,
       );
       localModelRef.current.group.setLinvel({ x: 0, y: 0, z: 0 }, true);
       localModelRef.current.group.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -214,5 +214,3 @@ const LocalModel = ({
     </KeyboardControls>
   );
 };
-
-export default LocalModel;
