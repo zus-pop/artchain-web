@@ -11,12 +11,11 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import {
   IconArrowLeft,
   IconPhoto,
-  IconPlus,
   IconTrash,
   IconTrophy,
 } from "@tabler/icons-react";
@@ -76,7 +75,7 @@ export default function EditExhibitionPaintingsPage({
   const handleRemovePainting = async (paintingId: string) => {
     if (
       !confirm(
-        "Are you sure you want to remove this painting from the exhibition?"
+        "Are you sure you want to remove this painting from the exhibition?",
       )
     )
       return;
@@ -196,7 +195,7 @@ export default function EditExhibitionPaintingsPage({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Link
-                      href={`/dashboard/staff/exhibitions/${id}/edit`}
+                      href={`/dashboard/staff/exhibitions/${id}`}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                       title={t.backToExhibitionEdit}
                     >
@@ -273,7 +272,7 @@ export default function EditExhibitionPaintingsPage({
                                     <button
                                       onClick={() =>
                                         handleRemovePainting(
-                                          exhibitionPainting.paintingId
+                                          exhibitionPainting.paintingId,
                                         )
                                       }
                                       className="p-1.5 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-lg"
@@ -297,13 +296,13 @@ export default function EditExhibitionPaintingsPage({
                                     <span className="text-xs staff-text-secondary">
                                       {t.added}:{" "}
                                       {new Date(
-                                        exhibitionPainting.addedAt
+                                        exhibitionPainting.addedAt,
                                       ).toLocaleDateString()}
                                     </span>
                                   </div>
                                 </div>
                               </div>
-                            )
+                            ),
                           )}
                         </div>
                       ) : (
@@ -446,7 +445,7 @@ export default function EditExhibitionPaintingsPage({
                                             exhibition.exhibitionPaintings?.some(
                                               (exhibitionPainting) =>
                                                 exhibitionPainting.paintingId ===
-                                                painting.paintingId
+                                                painting.paintingId,
                                             );
 
                                           return (
@@ -462,8 +461,8 @@ export default function EditExhibitionPaintingsPage({
                                                 handlePaintingSelection(
                                                   painting.paintingId,
                                                   !selectedPaintingIds.includes(
-                                                    painting.paintingId
-                                                  )
+                                                    painting.paintingId,
+                                                  ),
                                                 )
                                               }
                                             >
@@ -505,13 +504,13 @@ export default function EditExhibitionPaintingsPage({
                                                       <input
                                                         type="checkbox"
                                                         checked={selectedPaintingIds.includes(
-                                                          painting.paintingId
+                                                          painting.paintingId,
                                                         )}
                                                         onChange={(e) => {
                                                           e.stopPropagation();
                                                           handlePaintingSelection(
                                                             painting.paintingId,
-                                                            e.target.checked
+                                                            e.target.checked,
                                                           );
                                                         }}
                                                         className="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer transition-all duration-200 hover:border-blue-400 checked:bg-blue-600 checked:border-blue-600"

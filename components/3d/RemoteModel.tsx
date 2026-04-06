@@ -1,3 +1,7 @@
+import {
+  ON_REMOTE_RECEIVE_CHAT_MESSAGE,
+  ON_REMOTE_RECEIVE_UPDATE,
+} from "@/events/exhibition.events";
 import { useSocket } from "@/providers/SocketProvider";
 import { Billboard, RoundedBox, Text } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
@@ -5,10 +9,6 @@ import { RapierRigidBody, RigidBody } from "@react-three/rapier";
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import ChibiGuy from "./ChibiGuy";
-import {
-  ON_REMOTE_RECEIVE_CHAT_MESSAGE,
-  ON_REMOTE_RECEIVE_UPDATE,
-} from "@/events/exhibition.events";
 
 interface RemoteModelProps {
   modelId: string;
@@ -16,14 +16,22 @@ interface RemoteModelProps {
   skinColor?: string;
 }
 
-const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
+export const RemoteModel = ({
+  modelId,
+  hairColor,
+  skinColor,
+}: RemoteModelProps) => {
   const { socket } = useSocket();
   const modelRef = useRef<RapierRigidBody>(null);
   const [animation, setAnimation] = React.useState<
     "0Tpose" | "Clapping" | "Idle" | "Run" | "Surprise" | "Walk"
   >("Idle");
   const targetPosition = useRef<THREE.Vector3>(
-    new THREE.Vector3((Math.random() - 0.5) * 20, 0, (Math.random() - 0.5) * 20)
+    new THREE.Vector3(
+      (Math.random() - 0.5) * 20,
+      0,
+      (Math.random() - 0.5) * 20,
+    ),
   );
   const targetRotation = useRef<THREE.Euler>(new THREE.Euler(0, 0, 0));
 
@@ -42,7 +50,7 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
     const currentPosition3 = new THREE.Vector3(
       currentPos.x,
       currentPos.y,
-      currentPos.z
+      currentPos.z,
     );
     const distance = currentPosition3.distanceTo(targetPosition.current);
 
@@ -56,7 +64,7 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
           z: targetRotation.current.z,
           w: 1,
         },
-        true
+        true,
       );
     } else {
       // Smooth interpolation
@@ -64,29 +72,29 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
         x: THREE.MathUtils.lerp(
           currentPos.x,
           targetPosition.current.x,
-          lerpFactor
+          lerpFactor,
         ),
         y: THREE.MathUtils.lerp(
           currentPos.y,
           targetPosition.current.y,
-          lerpFactor
+          lerpFactor,
         ),
         z: THREE.MathUtils.lerp(
           currentPos.z,
           targetPosition.current.z,
-          lerpFactor
+          lerpFactor,
         ),
       };
 
       // For rotation, convert target euler to quaternion and lerp
       const targetQuat = new THREE.Quaternion().setFromEuler(
-        targetRotation.current
+        targetRotation.current,
       );
       const currentQuat = new THREE.Quaternion(
         currentRot.x,
         currentRot.y,
         currentRot.z,
-        currentRot.w
+        currentRot.w,
       );
       currentQuat.slerp(targetQuat, lerpFactor);
       modelRef.current.setTranslation(newPosition, true);
@@ -103,7 +111,7 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
         targetPosition.current.set(
           data.position.x,
           data.position.y,
-          data.position.z
+          data.position.z,
         );
       }
 
@@ -113,7 +121,7 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
             data.rotation.x,
             data.rotation.y,
             data.rotation.z,
-            data.rotation.w
+            data.rotation.w,
           );
 
           targetRotation.current.setFromQuaternion(quaternion);
@@ -121,7 +129,7 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
           targetRotation.current.set(
             data.rotation.x,
             data.rotation.y,
-            data.rotation.z
+            data.rotation.z,
           );
         }
 
@@ -188,5 +196,3 @@ const RemoteModel = ({ modelId, hairColor, skinColor }: RemoteModelProps) => {
     </RigidBody>
   );
 };
-
-export default RemoteModel;

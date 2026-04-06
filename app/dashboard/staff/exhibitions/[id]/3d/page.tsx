@@ -1,6 +1,13 @@
 "use client";
 import { updateExhibition3D, useGetExhibitionById } from "@/apis/exhibition";
-import { Exhibition, PaintingFrame, Arrows } from "@/components/3d";
+import {
+  Arrows,
+  Exhibition,
+  Logo,
+  Mascot,
+  PaintingFrame,
+} from "@/components/3d";
+import Loader from "@/components/Loaders";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -19,6 +26,7 @@ import { Exhibition3DItem, ExhibitionPainting } from "@/types";
 import {
   CameraControls,
   Environment,
+  Float,
   Html,
   Preload,
   Sparkles,
@@ -29,7 +37,6 @@ import {
 import { Canvas, useThree } from "@react-three/fiber";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { button, buttonGroup, folder, useControls } from "leva";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Dispatch,
@@ -60,6 +67,10 @@ const modes: ["translate", "rotate", "scale"] = [
   "rotate",
   "scale",
 ];
+
+const DEFAULT_FRAME_POSITION: [number, number, number] = [0, 0, -3.5];
+const DEFAULT_FRAME_ROTATION: [number, number, number] = [0, 0, 0];
+const DEFAULT_FRAME_SCALE: [number, number, number] = [1, 1, 1];
 
 interface Exhibition3DSceneProps {
   cameraControlsRef: React.RefObject<CameraControls | null>;
@@ -98,7 +109,7 @@ function Exhibition3DScene({
                 },
                 "Đặt lại vị trí": () => {
                   const originalItem = data.find(
-                    (p) => p.paintingId === item.paintingId
+                    (p) => p.paintingId === item.paintingId,
                   );
                   if (originalItem && originalItem.position) {
                     // Reset the mesh position to original API position
@@ -107,21 +118,21 @@ function Exhibition3DScene({
                       mesh.position.set(
                         originalItem.position[0],
                         originalItem.position[1],
-                        originalItem.position[2]
+                        originalItem.position[2],
                       );
                       // Also reset rotation and scale if they exist
                       if (originalItem.rotation) {
                         mesh.rotation.set(
                           originalItem.rotation[0],
                           originalItem.rotation[1],
-                          originalItem.rotation[2]
+                          originalItem.rotation[2],
                         );
                       }
                       if (originalItem.scale) {
                         mesh.scale.set(
                           originalItem.scale[0],
                           originalItem.scale[1],
-                          originalItem.scale[2]
+                          originalItem.scale[2],
                         );
                       }
                       toast.success(`Đã đặt lại vị trí cho "${item.title}"`);
@@ -130,18 +141,18 @@ function Exhibition3DScene({
                     // Fallback to default position
                     const mesh = scene.getObjectByName(item.paintingId);
                     if (mesh) {
-                      mesh.position.set(0, 0, 0);
-                      mesh.rotation.set(0, 0, 0);
-                      mesh.scale.set(1, 1, 1);
+                      mesh.position.set(...DEFAULT_FRAME_POSITION);
+                      mesh.rotation.set(...DEFAULT_FRAME_ROTATION);
+                      mesh.scale.set(...DEFAULT_FRAME_SCALE);
                       toast.success(
-                        `Đã đặt lại vị trí về mặc định cho "${item.title}"`
+                        `Đã đặt lại vị trí về mặc định cho "${item.title}"`,
                       );
                     }
                   }
                 },
                 Xóa: () => {
                   state.data = state.data.filter(
-                    (p) => p.paintingId !== item.paintingId
+                    (p) => p.paintingId !== item.paintingId,
                   );
 
                   const mesh = scene.getObjectByName(item.paintingId);
@@ -157,7 +168,7 @@ function Exhibition3DScene({
             });
           return obj;
         })(),
-        { collapsed: true } // Optional: starts collapsed
+        { collapsed: true }, // Optional: starts collapsed
       ),
       "Thêm tranh": button(() => {
         setOpenDrawer(true);
@@ -175,12 +186,12 @@ function Exhibition3DScene({
               position: child.position.toArray(),
               rotation: child.rotation.toArray(),
               scale: child.scale.toArray(),
-            })
+            }),
           );
 
           const restItem = state.data.filter(
             (item) =>
-              !items?.some((child) => child.paintingId === item.paintingId)
+              !items?.some((child) => child.paintingId === item.paintingId),
           );
           restItem.forEach((item) => {
             items?.push({
@@ -194,18 +205,18 @@ function Exhibition3DScene({
             exhibitionId,
             data: items,
           });
-        }
+        },
         // {
         //   disabled: !groupRef.current || snap.data.length === 0,
         // }
       ),
     },
-    [snap.data]
+    [snap.data],
   );
 
   useEffect(() => {
     state.data = data.filter(
-      (item) => item.position && item.rotation && item.scale
+      (item) => item.position && item.rotation && item.scale,
     );
   }, [data]);
   return (
@@ -225,6 +236,17 @@ function Exhibition3DScene({
       />
       <pointLight position={[0, 5, 5]} intensity={0.6} />
       <Environment preset="city" />
+      <Float
+        speed={4}
+        rotationIntensity={0.05}
+        floatIntensity={2}
+        floatingRange={[0, 0.05]}
+        position={[0.36, 2.6, -0.25]}
+        scale={3.6}
+      >
+        <Logo scale={0.28} position={[-0.3, 0.65, 0.1]} />
+        <Mascot />
+      </Float>
       <group ref={groupRef}>
         {state.data.map((item) => {
           return (
@@ -254,17 +276,17 @@ function Exhibition3DScene({
                 position={
                   item.position
                     ? [item.position[0], item.position[1], item.position[2]]
-                    : undefined
+                    : DEFAULT_FRAME_POSITION
                 }
                 rotation={
                   item.rotation
                     ? [item.rotation[0], item.rotation[1], item.rotation[2]]
-                    : undefined
+                    : DEFAULT_FRAME_ROTATION
                 }
                 scale={
                   item.scale
                     ? [item.scale[0], item.scale[1], item.scale[2]]
-                    : undefined
+                    : DEFAULT_FRAME_SCALE
                 }
               />
             </Suspense>
@@ -272,7 +294,7 @@ function Exhibition3DScene({
         })}
         /
       </group>
-      <Exhibition />
+      <Exhibition scale={2} />
       {snap.current && (
         <TransformControls
           object={scene.getObjectByName(snap.current)}
@@ -309,23 +331,10 @@ export default function Exhibition3DPage({
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px",
-          color: "white",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          zIndex: 1000,
-        }}
-      >
-        Đang tải...
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <Loader />
+        </div>
       </div>
     );
   }
@@ -349,11 +358,11 @@ export default function Exhibition3DPage({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {exhibitionResponse?.data.exhibitionPaintings
                 ?.sort((a, b) =>
-                  a.award && b.award ? a.award.rank - b.award.rank : 0
+                  a.award && b.award ? a.award.rank - b.award.rank : 0,
                 )
                 .map((painting) => {
                   const isAdded = state.data.some(
-                    (p) => p.paintingId === painting.paintingId
+                    (p) => p.paintingId === painting.paintingId,
                   );
 
                   return (
@@ -366,9 +375,14 @@ export default function Exhibition3DPage({
                       } relative`}
                       onClick={() => {
                         if (!isAdded) {
-                          state.data.push(painting);
+                          state.data.push({
+                            ...painting,
+                            position: DEFAULT_FRAME_POSITION,
+                            rotation: DEFAULT_FRAME_ROTATION,
+                            scale: DEFAULT_FRAME_SCALE,
+                          });
                           toast.success(
-                            `Đã thêm "${painting.title}" vào triển lãm 3D`
+                            `Đã thêm "${painting.title}" vào triển lãm 3D`,
                           );
                           setOpen(false);
                         }
@@ -450,24 +464,17 @@ export default function Exhibition3DPage({
       >
         <IconArrowLeft className="h-5 w-5" />
       </Button>
-      <Canvas camera={{ position: [0, 3, 5], fov: 50, rotateX: 0 }} shadows>
+      <Canvas
+        camera={{ position: [0, 5, 10], fov: 50, rotateX: 0, zoom: 1 }}
+        shadows
+      >
         <Suspense
           fallback={
-            <Html
-              center
-              style={{
-                color: "white",
-                fontSize: "24px",
-                textAlign: "center",
-                whiteSpace: "nowrap",
-                backgroundColor: "black",
-              }}
-            >
-              <div>
-                <p>Đang tải...</p>
-                <p>
-                  {progress === 100 ? "Hoàn thành" : `${progress.toFixed(0)}%`}
-                </p>
+            <Html center>
+              <div className="flex min-h-screen min-w-screen items-center justify-center bg-white">
+                <div className="text-center">
+                  <Loader text={`Đang tải... ${progress.toFixed(0)}%`} />
+                </div>
               </div>
             </Html>
           }
