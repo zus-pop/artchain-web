@@ -68,6 +68,10 @@ const modes: ["translate", "rotate", "scale"] = [
   "scale",
 ];
 
+const DEFAULT_FRAME_POSITION: [number, number, number] = [0, 0, -3.5];
+const DEFAULT_FRAME_ROTATION: [number, number, number] = [0, 0, 0];
+const DEFAULT_FRAME_SCALE: [number, number, number] = [1, 1, 1];
+
 interface Exhibition3DSceneProps {
   cameraControlsRef: React.RefObject<CameraControls | null>;
   data: ExhibitionPainting[];
@@ -137,9 +141,9 @@ function Exhibition3DScene({
                     // Fallback to default position
                     const mesh = scene.getObjectByName(item.paintingId);
                     if (mesh) {
-                      mesh.position.set(0, 0, 0);
-                      mesh.rotation.set(0, 0, 0);
-                      mesh.scale.set(1, 1, 1);
+                      mesh.position.set(...DEFAULT_FRAME_POSITION);
+                      mesh.rotation.set(...DEFAULT_FRAME_ROTATION);
+                      mesh.scale.set(...DEFAULT_FRAME_SCALE);
                       toast.success(
                         `Đã đặt lại vị trí về mặc định cho "${item.title}"`,
                       );
@@ -272,17 +276,17 @@ function Exhibition3DScene({
                 position={
                   item.position
                     ? [item.position[0], item.position[1], item.position[2]]
-                    : undefined
+                    : DEFAULT_FRAME_POSITION
                 }
                 rotation={
                   item.rotation
                     ? [item.rotation[0], item.rotation[1], item.rotation[2]]
-                    : undefined
+                    : DEFAULT_FRAME_ROTATION
                 }
                 scale={
                   item.scale
                     ? [item.scale[0], item.scale[1], item.scale[2]]
-                    : undefined
+                    : DEFAULT_FRAME_SCALE
                 }
               />
             </Suspense>
@@ -371,7 +375,12 @@ export default function Exhibition3DPage({
                       } relative`}
                       onClick={() => {
                         if (!isAdded) {
-                          state.data.push(painting);
+                          state.data.push({
+                            ...painting,
+                            position: DEFAULT_FRAME_POSITION,
+                            rotation: DEFAULT_FRAME_ROTATION,
+                            scale: DEFAULT_FRAME_SCALE,
+                          });
                           toast.success(
                             `Đã thêm "${painting.title}" vào triển lãm 3D`,
                           );
