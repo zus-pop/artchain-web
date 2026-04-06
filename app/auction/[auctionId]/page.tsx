@@ -12,7 +12,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useGetAuctionById, useJoinAuction, usePlaceBid } from "@/apis/auction";
+import { useGetAuctionById, useJoinAuction, usePlaceBid, useGetBidHistory } from "@/apis/auction";
 import { useAuctionSocket } from "@/hooks/useAuctionSocket";
 import BidForm from "@/components/auction/BidForm";
 import BidHistory from "@/components/auction/BidHistory";
@@ -89,7 +89,7 @@ function PaintingTab({
           : "border-transparent hover:border-gray-200 bg-white"
       }`}
     >
-      <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+      <div className={`w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 ${p.status === "WAITING" ? "grayscale opacity-50" : ""}`}>
         <img
           src={p.painting.imageUrl || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=200"}
           alt={p.painting.title}
@@ -97,15 +97,53 @@ function PaintingTab({
         />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-black text-sm leading-tight line-clamp-1">{p.painting.title}</p>
-        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-          {fmt(p.currentBid)}
-        </p>
+        <p className={`font-black text-xs leading-tight line-clamp-1 ${p.status === "WAITING" ? "opacity-40" : ""}`}>{p.painting.title}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          <p className={`text-[10px] font-bold uppercase tracking-wider ${p.status === "WAITING" ? "text-gray-400" : "text-[#f07d44]"}`}>
+            {fmt(p.currentBid)}
+          </p>
+          {p.status === "LIVE" ? (
+             <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          ) : (
+             <span className="text-[8px] font-black uppercase text-gray-400">Chờ</span>
+          )}
+        </div>
       </div>
       {selected && (
         <CheckCircle size={18} className="text-[#f07d44] flex-shrink-0" />
       )}
     </button>
+  );
+}
+// ─── Number ticker ────────────────────────────────────────────────────────
+function RollingNumber({ value }: { value: number }) {
+  const digits = String(new Intl.NumberFormat("vi-VN").format(value)).split("");
+  
+  return (
+    <div className="flex overflow-hidden">
+      {digits.map((digit, i) => (
+        <span key={`${i}-${digit}`} className="inline-block relative">
+           <AnimatePresence mode="popLayout">
+             <motion.span
+               key={digit}
+               initial={{ y: "100%", opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               exit={{ y: "-100%", opacity: 0 }}
+               transition={{ 
+                 duration: 0.5, 
+                 type: "spring", 
+                 stiffness: 200, 
+                 damping: 20 
+               }}
+               className="inline-block"
+             >
+               {digit}
+             </motion.span>
+           </AnimatePresence>
+        </span>
+      ))}
+      <span className="ml-1 tracking-normal">₫</span>
+    </div>
   );
 }
 
@@ -178,7 +216,8 @@ export default function AuctionDetailPage() {
         setHasJoined(joined);
       }
     }
-  }, [auction, userId, hasJoined, localBids.length]);
+  }, [auction, userId, hasJoined]); // Removed localBids.length from deps to avoid unnecessary loops
+
 
   const handleBidPlaced = useCallback(
     (event: BidPlacedEvent) => {
@@ -235,12 +274,37 @@ export default function AuctionDetailPage() {
     ? prices[selectedIdStr] ?? selectedPainting.currentBid
     : 0;
 
+  // Fetch real bid history for selected painting
+  const { data: historyBids } = useGetBidHistory(
+    String(auctionId),
+    selectedPainting?.paintingId || ""
+  );
+
+  // Sync local bids with history when painting changes
+  useEffect(() => {
+    if (historyBids) {
+      setLocalBids(historyBids);
+    }
+  }, [historyBids]);
+
   const visibleBids = localBids.filter(
     (b) => String(b.auctionPaintingId) === selectedIdStr
   );
 
   const isAuctionLive = auction?.status === "ACTIVE" || auction?.status === "ONGOING" || auction?.status === "LIVE";
-  const countdownTarget = isAuctionLive ? auction?.endTime : (auction?.startTime ?? "");
+  
+  // Use painting-specific status for more accurate live state
+  const isPaintingLive = selectedPainting?.status === "LIVE";
+  const isPaintingWaiting = selectedPainting?.status === "WAITING";
+  
+  // Logic for countdown target: 
+  // - If painting is live -> count to its end time
+  // - If painting is waiting -> count to its start time
+  // - Fallback to auction general times
+  const countdownTarget = isPaintingLive 
+    ? selectedPainting?.auctionEndTime 
+    : (isPaintingWaiting ? selectedPainting?.auctionStartTime : (isAuctionLive ? auction?.endTime : (auction?.startTime ?? "")));
+  
   const countdown = useCountdown(countdownTarget || "");
 
   const handleBid = async (amount: number) => {
@@ -256,7 +320,14 @@ export default function AuctionDetailPage() {
     setHasJoined(true);
   };
 
-  const currentBidCount = visibleBids.length || (selectedPainting?.currentBidderId ? 1 : 0);
+  const currentBidCount = visibleBids.length;
+  
+  // Detect if current user is leading
+  const highestBid = visibleBids[0]; // Bids are sorted descending by hook mapping
+  const isHighestBidder = !!userId && (
+    (highestBid && String(highestBid.userId) === String(userId)) || 
+    (!highestBid && selectedPainting?.currentBidderId === userId)
+  );
 
   if (isLoading) {
     return (
@@ -327,11 +398,11 @@ export default function AuctionDetailPage() {
 
           {/* Countdown */}
           {countdownTarget && (
-            <div className="mt-6 inline-flex items-center gap-3 bg-[#1a1a1a] text-white px-6 py-4 rounded-2xl">
-              <Timer size={20} className="text-[#f07d44]" />
+            <div className={`mt-6 inline-flex items-center gap-3 ${isPaintingWaiting ? "bg-orange-100 text-orange-900" : "bg-[#1a1a1a] text-white"} px-6 py-4 rounded-2xl transition-colors`}>
+              <Timer size={20} className={isPaintingWaiting ? "text-orange-600" : "text-[#f07d44]"} />
               <div>
                 <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">
-                  {isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau"}
+                  {isPaintingLive ? "Kết thúc sau" : (isPaintingWaiting ? "Bắt đầu sau" : (isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau"))}
                 </p>
                 <p className="text-2xl font-black tracking-widest">{countdown}</p>
               </div>
@@ -342,21 +413,67 @@ export default function AuctionDetailPage() {
         {/* Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT: Paintings list */}
-          <div className="lg:col-span-3 space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-3">
-              Các tác phẩm ({paintings.length})
-            </p>
-            {paintings.map((p, idx) => (
-              <PaintingTab
-                key={p.auctionPaintingId}
-                p={{
-                  ...p,
-                  currentBid: prices[String(p.auctionPaintingId)] ?? p.currentBid,
-                }}
-                selected={idx === selectedIdx}
-                onClick={() => setSelectedIdx(idx)}
-              />
-            ))}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Live Section */}
+            {paintings.some(p => p.status === "LIVE") && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#f07d44] mb-3 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f07d44] animate-pulse" />
+                  Đang đấu giá
+                </p>
+                {paintings.map((p, idx) => p.status === "LIVE" && (
+                  <PaintingTab
+                    key={p.auctionPaintingId}
+                    p={{
+                      ...p,
+                      currentBid: prices[String(p.auctionPaintingId)] ?? p.currentBid,
+                    }}
+                    selected={idx === selectedIdx}
+                    onClick={() => setSelectedIdx(idx)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Waiting Section */}
+            {paintings.some(p => p.status === "WAITING" || !p.status) && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-3">
+                  Chờ đấu ({paintings.filter(p => p.status === "WAITING" || !p.status).length})
+                </p>
+                {paintings.map((p, idx) => (p.status === "WAITING" || !p.status) && (
+                  <PaintingTab
+                    key={p.auctionPaintingId}
+                    p={{
+                      ...p,
+                      currentBid: prices[String(p.auctionPaintingId)] ?? p.currentBid,
+                    }}
+                    selected={idx === selectedIdx}
+                    onClick={() => setSelectedIdx(idx)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Ended Section */}
+            {paintings.some(p => p.status === "ENDED" || p.status === "SOLD") && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 mb-3">
+                  Đã kết thúc
+                </p>
+                {paintings.map((p, idx) => (p.status === "ENDED" || p.status === "SOLD") && (
+                  <PaintingTab
+                    key={p.auctionPaintingId}
+                    p={{
+                      ...p,
+                      currentBid: prices[String(p.auctionPaintingId)] ?? p.currentBid,
+                    }}
+                    selected={idx === selectedIdx}
+                    onClick={() => setSelectedIdx(idx)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* CENTER: Image & Info */}
@@ -369,10 +486,15 @@ export default function AuctionDetailPage() {
                     alt={selectedPainting.painting.title}
                     className="w-full h-full object-cover"
                   />
-                  {isAuctionLive && (
+                  {isPaintingLive && (
                     <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
                       <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                       Live
+                    </div>
+                  )}
+                  {isPaintingWaiting && (
+                    <div className="absolute top-4 left-4 flex items-center gap-2 bg-gray-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                      Waiting
                     </div>
                   )}
                   {/* Price display with animation */}
@@ -381,18 +503,9 @@ export default function AuctionDetailPage() {
                       Giá hiện tại
                     </p>
                     <div className="flex items-center gap-3">
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={currentPrice}
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          exit={{ y: -20, opacity: 0 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                          className="text-4xl font-black text-[#f07d44]"
-                        >
-                          {new Intl.NumberFormat("vi-VN").format(currentPrice)}đ
-                        </motion.div>
-                      </AnimatePresence>
+                      <div className="text-4xl font-black text-[#f07d44] leading-none">
+                        <RollingNumber value={currentPrice} />
+                      </div>
                       <TrendingUp size={24} className="text-white opacity-40" />
                     </div>
                   </div>
@@ -434,24 +547,51 @@ export default function AuctionDetailPage() {
 
           {/* RIGHT: Bidding Panel */}
           <div className="lg:col-span-3 space-y-6">
-            {selectedPainting && isAuctionLive && (
+            {selectedPainting && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-4">
                   Phòng đấu giá
                 </p>
                 {(() => {
-                  const isParticipant = hasJoined || (!!userId && !!auction?.auctionParticipants?.some(p => String(p.userId) === String(userId)));
-                  
+                  if (isPaintingWaiting) {
+                    return (
+                      <div className="text-center py-8 px-4 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50">
+                         <Timer size={32} className="mx-auto text-gray-300 mb-3" />
+                         <p className="text-xs font-black uppercase tracking-widest opacity-40 mb-1">Đang đợi</p>
+                         <p className="text-[10px] opacity-40 leading-relaxed">Vui lòng đợi đến lượt đấu<br/>cho tác phẩm này.</p>
+                      </div>
+                    );
+                  }
+
+                  if (!isPaintingLive && !isAuctionLive) {
+                     return (
+                      <div className="text-center py-8 px-4 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50">
+                         <div className="text-2xl font-black opacity-10 mb-2">OFF</div>
+                         <p className="text-xs font-black uppercase tracking-widest opacity-40">Phiên đấu giá chưa mở</p>
+                      </div>
+                    );
+                  }
+
+                  const isParticipant =
+                    hasJoined ||
+                    (!!userId &&
+                      !!auction?.auctionParticipants?.some(
+                        (p) => String(p.userId) === String(userId)
+                      ));
+
                   if (isParticipant) {
                     return (
                       <BidForm
                         auctionId={String(auctionId)}
-                        auctionPaintingId={String(selectedPainting.auctionPaintingId)}
+                        auctionPaintingId={String(
+                          selectedPainting.auctionPaintingId
+                        )}
                         currentPrice={currentPrice}
                         bidStep={selectedPainting.bidStep}
+                        isHighestBidder={isHighestBidder}
                         onBid={handleBid}
                         isLoading={bidMutation.isPending}
-                        disabled={!isAuctionLive}
+                        disabled={!isPaintingLive}
                       />
                     );
                   }
@@ -459,7 +599,9 @@ export default function AuctionDetailPage() {
                   return (
                     <div className="space-y-4">
                       <p className="text-xs text-center opacity-60">
-                        {userId ? "Bạn cần tham gia để đặt giá thầu." : "Vui lòng đăng nhập để tham gia đấu giá."}
+                        {userId
+                          ? "Bạn cần tham gia để đặt giá thầu."
+                          : "Vui lòng đăng nhập để tham gia đấu giá."}
                       </p>
                       {userId ? (
                         <button
@@ -467,7 +609,9 @@ export default function AuctionDetailPage() {
                           disabled={joinMutation.isPending}
                           className="w-full bg-[#f07d44] hover:bg-[#d96a30] text-white py-4 rounded-xl font-black text-sm uppercase tracking-widest transition shadow-lg shadow-orange-100 disabled:opacity-50"
                         >
-                          {joinMutation.isPending ? "Đang tham gia..." : "Tham gia ngay"}
+                          {joinMutation.isPending
+                            ? "Đang tham gia..."
+                            : "Tham gia ngay"}
                         </button>
                       ) : (
                         <Link

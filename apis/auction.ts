@@ -160,3 +160,27 @@ export function useGetWonPaintings(userId?: string) {
     staleTime: 60 * 1000,
   });
 }
+
+// ─── GET /auctions/:auctionId/:paintingId/bid-history ────────────────
+export function useGetBidHistory(auctionId: string | number, paintingId: string) {
+  return useQuery<Bid[]>({
+    queryKey: ["bid-history", auctionId, paintingId],
+    queryFn: async () => {
+      const res = await myAxios.get(`/auctions/${auctionId}/${paintingId}/bid-history`);
+      // Map API response to Bid[] if needed. 
+      // The sample shows: { data: [ { bidHistoryId, bidAmount, bidTime, bidder: { fullName } } ] }
+      const rawData = res.data?.data || res.data || [];
+      return rawData.map((item: any) => ({
+        bidId: String(item.bidHistoryId),
+        auctionId: String(auctionId),
+        auctionPaintingId: String(item.auctionPaintingId),
+        userId: item.bidderId,
+        userName: item.bidder?.fullName || item.bidder?.username,
+        amount: item.bidAmount,
+        createdAt: item.bidTime,
+      }));
+    },
+    enabled: !!auctionId && !!paintingId,
+    staleTime: 5 * 1000, // Frequent updates
+  });
+}

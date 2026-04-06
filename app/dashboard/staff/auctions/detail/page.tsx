@@ -572,7 +572,7 @@ function AuctionDetailContent() {
                               </div>
                             )}
 
-                            {painting.status && (
+                            {/* {painting.status && (
                               <div className="absolute top-1 left-1 z-10">
                                 <span className={`text-[8px] font-black text-white px-1.5 py-0.5 uppercase tracking-tighter rounded-sm ${
                                   painting.status === "SOLD" ? "bg-red-500" : 
@@ -583,7 +583,7 @@ function AuctionDetailContent() {
                                   {painting.status}
                                 </span>
                               </div>
-                            )}
+                            )} */}
                             
                             {isAlreadyInAuction || painting.status === "INAUCTION" ? (
                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">

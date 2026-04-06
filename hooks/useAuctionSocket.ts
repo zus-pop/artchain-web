@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
-import { BidPlacedEvent, AuctionStatusChangedEvent, AuctionStatus } from "@/types/auction";
+import { BidPlacedEvent, AuctionStatusChangedEvent } from "@/types/auction";
 import { useAuthStore } from "@/store";
 
 const WS_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL ||
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") ||
-  "https://api.artchain.io.vn";
+  (process.env.NEXT_PUBLIC_SOCKET_URL ||
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") ||
+    "https://api.artchain.io.vn") + "/auction";
 
 interface UseAuctionSocketOptions {
   auctionId: string;
@@ -36,18 +36,31 @@ export function useAuctionSocket({
 
     const socket = io(WS_URL, {
       auth: { token: accessToken },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
     });
 
     socketRef.current = socket;
 
+    socket.onAny((eventName, ...args) => {
+      console.log(`[Socket AnyEvent] "${eventName}":`, args);
+    });
+
     socket.on("connect", () => {
       setIsConnected(true);
       console.log("🔌 Socket connected:", socket.id);
-      // join the auction room
-      socket.emit("join-auction", { auctionId: String(auctionId) });
+      
+      const user = useAuthStore.getState().user;
+      const joinPayload = { 
+        auctionId: Number(auctionId), 
+        userId: user?.userId || "anonymous" 
+      };
+
+      console.log("📤 Attempting to join auction room:", joinPayload);
+      // Try both naming conventions for joining
+      socket.emit("join-auction", joinPayload);
+      socket.emit("joinAuction", joinPayload);
     });
 
     socket.on("disconnect", (reason) => {
@@ -66,6 +79,21 @@ export function useAuctionSocket({
       onBidPlacedRef.current?.(data);
     });
 
+    socket.on("newBid", (data: any) => {
+      console.log("💎 [Socket] newBid event received:", data);
+      const mappedData: BidPlacedEvent = {
+        bidId: data.bidId || `bid-${Date.now()}`,
+        auctionId: String(auctionId),
+        auctionPaintingId: String(data.auctionPaintingId),
+        userId: data.bidderId || data.currentBidderId,
+        userName: data.userName,
+        amount: data.bidAmount || data.currentBid,
+        createdAt: data.timestamp || new Date().toISOString(),
+      };
+
+      onBidPlacedRef.current?.(mappedData);
+    });
+
     // Auction status change  (ACTIVE → ENDED etc.)
     socket.on("auction-status-changed", (data: AuctionStatusChangedEvent) => {
       console.log("🚩 Status changed (auction-status-changed):", data);
@@ -77,13 +105,40 @@ export function useAuctionSocket({
       onStatusChangedRef.current?.(data);
     });
 
-    // join the auction room
-    socket.on("connect", () => {
-      setIsConnected(true);
-      console.log("🔌 Socket connected:", socket.id);
-      socket.emit("join-auction", { auctionId: String(auctionId) });
-      socket.emit("joinAuction", { auctionId: String(auctionId) });
+    socket.on("userJoined", (data: any) => {
+      console.log("👤 [Socket] userJoined:", data);
+      if (data?.participantCount !== undefined) {
+        setParticipantCount(data.participantCount);
+      }
     });
+
+    socket.on("userLeft", (data: any) => {
+      console.log("👤 [Socket] userLeft:", data);
+      if (data?.participantCount !== undefined) {
+        setParticipantCount(data.participantCount);
+      }
+    });
+
+    socket.on("joinedAuction", (data: any) => {
+      console.log("🏠 [Socket] joinedAuction:", data);
+      if (data?.participantCount !== undefined) {
+        setParticipantCount(data.participantCount);
+      }
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("bid-placed");
+      socket.off("bidPlaced");
+      socket.off("newBid");
+      socket.off("auction-status-changed");
+      socket.off("auctionStatusChanged");
+      socket.off("userJoined");
+      socket.off("userLeft");
+      socket.off("joinedAuction");
+      socket.disconnect();
+    };
   }, [auctionId, accessToken]);
 
   const emit = useCallback((event: string, data: unknown) => {
