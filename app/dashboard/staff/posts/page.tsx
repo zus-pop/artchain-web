@@ -392,13 +392,13 @@ export default function PostsPage() {
                                   >
                                     <IconEye className="h-4 w-4" />
                                   </Link>
-                                  <Link
+                                  {/* <Link
                                     href={`/dashboard/staff/posts/create?id=${post.post_id}`}
                                     className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
                                     title="Edit"
                                   >
                                     <IconEdit className="h-4 w-4" />
-                                  </Link>
+                                  </Link> */}
                                   {post.status === "DRAFT" && (
                                     <button
                                       onClick={() =>

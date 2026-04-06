@@ -12,6 +12,9 @@ export interface AuctionPainting {
   currentBidderId?: string | null;
   isSold?: boolean;
   revoked?: number;
+  status?: string | "LIVE" | "WAITING" | "ENDED";
+  auctionStartTime?: string;
+  auctionEndTime?: string;
   createdAt?: string;
   updatedAt?: string;
   painting: {

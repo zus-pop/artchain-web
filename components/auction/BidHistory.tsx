@@ -16,10 +16,10 @@ const fmt = (n: number) =>
 export default function BidHistory({ bids, highlightUserId }: BidHistoryProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom when new bids come in
+  // Auto-scroll to top when new bids come in (latest is at index 0)
   useEffect(() => {
     if (listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
+      listRef.current.scrollTop = 0;
     }
   }, [bids.length]);
 
