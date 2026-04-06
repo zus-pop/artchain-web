@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useMemo, useState } from "react";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -10,6 +12,9 @@ import {
   Plus,
   Wallet,
 } from "lucide-react";
+import { useMeQuery } from "@/hooks/useMeQuery";
+import { topupWallet } from "@/apis/wallet";
+import { toast } from "sonner";
 
 interface Transaction {
   id: string;
@@ -53,6 +58,10 @@ const transactions: Transaction[] = [
 const weekData = [80, 130, 100, 170, 140, 185, 150];
 
 export default function WalletPage() {
+  const { data: userData, refetch } = useMeQuery();
+  const [topupAmount, setTopupAmount] = useState("200000");
+  const [isTopupLoading, setIsTopupLoading] = useState(false);
+
   const maxY = Math.max(...weekData);
   const points = weekData
     .map((value, index) => {
@@ -62,8 +71,50 @@ export default function WalletPage() {
     })
     .join(" ");
 
-  const balance = 8640000;
+  const balance = userData?.wallet?.balance ?? 0;
   const formattedBalance = new Intl.NumberFormat("vi-VN").format(balance);
+  const walletId = userData?.wallet?.walletId || "Chưa có ví";
+
+  const normalizedTopupAmount = useMemo(() => {
+    const digitsOnly = topupAmount.replace(/\D/g, "");
+    return Number(digitsOnly || 0);
+  }, [topupAmount]);
+
+  const handleTopup = async () => {
+    if (isTopupLoading) return;
+
+    if (!normalizedTopupAmount || normalizedTopupAmount <= 0) {
+      toast.error("Vui lòng nhập số tiền hợp lệ");
+      return;
+    }
+
+    try {
+      setIsTopupLoading(true);
+      const result = await topupWallet(normalizedTopupAmount);
+      const maybeResult = result as Record<string, unknown>;
+      const paymentUrl =
+        (typeof maybeResult.checkoutUrl === "string" && maybeResult.checkoutUrl) ||
+        (typeof maybeResult.paymentUrl === "string" && maybeResult.paymentUrl) ||
+        (typeof maybeResult.url === "string" && maybeResult.url) ||
+        (maybeResult.data && typeof maybeResult.data === "object"
+          ? (((maybeResult.data as Record<string, unknown>).checkoutUrl as string | undefined) ||
+            ((maybeResult.data as Record<string, unknown>).paymentUrl as string | undefined) ||
+            ((maybeResult.data as Record<string, unknown>).url as string | undefined))
+          : undefined);
+
+      toast.success("Tạo giao dịch nạp tiền thành công");
+
+      if (paymentUrl && typeof window !== "undefined") {
+        window.open(paymentUrl, "_blank", "noopener,noreferrer");
+      }
+
+      await refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Không thể tạo giao dịch nạp tiền");
+    } finally {
+      setIsTopupLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#EAE6E0] px-4 pb-16 pt-24 sm:px-6 lg:px-8">
@@ -77,9 +128,13 @@ export default function WalletPage() {
               Theo dõi số dư, giao dịch và tài khoản liên kết
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 rounded-xl bg-[#FF6E1A] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-[#e65a00]">
+          <button
+            onClick={handleTopup}
+            disabled={isTopupLoading}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#FF6E1A] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-orange-200 transition hover:bg-[#e65a00] disabled:cursor-not-allowed disabled:opacity-60"
+          >
             <Plus size={16} />
-            Nạp tiền
+            {isTopupLoading ? "Đang tạo" : "Nạp tiền"}
           </button>
         </div>
 
@@ -106,13 +161,36 @@ export default function WalletPage() {
                       ArtChain Wallet ID
                     </p>
                     <p className="mt-1 text-lg font-semibold tracking-[0.16em] text-gray-900">
-                      ACW 2984 5633 7859
+                      {walletId}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
                     <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
-                    Đang hoạt động
+                    {userData?.wallet?.status || "Đang hoạt động"}
                   </div>
+                </div>
+
+                <div className="mt-6 rounded-xl border border-orange-100 bg-orange-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Nạp tiền nhanh</p>
+                  <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                    <input
+                      inputMode="numeric"
+                      value={topupAmount}
+                      onChange={(event) => setTopupAmount(event.target.value)}
+                      placeholder="Nhập số tiền cần nạp"
+                      className="w-full rounded-lg border border-orange-200 bg-white px-3 py-2 text-sm font-semibold text-gray-900 outline-none ring-0 focus:border-[#FF6E1A]"
+                    />
+                    <button
+                      onClick={handleTopup}
+                      disabled={isTopupLoading}
+                      className="inline-flex items-center justify-center rounded-lg bg-[#FF6E1A] px-4 py-2 text-sm font-bold text-white hover:bg-[#e65a00] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isTopupLoading ? "Đang xử lý" : "Nạp ngay"}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs font-medium text-gray-500">
+                    Số tiền: {new Intl.NumberFormat("vi-VN").format(normalizedTopupAmount)}đ
+                  </p>
                 </div>
               </div>
             </section>
@@ -280,9 +358,13 @@ export default function WalletPage() {
                 Hành động nhanh
               </h4>
               <div className="grid grid-cols-2 gap-3">
-                <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF6E1A] px-3 py-2.5 text-xs font-bold text-white hover:bg-[#ff833b]">
+                <button
+                  onClick={handleTopup}
+                  disabled={isTopupLoading}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FF6E1A] px-3 py-2.5 text-xs font-bold text-white hover:bg-[#ff833b] disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   <Plus size={14} />
-                  Nạp tiền
+                  {isTopupLoading ? "Đang tạo" : "Nạp tiền"}
                 </button>
                 <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50">
                   <Landmark size={14} />

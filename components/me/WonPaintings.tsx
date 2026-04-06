@@ -57,7 +57,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
               className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-              Đã trúng thầu
+              Đã trúng 
             </div>
           </div>
 
@@ -69,7 +69,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
             
             <div className="space-y-3 pt-3 border-t border-gray-100">
               <div className="flex justify-between items-center text-sm">
-                <span className="opacity-50 font-medium">Giá trúng thầu:</span>
+                <span className="opacity-50 font-medium">Giá trúng :</span>
                 <span className="font-black text-[#f07d44]">
                   {formatCurrency(wp.finalBid)}
                 </span>

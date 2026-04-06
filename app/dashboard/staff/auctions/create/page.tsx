@@ -13,7 +13,7 @@ import {
   IconArrowLeft,
   IconCalendar,
   IconDeviceFloppy,
-  IconHammer,
+  IconGavel,
   IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -142,7 +142,7 @@ export default function CreateAuctionPage() {
                     <div className="staff-card p-6">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 bg-blue-100 rounded-lg">
-                          <IconHammer className="h-5 w-5 text-blue-600" />
+                          <IconGavel className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
                           <h2 className="text-xl font-semibold staff-text-primary">

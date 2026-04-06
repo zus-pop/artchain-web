@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Timer, Hammer, Eye, TrendingUp } from "lucide-react";
+import { Timer, Gavel, Eye, TrendingUp } from "lucide-react";
 import { Auction, AuctionStatus } from "@/types/auction";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -124,7 +124,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               <div className="flex items-center gap-3 text-[10px] opacity-70">
                 {auction.bidCount !== undefined && (
                   <span className="flex items-center gap-1">
-                    <Hammer size={11} /> {auction.bidCount}
+                    <Gavel size={11} /> {auction.bidCount}
                   </span>
                 )}
                 {auction.participantCount !== undefined && (

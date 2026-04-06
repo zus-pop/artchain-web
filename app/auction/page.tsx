@@ -1,10 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Timer, Hammer, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, Timer, Gavel, ArrowRight } from 'lucide-react';
 import { useGetAuctions } from '@/apis/auction';
 import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import { useAuth } from '@/hooks/useAuth';
+import { useMeQuery } from '@/hooks/useMeQuery';
+import { createWallet } from '@/apis/wallet';
+import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,6 +35,13 @@ const itemVariants = {
 export default function ModernArtAuction() {
   const [activeSection, setActiveSection] = useState('section-01');
   const [mounted, setMounted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const { user } = useAuth();
+  const { data: userData, refetch: refetchUser } = useMeQuery();
+  const displayUser = userData || user;
+  const hasWallet = !!displayUser?.wallet;
+
   const { data: allAuctions = [], isLoading } = useGetAuctions({
     page: 1,
     limit: 10,
@@ -53,6 +66,26 @@ export default function ModernArtAuction() {
 
     return () => observer.disconnect();
   }, []);
+
+  const handleBecomeBidder = async () => {
+    if (!displayUser?.userId) {
+      toast.error("Vui lòng đăng nhập để tiếp tục");
+      return;
+    }
+
+    try {
+      setIsCreatingWallet(true);
+      await createWallet(displayUser.userId);
+      await refetchUser();
+      setShowTerms(false);
+      toast.success("Chúc mừng! Bạn đã trở thành người đấu giá");
+    } catch (error) {
+      console.error("Failed to create wallet:", error);
+      toast.error("Có lỗi xảy ra khi kích hoạt tài khoản đấu giá");
+    } finally {
+      setIsCreatingWallet(false);
+    }
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -118,8 +151,143 @@ export default function ModernArtAuction() {
 
   if (!mounted) return null;
 
+  // Render Become Bidder Landing Page if NO wallet
+  if (!hasWallet) {
+    return (
+      <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
+        <HeaderWrapper />
+        
+        <main className="pt-40 pb-20 px-[5%] max-w-4xl mx-auto flex flex-col items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-20 h-20 bg-[#f07d44]/10 rounded-full flex items-center justify-center mb-8 mx-auto">
+              <Gavel className="text-[#f07d44] w-10 h-10" />
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-6 leading-none">
+              Sẵn sàng sở hữu <br />
+              <span className="text-[#f07d44]">Kiệt tác</span> nghệ thuật?
+            </h1>
+            <p className="text-lg text-black/60 mb-12 max-w-2xl mx-auto">
+              Tham gia cộng đồng đấu giá nghệ thuật tại ArtChain. Chỉ với một tài khoản đấu giá, bạn có thể tham gia đấu giá trực tiếp các tác phẩm từ những nghệ sĩ tài năng nhất.
+            </p>
+            
+            <button 
+              onClick={() => setShowTerms(true)}
+              className="bg-[#1a1a1a] text-white px-10 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-[#f07d44] transition-all flex items-center gap-3 mx-auto shadow-2xl"
+            >
+              Trở thành người đấu giá <ArrowRight size={20} />
+            </button>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 text-left">
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+              <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">1</div>
+              <h3 className="font-bold uppercase tracking-wider mb-2">Đăng ký ví</h3>
+              <p className="text-sm opacity-60">Tạo ví ArtChain để quản lý số dư và tham gia đấu giá an toàn.</p>
+            </div>
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+              <div className="w-10 h-10 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center font-bold mb-4">2</div>
+              <h3 className="font-bold uppercase tracking-wider mb-2">Nạp tiền</h3>
+              <p className="text-sm opacity-60">Nạp tiền vào ví để có thể đặt giá cho những tác phẩm bạn yêu thích.</p>
+            </div>
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+              <div className="w-10 h-10 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center font-bold mb-4">3</div>
+              <h3 className="font-bold uppercase tracking-wider mb-2">Đấu giá & Sở hữu</h3>
+              <p className="text-sm opacity-60">Tham gia phiên đấu giá trực tiếp và nhận tác phẩm nghệ thuật tận nơi.</p>
+            </div>
+          </div>
+        </main>
+
+        {/* Terms & Conditions Modal */}
+        <AnimatePresence>
+          {showTerms && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowTerms(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
+              >
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-[#1a1a1a] text-white text-center">
+                  <div>
+                    <h2 className="text-2xl font-black uppercase tracking-tighter">Điều khoản & Điều kiện</h2>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 mt-1">Vui lòng đọc kỹ trước khi bắt đầu</p>
+                  </div>
+                  <button onClick={() => setShowTerms(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                    <X size={24} />
+                  </button>
+                </div>
+                
+                <div className="p-8 overflow-y-auto flex-1 text-sm leading-relaxed space-y-6">
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">1. Quy định chung</h4>
+                    <p>Bằng việc đăng ký tài khoản đấu giá, bạn đồng ý tuân thủ tất cả các quy định về đấu giá tại ArtChain. Các giao dịch đấu giá là thỏa thuận ràng buộc về mặt pháp lý.</p>
+                  </section>
+                  
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">2. Quy tắc đặt giá</h4>
+                    <ul className="list-disc pl-5 space-y-2">
+                      <li>Mỗi bước giá phải lớn hơn giá hiện tại ít nhất bằng mức quy định (Bước giá).</li>
+                      <li>Sau khi xác nhận đặt giá, bạn không thể hủy hoặc rút lại giá đã đặt.</li>
+                      <li>Người đặt giá cao nhất tại thời điểm kết thúc phiên đấu giá sẽ là người thắng cuộc.</li>
+                    </ul>
+                  </section>
+                  
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">3. Thanh toán & Nhận tác phẩm</h4>
+                    <p>Người thắng cuộc có trách nhiệm thanh toán toàn bộ số tiền trúng đấu giá trong vòng 48 giờ. Tác phẩm sẽ được vận chuyển sau khi ArtChain xác nhận đã nhận đủ thanh toán.</p>
+                  </section>
+
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">4. Trách nhiệm người dùng</h4>
+                    <p>Bạn chịu trách nhiệm bảo mật thông tin tài khoản và mọi hoạt động diễn ra dưới tài khoản của mình. ArtChain có quyền đình chỉ tài khoản nếu phát hiện hành vi gian lận hoặc vi phạm quy định.</p>
+                  </section>
+                </div>
+
+                <div className="p-8 border-t border-gray-100 flex flex-col md:flex-row gap-4">
+                  <button 
+                    onClick={() => setShowTerms(false)}
+                    className="flex-1 px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all text-center"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button 
+                    onClick={handleBecomeBidder}
+                    disabled={isCreatingWallet}
+                    className="flex-1 bg-[#1a1a1a] text-white px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#f07d44] transition-all flex items-center justify-center gap-2 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isCreatingWallet ? (
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : (
+                      <>Tôi đã đọc và đồng ý <Check size={18} /></>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
+          <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — BỘ SƯU TẬP TÁC PHẨM</p>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
+
       <HeaderWrapper />
       
       {/* Quick Action Navigation Sidebar */}
@@ -368,7 +536,7 @@ export default function ModernArtAuction() {
                           <div className="flex gap-4">
                             <Link href={`/auction/${item.id}`} className="flex-1">
                               <button className="w-full bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
-                                  Đấu giá ngay <Hammer size={16} />
+                                  Đấu giá ngay <Gavel size={16} />
                               </button>
                             </Link>
                           </div>

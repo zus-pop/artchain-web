@@ -29,10 +29,9 @@ function SuccessContent() {
           <Link href="/" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
             Quay lại trang chủ
           </Link>
-          <br />
-          <Link href="/campaigns" className="inline-block text-blue-600 hover:text-blue-800 text-sm">
+          {/* <Link href="/campaigns" className="inline-block text-blue-600 hover:text-blue-800 text-sm">
             Xem thêm campaigns
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>

@@ -10,38 +10,90 @@ import {
   WifiOff,
   TrendingUp,
   CheckCircle,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetAuctionById, useJoinAuction, usePlaceBid, useGetBidHistory } from "@/apis/auction";
 import { useAuctionSocket } from "@/hooks/useAuctionSocket";
 import BidForm from "@/components/auction/BidForm";
 import BidHistory from "@/components/auction/BidHistory";
-import { Bid, BidPlacedEvent, AuctionPainting, AuctionStatus } from "@/types/auction";
-import { formatDistanceToNow, intervalToDuration } from "date-fns";
+import AuctionHeader from "@/components/sections/AuctionHeader";
+import {
+  Bid,
+  BidPlacedEvent,
+  AuctionPainting,
+  AuctionStatus,
+  AuctionRealtimeStatus,
+} from "@/types/auction";
+// date-fns no longer needed for countdown
 import { vi } from "date-fns/locale";
 import { useAuthStore } from "@/store";
 
 // ─── Countdown ───────────────────────────────────────────────────────────────
-function useCountdown(targetDate: string) {
-  const [timeLeft, setTimeLeft] = useState("");
+interface CountdownData {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  totalMinutes: number;
+  isExpired: boolean;
+}
+
+function useCountdown(targetDate: string, serverTimeOffsetMs = 0): CountdownData {
+  const [data, setData] = useState<CountdownData>({
+    days: 0, hours: 0, minutes: 0, seconds: 0, totalMinutes: 0, isExpired: true,
+  });
 
   useEffect(() => {
     const tick = () => {
       if (!targetDate) return;
-      const diff = new Date(targetDate).getTime() - Date.now();
-      if (diff <= 0) { setTimeLeft("00:00:00"); return; }
-      const dur = intervalToDuration({ start: 0, end: diff });
-      const hh = String((dur.hours ?? 0) + (dur.days ?? 0) * 24).padStart(2, "0");
-      const mm = String(dur.minutes ?? 0).padStart(2, "0");
-      const ss = String(dur.seconds ?? 0).padStart(2, "0");
-      setTimeLeft(`${hh}:${mm}:${ss}`);
+      const diff = new Date(targetDate).getTime() - (Date.now() + serverTimeOffsetMs);
+      if (diff <= 0) {
+        setData({ days: 0, hours: 0, minutes: 0, seconds: 0, totalMinutes: 0, isExpired: true });
+        return;
+      }
+      const totalSec = Math.floor(diff / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+      setData({
+        days,
+        hours,
+        minutes,
+        seconds,
+        totalMinutes: Math.floor(totalSec / 60),
+        isExpired: false,
+      });
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [targetDate]);
+  }, [targetDate, serverTimeOffsetMs]);
 
-  return timeLeft;
+  return data;
+}
+
+interface PaintingTimingState {
+  auctionStartTime?: string;
+  auctionEndTime?: string;
+}
+
+// ─── Format countdown ────────────────────────────────────────────────────────
+function formatCountdown(cd: CountdownData): string {
+  if (cd.isExpired) return "Đã kết thúc";
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  if (cd.days > 0) {
+    // >= 24h: "2 ngày 03:15:42"
+    return `${cd.days} ngày ${pad(cd.hours)}:${pad(cd.minutes)}:${pad(cd.seconds)}`;
+  }
+  if (cd.hours > 0) {
+    // >= 1h: "03:15:42"
+    return `${pad(cd.hours)}:${pad(cd.minutes)}:${pad(cd.seconds)}`;
+  }
+  // < 1h: "15:42"
+  return `${pad(cd.minutes)}:${pad(cd.seconds)}`;
 }
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
@@ -158,6 +210,9 @@ export default function AuctionDetailPage() {
 
   const [localBids, setLocalBids] = useState<Bid[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({});
+  const [paintingTimings, setPaintingTimings] = useState<
+    Record<string, PaintingTimingState>
+  >({});
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [hasJoined, setHasJoined] = useState(false);
 
@@ -167,11 +222,18 @@ export default function AuctionDetailPage() {
     
     if (auction.auctionPaintings) {
       const map: Record<string, number> = {};
+      const timingMap: Record<string, PaintingTimingState> = {};
       
       auction.auctionPaintings.forEach((p) => {
         const idStr = String(p.auctionPaintingId);
         map[idStr] = p.currentBid;
+        timingMap[idStr] = {
+          auctionStartTime: p.auctionStartTime,
+          auctionEndTime: p.auctionEndTime,
+        };
       });
+
+      setPaintingTimings((prev) => ({ ...timingMap, ...prev }));
       
       // Update prices from API (only if the new value is strictly greater)
       setPrices((prev) => {
@@ -231,6 +293,16 @@ export default function AuctionDetailPage() {
         };
       });
 
+      if (event.paintingAuctionEndTime) {
+        setPaintingTimings((prev) => ({
+          ...prev,
+          [idStr]: {
+            ...prev[idStr],
+            auctionEndTime: event.paintingAuctionEndTime ?? undefined,
+          },
+        }));
+      }
+
       // 2. Add to bid history with duplicate check
       setLocalBids((prev) => {
         if (prev.some(b => b.bidId === event.bidId)) {
@@ -261,11 +333,63 @@ export default function AuctionDetailPage() {
     [auction?.auctionParticipants]
   );
 
-  const { isConnected, participantCount } = useAuctionSocket({
+  const handleAuctionStatus = useCallback((status: AuctionRealtimeStatus) => {
+    if (!Array.isArray(status?.paintings)) {
+      return;
+    }
+
+    setPaintingTimings((prev) => {
+      const next = { ...prev };
+
+      for (const painting of status.paintings ?? []) {
+        if (!painting?.auctionPaintingId) {
+          continue;
+        }
+
+        const idStr = String(painting.auctionPaintingId);
+        next[idStr] = {
+          ...next[idStr],
+          auctionStartTime: painting.auctionStartTime ?? next[idStr]?.auctionStartTime,
+          auctionEndTime: painting.auctionEndTime ?? next[idStr]?.auctionEndTime,
+        };
+      }
+
+      return next;
+    });
+  }, []);
+
+  const {
+    isConnected,
+    participantCount,
+    serverTimeOffsetMs,
+    requestAuctionStatus,
+  } = useAuctionSocket({
     auctionId,
     onBidPlaced: handleBidPlaced,
     onStatusChanged: () => refetch(),
+    onAuctionStatus: handleAuctionStatus,
   });
+
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const intervalId = setInterval(() => {
+      requestAuctionStatus();
+    }, 60000);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        requestAuctionStatus();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isConnected, requestAuctionStatus]);
 
   const paintings = auction?.auctionPaintings ?? [];
   const selectedPainting = paintings[selectedIdx];
@@ -296,16 +420,23 @@ export default function AuctionDetailPage() {
   // Use painting-specific status for more accurate live state
   const isPaintingLive = selectedPainting?.status === "LIVE";
   const isPaintingWaiting = selectedPainting?.status === "WAITING";
+  const selectedTiming = selectedPainting
+    ? paintingTimings[String(selectedPainting.auctionPaintingId)]
+    : undefined;
+  const resolvedPaintingEndTime =
+    selectedTiming?.auctionEndTime ?? selectedPainting?.auctionEndTime;
+  const resolvedPaintingStartTime =
+    selectedTiming?.auctionStartTime ?? selectedPainting?.auctionStartTime;
   
   // Logic for countdown target: 
   // - If painting is live -> count to its end time
   // - If painting is waiting -> count to its start time
   // - Fallback to auction general times
   const countdownTarget = isPaintingLive 
-    ? selectedPainting?.auctionEndTime 
-    : (isPaintingWaiting ? selectedPainting?.auctionStartTime : (isAuctionLive ? auction?.endTime : (auction?.startTime ?? "")));
+    ? resolvedPaintingEndTime
+    : (isPaintingWaiting ? resolvedPaintingStartTime : (isAuctionLive ? auction?.endTime : (auction?.startTime ?? "")));
   
-  const countdown = useCountdown(countdownTarget || "");
+  const countdown = useCountdown(countdownTarget || "", serverTimeOffsetMs);
 
   const handleBid = async (amount: number) => {
     if (!selectedPainting) return;
@@ -357,34 +488,28 @@ export default function AuctionDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white">
-      {/* ── Top bar ─────────────────────────────────────────────────────── */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-[#eae6e0]/80 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-[1600px] mx-auto px-[5%] h-16 flex items-center justify-between">
-          <Link href="/auction/list" className="flex items-center gap-2 text-sm font-black uppercase tracking-wider hover:text-[#f07d44] transition">
-            <ArrowLeft size={18} />
-            Danh sách
-          </Link>
+      <AuctionHeader />
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-1.5 text-xs font-bold opacity-50">
-              <Users size={14} />
-              {participantCount > 0
-                ? `${participantCount} người tham gia`
-                : `${auction.participantCount ?? 0} người tham gia`}
-            </div>
+      {/* ── Status & Info Bar (Below Header) ────────────────────────────────── */}
+      <div className="pt-24 px-[5%] max-w-[1600px] mx-auto flex items-center justify-between opacity-60">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider">
+            <User size={14} className="text-[#f07d44]" />
+            {participantCount > 0
+              ? `${participantCount} người tham gia`
+              : `${auction.participantCount ?? 0} người tham gia`}
+          </div>
 
-            <div className={`flex items-center gap-1.5 text-xs font-bold ${isConnected ? "text-green-600" : "text-gray-400"}`}>
-              {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
-              {isConnected ? "Kết nối" : "Offline"}
-            </div>
-
-            <StatusBadge status={auction.status} />
+          <div className={`flex items-center gap-1.5 text-xs font-black uppercase tracking-wider ${isConnected ? "text-green-600" : "text-gray-400"}`}>
+            {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {isConnected ? "Kết nối" : "Offline"}
           </div>
         </div>
+        <StatusBadge status={auction.status} />
       </div>
 
       {/* ── Main content ────────────────────────────────────────────────── */}
-      <main className="pt-24 px-[5%] max-w-[1600px] mx-auto pb-20">
+      <main className="pt-8 px-[5%] max-w-[1600px] mx-auto pb-20">
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-3">
@@ -401,10 +526,16 @@ export default function AuctionDetailPage() {
             <div className={`mt-6 inline-flex items-center gap-3 ${isPaintingWaiting ? "bg-orange-100 text-orange-900" : "bg-[#1a1a1a] text-white"} px-6 py-4 rounded-2xl transition-colors`}>
               <Timer size={20} className={isPaintingWaiting ? "text-orange-600" : "text-[#f07d44]"} />
               <div>
-                <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">
-                  {isPaintingLive ? "Kết thúc sau" : (isPaintingWaiting ? "Bắt đầu sau" : (isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau"))}
+                <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest flex items-center gap-2">
+                  <span>{isPaintingLive ? "Kết thúc sau" : (isPaintingWaiting ? "Bắt đầu sau" : (isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau"))}</span>
+                  {selectedPainting?.auctionDurationMinutes && (
+                    <>
+                      <span className="w-1 h-1 rounded-full bg-current opacity-20" />
+                      {/* <span></span> */}
+                    </>
+                  )}
                 </p>
-                <p className="text-2xl font-black tracking-widest">{countdown}</p>
+                <p className="text-2xl font-black tracking-widest">{formatCountdown(countdown)}</p>
               </div>
             </div>
           )}
@@ -480,11 +611,11 @@ export default function AuctionDetailPage() {
           <div className="lg:col-span-6">
             {selectedPainting ? (
               <div className="space-y-6">
-                <div className="relative aspect-[4/5] md:aspect-[3/4] overflow-hidden rounded-2xl shadow-2xl bg-gray-100">
+                <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-gray-100">
                   <img
                     src={selectedPainting.painting.imageUrl || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"}
                     alt={selectedPainting.painting.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto block"
                   />
                   {isPaintingLive && (
                     <div className="absolute top-4 left-4 flex items-center gap-2 bg-red-500 text-white px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
@@ -515,14 +646,14 @@ export default function AuctionDetailPage() {
                   <h2 className="text-3xl font-black uppercase tracking-tight mb-2">
                     {selectedPainting.painting.title}
                   </h2>
-                  <p className="text-sm text-[#f07d44] font-bold uppercase tracking-widest opacity-80 mb-4">
+                  {/* <p className="text-sm text-[#f07d44] font-bold uppercase tracking-widest opacity-80 mb-4">
                     ID Họa sĩ: {selectedPainting.painting.competitorId}
-                  </p>
+                  </p> */}
                   <p className="text-sm opacity-60 leading-relaxed mb-6">
                     {selectedPainting.painting.description || "Không có mô tả cho tác phẩm này."}
                   </p>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-6 border-t border-gray-100">
+                  <div className="grid grid-cols-2 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100">
                     <div>
                       <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Giá khởi điểm</p>
                       <p className="text-xl font-black">{new Intl.NumberFormat("vi-VN").format(selectedPainting.basePrice)}đ</p>
@@ -530,10 +661,6 @@ export default function AuctionDetailPage() {
                     <div>
                       <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Lượt đặt giá</p>
                       <p className="text-xl font-black">{currentBidCount}</p>
-                    </div>
-                    <div className="md:col-span-1">
-                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Thời lượng</p>
-                      <p className="text-xl font-black">{selectedPainting.auctionDurationMinutes || "--"} phút</p>
                     </div>
                   </div>
                 </div>
@@ -600,7 +727,7 @@ export default function AuctionDetailPage() {
                     <div className="space-y-4">
                       <p className="text-xs text-center opacity-60">
                         {userId
-                          ? "Bạn cần tham gia để đặt giá thầu."
+                          ? "Bạn cần tham gia để đặt giá."
                           : "Vui lòng đăng nhập để tham gia đấu giá."}
                       </p>
                       {userId ? (
@@ -630,7 +757,7 @@ export default function AuctionDetailPage() {
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
-                  Lịch sử thầu
+                  Lịch sử
                 </p>
                 {isConnected && (
                   <div className="flex items-center gap-1.5 text-[10px] text-green-600 font-bold uppercase tracking-wider">

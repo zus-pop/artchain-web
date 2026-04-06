@@ -41,7 +41,7 @@ const AuctionHeader: React.FC = () => {
     { label: "Danh sách", href: "/auction/list" },
     { label: "Hướng dẫn", href: "/auction/guide" },
     { label: "Luật", href: "/auction/rules" },
-    { label: "Ví", href: "/me/wallet" },
+    ...(displayUser?.wallet ? [{ label: "Ví", href: "/me/wallet" }] : []),
   ];
 
   useEffect(() => {
@@ -245,14 +245,16 @@ const AuctionHeader: React.FC = () => {
                             <User className="h-4 w-4" />
                             <span>Hồ sơ cá nhân</span>
                           </Link>
-                          <Link
-                            href="/me/wallet"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                          >
-                            <Wallet className="h-4 w-4" />
-                            <span>Ví của tôi</span>
-                          </Link>
+                          {displayUser?.wallet && (
+                            <Link
+                              href="/me/wallet"
+                              onClick={() => setIsUserDropdownOpen(false)}
+                              className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
+                            >
+                              <Wallet className="h-4 w-4" />
+                              <span>Ví của tôi</span>
+                            </Link>
+                          )}
 
                           <div className="border-t border-gray-100 my-1"></div>
  

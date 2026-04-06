@@ -13,6 +13,7 @@ import {
   User,
   Archive,
   Wallet,
+  Gavel,
 } from "lucide-react";
 import Link from "next/link";
 import GlassSurface from "@/components/GlassSurface";
@@ -288,12 +289,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
             </button>
 
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/auction"
-                className="text-sm font-medium text-black hover:text-[#FF6E1A] transition-colors whitespace-nowrap"
-              >
-                Switch to Auction
-              </Link>
+              {displayUser?.wallet && (
+                <Link 
+                  href="/auction"
+                  className="text-sm font-medium text-black hover:text-[#FF6E1A] transition-colors whitespace-nowrap"
+                >
+                  Chuyển trang đấu giá
+                </Link>
+              )}
 
               {/* Keep existing right-side actions (auth + language) */}
               {isAuthenticated ? (
@@ -380,16 +383,16 @@ const Header: React.FC<ArtistNavigationProps> = ({
                           >
                             <Archive className="h-4 w-4" />
                             <span>Đơn hàng</span>
-                          </Link>
+                          </Link> */}
 
                           <Link
-                            href="/me/wallet"
+                            href="/auction"
                             onClick={() => setIsUserDropdownOpen(false)}
                             className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
                           >
-                            <Wallet className="h-4 w-4" />
-                            <span>Ví của tôi</span>
-                          </Link> */}
+                            <Gavel className="h-4 w-4" />
+                            <span>Đấu giá</span>
+                          </Link>
 
                           <div className="border-t border-gray-100 my-1"></div>
  

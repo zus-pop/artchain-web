@@ -18,7 +18,7 @@ import { useTranslation } from "@/lib/i18n";
 import {
   IconArrowLeft,
   IconCalendar,
-  IconHammer,
+  IconGavel,
   IconPhoto,
   IconPlus,
   IconSettings,
@@ -237,7 +237,7 @@ function AuctionDetailContent() {
                     </Link>
                     <div className="flex items-center gap-3">
                       <div className="p-3 bg-blue-100 rounded-lg">
-                        <IconHammer className="h-6 w-6 text-blue-600" />
+                        <IconGavel className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
                         <h1 className="text-3xl font-bold staff-text-primary">{auction.title}</h1>
@@ -297,7 +297,7 @@ function AuctionDetailContent() {
                       {updateStatusMutation.isPending ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
                       ) : (
-                        <IconHammer className="h-5 w-5" />
+                        <IconGavel className="h-5 w-5" />
                       )}
                       {t.openLiveNow}
                     </button>
@@ -352,7 +352,7 @@ function AuctionDetailContent() {
 
               <div className="staff-card p-6 bg-linear-to-br from-emerald-50 to-white border-emerald-100 flex items-center gap-4">
                 <div className="p-3 bg-emerald-500 rounded-xl shadow-lg shadow-emerald-200/50">
-                  <IconHammer className="h-6 w-6 text-white" />
+                  <IconGavel className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <p className="text-2xl font-black staff-text-primary leading-none">
@@ -625,7 +625,7 @@ function AuctionDetailContent() {
               <div className="w-full lg:w-96 flex flex-col bg-[#fffdf9]">
                 <div className="p-4 border-b border-[#e6e2da] bg-gray-50 flex items-center gap-2">
                    <div className="p-1.5 bg-blue-100 rounded">
-                      <IconHammer className="h-4 w-4 text-blue-600" />
+                      <IconGavel className="h-4 w-4 text-blue-600" />
                    </div>
                    <h4 className="text-xs font-black uppercase tracking-widest staff-text-primary">{t.pricingConfiguration || "Pricing Config"}</h4>
                 </div>
