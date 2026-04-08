@@ -189,12 +189,12 @@ export default function ModernArtAuction() {
               <p className="text-sm opacity-60">Tạo ví ArtChain để quản lý số dư và tham gia đấu giá an toàn.</p>
             </div>
             <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
-              <div className="w-10 h-10 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center font-bold mb-4">2</div>
+              <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">2</div>
               <h3 className="font-bold uppercase tracking-wider mb-2">Nạp tiền</h3>
               <p className="text-sm opacity-60">Nạp tiền vào ví để có thể đặt giá cho những tác phẩm bạn yêu thích.</p>
             </div>
             <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
-              <div className="w-10 h-10 bg-[#1a1a1a] text-white rounded-full flex items-center justify-center font-bold mb-4">3</div>
+              <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">3</div>
               <h3 className="font-bold uppercase tracking-wider mb-2">Đấu giá & Sở hữu</h3>
               <p className="text-sm opacity-60">Tham gia phiên đấu giá trực tiếp và nhận tác phẩm nghệ thuật tận nơi.</p>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { Gavel, TrendingUp } from "lucide-react";
+import { Gavel, TrendingUp, Wallet } from "lucide-react";
+import { toast } from "sonner";
 
 interface BidFormProps {
   auctionId: string | number;
@@ -11,6 +12,7 @@ interface BidFormProps {
   isLoading?: boolean;
   disabled?: boolean;
   isHighestBidder?: boolean;
+  walletBalance?: number;
 }
 
 export default function BidForm({
@@ -20,6 +22,7 @@ export default function BidForm({
   isLoading,
   disabled,
   isHighestBidder,
+  walletBalance = 0,
 }: BidFormProps) {
   const minBid = currentPrice + bidStep;
   const [amount, setAmount] = useState(minBid);
@@ -38,7 +41,22 @@ export default function BidForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (amount < minBid) return;
+    
+    if (amount < minBid) {
+      toast.error(`Giá đặt không hợp lệ`, {
+        description: `Giá đặt tối thiểu là ${fmt(minBid)}`,
+      });
+      return;
+    }
+    
+    if (amount > walletBalance) {
+      toast.error(`Số dư trong ví không đủ. Bạn cần nạp thêm tiền để thực hiện giao dịch này.`, {
+        description: `Số dư hiện tại: ${fmt(walletBalance)}`,
+        duration: 5000,
+      });
+      return;
+    }
+    
     onBid(amount);
   };
 
@@ -76,10 +94,21 @@ export default function BidForm({
             </div>
           </div>
 
+          {/* Wallet Balance Info */}
+          <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#f07d44]/10 flex items-center justify-center">
+                <Wallet size={14} className="text-[#f07d44]" />
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Số dư</p>
+            </div>
+            <p className="text-sm font-black text-[#1a1a1a]">{fmt(walletBalance)}</p>
+          </div>
+
           {/* Custom amount input */}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 mb-2">
-              Nhập giá  (tối thiểu {fmt(minBid)})
+              Nhập giá
             </p>
             <div className="relative">
               <input
@@ -103,7 +132,7 @@ export default function BidForm({
           {/* Submit */}
           <button
             type="submit"
-            disabled={disabled || isLoading || amount < minBid}
+            disabled={disabled || isLoading}
             className="w-full flex items-center justify-center gap-3 bg-[#f07d44] hover:bg-[#d96a30] disabled:opacity-40 disabled:cursor-not-allowed text-white py-4 rounded-xl font-black text-sm uppercase tracking-[0.2em] transition-all shadow-lg shadow-orange-200"
           >
             {isLoading ? (

@@ -85,7 +85,7 @@ export default function CompetitorProfileScreen({
     ? submissions.map((painting) => ({
         id: painting.paintingId,
         imageUrl: painting.imageUrl,
-        submissionDate: painting.submissionDate,
+        submissionDate: painting.updatedAt,
         competitionName: painting.contest.title,
       }))
     : [];
@@ -370,9 +370,9 @@ export default function CompetitorProfileScreen({
                                 Ngày nộp
                               </p>
                               <p className="text-black">
-                                {painting.submissionDate
+                                {painting.updatedAt
                                   ? new Date(
-                                      painting.submissionDate,
+                                      painting.updatedAt,
                                     ).toLocaleDateString("vi-VN")
                                   : "-"}
                               </p>

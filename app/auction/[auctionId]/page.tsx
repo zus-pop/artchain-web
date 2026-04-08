@@ -11,9 +11,20 @@ import {
   TrendingUp,
   CheckCircle,
   User,
+  Info,
 } from "lucide-react";
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  ResponsiveContainer, 
+  CartesianGrid 
+} from 'recharts';
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetAuctionById, useJoinAuction, usePlaceBid, useGetBidHistory } from "@/apis/auction";
+import { useMeQuery } from "@/hooks/useMeQuery";
 import { useAuctionSocket } from "@/hooks/useAuctionSocket";
 import BidForm from "@/components/auction/BidForm";
 import BidHistory from "@/components/auction/BidHistory";
@@ -156,6 +167,8 @@ function PaintingTab({
           </p>
           {p.status === "LIVE" ? (
              <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          ) : (p.status === "END" || p.status === "ENDED" || p.status === "SOLD" || p.painting?.status === "SOLD") ? (
+             <span className="text-[8px] font-black uppercase text-gray-500">Đã bán</span>
           ) : (
              <span className="text-[8px] font-black uppercase text-gray-400">Chờ</span>
           )}
@@ -206,7 +219,9 @@ export default function AuctionDetailPage() {
   const joinMutation = useJoinAuction(auctionId);
   const bidMutation = usePlaceBid();
   const { user } = useAuthStore();
+  const { data: userData } = useMeQuery();
   const userId = user?.userId;
+  const walletBalance = userData?.wallet?.balance ?? 0;
 
   const [localBids, setLocalBids] = useState<Bid[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({});
@@ -215,60 +230,61 @@ export default function AuctionDetailPage() {
   >({});
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [hasJoined, setHasJoined] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+
+  const paintings = auction?.auctionPaintings ?? [];
 
   // Initialize prices and join status from API
   useEffect(() => {
-    if (!auction) return;
+    if (!auction || !auction.auctionPaintings) return;
     
-    if (auction.auctionPaintings) {
-      const map: Record<string, number> = {};
-      const timingMap: Record<string, PaintingTimingState> = {};
-      
-      auction.auctionPaintings.forEach((p) => {
-        const idStr = String(p.auctionPaintingId);
-        map[idStr] = p.currentBid;
-        timingMap[idStr] = {
-          auctionStartTime: p.auctionStartTime,
-          auctionEndTime: p.auctionEndTime,
-        };
-      });
+    const map: Record<string, number> = {};
+    const timingMap: Record<string, PaintingTimingState> = {};
+    
+    auction.auctionPaintings.forEach((p) => {
+      const idStr = String(p.auctionPaintingId);
+      map[idStr] = p.currentBid;
+      timingMap[idStr] = {
+        auctionStartTime: p.auctionStartTime,
+        auctionEndTime: p.auctionEndTime,
+      };
+    });
 
-      setPaintingTimings((prev) => ({ ...timingMap, ...prev }));
-      
-      // Update prices from API (only if the new value is strictly greater)
-      setPrices((prev) => {
-        const next = { ...prev };
-        let changed = false;
-        Object.keys(map).forEach(id => {
-          const apiVal = map[id];
-          const currentVal = prev[id] || 0;
-          if (apiVal > currentVal) {
-            next[id] = apiVal;
-            changed = true;
-          }
-        });
-        return changed ? next : prev;
-      });
-
-      // Initialize local bids only if empty
-      if (localBids.length === 0) {
-        const initialBids: Bid[] = [];
-        auction.auctionPaintings.forEach((p) => {
-          if (p.currentBidderId && p.currentBid) {
-            initialBids.push({
-              bidId: `initial-${p.auctionPaintingId}`,
-              auctionId: String(auction.auctionId),
-              auctionPaintingId: String(p.auctionPaintingId),
-              userId: p.currentBidderId,
-              userName: p.currentBidder?.fullName || p.currentBidder?.username || `Người dùng #${p.currentBidderId.slice(-4)}`,
-              amount: p.currentBid,
-              createdAt: p.updatedAt || auction.updatedAt || new Date().toISOString(),
-            });
-          }
-        });
-        if (initialBids.length > 0) {
-          setLocalBids(initialBids);
+    setPaintingTimings((prev) => ({ ...timingMap, ...prev }));
+    
+    // Update prices from API (only if the new value is strictly greater)
+    setPrices((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      Object.keys(map).forEach(id => {
+        const apiVal = map[id];
+        const currentVal = prev[id] || 0;
+        if (apiVal > currentVal) {
+          next[id] = apiVal;
+          changed = true;
         }
+      });
+      return changed ? next : prev;
+    });
+
+    // Initialize local bids only if empty
+    if (localBids.length === 0) {
+      const initialBids: Bid[] = [];
+      auction.auctionPaintings.forEach((p) => {
+        if (p.currentBidderId && p.currentBid) {
+          initialBids.push({
+            bidId: `initial-${p.auctionPaintingId}`,
+            auctionId: String(auction.auctionId),
+            auctionPaintingId: String(p.auctionPaintingId),
+            userId: p.currentBidderId,
+            userName: p.currentBidder?.fullName || p.currentBidder?.username || `Người dùng #${p.currentBidderId.slice(-4)}`,
+            amount: p.currentBid,
+            createdAt: p.updatedAt || auction.updatedAt || new Date().toISOString(),
+          });
+        }
+      });
+      if (initialBids.length > 0) {
+        setLocalBids(initialBids);
       }
     }
 
@@ -278,7 +294,13 @@ export default function AuctionDetailPage() {
         setHasJoined(joined);
       }
     }
-  }, [auction, userId, hasJoined]); // Removed localBids.length from deps to avoid unnecessary loops
+
+    // Auto-select LIVE painting
+    const liveIdx = auction.auctionPaintings?.findIndex(p => p.status === 'LIVE');
+    if (liveIdx !== -1 && liveIdx !== undefined && paintings[selectedIdx]?.status !== 'LIVE') {
+      setSelectedIdx(liveIdx);
+    }
+  }, [auction, userId, hasJoined, selectedIdx, paintings]);
 
 
   const handleBidPlaced = useCallback(
@@ -391,7 +413,6 @@ export default function AuctionDetailPage() {
     };
   }, [isConnected, requestAuctionStatus]);
 
-  const paintings = auction?.auctionPaintings ?? [];
   const selectedPainting = paintings[selectedIdx];
   const selectedIdStr = selectedPainting ? String(selectedPainting.auctionPaintingId) : "";
   const currentPrice = selectedPainting
@@ -453,11 +474,28 @@ export default function AuctionDetailPage() {
 
   const currentBidCount = visibleBids.length;
   
-  // Detect if current user is leading
-  const highestBid = visibleBids[0]; // Bids are sorted descending by hook mapping
+  // Detect if current user is leading for EVERY painting to calculate held balance
+  const totalHeldAmount = paintings.reduce((sum, p) => {
+    const pIdStr = String(p.auctionPaintingId);
+    // Find the latest bid for this painting in localBids
+    const highestBidForP = localBids.find(b => String(b.auctionPaintingId) === pIdStr);
+    
+    // Fallback to initial bidder from auction data if no local bids
+    const leaderId = highestBidForP?.userId || p.currentBidderId;
+    
+    if (userId && String(leaderId) === String(userId)) {
+      return sum + (highestBidForP?.amount || p.currentBid || 0);
+    }
+    return sum;
+  }, 0);
+
+  const effectiveBalance = walletBalance - totalHeldAmount;
+
+  // Detect if leading the CURRENTLY SELECTED painting
+  const selectedHighestBid = localBids.find(b => String(b.auctionPaintingId) === selectedIdStr);
   const isHighestBidder = !!userId && (
-    (highestBid && String(highestBid.userId) === String(userId)) || 
-    (!highestBid && selectedPainting?.currentBidderId === userId)
+    (selectedHighestBid && String(selectedHighestBid.userId) === String(userId)) || 
+    (!selectedHighestBid && selectedPainting?.currentBidderId === userId)
   );
 
   if (isLoading) {
@@ -567,12 +605,12 @@ export default function AuctionDetailPage() {
             )}
 
             {/* Waiting Section */}
-            {paintings.some(p => p.status === "WAITING" || !p.status) && (
+            {paintings.some(p => p.status === "WAITING" || !p.status || p.status === "UPCOMING") && (
               <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-3">
-                  Chờ đấu ({paintings.filter(p => p.status === "WAITING" || !p.status).length})
+                  Chờ đấu ({paintings.filter(p => p.status === "WAITING" || !p.status || p.status === "UPCOMING").length})
                 </p>
-                {paintings.map((p, idx) => (p.status === "WAITING" || !p.status) && (
+                {paintings.map((p, idx) => (p.status === "WAITING" || !p.status || p.status === "UPCOMING") && (
                   <PaintingTab
                     key={p.auctionPaintingId}
                     p={{
@@ -587,12 +625,12 @@ export default function AuctionDetailPage() {
             )}
 
             {/* Ended Section */}
-            {paintings.some(p => p.status === "ENDED" || p.status === "SOLD") && (
+            {paintings.some(p => p.status === "ENDED" || p.status === "SOLD" || p.status === "END" || p.painting?.status === "SOLD") && (
               <div className="space-y-2">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 mb-3">
                   Đã kết thúc
                 </p>
-                {paintings.map((p, idx) => (p.status === "ENDED" || p.status === "SOLD") && (
+                {paintings.map((p, idx) => (p.status === "ENDED" || p.status === "SOLD" || p.status === "END" || p.painting?.status === "SOLD") && (
                   <PaintingTab
                     key={p.auctionPaintingId}
                     p={{
@@ -640,27 +678,110 @@ export default function AuctionDetailPage() {
                       <TrendingUp size={24} className="text-white opacity-40" />
                     </div>
                   </div>
+
+                  {/* Info Toggle Button */}
+                  <button 
+                    onClick={() => setShowInfo(!showInfo)}
+                    className={`absolute top-4 right-4 p-2 rounded-full backdrop-blur-md transition-all z-20 ${
+                      showInfo ? 'bg-[#f07d44] text-white' : 'bg-black/20 text-white hover:bg-black/40'
+                    }`}
+                  >
+                    <Info size={20} />
+                  </button>
+
+                  {/* Glassmorphism Info Overlay */}
+                  <AnimatePresence>
+                    {showInfo && (
+                      <motion.div
+                        initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                        animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+                        exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center p-12 z-10"
+                      >
+                        <motion.div 
+                          initial={{ scale: 0.9, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.9, opacity: 0 }}
+                          className="text-white w-full max-w-lg"
+                        >
+                          <h2 className="text-3xl lg:text-4xl font-black uppercase tracking-tight mb-4 leading-none">
+                            {selectedPainting.painting.title}
+                          </h2>
+                          <p className="text-sm lg:text-base opacity-70 leading-relaxed mb-10 border-l-2 border-[#f07d44] pl-5">
+                            {selectedPainting.painting.description || "Không có mô tả cho tác phẩm này."}
+                          </p>
+
+                          <div className="grid grid-cols-2 gap-10 pt-10 border-t border-white/10">
+                            <div>
+                                <p className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-2 text-orange-200">Giá khởi điểm</p>
+                                <p className="text-2xl font-black">{new Intl.NumberFormat("vi-VN").format(selectedPainting.basePrice)}đ</p>
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold opacity-50 uppercase tracking-[0.3em] mb-2 text-orange-200">Lượt đặt giá</p>
+                                <p className="text-2xl font-black">{currentBidCount}</p>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="bg-white rounded-2xl p-8 shadow-sm">
-                  <h2 className="text-3xl font-black uppercase tracking-tight mb-2">
-                    {selectedPainting.painting.title}
-                  </h2>
-                  {/* <p className="text-sm text-[#f07d44] font-bold uppercase tracking-widest opacity-80 mb-4">
-                    ID Họa sĩ: {selectedPainting.painting.competitorId}
-                  </p> */}
-                  <p className="text-sm opacity-60 leading-relaxed mb-6">
-                    {selectedPainting.painting.description || "Không có mô tả cho tác phẩm này."}
-                  </p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-2 gap-8 pt-6 border-t border-gray-100">
-                    <div>
-                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Giá khởi điểm</p>
-                      <p className="text-xl font-black">{new Intl.NumberFormat("vi-VN").format(selectedPainting.basePrice)}đ</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1">Lượt đặt giá</p>
-                      <p className="text-xl font-black">{currentBidCount}</p>
+                   <div className="pt-6">
+                    <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.3em] mb-6">Biểu đồ giá trực tiếp</p>
+                    <div className="h-[200px] w-full">
+                       <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart 
+                            data={[
+                              { amount: selectedPainting.basePrice, time: 'Bắt đầu' },
+                              ...([...visibleBids].reverse().map(b => ({
+                                amount: b.amount,
+                                time: new Date(b.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                              })))
+                            ]}
+                          >
+                            <defs>
+                              <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#f07d44" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#f07d44" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                            <XAxis 
+                              dataKey="time" 
+                              axisLine={false} 
+                              tickLine={false} 
+                              tick={{ fontSize: 10, fill: '#999' }}
+                            />
+                            <YAxis 
+                              hide 
+                              domain={['dataMin - 10000', 'dataMax + 10000']} 
+                            />
+                            <Tooltip 
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  return (
+                                    <div className="bg-white p-3 shadow-xl border border-gray-100 rounded-lg">
+                                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{payload[0].payload.time}</p>
+                                      <p className="text-sm font-black text-[#f07d44]">{new Intl.NumberFormat("vi-VN").format(payload[0].value as number)}đ</p>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="amount" 
+                              stroke="#f07d44" 
+                              strokeWidth={3}
+                              fillOpacity={1} 
+                              fill="url(#colorPrice)" 
+                              animationDuration={1500}
+                            />
+                          </AreaChart>
+                       </ResponsiveContainer>
                     </div>
                   </div>
                 </div>
@@ -676,9 +797,9 @@ export default function AuctionDetailPage() {
           <div className="lg:col-span-3 space-y-6">
             {selectedPainting && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-4">
+                {/* <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-4">
                   Phòng đấu giá
-                </p>
+                </p> */}
                 {(() => {
                   if (isPaintingWaiting) {
                     return (
@@ -706,22 +827,23 @@ export default function AuctionDetailPage() {
                         (p) => String(p.userId) === String(userId)
                       ));
 
-                  if (isParticipant) {
-                    return (
-                      <BidForm
-                        auctionId={String(auctionId)}
-                        auctionPaintingId={String(
-                          selectedPainting.auctionPaintingId
-                        )}
-                        currentPrice={currentPrice}
-                        bidStep={selectedPainting.bidStep}
-                        isHighestBidder={isHighestBidder}
-                        onBid={handleBid}
-                        isLoading={bidMutation.isPending}
-                        disabled={!isPaintingLive}
-                      />
-                    );
-                  }
+                    if (isParticipant) {
+                      const paintingId = String(selectedPainting.auctionPaintingId);
+                      return (
+                        <BidForm
+                          key={paintingId}
+                          auctionId={String(auctionId)}
+                          auctionPaintingId={paintingId}
+                          currentPrice={currentPrice}
+                          bidStep={selectedPainting.bidStep}
+                          isHighestBidder={isHighestBidder}
+                          walletBalance={effectiveBalance}
+                          onBid={handleBid}
+                          isLoading={bidMutation.isPending}
+                          disabled={!isPaintingLive}
+                        />
+                      );
+                    }
 
                   return (
                     <div className="space-y-4">
