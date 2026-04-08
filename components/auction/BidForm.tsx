@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Hammer, TrendingUp } from "lucide-react";
+import { Gavel, TrendingUp } from "lucide-react";
 
 interface BidFormProps {
   auctionId: string | number;
@@ -51,7 +51,7 @@ export default function BidForm({
         </p>
         <p className="text-3xl font-black flex items-center gap-2">
           {fmt(currentPrice)}
-          {isHighestBidder ? <Hammer size={20} className="animate-bounce" /> : <TrendingUp size={20} className="text-[#f07d44]" />}
+          {isHighestBidder ? <Gavel size={20} className="animate-bounce" /> : <TrendingUp size={20} className="text-[#f07d44]" />}
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export default function BidForm({
           {/* Custom amount input */}
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 mb-2">
-              Nhập giá thầu (tối thiểu {fmt(minBid)})
+              Nhập giá  (tối thiểu {fmt(minBid)})
             </p>
             <div className="relative">
               <input
@@ -95,7 +95,7 @@ export default function BidForm({
             </div>
             {amount < minBid && (
               <p className="text-red-500 text-[10px] mt-1 font-bold italic">
-                Giá thầu phải lớn hơn hoặc bằng {fmt(minBid)}
+                Giá  phải lớn hơn hoặc bằng {fmt(minBid)}
               </p>
             )}
           </div>
@@ -110,7 +110,7 @@ export default function BidForm({
               <span className="animate-pulse">Đang đặt giá…</span>
             ) : (
               <>
-                Đặt giá thầu <Hammer size={18} />
+                Đặt giá <Gavel size={18} />
               </>
             )}
           </button>

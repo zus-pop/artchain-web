@@ -150,7 +150,7 @@ export default function CongratulationPage() {
                 
                 <div className="bg-[#fcfbf9] border border-[#e6e2da] p-6 rounded-xl">
                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Giá thầu cuối</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Giá  cuối</span>
                       <span className="bg-green-100 text-green-700 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">Winner Bid</span>
                    </div>
                    <p className="text-3xl font-black text-slate-900">{winningData ? formatVnd(winningData.finalBid) : ""}</p>

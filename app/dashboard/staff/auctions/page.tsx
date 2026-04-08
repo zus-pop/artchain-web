@@ -14,7 +14,7 @@ import {
   IconClock,
   IconEye,
   IconFilter,
-  IconHammer,
+  IconGavel,
   IconPlus,
   IconSearch,
   IconChevronLeft,
@@ -135,7 +135,7 @@ export default function AuctionsManagementPage() {
       case "ACTIVE":
       case "ONGOING":
       case "LIVE":
-        return IconHammer;
+        return IconGavel;
       case "ENDED":
       case "END":
         return IconCircleCheck;
@@ -202,7 +202,7 @@ export default function AuctionsManagementPage() {
                     title: t.totalAuctions,
                     value: auctions.length,
                     subtitle: t.allAuctions,
-                    icon: <IconHammer className="h-6 w-6" />,
+                    icon: <IconGavel className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
