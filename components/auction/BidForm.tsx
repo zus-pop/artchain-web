@@ -78,6 +78,17 @@ export default function BidForm({
         </p>
       </div>
 
+      {/* Wallet Balance Info */}
+      <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-[#f07d44]/10 flex items-center justify-center">
+            <Wallet size={14} className="text-[#f07d44]" />
+          </div>
+          <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Số dư</p>
+        </div>
+        <p className="text-sm font-black text-[#1a1a1a]">{fmt(walletBalance)}</p>
+      </div>
+
       {!isHighestBidder ? (
         <>
           {/* Quick increment buttons */}
@@ -97,17 +108,6 @@ export default function BidForm({
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Wallet Balance Info */}
-          <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#f07d44]/10 flex items-center justify-center">
-                <Wallet size={14} className="text-[#f07d44]" />
-              </div>
-              <p className="text-[10px] font-bold uppercase tracking-widest opacity-40">Số dư</p>
-            </div>
-            <p className="text-sm font-black text-[#1a1a1a]">{fmt(walletBalance)}</p>
           </div>
 
           {/* Custom amount input */}
@@ -151,8 +151,8 @@ export default function BidForm({
         </>
       ) : (
         <div className="bg-orange-50 border-2 border-orange-100 p-4 rounded-xl text-center">
-           <p className="text-[10px] font-black uppercase text-[#f07d44] tracking-widest mb-1">Vui lòng đợi</p>
-           <p className="text-xs opacity-60">Bạn là người đặt giá cao nhất hiện tại. Chờ người khác đấu giá để tiếp tục.</p>
+           <p className="text-[10px] font-black uppercase text-[#f07d44] tracking-widest mb-1">Dẫn đầu</p>
+           <p className="text-xs opacity-60">Bạn đang là người đặt giá cao nhất. <br/> Hãy chờ đợi để sở hữu tác phẩm!</p>
         </div>
       )}
     </form>

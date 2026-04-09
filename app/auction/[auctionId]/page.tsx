@@ -50,24 +50,37 @@ interface CountdownData {
   isExpired: boolean;
 }
 
-function useCountdown(targetDate: string, serverTimeOffsetMs = 0): CountdownData {
+function useCountdown(targetDate: string, serverTimeOffsetMs = 0, onExpire?: () => void): CountdownData {
   const [data, setData] = useState<CountdownData>({
     days: 0, hours: 0, minutes: 0, seconds: 0, totalMinutes: 0, isExpired: true,
   });
+
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => { onExpireRef.current = onExpire; }, [onExpire]);
 
   useEffect(() => {
     const tick = () => {
       if (!targetDate) return;
       const diff = new Date(targetDate).getTime() - (Date.now() + serverTimeOffsetMs);
+      
       if (diff <= 0) {
-        setData({ days: 0, hours: 0, minutes: 0, seconds: 0, totalMinutes: 0, isExpired: true });
+        setData(prev => {
+          if (!prev.isExpired) {
+            // Trigger transition callback
+            setTimeout(() => onExpireRef.current?.(), 0);
+            return { days: 0, hours: 0, minutes: 0, seconds: 0, totalMinutes: 0, isExpired: true };
+          }
+          return prev;
+        });
         return;
       }
+
       const totalSec = Math.floor(diff / 1000);
       const days = Math.floor(totalSec / 86400);
       const hours = Math.floor((totalSec % 86400) / 3600);
       const minutes = Math.floor((totalSec % 3600) / 60);
       const seconds = totalSec % 60;
+      
       setData({
         days,
         hours,
@@ -77,6 +90,7 @@ function useCountdown(targetDate: string, serverTimeOffsetMs = 0): CountdownData
         isExpired: false,
       });
     };
+
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
@@ -388,7 +402,16 @@ export default function AuctionDetailPage() {
   } = useAuctionSocket({
     auctionId,
     onBidPlaced: handleBidPlaced,
-    onStatusChanged: () => refetch(),
+    onStatusChanged: (event) => {
+      console.log("Auction status changed:", event);
+      refetch();
+      if (event.status === "ENDED" || event.status === "END" || event.status === "CANCELLED") {
+        toast.info("Phiên đấu giá đã kết thúc hoặc bị hủy", {
+          description: "Mọi hoạt động đấu giá cho phiên này đã dừng lại.",
+          duration: 10000,
+        });
+      }
+    },
     onAuctionStatus: handleAuctionStatus,
   });
 
@@ -422,7 +445,7 @@ export default function AuctionDetailPage() {
   // Fetch real bid history for selected painting
   const { data: historyBids } = useGetBidHistory(
     String(auctionId),
-    selectedPainting?.paintingId || ""
+    selectedPainting ? String(selectedPainting.auctionPaintingId) : ""
   );
 
   // Sync local bids with history when painting changes
@@ -457,7 +480,14 @@ export default function AuctionDetailPage() {
     ? resolvedPaintingEndTime
     : (isPaintingWaiting ? resolvedPaintingStartTime : (isAuctionLive ? auction?.endTime : (auction?.startTime ?? "")));
   
-  const countdown = useCountdown(countdownTarget || "", serverTimeOffsetMs);
+  const countdown = useCountdown(countdownTarget || "", serverTimeOffsetMs, () => {
+    // When countdown expires (painting ends or starts), trigger syncs
+    console.log("⏱️ Countdown transition detected, syncing with server...");
+    setTimeout(() => {
+      refetch();
+      requestAuctionStatus();
+    }, 2000);
+  });
 
   const handleBid = async (amount: number) => {
     if (!selectedPainting) return;
@@ -718,10 +748,12 @@ export default function AuctionDetailPage() {
                           <AreaChart 
                             data={[
                               { amount: selectedPainting.basePrice, time: 'Bắt đầu' },
-                              ...([...visibleBids].reverse().map(b => ({
-                                amount: b.amount,
-                                time: new Date(b.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                              })))
+                              ...([...visibleBids]
+                                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                                .map(b => ({
+                                  amount: b.amount,
+                                  time: new Date(b.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                                })))
                             ]}
                           >
                             <defs>
@@ -795,10 +827,25 @@ export default function AuctionDetailPage() {
                   }
 
                   if (!isPaintingLive && !isAuctionLive) {
-                     return (
+                    const statusText = auction.status === "ENDED" || auction.status === "END" 
+                      ? "Phiên đấu giá đã kết thúc" 
+                      : (auction.status === "CANCELLED" ? "Phiên đấu giá bị hủy" : "Phiên đấu giá chưa mở");
+                    const statusSub = auction.status === "ENDED" || auction.status === "END"
+                      ? "Bạn có thể xem các phiên đấu khác tại danh sách."
+                      : "Vui lòng đợi đến lượt đấu cho tác phẩm này.";
+
+                    return (
                       <div className="text-center py-8 px-4 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50">
-                         <div className="text-2xl font-black opacity-10 mb-2">OFF</div>
-                         <p className="text-xs font-black uppercase tracking-widest opacity-40">Phiên đấu giá chưa mở</p>
+                        <div className="text-2xl font-black opacity-10 mb-2">
+                           {auction.status === "ENDED" || auction.status === "END" ? "END" : "OFF"}
+                        </div>
+                        <p className="text-xs font-black uppercase tracking-widest opacity-40 mb-1">{statusText}</p>
+                        <p className="text-[10px] opacity-40 leading-relaxed">{statusSub}</p>
+                        {auction.status === "ENDED" && (
+                           <Link href="/auction/list" className="mt-4 inline-block text-[10px] font-black uppercase tracking-widest text-[#f07d44] hover:underline">
+                              Xem các phiên khác
+                           </Link>
+                        )}
                       </div>
                     );
                   }

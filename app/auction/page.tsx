@@ -50,6 +50,11 @@ export default function ModernArtAuction() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || !hasWallet) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -58,14 +63,14 @@ export default function ModernArtAuction() {
           }
         });
       },
-      { threshold: 0.3 } 
+      { threshold: 0.2, rootMargin: "-10% 0px -70% 0px" } 
     );
 
     const sections = document.querySelectorAll('section[id^="section-"]');
     sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
-  }, []);
+  }, [mounted, hasWallet, isLoading, allAuctions]);
 
   const handleBecomeBidder = async () => {
     if (!displayUser?.userId) {
