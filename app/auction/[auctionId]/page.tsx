@@ -473,23 +473,6 @@ export default function AuctionDetailPage() {
   };
 
   const currentBidCount = visibleBids.length;
-  
-  // Detect if current user is leading for EVERY painting to calculate held balance
-  const totalHeldAmount = paintings.reduce((sum, p) => {
-    const pIdStr = String(p.auctionPaintingId);
-    // Find the latest bid for this painting in localBids
-    const highestBidForP = localBids.find(b => String(b.auctionPaintingId) === pIdStr);
-    
-    // Fallback to initial bidder from auction data if no local bids
-    const leaderId = highestBidForP?.userId || p.currentBidderId;
-    
-    if (userId && String(leaderId) === String(userId)) {
-      return sum + (highestBidForP?.amount || p.currentBid || 0);
-    }
-    return sum;
-  }, 0);
-
-  const effectiveBalance = walletBalance - totalHeldAmount;
 
   // Detect if leading the CURRENTLY SELECTED painting
   const selectedHighestBid = localBids.find(b => String(b.auctionPaintingId) === selectedIdStr);
@@ -837,7 +820,7 @@ export default function AuctionDetailPage() {
                           currentPrice={currentPrice}
                           bidStep={selectedPainting.bidStep}
                           isHighestBidder={isHighestBidder}
-                          walletBalance={effectiveBalance}
+                          walletBalance={walletBalance}
                           onBid={handleBid}
                           isLoading={bidMutation.isPending}
                           disabled={!isPaintingLive}

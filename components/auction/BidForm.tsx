@@ -1,6 +1,6 @@
-"use client";
 import React, { useState } from "react";
 import { Gavel, TrendingUp, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface BidFormProps {
@@ -24,6 +24,7 @@ export default function BidForm({
   isHighestBidder,
   walletBalance = 0,
 }: BidFormProps) {
+  const router = useRouter();
   const minBid = currentPrice + bidStep;
   const [amount, setAmount] = useState(minBid);
 
@@ -50,9 +51,13 @@ export default function BidForm({
     }
     
     if (amount > walletBalance) {
-      toast.error(`Số dư trong ví không đủ. Bạn cần nạp thêm tiền để thực hiện giao dịch này.`, {
-        description: `Số dư hiện tại: ${fmt(walletBalance)}`,
-        duration: 5000,
+      toast.error(`Số dư trong ví không đủ`, {
+        description: `Số dư hiện tại: ${fmt(walletBalance)}. Vui lòng nạp thêm tiền để thực hiện giao dịch này.`,
+        duration: 6000,
+        action: {
+          label: "Nạp tiền ngay",
+          onClick: () => router.push("/wallet"),
+        },
       });
       return;
     }
