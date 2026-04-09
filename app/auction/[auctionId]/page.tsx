@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -39,6 +39,7 @@ import {
 // date-fns no longer needed for countdown
 import { vi } from "date-fns/locale";
 import { useAuthStore } from "@/store";
+import { toast } from "sonner";
 
 // ─── Countdown ───────────────────────────────────────────────────────────────
 interface CountdownData {
