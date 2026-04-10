@@ -153,6 +153,8 @@ export const translations = {
     campaignManagement: "Quản Lý Chiến Dịch",
     exhibitionManagement: "Quản Lý Triển Lãm",
     competitorManagement: "Quản Lý Thí Sinh",
+    financeManagement: "Quản Lý Tài Chính",
+    finance: "Tài Chính",
     settings: "Cài Đặt",
     artChainStaff: "ArtChain Staff",
 
@@ -1491,6 +1493,8 @@ export const translations = {
     campaignManagement: "Campaign Management",
     exhibitionManagement: "Exhibition Management",
     competitorManagement: "Competitor Management",
+    financeManagement: "Finance Management",
+    finance: "Finance",
     settings: "Settings",
     artChainStaff: "ArtChain Staff",
 
