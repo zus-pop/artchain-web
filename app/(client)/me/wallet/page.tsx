@@ -24,61 +24,82 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useMeQuery } from "@/hooks/useMeQuery";
-import { getWalletTransactions, topupWallet } from "@/apis/wallet";
+import { 
+  addBankAccount, 
+  createWithdrawRequest, 
+  getMyBankAccounts, 
+  getWalletTransactions, 
+  topupWallet,
+  getMyWithdrawRequests
+} from "@/apis/wallet";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 
 const weekData = [80, 130, 100, 170, 140, 185, 150];
 
-const MOCK_WITHDRAWALS = [
-  { 
-    id: "WD1024", 
-    amount: 1000000, 
-    status: "PENDING", 
-    date: "2024-03-25",
-    proofUrl: null 
-  },
-  { 
-    id: "WD1023", 
-    amount: 500000, 
-    status: "APPROVED", 
-    date: "2024-03-20",
-    proofUrl: "https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=800&auto=format&fit=crop" 
-  },
-  { 
-    id: "WD1022", 
-    amount: 2000000, 
-    status: "REJECTED", 
-    date: "2024-03-15",
-    proofUrl: null 
-  },
-];
-
-const LINKED_BANKS = [
-  { id: 1, bankName: "Vietcombank", accountNo: "123****890", accountName: "NGUYEN VAN A" },
-  { id: 2, bankName: "Techcombank", accountNo: "998****112", accountName: "NGUYEN VAN A" },
-];
+const MOCK_WITHDRAWALS_PLACEHOLDER: any[] = [];
 
 export default function WalletPage() {
   const [selectedWd, setSelectedWd] = useState<any>(null);
   const [withdrawalView, setWithdrawalView] = useState<"list" | "detail">("list");
   const [withdrawStep, setWithdrawStep] = useState<"bank" | "amount" | "add-bank">("bank");
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [banks, setBanks] = useState(LINKED_BANKS);
-  const [selectedBank, setSelectedBank] = useState<any>(LINKED_BANKS[0]);
+  const [selectedBank, setSelectedBank] = useState<any>(null);
   
-  const [newBank, setNewBank] = useState({ bankName: "", accountNo: "", accountName: "" });
+  const [newBank, setNewBank] = useState({ bankName: "", accountNumber: "", accountHolderName: "" });
 
+  const queryClient = useQueryClient();
   const { data: userData, refetch } = useMeQuery();
+
+  const { data: bankAccountsData, isLoading: isBanksLoading } = useQuery({
+    queryKey: ["bank-accounts"],
+    queryFn: getMyBankAccounts,
+  });
+
+  const addBankMutation = useMutation({
+    mutationFn: addBankAccount,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
+      toast.success("Đã thêm tài khoản ngân hàng thành công!");
+      setWithdrawStep("bank");
+      setNewBank({ bankName: "", accountNumber: "", accountHolderName: "" });
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Không thể thêm tài khoản ngân hàng");
+    },
+  });
+
+  const withdrawMutation = useMutation({
+    mutationFn: createWithdrawRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wallet-transactions"] });
+      refetch();
+      toast.success("Đã gửi yêu cầu rút tiền thành công! Vui lòng chờ Staff phê duyệt.");
+      setWithdrawStep("bank");
+      setWithdrawAmount("");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Không thể gửi yêu cầu rút tiền");
+    },
+  });
+
+  const banks = bankAccountsData?.data || [];
+
   const [topupAmount, setTopupAmount] = useState("200000");
   const [isTopupLoading, setIsTopupLoading] = useState(false);
 
   const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery({
     queryKey: ["wallet-transactions", userData?.userId],
     queryFn: () => getWalletTransactions(userData!.userId),
+    enabled: !!userData?.userId,
+  });
+
+  const { data: myWithdrawRequestsData } = useQuery({
+    queryKey: ["my-withdraw-requests"],
+    queryFn: () => getMyWithdrawRequests(),
     enabled: !!userData?.userId,
   });
 
@@ -271,41 +292,46 @@ export default function WalletPage() {
                             </DialogHeader>
                           </div>
                           <div className="p-6 space-y-3">
-                            {MOCK_WITHDRAWALS.map((wd) => (
-                              <div
-                                key={wd.id}
-                                onClick={() => {
-                                  setSelectedWd(wd);
-                                  setWithdrawalView("detail");
-                                }}
-                                className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4 transition hover:bg-white hover:shadow-md"
-                              >
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{wd.id}</p>
-                                    <Eye size={12} className="opacity-0 transition group-hover:opacity-100 text-[#FF6E1A]" />
-                                  </div>
-                                  <p className="mt-0.5 text-sm font-black text-gray-900">
-                                    {new Intl.NumberFormat("vi-VN").format(wd.amount)}đ
-                                  </p>
-                                </div>
+                            {myWithdrawRequestsData?.data?.map((wd) => (
                                 <div
-                                  className={`rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                                    wd.status === "APPROVED"
-                                      ? "bg-emerald-100 text-emerald-700"
-                                      : wd.status === "PENDING"
-                                      ? "bg-orange-100 text-orange-700"
-                                      : "bg-red-100 text-red-700"
-                                  }`}
+                                  key={wd.requestId}
+                                  onClick={() => {
+                                    setSelectedWd(wd);
+                                    setWithdrawalView("detail");
+                                  }}
+                                  className="group flex cursor-pointer items-center justify-between rounded-xl border border-gray-100 bg-gray-50 p-4 transition hover:bg-white hover:shadow-md"
                                 >
-                                  {wd.status === "APPROVED"
-                                    ? "Thành công"
-                                    : wd.status === "PENDING"
-                                    ? "Chờ duyệt"
-                                    : "Đã hủy"}
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{wd.requestId.slice(0, 8)}</p>
+                                      <Eye size={12} className="opacity-0 transition group-hover:opacity-100 text-[#FF6E1A]" />
+                                    </div>
+                                    <p className="mt-0.5 text-sm font-black text-gray-900">
+                                      {new Intl.NumberFormat("vi-VN").format(wd.amount)}đ
+                                    </p>
+                                  </div>
+                                  <div
+                                    className={`rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                                      wd.status === "APPROVED"
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : wd.status === "PENDING"
+                                        ? "bg-orange-100 text-orange-700"
+                                        : "bg-red-100 text-red-700"
+                                    }`}
+                                  >
+                                    {wd.status === "APPROVED"
+                                      ? "Thành công"
+                                      : wd.status === "PENDING"
+                                      ? "Chờ duyệt"
+                                      : "Từ chối"}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            {(!myWithdrawRequestsData?.data || myWithdrawRequestsData.data.length === 0) && (
+                               <div className="py-12 text-center">
+                                 <p className="text-xs font-medium text-gray-400">Chưa có yêu cầu rút tiền nào</p>
+                               </div>
+                            )}
                           </div>
                         </div>
                       ) : (
@@ -320,40 +346,54 @@ export default function WalletPage() {
                               </button>
                               <div>
                                 <DialogTitle className="text-lg font-black uppercase tracking-tighter text-gray-900">Thông tin giao dịch</DialogTitle>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{selectedWd?.id}</p>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{selectedWd?.requestId}</p>
                               </div>
                             </div>
-                            <div className={`rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider bg-white border border-gray-100 text-gray-500`}>
-                              {selectedWd?.status}
+                            <div className={`rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider bg-white border border-gray-100 ${
+                              selectedWd?.status === "APPROVED" ? "text-emerald-600" : selectedWd?.status === "PENDING" ? "text-orange-600" : "text-red-600"
+                            }`}>
+                              {selectedWd?.status === "APPROVED" ? "Đã duyệt" : selectedWd?.status === "PENDING" ? "Chờ xử lý" : "Đã từ chối"}
                             </div>
                           </div>
                           
                           <div className="p-6 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="rounded-xl bg-gray-50 p-3">
+                            <div className="flex items-center justify-between pb-6 border-b border-gray-50 text-center">
+                              <div className="flex-1">
                                 <p className="text-[9px] font-bold uppercase text-gray-400">Số tiền</p>
                                 <p className="text-base font-black text-gray-900">{new Intl.NumberFormat("vi-VN").format(selectedWd?.amount)}đ</p>
                               </div>
-                              <div className="rounded-xl bg-gray-50 p-3">
-                                <p className="text-[9px] font-bold uppercase text-gray-400">Thời gian</p>
-                                <p className="text-sm font-bold text-gray-900">{format(new Date(selectedWd?.date), "dd/MM/yyyy")}</p>
+                              <div className="h-8 w-[1px] bg-gray-100" />
+                              <div className="flex-1">
+                                <p className="text-[9px] font-bold uppercase text-gray-400">Ngày yêu cầu</p>
+                                <p className="text-sm font-bold text-gray-600">
+                                  {selectedWd?.createdAt ? format(new Date(selectedWd.createdAt), "dd/MM/yyyy") : "N/A"}
+                                </p>
                               </div>
                             </div>
 
-                            {selectedWd?.status === "APPROVED" && (
-                              <div className="space-y-2">
-                                <p className="text-[10px] font-bold uppercase text-gray-400 flex items-center gap-1.5">
-                                  <CreditCard size={10} /> Biên lai chuyển khoản
-                                </p>
-                                <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-gray-200 bg-gray-100 shadow-inner">
-                                  <img 
-                                    src={selectedWd?.proofUrl || ""} 
-                                    alt="Authorized Proof" 
-                                    className="h-full w-full object-cover"
-                                  />
-                                </div>
+                            <div className="space-y-4">
+                              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
+                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Thông tin ngân hàng</p>
+                                <p className="text-xs font-bold text-gray-800">{selectedWd?.bankName}</p>
+                                <p className="text-sm font-black text-gray-900">{selectedWd?.bankAccountNumber}</p>
+                                <p className="text-[10px] font-medium text-gray-500">{selectedWd?.bankAccountName}</p>
                               </div>
-                            )}
+
+                              {selectedWd?.status === "REJECTED" && selectedWd?.rejectReason && (
+                                <div className="rounded-xl bg-red-50 p-4 border border-red-100">
+                                  <p className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">Lý do từ chối</p>
+                                  <p className="text-xs font-bold text-red-700">{selectedWd.rejectReason}</p>
+                                </div>
+                              )}
+
+                              {selectedWd?.status === "APPROVED" && selectedWd?.proofImageUrl && (
+                                <div className="space-y-2">
+                                  <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Chứng từ chuyển khoản</p>
+                                  <div className="relative aspect-video rounded-xl border border-gray-100 bg-gray-50 overflow-hidden">
+                                    <Image src={selectedWd.proofImageUrl} alt="Proof" fill className="object-contain" />
+                                  </div>
+                                </div>
+                              )}
 
                             <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                               <button 
@@ -372,8 +412,9 @@ export default function WalletPage() {
                             </div>
                           </div>
                         </div>
-                      )}
-                    </AnimatePresence>
+                      </div>
+                    )}
+                  </AnimatePresence>
                   </DialogContent>
                 </Dialog>
               </div>
@@ -534,34 +575,40 @@ export default function WalletPage() {
                         <div className="space-y-4">
                           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tài khoản đã liên kết</p>
                           <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-                            {banks.map((bank) => (
-                              <div
-                                key={bank.id}
-                                onClick={() => setSelectedBank(bank)}
-                                className={`cursor-pointer rounded-2xl border p-4 transition-all ${
-                                  selectedBank?.id === bank.id
-                                    ? "border-[#FF6E1A] bg-orange-50 shadow-md"
-                                    : "border-gray-100 bg-white hover:border-gray-200"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
-                                      <Landmark size={20} className="text-[#FF6E1A]" />
+                            {isBanksLoading ? (
+                               <div className="py-10 text-center opacity-50">Đang tải danh sách...</div>
+                            ) : banks.length === 0 ? (
+                               <div className="py-6 text-center text-xs font-medium text-gray-400">Chưa có tài khoản liên kết</div>
+                            ) : (
+                              banks.map((bank: any) => (
+                                <div
+                                  key={bank.id}
+                                  onClick={() => setSelectedBank(bank)}
+                                  className={`cursor-pointer rounded-2xl border p-4 transition-all ${
+                                    selectedBank?.id === bank.id
+                                      ? "border-[#FF6E1A] bg-orange-50 shadow-md"
+                                      : "border-gray-100 bg-white hover:border-gray-200"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                                        <Landmark size={20} className="text-[#FF6E1A]" />
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-black text-gray-900">{bank.bankName}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase">{bank.accountNumber}</p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <p className="text-sm font-black text-gray-900">{bank.bankName}</p>
-                                      <p className="text-[10px] font-bold text-gray-400 uppercase">{bank.accountNo}</p>
-                                    </div>
+                                    {selectedBank?.id === bank.id && (
+                                      <div className="h-5 w-5 rounded-full bg-[#FF6E1A] flex items-center justify-center">
+                                        <Plus size={12} className="text-white rotate-45" />
+                                      </div>
+                                    )}
                                   </div>
-                                  {selectedBank?.id === bank.id && (
-                                    <div className="h-5 w-5 rounded-full bg-[#FF6E1A] flex items-center justify-center">
-                                      <Plus size={12} className="text-white rotate-45" />
-                                    </div>
-                                  )}
                                 </div>
-                              </div>
-                            ))}
+                              ))
+                            )}
                             
                             <button
                               onClick={() => setWithdrawStep("add-bank")}
@@ -602,8 +649,8 @@ export default function WalletPage() {
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Số tài khoản</p>
                               <input 
                                 placeholder="Nhập số tài khoản ngân hàng"
-                                value={newBank.accountNo}
-                                onChange={(e) => setNewBank({...newBank, accountNo: e.target.value})}
+                                value={newBank.accountNumber}
+                                onChange={(e) => setNewBank({...newBank, accountNumber: e.target.value})}
                                 className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-900 outline-none focus:border-[#FF6E1A]"
                               />
                             </div>
@@ -611,8 +658,8 @@ export default function WalletPage() {
                               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Tên chủ tài khoản (Không dấu)</p>
                               <input 
                                 placeholder="VD: NGUYEN VAN A"
-                                value={newBank.accountName}
-                                onChange={(e) => setNewBank({...newBank, accountName: e.target.value.toUpperCase()})}
+                                value={newBank.accountHolderName}
+                                onChange={(e) => setNewBank({...newBank, accountHolderName: e.target.value.toUpperCase()})}
                                 className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-900 outline-none focus:border-[#FF6E1A]"
                               />
                             </div>
@@ -620,20 +667,16 @@ export default function WalletPage() {
 
                           <button
                             onClick={() => {
-                              if (!newBank.bankName || !newBank.accountNo || !newBank.accountName) {
+                              if (!newBank.bankName || !newBank.accountNumber || !newBank.accountHolderName) {
                                 toast.error("Vui lòng điền đầy đủ thông tin");
                                 return;
                               }
-                              const bankToAdd = { ...newBank, id: Date.now() };
-                              setBanks([bankToAdd, ...banks]);
-                              setSelectedBank(bankToAdd);
-                              setWithdrawStep("bank");
-                              setNewBank({ bankName: "", accountNo: "", accountName: "" });
-                              toast.success("Đã thêm tài khoản ngân hàng thành công!");
+                              addBankMutation.mutate(newBank);
                             }}
-                            className="w-full rounded-2xl bg-[#111111] py-4 text-sm font-black text-white shadow-xl hover:bg-black active:scale-95 transition-all"
+                            disabled={addBankMutation.isPending}
+                            className="w-full rounded-2xl bg-[#111111] py-4 text-sm font-black text-white shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-50"
                           >
-                            LƯU TÀI KHOẢN
+                            {addBankMutation.isPending ? "ĐANG XỬ LÝ..." : "LƯU TÀI KHOẢN"}
                           </button>
                         </div>
                       ) : (
@@ -666,19 +709,34 @@ export default function WalletPage() {
                             <p className="text-[10px] font-bold text-orange-400 uppercase tracking-widest leading-loose">
                               Tiền sẽ được chuyển đến:
                             </p>
-                            <p className="text-sm font-black text-[#FF6E1A] mt-1">{selectedBank.bankName} - {selectedBank.accountNo}</p>
-                            <p className="text-[10px] font-medium text-orange-600 opacity-70">Chủ TK: {selectedBank.accountName}</p>
+                            <p className="text-sm font-black text-[#FF6E1A] mt-1">{selectedBank.bankName} - {selectedBank.accountNumber}</p>
+                            <p className="text-[10px] font-medium text-orange-600 opacity-70">Chủ TK: {selectedBank.accountHolderName}</p>
                           </div>
 
                           <button
                             onClick={() => {
-                              toast.success("Đã gửi yêu cầu rút tiền đến Staff, vui lòng chờ!");
-                              setWithdrawStep("bank");
-                              setWithdrawAmount("");
+                              if (!withdrawAmount || Number(withdrawAmount) <= 0) {
+                                toast.error("Vui lòng nhập số tiền hợp lệ");
+                                return;
+                              }
+                              if (Number(withdrawAmount) > balance) {
+                                toast.error("Số dư không đủ");
+                                return;
+                              }
+                              const accountId = selectedBank.accountId || selectedBank.bankAccountId || selectedBank.id;
+                              if (!accountId) {
+                                toast.error("Lỗi dữ liệu tài khoản ngân hàng. Vui lòng thử lại.");
+                                return;
+                              }
+                              withdrawMutation.mutate({
+                                amount: Number(withdrawAmount),
+                                accountId: accountId
+                              });
                             }}
-                            className="w-full rounded-2xl bg-[#111111] py-4 text-sm font-black text-white shadow-xl hover:bg-black active:scale-95 transition-all"
+                            disabled={withdrawMutation.isPending}
+                            className="w-full rounded-2xl bg-[#111111] py-4 text-sm font-black text-white shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-50"
                           >
-                            XÁC NHẬN RÚT TIỀN
+                            {withdrawMutation.isPending ? "ĐANG XỬ LÝ..." : "XÁC NHẬN RÚT TIỀN"}
                           </button>
                         </div>
                       )}

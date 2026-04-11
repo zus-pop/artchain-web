@@ -11,99 +11,88 @@ import { useState, useRef } from "react";
 import { 
   IconWallet, 
   IconArrowUpRight, 
-  IconUpload, 
   IconHistory, 
   IconCheck, 
-  IconX, 
   IconEye,
   IconReceipt2,
   IconCloudUpload,
-  IconUserCircle
+  IconUserCircle,
+  IconSearch,
+  IconFilter
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import Image from "next/image";
-
-// Mock Data for User Withdrawal Requests
-const MOCK_USER_REQUESTS = [
-  {
-    id: "WD-8801",
-    user: "Nguyen Van A",
-    walletId: "W-7721-00",
-    date: "2024-03-28",
-    amount: 1200000,
-    status: "Pending",
-    reason: "Withdraw to Vietcombank",
-    userNote: "Please process ASAP",
-    staffProof: null,
-  },
-  {
-    id: "WD-8802",
-    user: "Tran Thi B",
-    walletId: "W-5542-12",
-    date: "2024-03-27",
-    amount: 5000000,
-    status: "Approved",
-    reason: "Withdrawal to BIDV",
-    userNote: "N/A",
-    staffProof: "https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=800&auto=format&fit=crop",
-  },
-  {
-    id: "WD-8803",
-    user: "Le Van C",
-    walletId: "W-9091-66",
-    date: "2024-03-26",
-    amount: 350000,
-    status: "Rejected",
-    reason: "Incomplete KYC",
-    userNote: "N/A",
-    staffProof: null,
-  }
-];
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { 
+  getStaffWithdrawRequests, 
+  approveWithdrawRequest, 
+  rejectWithdrawRequest 
+} from "@/apis/wallet";
+import { format } from "date-fns";
 
 export default function StaffFinancePage() {
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+  const queryClient = useQueryClient();
   
-  const [requests, setRequests] = useState(MOCK_USER_REQUESTS);
-  const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
-  const [staffProofImage, setStaffProofImage] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("PENDING");
+  const [staffProofFile, setStaffProofFile] = useState<File | null>(null);
+  const [staffProofPreview, setStaffProofPreview] = useState<string | null>(null);
+  const [staffNote, setStaffNote] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
+  
   const staffFileRef = useRef<HTMLInputElement>(null);
-  
+
+  const { data: requestsData, isLoading } = useQuery({
+    queryKey: ["staff-withdraw-requests", statusFilter],
+    queryFn: () => getStaffWithdrawRequests({ status: statusFilter }),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: ({ requestId, data }: { requestId: string; data: any }) => 
+      approveWithdrawRequest(requestId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staff-withdraw-requests"] });
+      toast.success("Đã phê duyệt yêu cầu thành công!");
+      setStaffProofFile(null);
+      setStaffProofPreview(null);
+      setStaffNote("");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Không thể phê duyệt yêu cầu");
+    }
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ requestId, data }: { requestId: string; data: any }) => 
+      rejectWithdrawRequest(requestId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["staff-withdraw-requests"] });
+      toast.info("Đã từ chối yêu cầu và hoàn tiền cho khách hàng.");
+      setRejectReason("");
+      setStaffNote("");
+    },
+    onError: (error: any) => {
+      toast.error(error?.message || "Không thể từ chối yêu cầu");
+    }
+  });
+
   const handleStaffFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setStaffProofFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setStaffProofImage(reader.result as string);
+        setStaffProofPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleApprove = (id: string) => {
-    if (!staffProofImage) {
-      toast.error("You must upload transfer proof image to approve this request.");
-      return;
-    }
-
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: "Approved", staffProof: staffProofImage } : req
-    ));
-    setStaffProofImage(null);
-    setApprovingRequestId(null);
-    toast.success(`Request ${id} has been approved with proof.`);
-  };
-
-  const handleReject = (id: string) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: "Rejected" } : req
-    ));
-    setApprovingRequestId(null);
-    toast.info(`Request ${id} has been rejected.`);
-  };
+  const requests = requestsData?.data || [];
 
   return (
     <SidebarProvider
@@ -123,53 +112,63 @@ export default function StaffFinancePage() {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
               
-              {/* Page Header */}
               <div className="flex items-center justify-between mb-2">
                 <div>
                   <h2 className="text-2xl font-bold staff-heading">
-                    Withdrawal Requests Monitor
+                    Kiểm soát yêu cầu rút tiền
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Review and authorize user fund withdrawals
+                    Xem xét và xác nhận các lệnh rút tiền từ ví người dùng
                   </p>
                 </div>
               </div>
 
-              {/* Summary Stats */}
               <StatsCards 
                 stats={[
                   {
-                    title: "Total Requests",
+                    title: "Tổng yêu cầu",
                     value: requests.length,
-                    subtitle: "Life-time requests",
+                    subtitle: "Danh sách hiện tại",
                     icon: <IconHistory className="h-6 w-6" />,
                     variant: "primary",
                   },
                   {
-                    title: "Pending Approval",
-                    value: requests.filter(r => r.status === 'Pending').length,
-                    subtitle: "Action required",
+                    title: "Đang chờ duyệt",
+                    value: requests.filter(r => r.status === 'PENDING').length,
+                    subtitle: "Cần xử lý ngay",
                     icon: <IconWallet className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
-                    title: "Total Paid Out",
-                    value: "154,200,000 VND",
-                    subtitle: "Successfully processed",
+                    title: "Đã giải ngân",
+                    value: requests.filter(r => r.status === 'APPROVED').length,
+                    subtitle: "Giao dịch thành công",
                     icon: <IconArrowUpRight className="h-6 w-6" />,
                     variant: "success",
                   }
                 ]}
               />
 
-              {/* Requests Feed - Borderless Style */}
               <div className="mt-6">
                 <div className="staff-card border-none shadow-md overflow-hidden bg-white">
                   <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="text-lg font-bold staff-text-primary uppercase tracking-tight">Active Requests Feed</h3>
-                    <div className="flex gap-2">
-                      <Badge variant="outline" className="rounded-none font-bold text-[10px] text-gray-400">FILTER</Badge>
-                      <Badge variant="outline" className="rounded-none font-bold text-[10px] text-gray-400">SORT</Badge>
+                    <h3 className="text-lg font-bold staff-text-primary uppercase tracking-tight">Danh sách yêu cầu</h3>
+                    <div className="flex gap-4">
+                      <div className="flex rounded-none border border-gray-100 bg-gray-50 p-1">
+                        {["PENDING", "APPROVED", "REJECTED"].map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => setStatusFilter(st)}
+                            className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                              statusFilter === st 
+                                ? "bg-white text-gray-900 shadow-sm" 
+                                : "text-gray-400 hover:text-gray-600"
+                            }`}
+                          >
+                            {st === "PENDING" ? "Chờ duyệt" : st === "APPROVED" ? "Đã duyệt" : "Đã từ chối"}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   
@@ -177,45 +176,56 @@ export default function StaffFinancePage() {
                     <table className="min-w-full divide-y divide-gray-100">
                       <thead className="bg-[#f8f6f0]">
                         <tr className="h-12 border-none">
-                          <th className="px-6 text-left text-[10px] font-black staff-text-secondary uppercase tracking-widest">User / Date</th>
-                          <th className="px-6 text-left text-[10px] font-black staff-text-secondary uppercase tracking-widest">Status</th>
-                          <th className="px-6 text-right text-[10px] font-black staff-text-secondary uppercase tracking-widest">Amount</th>
-                          <th className="px-6 text-right text-[10px] font-black staff-text-secondary uppercase tracking-widest">Action</th>
+                          <th className="px-6 text-left text-[10px] font-black staff-text-secondary uppercase tracking-widest">Người dùng / Ngày tạo</th>
+                          <th className="px-6 text-left text-[10px] font-black staff-text-secondary uppercase tracking-widest">Trạng thái</th>
+                          <th className="px-6 text-right text-[10px] font-black staff-text-secondary uppercase tracking-widest">Số tiền</th>
+                          <th className="px-6 text-right text-[10px] font-black staff-text-secondary uppercase tracking-widest">Hành động</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-50">
-                        {requests.length === 0 ? (
-                          <tr><td colSpan={4} className="p-12 text-center text-gray-400">No requests found</td></tr>
+                        {isLoading ? (
+                          <tr><td colSpan={4} className="p-12 text-center text-gray-400 animate-pulse font-bold">Đang tải dữ liệu...</td></tr>
+                        ) : requests.length === 0 ? (
+                          <tr><td colSpan={4} className="p-12 text-center text-gray-400 font-bold uppercase tracking-widest text-xs">Không có yêu cầu nào</td></tr>
                         ) : (
                           requests.map((req) => (
-                            <tr key={req.id} className="hover:bg-gray-50/50 transition-colors h-20 border-none group">
+                            <tr key={req.requestId} className="hover:bg-gray-50/50 transition-colors h-20 border-none group">
                               <td className="px-6">
                                 <div className="flex items-center gap-3">
                                   <div className="h-10 w-10 bg-gray-100 flex items-center justify-center">
                                     <IconUserCircle className="h-6 w-6 text-gray-300" />
                                   </div>
                                   <div>
-                                    <div className="text-sm font-bold staff-text-primary">{req.user}</div>
-                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{req.date} • {req.id}</div>
+                                    <div className="text-sm font-bold staff-text-primary">{req.user?.fullName || req.senderName}</div>
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">
+                                      {format(new Date(req.createdAt), "dd/MM/yyyy HH:mm")}
+                                    </div>
                                   </div>
                                 </div>
                               </td>
                               <td className="px-6">
                                 <span className={`inline-flex px-3 py-1 text-[9px] font-black uppercase tracking-widest
-                                  ${req.status === 'Approved' ? 'staff-badge-approved' : 
-                                    req.status === 'Pending' ? 'staff-badge-pending animate-pulse' : 'staff-badge-rejected'}
+                                  ${req.status === 'APPROVED' ? 'staff-badge-approved' : 
+                                    req.status === 'PENDING' ? 'staff-badge-pending animate-pulse' : 'staff-badge-rejected'}
                                 `}>
-                                  {req.status}
+                                  {req.status === "PENDING" ? "Chờ duyệt" : req.status === "APPROVED" ? "Đã duyệt" : "Từ chối"}
                                 </span>
                               </td>
                               <td className="px-6 text-right">
-                                <span className="text-sm font-black italic tracking-tighter">{req.amount.toLocaleString()} VND</span>
+                                <span className="text-sm font-black italic tracking-tighter">{req.amount.toLocaleString()} <span className="text-[10px] not-italic opacity-50">VND</span></span>
                               </td>
                               <td className="px-6 text-right">
-                                <Dialog onOpenChange={(open) => { if(!open) setStaffProofImage(null); }}>
+                                <Dialog onOpenChange={(open) => { 
+                                  if(!open) {
+                                    setStaffProofFile(null);
+                                    setStaffProofPreview(null);
+                                    setRejectReason("");
+                                    setStaffNote("");
+                                  }
+                                }}>
                                   <DialogTrigger asChild>
                                     <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-500 rounded-none transition-all">
-                                      {req.status === 'Pending' ? <IconHistory className="h-5 w-5" /> : <IconEye className="h-5 w-5" />}
+                                      {req.status === 'PENDING' ? <IconHistory className="h-5 w-5" /> : <IconEye className="h-5 w-5" />}
                                     </Button>
                                   </DialogTrigger>
                                   <DialogContent className="rounded-none p-0 border-none shadow-2xl overflow-hidden max-w-2xl bg-white">
@@ -224,12 +234,12 @@ export default function StaffFinancePage() {
                                       <DialogHeader>
                                         <div className="flex items-center justify-between">
                                           <div>
-                                            <DialogTitle className="text-3xl font-black italic tracking-tighter uppercase">Request Inspection</DialogTitle>
-                                            <DialogDescription className="font-bold text-[9px] tracking-widest uppercase text-gray-400">Reference Number: {req.id}</DialogDescription>
+                                            <DialogTitle className="text-3xl font-black italic tracking-tighter uppercase">Kiểm tra yêu cầu</DialogTitle>
+                                            <DialogDescription className="font-bold text-[9px] tracking-widest uppercase text-gray-400">Mã yêu cầu: {req.requestId}</DialogDescription>
                                           </div>
                                           <Badge className={
-                                            req.status === 'Approved' ? 'staff-badge-approved px-5 py-2' : 
-                                            req.status === 'Pending' ? 'staff-badge-pending px-5 py-2' : 'staff-badge-rejected px-5 py-2'
+                                            req.status === 'APPROVED' ? 'staff-badge-approved px-5 py-2' : 
+                                            req.status === 'PENDING' ? 'staff-badge-pending px-5 py-2' : 'staff-badge-rejected px-5 py-2'
                                           }>
                                             {req.status.toUpperCase()}
                                           </Badge>
@@ -239,77 +249,129 @@ export default function StaffFinancePage() {
                                       <div className="grid grid-cols-2 gap-10 border-t border-b border-gray-100 py-10">
                                          <div className="space-y-4">
                                             <div>
-                                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Requesting Party</p>
-                                              <p className="text-lg font-black italic">{req.user}</p>
-                                              <p className="text-[10px] text-gray-400 font-medium">{req.walletId}</p>
+                                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Người yêu cầu</p>
+                                              <p className="text-lg font-black italic">{req.user?.fullName || req.senderName}</p>
                                             </div>
                                             <div>
-                                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Purpose</p>
-                                              <p className="text-sm font-bold text-gray-700">{req.reason}</p>
-                                              <p className="text-xs italic text-gray-400 mt-1">"{req.userNote}"</p>
+                                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Tài khoản ngân hàng</p>
+                                              <p className="text-sm font-bold text-gray-700">{req.bankName}</p>
+                                              <p className="text-[10px] font-black text-gray-400 tracking-wider">STK: {req.bankAccountNumber}</p>
+                                              <p className="text-[10px] font-black text-gray-400 tracking-wider">Tên: {req.bankAccountName}</p>
                                             </div>
                                          </div>
                                          <div className="text-right flex flex-col justify-center">
-                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Payout Amount</p>
+                                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Số tiền giải ngân</p>
                                             <p className="text-4xl font-black italic text-[#d9534f]">{req.amount.toLocaleString()} <span className="text-xs not-italic">VND</span></p>
                                          </div>
                                       </div>
 
-                                      {/* Logic for Pending Approval */}
-                                      {req.status === "Pending" ? (
+                                      {req.status === "PENDING" ? (
                                         <div className="space-y-6">
-                                          <div className="bg-red-50/50 p-6 border-l-4 border-[#d9534f]">
-                                            <p className="text-[10px] font-black text-[#d9534f] uppercase tracking-widest mb-4 flex items-center gap-2">
-                                              <IconReceipt2 className="h-4 w-4" /> Upload Transfer Receipt to Authorize
-                                            </p>
-                                            
-                                            <div 
-                                              onClick={() => staffFileRef.current?.click()}
-                                              className="relative aspect-video w-full border-2 border-dashed border-red-100 hover:border-[#d9534f] transition-all cursor-pointer bg-white flex flex-col items-center justify-center p-6 group"
-                                            >
-                                              {staffProofImage ? (
-                                                <Image src={staffProofImage} alt="Staff Proof" fill className="object-contain p-2" />
-                                              ) : (
-                                                <div className="text-center">
-                                                  <IconCloudUpload className="h-10 w-10 text-red-200 mx-auto group-hover:scale-110 transition-transform" />
-                                                  <p className="text-[10px] font-black text-gray-400 mt-3 uppercase tracking-widest">Drop Screenshot or Click to Browse</p>
-                                                </div>
-                                              )}
-                                              <input ref={staffFileRef} type="file" className="hidden" accept="image/*" onChange={handleStaffFileChange} />
+                                          <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                              <p className="text-[10px] font-black text-[#d9534f] uppercase tracking-widest flex items-center gap-2">
+                                                <IconReceipt2 className="h-4 w-4" /> Tải chứng từ chuyển khoản
+                                              </p>
+                                              <div 
+                                                onClick={() => staffFileRef.current?.click()}
+                                                className="relative aspect-video w-full border-2 border-dashed border-red-100 hover:border-[#d9534f] transition-all cursor-pointer bg-white flex flex-col items-center justify-center group"
+                                              >
+                                                {staffProofPreview ? (
+                                                  <Image src={staffProofPreview} alt="Staff Proof" fill className="object-cover" />
+                                                ) : (
+                                                  <div className="text-center p-4">
+                                                    <IconCloudUpload className="h-8 w-8 text-red-200 mx-auto group-hover:scale-110 transition-transform" />
+                                                    <p className="text-[9px] font-black text-gray-400 mt-2 uppercase tracking-widest">Nhấp để tải lên</p>
+                                                  </div>
+                                                )}
+                                                <input ref={staffFileRef} type="file" className="hidden" accept="image/*" onChange={handleStaffFileChange} />
+                                              </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ghi chú xử lý</p>
+                                              <textarea 
+                                                className="w-full h-[120px] bg-gray-50 border border-gray-100 p-3 text-xs font-bold outline-none focus:border-red-200"
+                                                placeholder="VD: Đã chuyển khoản từ VCB..."
+                                                value={staffNote}
+                                                onChange={(e) => setStaffNote(e.target.value)}
+                                              />
                                             </div>
                                           </div>
 
                                           <div className="grid grid-cols-2 gap-4">
                                             <Button 
-                                              disabled={!staffProofImage}
+                                              disabled={!staffProofPreview || approveMutation.isPending}
                                               className={`h-16 rounded-none font-black tracking-[0.2em] text-xs transition-all ${
-                                                staffProofImage ? 'bg-[#111111] hover:bg-green-600 text-white shadow-xl' : 'bg-gray-100 text-gray-300'
+                                                staffProofPreview ? 'bg-[#111111] hover:bg-green-600 text-white shadow-xl' : 'bg-gray-100 text-gray-300'
                                               }`}
-                                              onClick={() => handleApprove(req.id)}
+                                              onClick={() => approveMutation.mutate({
+                                                requestId: req.requestId,
+                                                data: { proofImage: staffProofFile, staffNote }
+                                              })}
                                             >
-                                              COMPLETE & APPROVE
+                                              {approveMutation.isPending ? "ĐANG XỬ LÝ..." : "HOÀN TẤT & PHÊ DUYỆT"}
                                             </Button>
-                                            <Button 
-                                              variant="outline"
-                                              className="h-16 rounded-none border border-red-100 text-red-500 hover:bg-red-50 font-black tracking-[0.2em] text-xs"
-                                              onClick={() => handleReject(req.id)}
-                                            >
-                                              REJECT REQUEST
-                                            </Button>
+                                            
+                                            <Dialog>
+                                              <DialogTrigger asChild>
+                                                <Button 
+                                                  variant="outline"
+                                                  className="h-16 rounded-none border border-red-100 text-red-500 hover:bg-red-50 font-black tracking-[0.2em] text-xs"
+                                                >
+                                                  TỪ CHỐI YÊU CẦU
+                                                </Button>
+                                              </DialogTrigger>
+                                              <DialogContent className="rounded-none border-none p-8 bg-white shadow-2xl">
+                                                <DialogHeader>
+                                                  <DialogTitle className="text-2xl font-black italic uppercase tracking-tighter">Lý do từ chối</DialogTitle>
+                                                </DialogHeader>
+                                                <div className="space-y-4 pt-4">
+                                                  <textarea 
+                                                    className="w-full h-32 bg-gray-50 border border-gray-100 p-4 text-xs font-bold outline-none"
+                                                    placeholder="VD: Sai thông tin số tài khoản..."
+                                                    value={rejectReason}
+                                                    onChange={(e) => setRejectReason(e.target.value)}
+                                                  />
+                                                  <Button 
+                                                    disabled={!rejectReason || rejectMutation.isPending}
+                                                    onClick={() => rejectMutation.mutate({
+                                                      requestId: req.requestId,
+                                                      data: { rejectReason, staffNote }
+                                                    })}
+                                                    className="w-full h-12 bg-red-600 text-white rounded-none font-black text-xs tracking-[0.1em]"
+                                                  >
+                                                    {rejectMutation.isPending ? "ĐANG XỬ LÝ..." : "XÁC NHẬN TỪ CHỐI"}
+                                                  </Button>
+                                                </div>
+                                              </DialogContent>
+                                            </Dialog>
                                           </div>
                                         </div>
                                       ) : (
-                                        /* Display proof for already approved requests */
-                                        req.staffProof && (
-                                          <div className="space-y-4">
-                                             <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                <IconCheck className="h-4 w-4 text-green-500" /> Authorized Transfer Receipt
-                                             </p>
-                                             <div className="relative aspect-video border border-gray-100 bg-gray-50 overflow-hidden">
-                                                <Image src={req.staffProof} alt="Authorized Proof" fill className="object-contain" />
-                                             </div>
-                                          </div>
-                                        )
+                                        <div className="space-y-6">
+                                          {(req.status === "APPROVED" && req.proofImageUrl) && (
+                                            <div className="space-y-4">
+                                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                                <IconCheck className="h-4 w-4 text-green-500" /> Chứng từ giải ngân
+                                              </p>
+                                              <div className="relative aspect-video border border-gray-100 bg-gray-50 overflow-hidden">
+                                                <Image src={req.proofImageUrl} alt="Authorized Proof" fill className="object-contain" />
+                                              </div>
+                                            </div>
+                                          )}
+                                          {req.status === "REJECTED" && (
+                                            <div className="bg-red-50 p-6 border-l-4 border-red-500">
+                                              <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">Lý do từ chối</p>
+                                              <p className="text-sm font-bold text-red-900 mt-1">{req.rejectReason || "N/A"}</p>
+                                              {req.staffNote && (
+                                                <div className="mt-4 pt-4 border-t border-red-100">
+                                                  <p className="text-[9px] font-black text-red-400 uppercase tracking-widest">Ghi chú staff</p>
+                                                  <p className="text-xs font-bold text-red-700 mt-1">{req.staffNote}</p>
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
                                       )}
                                     </div>
                                   </DialogContent>

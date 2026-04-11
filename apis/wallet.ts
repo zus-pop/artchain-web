@@ -67,3 +67,110 @@ export async function getWalletTransactions(
   );
   return response.data;
 }
+
+export interface BankAccount {
+  id: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+  createdAt: string;
+}
+
+export async function addBankAccount(data: {
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+}) {
+  const response = await myAxios.post("/wallets/bank-accounts", data);
+  return response.data;
+}
+
+export async function getMyBankAccounts() {
+  const response = await myAxios.get<{ data: BankAccount[] }>(
+    "/wallets/bank-accounts/me",
+  );
+  return response.data;
+}
+
+export async function createWithdrawRequest(data: {
+  amount: number;
+  accountId: string;
+}) {
+  const response = await myAxios.post("/wallets/withdraw-requests", data);
+  return response.data;
+}
+
+// STAFF APIs
+export interface StaffWithdrawRequest {
+  requestId: string;
+  senderId: string;
+  senderName: string;
+  amount: number;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
+  bankBranch?: string;
+  createdAt: string;
+  staffNote?: string;
+  proofImageUrl?: string;
+  rejectReason?: string;
+  user: {
+    userId: string;
+    fullName: string;
+  };
+}
+
+export async function getStaffWithdrawRequests(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+}) {
+  const response = await myAxios.get<{
+    data: StaffWithdrawRequest[];
+    pagination: { total: number; totalPages: number };
+  }>("/staff/wallet-withdraw-requests", { params });
+  return response.data;
+}
+
+export async function getMyWithdrawRequests(params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+}) {
+  const response = await myAxios.get<{
+    data: StaffWithdrawRequest[];
+    pagination: { total: number; totalPages: number };
+  }>("/wallets/withdraw-requests/me", { params });
+  return response.data;
+}
+
+export async function approveWithdrawRequest(
+  requestId: string,
+  data: { proofImage?: File; proofImageUrl?: string; staffNote?: string },
+) {
+  const formData = new FormData();
+  if (data.proofImage) formData.append("proofImage", data.proofImage);
+  if (data.proofImageUrl) formData.append("proofImageUrl", data.proofImageUrl);
+  if (data.staffNote) formData.append("staffNote", data.staffNote);
+
+  const response = await myAxios.patch(
+    `/staff/wallet-withdraw-requests/${requestId}/approve`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+  return response.data;
+}
+
+export async function rejectWithdrawRequest(
+  requestId: string,
+  data: { rejectReason: string; staffNote?: string },
+) {
+  const response = await myAxios.patch(
+    `/staff/wallet-withdraw-requests/${requestId}/reject`,
+    data,
+  );
+  return response.data;
+}
