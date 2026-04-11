@@ -188,17 +188,17 @@ export default function ModernArtAuction() {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 text-left">
-            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-sm border border-white/20">
               <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">1</div>
               <h3 className="font-bold uppercase tracking-wider mb-2">Đăng ký ví</h3>
               <p className="text-sm opacity-60">Tạo ví ArtChain để quản lý số dư và tham gia đấu giá an toàn.</p>
             </div>
-            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-sm border border-white/20">
               <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">2</div>
               <h3 className="font-bold uppercase tracking-wider mb-2">Nạp tiền</h3>
               <p className="text-sm opacity-60">Nạp tiền vào ví để có thể đặt giá cho những tác phẩm bạn yêu thích.</p>
             </div>
-            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-2xl border border-white/20">
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-sm border border-white/20">
               <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">3</div>
               <h3 className="font-bold uppercase tracking-wider mb-2">Đấu giá & Sở hữu</h3>
               <p className="text-sm opacity-60">Tham gia phiên đấu giá trực tiếp và nhận tác phẩm nghệ thuật tận nơi.</p>
@@ -500,7 +500,7 @@ export default function ModernArtAuction() {
                   </div>
                 ) : liveItems.length === 0 ? (
                   <div className="py-20 text-center border border-slate-200 bg-white/60">
-                    <p className="text-lg font-bold uppercase tracking-wider text-slate-500">Hiện chưa có phiên đấu giá ongoing</p>
+                    <p className="text-lg font-bold uppercase tracking-wider text-slate-500">Hiện chưa có phiên đấu giá</p>
                   </div>
                 ) : (
                   liveItems.map((item) => (

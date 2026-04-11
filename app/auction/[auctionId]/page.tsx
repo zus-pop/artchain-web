@@ -575,7 +575,7 @@ export default function AuctionDetailPage() {
 
           {/* Countdown */}
           {countdownTarget && (
-            <div className={`mt-6 inline-flex items-center gap-3 ${isPaintingWaiting ? "bg-orange-100 text-orange-900" : "bg-[#1a1a1a] text-white"} px-6 py-4 rounded-2xl transition-colors`}>
+            <div className={`mt-6 inline-flex items-center gap-3 ${isPaintingWaiting ? "bg-orange-100 text-orange-900" : "bg-[#1a1a1a] text-white"} px-6 py-4 rounded-sm transition-colors`}>
               <Timer size={20} className={isPaintingWaiting ? "text-orange-600" : "text-[#f07d44]"} />
               <div>
                 <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest flex items-center gap-2">
@@ -663,7 +663,7 @@ export default function AuctionDetailPage() {
           <div className="lg:col-span-6">
             {selectedPainting ? (
               <div className="space-y-6">
-                <div className="relative overflow-hidden rounded-2xl shadow-2xl bg-gray-100">
+                <div className="relative overflow-hidden rounded-sm shadow-2xl bg-gray-100">
                   <img
                     src={selectedPainting.painting.imageUrl || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"}
                     alt={selectedPainting.painting.title}
@@ -741,7 +741,7 @@ export default function AuctionDetailPage() {
                   </AnimatePresence>
                 </div>
 
-                <div className="bg-white rounded-2xl p-8 shadow-sm">
+                <div className="bg-white rounded-sm p-8 shadow-sm">
                    <div className="pt-6">
                     <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.3em] mb-6">Biểu đồ giá trực tiếp</p>
                     <div className="h-[200px] w-full">
@@ -803,7 +803,7 @@ export default function AuctionDetailPage() {
                 </div>
               </div>
             ) : (
-              <div className="aspect-square bg-white rounded-2xl flex items-center justify-center opacity-30 border-2 border-dashed border-gray-300">
+              <div className="aspect-square bg-white rounded-sm flex items-center justify-center opacity-30 border-2 border-dashed border-gray-300">
                 <p className="font-black uppercase tracking-widest">Chọn tác phẩm để xem</p>
               </div>
             )}
@@ -812,7 +812,7 @@ export default function AuctionDetailPage() {
           {/* RIGHT: Bidding Panel */}
           <div className="lg:col-span-3 space-y-6">
             {selectedPainting && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="bg-white rounded-sm p-6 shadow-sm">
                 {/* <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-4">
                   Phòng đấu giá
                 </p> */}
@@ -907,7 +907,7 @@ export default function AuctionDetailPage() {
               </div>
             )}
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="bg-white rounded-sm p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
                   Lịch sử

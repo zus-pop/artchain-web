@@ -74,7 +74,7 @@ export default function CongratulationPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-4xl bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2"
+          className="relative z-10 w-full max-w-4xl bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] rounded-sm overflow-hidden grid grid-cols-1 lg:grid-cols-2"
         >
           {/* Left Column: Visuals */}
           <div className="bg-[#1a1a1a] p-12 flex flex-col justify-between text-white relative overflow-hidden h-full min-h-[400px]">

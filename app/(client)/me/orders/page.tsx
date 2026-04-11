@@ -50,7 +50,7 @@ export default function OrdersMockPage() {
   return (
     <main className="min-h-screen bg-[#EAE6E0] px-4 pt-28 pb-10 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-6xl space-y-6">
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+        <section className="rounded-sm border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Demo trạng thái</p>
@@ -65,7 +65,7 @@ export default function OrdersMockPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
+        <section className="rounded-sm border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
           <p className="text-sm font-semibold text-gray-800">Mã đơn: 356925420</p>
           <p className="mt-1 text-sm text-gray-500">Bạn đã thắng đấu giá. Hệ thống đang giữ tiền trong ví để xử lý giao nhận.</p>
 
@@ -103,7 +103,7 @@ export default function OrdersMockPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+        <section className="rounded-sm border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
           <div className="space-y-4">
             {items.map((item) => (
               <div
@@ -131,7 +131,7 @@ export default function OrdersMockPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <section className="rounded-sm border border-gray-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 sm:px-6">
             <h2 className="text-2xl font-semibold text-gray-900">Chi phí dự kiến</h2>
             <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -158,7 +158,7 @@ export default function OrdersMockPage() {
         </section>
 
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="rounded-sm border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Người mua</h3>
               <ChevronDown className="h-4 w-4 text-gray-400" />
@@ -169,7 +169,7 @@ export default function OrdersMockPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="rounded-sm border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Thông tin nhận hàng</h3>
               <span className="text-xs font-semibold text-indigo-500">Chỉnh sửa</span>
@@ -181,7 +181,7 @@ export default function OrdersMockPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="rounded-sm border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Địa chỉ giao hàng</h3>
               <span className="text-xs font-semibold text-indigo-500">Chỉnh sửa</span>
@@ -194,7 +194,7 @@ export default function OrdersMockPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="rounded-sm border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Chính sách ví</h3>
               <ChevronDown className="h-4 w-4 text-gray-400" />

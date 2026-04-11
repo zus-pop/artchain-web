@@ -170,7 +170,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Tiến trình giao hàng (Full Width) */}
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="rounded-sm border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="text-lg font-bold text-gray-900">Tiến trình giao tác phẩm</h2>
           <div className="mt-5 overflow-x-auto">
             <div className="min-w-[760px]">
@@ -224,7 +224,7 @@ export default function OrderDetailPage() {
             
             {/* Thông báo quan trọng (Chỉ hiện ở Status 1) */}
             {currentStatusId === "1" && !isRejected && (
-              <section className="animate-in fade-in slide-in-from-top-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+              <section className="animate-in fade-in slide-in-from-top-4 rounded-sm border border-amber-200 bg-amber-50 p-5 shadow-sm">
                 <div className="flex items-start gap-4">
                   <div className="rounded-full bg-amber-100 p-2 text-amber-600">
                     <Clock3 className="h-5 w-5" />
@@ -240,14 +240,14 @@ export default function OrderDetailPage() {
             )}
 
             {isRejected && (
-              <section className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm">
+              <section className="rounded-sm border border-red-200 bg-red-50 p-5 shadow-sm">
                 <p className="text-sm font-bold text-red-700 uppercase">Đơn hàng đã bị từ chối</p>
                 <p className="mt-1 text-xs text-red-600">Phí phạt vi phạm (12%) đã được khấu trừ vào ví của bạn.</p>
               </section>
             )}
 
             {/* Chi tiết tác phẩm */}
-            <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <section className="rounded-sm border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
                   <span className={`inline-block rounded-full border px-3 py-1 text-[10px] font-bold uppercase ${toneClassMap[order.statusTone]}`}>
@@ -284,7 +284,7 @@ export default function OrderDetailPage() {
             </section>
 
             {/* Ảnh tác phẩm lớn */}
-            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
+            <section className="overflow-hidden rounded-sm border border-gray-200 bg-white p-2 shadow-sm">
               <img
                 src={order.artworkImage}
                 alt={order.artworkTitle}
@@ -297,7 +297,7 @@ export default function OrderDetailPage() {
           <aside className="w-full space-y-6 lg:w-[380px]">
             
             {/* Box Chi Phí */}
-            <section className="sticky top-24 rounded-2xl border border-gray-200 bg-white p-6 shadow-lg shadow-gray-200/50">
+            <section className="sticky top-24 rounded-sm border border-gray-200 bg-white p-6 shadow-lg shadow-gray-200/50">
               <h3 className="text-lg font-bold text-gray-900">Chi phí dự kiến</h3>
               
               <div className="mt-6 space-y-3">

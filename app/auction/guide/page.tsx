@@ -106,7 +106,7 @@ export default function AuctionGuidePage() {
                className="relative flex flex-col md:flex-row gap-8 md:items-start group"
              >
                 {/* Icon Circle */}
-                <div className="relative z-10 w-20 h-20 shrink-0 bg-white border border-black/5 shadow-sm rounded-2xl flex items-center justify-center text-black/40 group-hover:text-[#f07d44] group-hover:border-[#f07d44]/30 transition-all duration-500">
+                <div className="relative z-10 w-20 h-20 shrink-0 bg-white border border-black/5 shadow-sm rounded-sm flex items-center justify-center text-black/40 group-hover:text-[#f07d44] group-hover:border-[#f07d44]/30 transition-all duration-500">
                    {step.icon}
                    <div className="absolute -top-2 -right-2 w-7 h-7 bg-[#1a1a1a] text-white text-[10px] font-black flex items-center justify-center rounded-lg">
                       0{index + 1}
@@ -144,7 +144,7 @@ export default function AuctionGuidePage() {
               </button>
            </div>
            
-           <div className="relative z-10 w-40 h-40 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center justify-center">
+           <div className="relative z-10 w-40 h-40 bg-white/5 backdrop-blur-xl rounded-sm border border-white/10 flex items-center justify-center">
               <IconQuestionMark size={80} className="text-[#f07d44] opacity-50" />
            </div>
 

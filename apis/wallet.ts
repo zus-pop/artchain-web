@@ -174,3 +174,8 @@ export async function rejectWithdrawRequest(
   );
   return response.data;
 }
+
+export async function deleteBankAccount(id: string) {
+  const response = await myAxios.delete(`/wallets/bank-accounts/${id}`);
+  return response.data;
+}
