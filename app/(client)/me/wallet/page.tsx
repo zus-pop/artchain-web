@@ -62,7 +62,10 @@ export default function WalletPage() {
   const { data: bankAccountsData, isLoading: isBanksLoading } = useQuery({
     queryKey: ["bank-accounts"],
     queryFn: getMyBankAccounts,
+    enabled: !!userData,
   });
+
+  const banks = bankAccountsData?.data || [];
 
   const addBankMutation = useMutation({
     mutationFn: addBankAccount,
@@ -102,21 +105,19 @@ export default function WalletPage() {
     },
   });
 
-  const banks = bankAccountsData?.data || [];
-
   const [topupAmount, setTopupAmount] = useState("200000");
   const [isTopupLoading, setIsTopupLoading] = useState(false);
 
   const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery({
-    queryKey: ["wallet-transactions", userData?.userId],
+    queryKey: ["wallet-transactions"],
     queryFn: () => getWalletTransactions(userData!.userId),
-    enabled: !!userData?.userId,
+    enabled: !!userData,
   });
 
   const { data: myWithdrawRequestsData } = useQuery({
     queryKey: ["my-withdraw-requests"],
     queryFn: () => getMyWithdrawRequests(),
-    enabled: !!userData?.userId,
+    enabled: !!userData,
   });
 
   const maxY = Math.max(...weekData);
@@ -131,6 +132,12 @@ export default function WalletPage() {
   const balance = userData?.wallet?.balance ?? 0;
   const formattedBalance = new Intl.NumberFormat("vi-VN").format(balance);
   const walletId = userData?.wallet?.walletId || "Chưa có ví";
+
+  const totalApprovedWithdrawals = useMemo(() => {
+    return myWithdrawRequestsData?.data
+      ?.filter((wd: any) => wd.status === "APPROVED")
+      .reduce((sum: number, wd: any) => sum + wd.amount, 0) ?? 0;
+  }, [myWithdrawRequestsData]);
 
   const normalizedTopupAmount = useMemo(() => {
     const digitsOnly = topupAmount.replace(/\D/g, "");
@@ -623,15 +630,15 @@ export default function WalletPage() {
               {/* Group 3: Statistics */}
               <div className="mt-8 space-y-6 border-t border-gray-50 pt-8">
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tổng nạp tháng này</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Giao dịch thành công</p>
                   <p className="mt-2 text-2xl font-black text-[#FF6E1A]">
                     +{new Intl.NumberFormat("vi-VN").format(transactionsData?.summary.totalTopupThisMonth ?? 0)}đ
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Tổng chi tháng này</p>
-                  <p className="mt-2 text-2xl font-black text-gray-900 opacity-80">
-                    -{new Intl.NumberFormat("vi-VN").format(transactionsData?.summary.totalSpendThisMonth ?? 0)}đ
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Đã giải ngân</p>
+                  <p className="mt-2 text-2xl font-black text-emerald-600">
+                    +{new Intl.NumberFormat("vi-VN").format(totalApprovedWithdrawals)}đ
                   </p>
                 </div>
                 <div className="pt-2">

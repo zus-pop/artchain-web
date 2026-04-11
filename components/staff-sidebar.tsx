@@ -47,11 +47,11 @@ export function StaffSidebar({
         url: "/dashboard/staff",
         icon: IconDashboard,
       },
-      {
-        title: t.finance,
-        url: "/dashboard/staff/finance",
-        icon: IconMoneybag,
-      },
+      // {
+      //   title: t.financeManagement,
+      //   url: "/dashboard/staff/finance",
+      //   icon: IconMoneybag,
+      // },
       // {
       //   title: t.competitorManagement,
       //   url: "/dashboard/staff/competitors",
@@ -178,6 +178,11 @@ export function StaffSidebar({
             url: "/dashboard/staff/auctions/create",
           },
         ],
+      },
+      {
+        title: t.financeManagement,
+        url: "/dashboard/staff/finance",
+        icon: IconMoneybag,
       },
     ],
     navSecondary: [],
