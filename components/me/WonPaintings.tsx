@@ -33,7 +33,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
 
   if (!wonPaintings || wonPaintings.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-black/10 rounded-2xl bg-gray-50/50">
+      <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-black/10 rounded-sm bg-gray-50/50">
         <div className="text-4xl mb-4">🎨</div>
         <p className="text-lg font-bold uppercase opacity-30">Chưa có đơn hàng nào</p>
         <p className="text-sm opacity-40">Các tác phẩm bạn đấu giá thành công sẽ xuất hiện tại đây.</p>

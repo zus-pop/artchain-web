@@ -26,7 +26,7 @@ export function AnimatedNavButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "bg-white text-center w-48 rounded-2xl h-14 relative text-black text-xl font-semibold group transition-all duration-300",
+        "bg-white text-center w-48 rounded-sm h-14 relative text-black text-xl font-semibold group transition-all duration-300",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}

@@ -47,8 +47,8 @@ export default function StaffFinancePage() {
   const staffFileRef = useRef<HTMLInputElement>(null);
 
   const { data: requestsData, isLoading } = useQuery({
-    queryKey: ["staff-withdraw-requests", statusFilter],
-    queryFn: () => getStaffWithdrawRequests({ status: statusFilter }),
+    queryKey: ["staff-withdraw-requests"],
+    queryFn: () => getStaffWithdrawRequests(),
   });
 
   const approveMutation = useMutation({
@@ -92,7 +92,8 @@ export default function StaffFinancePage() {
     }
   };
 
-  const requests = requestsData?.data || [];
+  const allRequests = requestsData?.data || [];
+  const requests = allRequests.filter(req => req.status === statusFilter);
 
   return (
     <SidebarProvider
@@ -127,21 +128,21 @@ export default function StaffFinancePage() {
                 stats={[
                   {
                     title: "Tổng yêu cầu",
-                    value: requests.length,
+                    value: allRequests.length,
                     subtitle: "Danh sách hiện tại",
                     icon: <IconHistory className="h-6 w-6" />,
                     variant: "primary",
                   },
                   {
                     title: "Đang chờ duyệt",
-                    value: requests.filter(r => r.status === 'PENDING').length,
+                    value: allRequests.filter(r => r.status === 'PENDING').length,
                     subtitle: "Cần xử lý ngay",
                     icon: <IconWallet className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
                     title: "Đã giải ngân",
-                    value: requests.filter(r => r.status === 'APPROVED').length,
+                    value: allRequests.filter(r => r.status === 'APPROVED').length,
                     subtitle: "Giao dịch thành công",
                     icon: <IconArrowUpRight className="h-6 w-6" />,
                     variant: "success",

@@ -284,7 +284,7 @@ export default function BiddingPage() {
                        if (isPaintingWaiting) return <div className="text-center py-8 opacity-40"><Timer size={32} className="mx-auto mb-4" /><p className="text-[10px] font-black uppercase tracking-widest">Đang chờ phiên đấu giá</p></div>;
                        const isParticipant = hasJoined || (!!userId && !!auction?.auctionParticipants?.some(p => String(p.userId) === String(userId)));
                        if (isParticipant) return <BidForm auctionId={String(auctionId)} auctionPaintingId={String(selectedPainting.auctionPaintingId)} currentPrice={currentPrice} bidStep={selectedPainting.bidStep} isHighestBidder={isHighestBidder} onBid={handleBid} isLoading={bidMutation.isPending} disabled={!isPaintingLive} />;
-                       return <button onClick={handleJoin} className="w-full bg-[#f07d44] hover:bg-[#ff8e5a] text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg active:scale-95">Đăng ký Tham gia Đấu giá</button>;
+                       return <button onClick={handleJoin} className="w-full bg-[#f07d44] hover:bg-[#ff8e5a] text-white py-5 rounded-sm font-black text-[10px] uppercase tracking-[0.2em] transition-all shadow-lg active:scale-95">Đăng ký Tham gia Đấu giá</button>;
                     })()}
                   </div>
                 </div>

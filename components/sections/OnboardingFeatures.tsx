@@ -65,9 +65,9 @@ const OnboardingFeatures = () => {
             {section.id === "gallery" && (
               <div className="gallery-frames w-full h-[60%] rounded-3xl overflow-hidden relative max-w-lg">
                 <div className="absolute top-0 w-full h-full flex items-center justify-center p-4">
-                  <div className="frame w-32 h-40 rounded-2xl bg-gradient-to-br from-purple-400 to-pink-400 transform -rotate-12 translate-x-12 border-4 border-white shadow-lg" />
-                  <div className="frame w-40 h-48 rounded-2xl bg-gradient-to-br from-blue-400 to-teal-400 transform -translate-x-8 border-4 border-white shadow-xl z-10" />
-                  <div className="frame w-32 h-40 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-400 transform rotate-12 -translate-x-12 border-4 border-white shadow-lg" />
+                  <div className="frame w-32 h-40 rounded-sm bg-gradient-to-br from-purple-400 to-pink-400 transform -rotate-12 translate-x-12 border-4 border-white shadow-lg" />
+                  <div className="frame w-40 h-48 rounded-sm bg-gradient-to-br from-blue-400 to-teal-400 transform -translate-x-8 border-4 border-white shadow-xl z-10" />
+                  <div className="frame w-32 h-40 rounded-sm bg-gradient-to-br from-yellow-400 to-orange-400 transform rotate-12 -translate-x-12 border-4 border-white shadow-lg" />
                 </div>
               </div>
             )}

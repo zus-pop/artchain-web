@@ -23,7 +23,7 @@ export function AnimatedRoleCard({
   return (
     <div
       className={cn(
-        "relative h-32 w-full bg-white rounded-2xl overflow-hidden cursor-pointer group p-4 z-0 border-2 transition-all duration-300 bg-border border-gray-200 ",
+        "relative h-32 w-full bg-white rounded-sm overflow-hidden cursor-pointer group p-4 z-0 border-2 transition-all duration-300 bg-border border-gray-200 ",
         isSelected 
           ? "border-orange-500 shadow-lg" 
           : "border-gray-200 hover:border-orange-300 hover:shadow-md",

@@ -3,11 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import { createSponsor } from '@/apis/sponsor';
 import { getCampaign } from '@/apis/campaign';
 import Loader from '@/components/Loaders';
 import { CreateSponsorRequest, SponsorResponse, CampaignAPIResponse } from '@/types/campaign';
+import { toast } from 'sonner';
 
 const CampaignDetailPage = () => {
   const params = useParams();
@@ -78,12 +80,12 @@ const CampaignDetailPage = () => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      setFormError('Sponsor name is required');
+      setFormError('Vui lòng nhập tên nhà tài trợ');
       return;
     }
 
     if (!formData.sponsorshipAmount || parseFloat(formData.sponsorshipAmount) <= 0) {
-      setFormError('Please enter a valid sponsorship amount');
+      setFormError('Vui lòng nhập số tiền tài trợ hợp lệ');
       return;
     }
 
@@ -102,27 +104,26 @@ const CampaignDetailPage = () => {
       const response: SponsorResponse = await createSponsor(sponsorData);
 
       if (!response.error && response.data.checkoutUrl) {
-        // Open checkout in a new tab so the campaign page remains available.
         window.open(response.data.checkoutUrl, '_blank', 'noopener,noreferrer');
       } else {
-        setFormError('Failed to create sponsorship. Please try again.');
+        setFormError('Không thể tạo tài trợ. Vui lòng thử lại.');
       }
     } catch (err) {
       console.error('Error creating sponsor:', err);
-      setFormError('Failed to create sponsorship. Please try again.');
+      setFormError('Đã có lỗi xảy ra. Vui lòng thử lại sau.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen pt-25 bg-[#EAE6E0]">
+    <div className="min-h-screen pt-32 bg-[#EAE6E0]">
       {/* Header */}
       <div className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/campaigns" className="flex items-center text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="w-5 h-5 mr-2" />
+            <Link href="/campaigns" className="flex items-center text-gray-600 hover:text-gray-900 font-bold text-sm">
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Xem Tất Cả Chiến Dịch
             </Link>
           </div>
@@ -133,41 +134,49 @@ const CampaignDetailPage = () => {
         {loadingCampaign ? (
           <div className="text-center py-8">
             <Loader />
-            <p>Đang tải chi tiết chiến dịch...</p>
+            <p className="mt-4 text-sm font-bold animate-pulse text-[#FF6E1A]">Đang tải chi tiết chiến dịch...</p>
           </div>
         ) : campaign ? (
           <>
             <div className="mb-8">
+              <div className="relative aspect-video w-full rounded-xl overflow-hidden mb-6 border border-gray-300">
+                <Image 
+                  src={campaign.image || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=800&auto=format&fit=crop"} 
+                  alt={campaign.title} 
+                  fill 
+                  className="object-cover"
+                />
+              </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-4">{campaign.title}</h1>
-              <p className="text-gray-600 mb-6">{campaign.description}</p>
+              <p className="text-gray-600 mb-6 whitespace-pre-line">{campaign.description}</p>
 
               {/* Progress Bar */}
-              <div className="bg-[#EAE6E0] p-6 border border-gray-300 rounded-lg shadow-sm">
+              <div className="bg-white/50 p-6 border border-gray-300 rounded-lg shadow-sm">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Tiến Độ</span>
-                  <span className="text-sm text-gray-500">
-                    {parseFloat(campaign.currentAmount).toLocaleString()} VND / {parseFloat(campaign.goalAmount).toLocaleString()} VND
+                  <span className="text-sm font-bold text-gray-700">Tiến Độ Quyênh Góp</span>
+                  <span className="text-sm font-bold text-[#FF6E1A]">
+                    {new Intl.NumberFormat('vi-VN').format(Number(campaign.currentAmount))}đ / {new Intl.NumberFormat('vi-VN').format(Number(campaign.goalAmount))}đ
                   </span>
                 </div>
-                <div className="w-full border border-[#FF6E1A] rounded-full h-4">
+                <div className="w-full bg-gray-100 border border-gray-200 rounded-full h-3">
                   <div
-                    className="bg-[#FF6E1A] h-4 rounded-full transition-all duration-300"
+                    className="bg-[#FF6E1A] h-2.5 rounded-full transition-all duration-300 m-[1px]"
                     style={{
                       width: `${Math.min((parseFloat(campaign.currentAmount) / parseFloat(campaign.goalAmount)) * 100, 100)}%`
                     }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs font-bold text-gray-500 mt-2">
                   {((parseFloat(campaign.currentAmount) / parseFloat(campaign.goalAmount)) * 100).toFixed(1)}% đã được tài trợ
                 </p>
               </div>
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Trở Thành Nhà Tài Trợ</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-tight">Trở Thành Nhà Tài Trợ</h2>
 
             {formError && (
-              <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-md">
-                <p className="text-red-700 text-sm">{formError}</p>
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 rounded-lg">
+                <p className="text-red-700 text-sm font-bold">{formError}</p>
               </div>
             )}
 
@@ -176,7 +185,7 @@ const CampaignDetailPage = () => {
                 <div className="space-y-6">
                   {/* Sponsor Name */}
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="name" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-widest">
                       Tên Nhà Tài Trợ *
                     </label>
                     <input
@@ -186,14 +195,14 @@ const CampaignDetailPage = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] focus:bg-[#FF6E1A]/10 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] bg-white text-sm font-bold"
                       placeholder="Nhập tên tổ chức hoặc cá nhân của bạn"
                     />
                   </div>
 
                   {/* Contact Info */}
                   <div>
-                    <label htmlFor="contactInfo" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="contactInfo" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-widest">
                       Thông Tin Liên Hệ
                     </label>
                     <input
@@ -202,58 +211,56 @@ const CampaignDetailPage = () => {
                       name="contactInfo"
                       value={formData.contactInfo}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] focus:bg-[#FF6E1A]/10 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] bg-white text-sm font-bold"
                       placeholder="Số điện thoại hoặc email"
                     />
                   </div>
 
                   {/* Sponsorship Amount */}
                   <div>
-                    <label htmlFor="sponsorshipAmount" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="sponsorshipAmount" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-widest">
                       Số Tiền Tài Trợ *
                     </label>
-                    <input
-                      type="number"
-                      id="sponsorshipAmount"
-                      name="sponsorshipAmount"
-                      value={formData.sponsorshipAmount}
-                      onChange={handleInputChange}
-                      required
-                      min="100"
-                      step="100"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] focus:bg-[#FF6E1A]/10 focus:border-transparent"
-                      placeholder="Nhập số tiền bằng VND"
-                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        id="sponsorshipAmount"
+                        name="sponsorshipAmount"
+                        value={formData.sponsorshipAmount}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] bg-white text-sm font-bold"
+                        placeholder="0"
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-gray-400">đ</span>
+                    </div>
                   </div>
 
                   {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full bg-[#FF6E1A] hover:bg-[#FF833B] disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center"
+                    className="w-full bg-[#FF6E1A] hover:bg-[#FF833B] disabled:bg-gray-400 text-white font-bold py-4 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center text-sm uppercase tracking-widest"
                   >
                     {submitting ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Đang xử lý...
-                      </>
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      'Trở Thành Nhà Tài Trợ'
+                      'Xác Nhận Tài Trợ'
                     )}
                   </button>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-widest">
                     Logo (Tùy Chọn)
                   </label>
                   {previewUrl ? (
-                    <div>
-                      <img src={previewUrl} alt="Logo preview" className="max-w-full h-auto rounded-md border border-gray-300 mb-4" />
+                    <div className="bg-white p-4 rounded-lg border border-gray-300">
+                      <img src={previewUrl} alt="Logo preview" className="max-w-full h-auto rounded-lg mb-4 mx-auto" />
                       <button
                         type="button"
                         onClick={handleRemoveLogo}
-                        className="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200"
+                        className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 text-xs uppercase tracking-widest"
                       >
                         Xóa Logo
                       </button>
@@ -270,10 +277,10 @@ const CampaignDetailPage = () => {
                       />
                       <label
                         htmlFor="logo-upload"
-                        className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:border-[#ff6e1a] w-full"
+                        className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#ff6e1a] hover:bg-white transition-all w-full"
                       >
-                        <Upload className="w-5 h-5 mr-2 text-gray-500" />
-                        Chọn File
+                        <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                        <span className="text-xs font-bold text-gray-500 uppercase">Tải Lên File</span>
                       </label>
                     </div>
                   )}
@@ -283,7 +290,7 @@ const CampaignDetailPage = () => {
           </>
         ) : (
           <div className="text-center py-8">
-            <p>Không tìm thấy chiến dịch.</p>
+            <p className="font-bold text-gray-500">Không tìm thấy chiến dịch.</p>
           </div>
         )}
       </div>
