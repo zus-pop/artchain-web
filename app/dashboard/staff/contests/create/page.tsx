@@ -168,6 +168,18 @@ const createContestSchema = (t: Lang) =>
     )
     .refine(
       (data) => {
+        if (!data.roundResultAnnounceDate || !data.roundEndDate) return true;
+        return (
+          new Date(data.roundResultAnnounceDate) <= new Date(data.roundEndDate)
+        );
+      },
+      {
+        message: t.resultDateWithinContest,
+        path: ["roundResultAnnounceDate"],
+      },
+    )
+    .refine(
+      (data) => {
         if (!data.roundSendOriginalDeadline || !data.roundStartDate)
           return true;
         return (
@@ -183,10 +195,9 @@ const createContestSchema = (t: Lang) =>
     .refine(
       (data) => {
         if (!data.roundSendOriginalDeadline || !data.roundEndDate) return true;
-        return (
-          new Date(data.roundSendOriginalDeadline) <=
-          new Date(data.roundEndDate)
-        );
+        const roundEndMinusOneDay = new Date(data.roundEndDate);
+        roundEndMinusOneDay.setDate(roundEndMinusOneDay.getDate() - 1);
+        return new Date(data.roundSendOriginalDeadline) <= roundEndMinusOneDay;
       },
       {
         message: t.originalDeadlineWithinContest,
@@ -298,6 +309,14 @@ export default function CreateContestPage() {
       });
     }
   }, [watchedStartDate, setValue]);
+
+  React.useEffect(() => {
+    if (watchedRoundEndDate) {
+      setValue("roundResultAnnounceDate", watchedRoundEndDate, {
+        shouldValidate: true,
+      });
+    }
+  }, [watchedRoundEndDate, setValue]);
 
   React.useEffect(() => {
     if (watchedRound2Quantity === 0) {
@@ -749,9 +768,7 @@ export default function CreateContestPage() {
                             }
                             max={
                               watchedRoundEndDate
-                                ? formatDateForInput(
-                                    new Date(watchedRoundEndDate),
-                                  )
+                                ? addDays(watchedRoundEndDate, -1)
                                 : watchedEndDate
                                   ? formatDateForInput(new Date(watchedEndDate))
                                   : undefined
@@ -787,38 +804,28 @@ export default function CreateContestPage() {
                             onChange={(e) =>
                               onChange(e.target.value || undefined)
                             }
-                            disabled={
-                              !watchedRoundSendOriginalDeadline ||
-                              !watchedRoundEndDate
-                            }
+                            disabled
                             min={
                               watchedRoundEndDate
                                 ? formatDateForInput(
                                     new Date(watchedRoundEndDate),
                                   )
-                                : watchedRoundSendOriginalDeadline
+                                : watchedStartDate
                                   ? formatDateForInput(
-                                      new Date(
-                                        watchedRoundSendOriginalDeadline,
-                                      ),
+                                      new Date(watchedStartDate),
                                     )
-                                  : watchedRoundStartDate
-                                    ? formatDateForInput(
-                                        new Date(watchedRoundStartDate),
-                                      )
-                                    : watchedStartDate
-                                      ? formatDateForInput(
-                                          new Date(watchedStartDate),
-                                        )
-                                      : todayString
+                                  : todayString
                             }
                             max={
-                              watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
-                                : undefined
+                              watchedRoundEndDate
+                                ? formatDateForInput(
+                                    new Date(watchedRoundEndDate),
+                                  )
+                                : watchedEndDate
+                                  ? formatDateForInput(new Date(watchedEndDate))
+                                  : undefined
                             }
                             className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              !watchedRoundSendOriginalDeadline ||
                               !watchedRoundEndDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
