@@ -54,7 +54,7 @@ export default function CampaignsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["staff-campaigns", selectedStatus, currentPage, pageSize],
+    queryKey: ["campaign", selectedStatus, currentPage, pageSize],
     queryFn: () =>
       getStaffCampaigns({
         page: currentPage,

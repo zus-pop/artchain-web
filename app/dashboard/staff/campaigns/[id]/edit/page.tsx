@@ -75,7 +75,7 @@ export default function EditCampaignPage({
       updateStaffCampaign(id, data),
     onSuccess: () => {
       toast.success(t.campaignUpdatedSuccessMessage);
-      queryClient.invalidateQueries({ queryKey: ["campaign", id] });
+      queryClient.invalidateQueries({ queryKey: ["campaign"] });
       router.push(`/dashboard/staff/campaigns/${id}`);
     },
     onError: (error) => {
