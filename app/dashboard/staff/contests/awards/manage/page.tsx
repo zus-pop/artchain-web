@@ -11,6 +11,8 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import { Award, UpdateAwardRequest } from "@/types/award";
 import {
   IconArrowLeft,
@@ -20,11 +22,9 @@ import {
   IconTrophy,
   IconX,
 } from "@tabler/icons-react";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { Contest } from "../../../../../../types";
 
@@ -48,7 +48,7 @@ function AwardManagementPage() {
 
   const [editingAward, setEditingAward] = useState<Award | null>(null);
   const [editFormData, setEditFormData] = useState<UpdateAwardRequest | null>(
-    null
+    null,
   );
   const [newAwards, setNewAwards] = useState<
     Array<{
@@ -71,19 +71,77 @@ function AwardManagementPage() {
   });
 
   const { data: awardsData } = useGetAwardsByContestId(contestId);
-  const awards = (awardsData?.data as Award[]) || [];
+  const rawAwards = (awardsData?.data as Award[]) || [];
+  const awards = [...rawAwards].sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    return parseFloat(b.prize) - parseFloat(a.prize);
+  });
   const contest: Contest = contestData?.data;
 
   const createBatchMutation = useCreateBatchAward();
   const updateMutation = useUpdateAward(editingAward?.awardId || "");
   const deleteMutation = useDeleteAward();
 
+  const getPrizeMaxLimit = (currentRank: number, skipAwardId?: string) => {
+    const higherRankingAwards = awards
+      .filter((a) => a.awardId !== skipAwardId && a.rank < currentRank)
+      .map((a) => parseFloat(a.prize));
+
+    if (higherRankingAwards.length === 0) return undefined;
+
+    // The maximum allowed prize is strictly less than the lowest prize among higher-ranked awards
+    return Math.min(...higherRankingAwards) - 1;
+  };
+
+  const validatePrizeHierarchy = (
+    awardsToCheck: { rank: number; prize: number }[],
+  ) => {
+    // Sort awards by rank (lower number = higher rank), then by prize descending
+    const sorted = [...awardsToCheck].sort((a, b) => {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      return b.prize - a.prize;
+    });
+
+    for (let i = 0; i < sorted.length - 1; i++) {
+      for (let j = i + 1; j < sorted.length; j++) {
+        if (
+          sorted[i].rank < sorted[j].rank &&
+          sorted[j].prize >= sorted[i].prize
+        ) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleCreateAwards = async () => {
     const validAwards = newAwards.filter(
-      (award) => award.name.trim() && award.prize > 0
+      (award) => award.name.trim() && award.prize > 0,
     );
     if (validAwards.length === 0) {
       toast.error(t.addAtLeastOneValidAward);
+      return;
+    }
+
+    // Combine existing awards and valid new awards for validation
+    const existingAwardsForValidation = awards.map((a) => ({
+      rank: a.rank,
+      prize: parseFloat(a.prize),
+    }));
+    const newAwardsForValidation = validAwards.map((a) => ({
+      rank: a.rank,
+      prize: a.prize,
+    }));
+    const allAwardsForValidation = [
+      ...existingAwardsForValidation,
+      ...newAwardsForValidation,
+    ];
+
+    if (!validatePrizeHierarchy(allAwardsForValidation)) {
+      toast.error(
+        "Giải thưởng thấp hơn không được có giá trị giải thưởng lớn hơn giải thưởng cao hơn.",
+      );
       return;
     }
 
@@ -98,7 +156,7 @@ function AwardManagementPage() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
         },
-      }
+      },
     );
 
     setNewAwards([
@@ -108,8 +166,25 @@ function AwardManagementPage() {
 
   const handleUpdateAward = async (
     awardId: string,
-    updateData: UpdateAwardRequest
+    updateData: UpdateAwardRequest,
   ) => {
+    const existingAwardsForValidation = awards
+      .filter((a) => a.awardId !== awardId)
+      .map((a) => ({ rank: a.rank, prize: parseFloat(a.prize) }));
+
+    // updateData rank is a number
+    const allAwardsForValidation = [
+      ...existingAwardsForValidation,
+      { rank: updateData.rank as number, prize: updateData.prize as number },
+    ];
+
+    if (!validatePrizeHierarchy(allAwardsForValidation)) {
+      toast.error(
+        "Giải thưởng thấp hơn không được có giá trị giải thưởng lớn hơn giải thưởng cao hơn.",
+      );
+      return;
+    }
+
     await updateMutation.mutateAsync(updateData, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
@@ -144,7 +219,7 @@ function AwardManagementPage() {
   const updateNewAward = (
     index: number,
     field: string,
-    value: string | number
+    value: string | number,
   ) => {
     const updated = [...newAwards];
     updated[index] = { ...updated[index], [field]: value };
@@ -222,7 +297,7 @@ function AwardManagementPage() {
                 <button
                   onClick={() =>
                     router.push(
-                      `/dashboard/staff/contests/awards?id=${contestId}`
+                      `/dashboard/staff/contests/awards?id=${contestId}`,
                     )
                   }
                   className="staff-btn-outline flex items-center gap-2"
@@ -244,7 +319,7 @@ function AwardManagementPage() {
                         key={index}
                         className="border border-[#e6e2da] rounded-lg p-4 bg-white"
                       >
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium staff-text-primary mb-1">
                               {t.nameRequired}
@@ -266,52 +341,42 @@ function AwardManagementPage() {
                             <div className="relative">
                               <input
                                 type="number"
-                                value={award.prize}
+                                value={award.prize === 0 ? "" : award.prize}
                                 step={100_000}
                                 min={0}
-                                onChange={(e) =>
-                                  updateNewAward(
-                                    index,
-                                    "prize",
-                                    Number(e.target.value)
-                                  )
-                                }
+                                max={getPrizeMaxLimit(award.rank)}
+                                onChange={(e) => {
+                                  let val =
+                                    e.target.value === ""
+                                      ? 0
+                                      : Number(e.target.value);
+                                  const maxLimit = getPrizeMaxLimit(award.rank);
+                                  if (
+                                    maxLimit !== undefined &&
+                                    val > maxLimit
+                                  ) {
+                                    val = maxLimit;
+                                  }
+                                  updateNewAward(index, "prize", val);
+                                }}
                                 className="staff-input w-full pr-20"
-                                placeholder="1000000"
+                                placeholder="0"
                               />
                               <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">
                                 {formatCurrency(award.prize)} ₫
                               </div>
                             </div>
                           </div>
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-1">
-                              {t.quantity}
-                            </label>
-                            <input
-                              type="number"
-                              value={award.quantity}
-                              onChange={(e) =>
-                                updateNewAward(
-                                  index,
-                                  "quantity",
-                                  Number(e.target.value)
-                                )
-                              }
-                              className="staff-input w-full"
-                              min="1"
-                            />
-                          </div>
-                          <div className="flex items-end gap-2">
-                            {newAwards.length > 1 && (
-                              <button
-                                onClick={() => removeNewAward(index)}
-                                className="px-3 py-2 text-red-600 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-lg transition-colors"
-                              >
-                                <IconX className="h-4 w-4" />
-                              </button>
-                            )}
-                          </div>
+                        </div>
+                        <div className="flex justify-end mt-2">
+                          {newAwards.length > 1 && (
+                            <button
+                              onClick={() => removeNewAward(index)}
+                              className="px-3 py-2 text-red-600 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-lg transition-colors"
+                            >
+                              <IconX className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                         <div className="mt-4">
                           <label className="block text-sm font-medium staff-text-primary mb-1">
@@ -323,7 +388,7 @@ function AwardManagementPage() {
                               updateNewAward(
                                 index,
                                 "description",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                             className="staff-input w-full"
@@ -368,7 +433,7 @@ function AwardManagementPage() {
                         {editingAward?.awardId === award.awardId ? (
                           // Edit Mode
                           <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div>
                                 <label className="block text-sm font-medium staff-text-primary mb-1">
                                   {t.nameRequired}
@@ -392,38 +457,44 @@ function AwardManagementPage() {
                                 <div className="relative">
                                   <input
                                     type="number"
-                                    value={editFormData?.prize || 0}
-                                    onChange={(e) =>
+                                    value={
+                                      editFormData?.prize === 0
+                                        ? ""
+                                        : editFormData?.prize
+                                    }
+                                    placeholder="0"
+                                    onChange={(e) => {
+                                      let val =
+                                        e.target.value === ""
+                                          ? 0
+                                          : Number(e.target.value);
+                                      const maxLimit = getPrizeMaxLimit(
+                                        editFormData?.rank || award.rank,
+                                        award.awardId,
+                                      );
+                                      if (
+                                        maxLimit !== undefined &&
+                                        val > maxLimit
+                                      ) {
+                                        val = maxLimit;
+                                      }
                                       setEditFormData({
                                         ...editFormData!,
-                                        prize: Number(e.target.value),
-                                      })
-                                    }
+                                        prize: val,
+                                      });
+                                    }}
                                     step={100_000}
                                     min={0}
+                                    max={getPrizeMaxLimit(
+                                      editFormData?.rank || award.rank,
+                                      award.awardId,
+                                    )}
                                     className="staff-input w-full pr-20"
                                   />
                                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">
                                     {formatCurrency(editFormData?.prize || 0)} ₫
                                   </div>
                                 </div>
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium staff-text-primary mb-1">
-                                  {t.quantity}
-                                </label>
-                                <input
-                                  type="number"
-                                  value={editFormData?.quantity || 1}
-                                  onChange={(e) =>
-                                    setEditFormData({
-                                      ...editFormData!,
-                                      quantity: Number(e.target.value),
-                                    })
-                                  }
-                                  className="staff-input w-full"
-                                  min="1"
-                                />
                               </div>
                             </div>
                             <div>
