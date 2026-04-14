@@ -43,6 +43,7 @@ export interface CreateBatchAwardRequest {
     rank: number;
     quantity: number;
     prize: number;
+    language?: string;
   }[];
 }
 
@@ -53,4 +54,5 @@ export interface UpdateAwardRequest {
   rank: number;
   quantity: number;
   prize: number;
+  language?: string;
 }
