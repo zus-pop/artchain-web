@@ -124,25 +124,27 @@ function AwardManagementPage() {
       return;
     }
 
-    // Combine existing awards and valid new awards for validation
-    const existingAwardsForValidation = awards.map((a) => ({
-      rank: a.rank,
-      prize: parseFloat(a.prize),
-    }));
     const newAwardsForValidation = validAwards.map((a) => ({
       rank: a.rank,
       prize: a.prize,
     }));
-    const allAwardsForValidation = [
-      ...existingAwardsForValidation,
-      ...newAwardsForValidation,
-    ];
 
-    if (!validatePrizeHierarchy(allAwardsForValidation)) {
+    if (!validatePrizeHierarchy(newAwardsForValidation)) {
       toast.error(
-        "Giải thưởng thấp hơn không được có giá trị giải thưởng lớn hơn giải thưởng cao hơn.",
+        "Giải thưởng thấp hơn không được có giá trị giải thưởng lớn hơn giải thưởng cao hơn trong danh sách tạo mới.",
       );
       return;
+    }
+
+    // Check each new award against existing awards max limit
+    for (const award of validAwards) {
+      const maxLimit = getPrizeMaxLimit(award.rank);
+      if (maxLimit !== undefined && award.prize > maxLimit) {
+        toast.error(
+          "Giá trị giải thưởng tạo mới không được lớn hơn giải thưởng của thứ hạng cao hơn đã có.",
+        );
+        return;
+      }
     }
 
     await createBatchMutation.mutateAsync(
@@ -168,19 +170,10 @@ function AwardManagementPage() {
     awardId: string,
     updateData: UpdateAwardRequest,
   ) => {
-    const existingAwardsForValidation = awards
-      .filter((a) => a.awardId !== awardId)
-      .map((a) => ({ rank: a.rank, prize: parseFloat(a.prize) }));
-
-    // updateData rank is a number
-    const allAwardsForValidation = [
-      ...existingAwardsForValidation,
-      { rank: updateData.rank as number, prize: updateData.prize as number },
-    ];
-
-    if (!validatePrizeHierarchy(allAwardsForValidation)) {
+    const maxLimit = getPrizeMaxLimit(updateData.rank as number, awardId);
+    if (maxLimit !== undefined && (updateData.prize as number) > maxLimit) {
       toast.error(
-        "Giải thưởng thấp hơn không được có giá trị giải thưởng lớn hơn giải thưởng cao hơn.",
+        "Giải thưởng không được lớn hơn giải thưởng của thứ hạng cao hơn.",
       );
       return;
     }
@@ -565,14 +558,18 @@ function AwardManagementPage() {
                               >
                                 <IconEdit className="h-4 w-4" />
                               </button>
-                              <button
-                                onClick={() => handleDeleteAward(award.awardId)}
-                                disabled={deleteMutation.isPending}
-                                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
-                                title="Delete Award"
-                              >
-                                <IconTrash className="h-4 w-4" />
-                              </button>
+                              {award.rank > 3 && (
+                                <button
+                                  onClick={() =>
+                                    handleDeleteAward(award.awardId)
+                                  }
+                                  disabled={deleteMutation.isPending}
+                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                                  title="Delete Award"
+                                >
+                                  <IconTrash className="h-4 w-4" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         )}
