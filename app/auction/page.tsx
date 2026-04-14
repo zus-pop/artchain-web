@@ -443,9 +443,11 @@ export default function ModernArtAuction() {
                                     <div className="px-2">
                                       <div className="flex justify-between items-start mb-2">
                                           <h4 className="text-lg font-black uppercase tracking-tight line-clamp-1">{ap.painting?.title}</h4>
-                                          <span className="font-bold text-[#f07d44]">{new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(ap.currentBid || ap.basePrice)}</span>
+                                          {/* <span className="font-bold text-[#f07d44]">{new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(ap.currentBid || ap.basePrice)}</span> */}
                                       </div>
-                                      <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] line-clamp-1">Lô #{String(i+2).padStart(3, '0')} — {ap.painting?.competitorName || "Nghệ sĩ"}</p>
+                                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-black">Giá hiện tại cao nhất</p>
+                                <p className="text-3xl text-[#f07d44] ">{ap.currentBid || ap.basePrice}đ</p>
+                                      {/* <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] line-clamp-1">Lô #{String(i+2).padStart(3, '0')} — {ap.painting?.competitorName || "Nghệ sĩ"}</p> */}
                                     </div>
                                 </Link>
                               </motion.div>

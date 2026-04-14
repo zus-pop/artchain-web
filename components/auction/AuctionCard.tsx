@@ -146,7 +146,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
             {auction.auctionPaintings?.length ?? 0} tác phẩm
           </p>
 
-          {topPrice !== null && (
+          {/* {topPrice !== null && (
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest opacity-40 mb-1">
                 Giá cao nhất
@@ -156,7 +156,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
                 <TrendingUp size={14} className="opacity-60" />
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Link>

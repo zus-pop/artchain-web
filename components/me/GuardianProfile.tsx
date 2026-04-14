@@ -934,7 +934,7 @@ export default function GuardianProfileScreen({
                   whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
                 `}
               >
-                Đơn hàng
+                Tranh sở hữu
               </button>
 
               {/* Tab Thông tin */}

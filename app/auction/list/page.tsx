@@ -61,8 +61,8 @@ export default function AuctionListPage() {
             Sàn đấu giá trực tuyến
           </span>
           <h1 className="text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-6">
-            Cuộc đấu giá <br />
-            <span className="text-[#f07d44]">Nghệ thuật</span>
+            Đấu giá nghệ thuật <br />
+            {/* <span className="text-[#f07d44]">Nghệ thuật</span> */}
           </h1>
           <p className="text-sm opacity-70 max-w-xl leading-relaxed">
             Khám phá và tham gia đấu giá các tác phẩm nghệ thuật độc đáo từ
@@ -114,7 +114,7 @@ export default function AuctionListPage() {
           </div>
 
           {/* Stats */}
-          <div className="mt-6 pt-6 border-t border-gray-100 flex gap-8 text-xs">
+          {/* <div className="mt-6 pt-6 border-t border-gray-100 flex gap-8 text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full" />
               <span className="font-bold uppercase tracking-wider opacity-60">
@@ -127,7 +127,7 @@ export default function AuctionListPage() {
                 {endingSoonCount} sắp diễn ra
               </span>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Grid */}
