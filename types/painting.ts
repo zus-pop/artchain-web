@@ -130,6 +130,7 @@ export interface Submission {
   title: string;
   imageUrl: string;
   submissionDate: string;
+  isFlagged?: boolean;
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdAt: string;
   updatedAt: string;

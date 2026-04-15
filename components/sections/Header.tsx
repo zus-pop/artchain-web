@@ -369,10 +369,14 @@ const Header: React.FC<ArtistNavigationProps> = ({
                 <GlassSurface
                   width="100%"
                   height="auto"
-                  borderRadius={20}
-                  backgroundOpacity={0.9}
-                  blur={10}
-                  className="overflow-hidden"
+                  borderRadius={32}
+                  borderWidth={0.1}
+                  brightness={90}
+                  opacity={0.8}
+                  blur={25}
+                  backgroundOpacity={0.3}
+                  saturation={1.8}
+                  className="overflow-hidden shadow-2xl"
                 >
                   <nav className="flex flex-col p-4 space-y-2">
                     {navItems.map((item, index) => (

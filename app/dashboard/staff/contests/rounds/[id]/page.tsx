@@ -18,6 +18,7 @@ import { useLanguageStore } from "@/store/language-store";
 import { Submission } from "@/types/painting";
 import { RoundDTO } from "@/types/staff/contest-dto";
 import {
+  IconAlertTriangle,
   IconArrowLeft,
   IconCalendar,
   IconCheck,
@@ -595,14 +596,20 @@ function RoundDetailContent() {
                       {submissions.map((submission: Submission) => (
                         <div
                           key={submission.paintingId}
-                          className={`border overflow-hidden hover:shadow-lg transition-shadow relative ${
+                          className={`border overflow-hidden hover:shadow-lg transition-shadow relative cursor-pointer ${
                             selectedSubmissions.has(submission.paintingId)
-                              ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg"
+                              ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg bg-orange-50/30"
                               : "border-[#B8AAAA] hover:border-orange-500/60"
                           }`}
+                          onClick={() => 
+                            handleSelectSubmission(
+                              submission.paintingId, 
+                              !selectedSubmissions.has(submission.paintingId)
+                            )
+                          }
                         >
                           {/* Checkbox */}
-                          {/* <div className="absolute top-2 left-2 z-10">
+                          <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
                             <CustomCheckbox
                               checked={selectedSubmissions.has(
                                 submission.paintingId
@@ -614,7 +621,7 @@ function RoundDetailContent() {
                                 )
                               }
                             />
-                          </div> */}
+                          </div>
 
                           {/* Image */}
                           <div className="relative h-48 bg-gray-100">
@@ -633,13 +640,21 @@ function RoundDetailContent() {
                                 </div>
                               </div>
                             )}
-                            <div className="absolute top-2 right-2">
-                              <span
-                                className={getStatusColor(submission.status)}
-                              >
-                                {getStatusText(submission.status)}
-                              </span>
-                            </div>
+                              <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
+                                <span
+                                  className={getStatusColor(submission.status)}
+                                >
+                                  {getStatusText(submission.status)}
+                                </span>
+                                {submission.isFlagged && (
+                                  <div 
+                                    className="bg-red-100 p-1.5 rounded-full shadow-sm border border-red-200"
+                                    title="AI flagged: This painting might not meet contest requirements"
+                                  >
+                                    <IconAlertTriangle className="h-5 w-5 text-red-600 animate-pulse" />
+                                  </div>
+                                )}
+                              </div>
                           </div>
 
                           {/* Content */}
@@ -663,7 +678,7 @@ function RoundDetailContent() {
                             )}
 
                             {/* Actions */}
-                            <div className="flex gap-2">
+                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                               <button
                                 onClick={() =>
                                   setSelectedPaintingId(submission.paintingId)
@@ -724,48 +739,31 @@ function RoundDetailContent() {
                         </p>
                       </div>
 
-                      {/* Select All Checkbox */}
-                      {counts.pending > 0 && (
+                      {/* Selection Header */}
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={handleAcceptAllSelected}
+                          disabled={selectedSubmissions.size === 0 || acceptMultipleMutation.isPending}
+                          className="px-4 py-2 bg-[#10B981] text-white hover:bg-[#059669] transition-all disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] disabled:cursor-not-allowed text-sm font-bold rounded shadow-sm flex items-center gap-2"
+                        >
+                          <IconCheck className="h-4 w-4" />
+                          {acceptMultipleMutation.isPending ? t.accepting : t.acceptAll}
+                        </button>
+
                         <div className="flex items-center gap-3">
-                          {selectedSubmissions.size > 0 &&
-                            Array.from(selectedSubmissions).some(
-                              (paintingId) => {
-                                const submission = submissions.find(
-                                  (s: Submission) => s.paintingId === paintingId
-                                );
-                                return submission?.status === "PENDING";
-                              }
-                            ) && (
-                              <button
-                                onClick={handleAcceptAllSelected}
-                                disabled={acceptMultipleMutation.isPending}
-                                className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold"
-                              >
-                                {acceptMultipleMutation.isPending
-                                  ? t.accepting
-                                  : t.acceptAll}
-                              </button>
-                            )}
-                          <CustomCheckbox
-                            checked={
-                              selectedSubmissions.size ===
-                                submissions.filter(
-                                  (s: Submission) => s.status === "PENDING"
-                                ).length &&
-                              submissions.filter(
-                                (s: Submission) => s.status === "PENDING"
-                              ).length > 0
-                            }
-                            onChange={(checked) => handleSelectAll(checked)}
-                            label={
-                              selectedSubmissions.size > 0
-                                ? `${t.selected} (${selectedSubmissions.size})`
-                                : t.selectAll
-                            }
-                          />
-                        </div>
-                      )}
+                          <span className="text-sm font-bold text-[#F97316] bg-[#FFF7ED] px-4 py-1.5 rounded-full border border-[#FFEDD5] whitespace-nowrap">
+                            {t.selected} ({selectedSubmissions.size})
+                          </span>
+                          
+                          <button
+                            onClick={() => handleSelectAll(selectedSubmissions.size === 0)}
+                            className="text-sm font-semibold text-[#6B7280] hover:text-[#F97316] transition-colors whitespace-nowrap"
+                          >
+                            {selectedSubmissions.size > 0 ? (t.deselectAll || "Deselect All") : t.selectAll}
+                          </button>
+                      </div>
                     </div>
+                  </div>
 
                     {isLoadingSubmissions ? (
                       <div className="text-center py-8 staff-text-secondary">
@@ -776,14 +774,20 @@ function RoundDetailContent() {
                         {submissions.map((submission: Submission) => (
                           <div
                             key={submission.paintingId}
-                            className={`border-2 overflow-hidden hover:shadow-lg transition-all relative ${
+                            className={`border-2 overflow-hidden hover:shadow-lg transition-all relative cursor-pointer ${
                               selectedSubmissions.has(submission.paintingId)
-                                ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg"
+                                ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg bg-orange-50/30"
                                 : "border-[#B8AAAA] hover:border-orange-500/60"
                             }`}
+                            onClick={() => 
+                              handleSelectSubmission(
+                                submission.paintingId, 
+                                !selectedSubmissions.has(submission.paintingId)
+                              )
+                            }
                           >
                             {/* Checkbox */}
-                            <div className="absolute top-2 left-2 z-10">
+                            <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
                               <CustomCheckbox
                                 checked={selectedSubmissions.has(
                                   submission.paintingId
@@ -814,10 +818,18 @@ function RoundDetailContent() {
                                   </div>
                                 </div>
                               )}
-                              <div className="absolute top-2 right-2">
-                                <span className="bg-orange-500 text-white px-2 py-1 text-xs font-bold">
+                              <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
+                                {/* <span className="bg-orange-500 text-white px-2 py-1 text-xs font-bold">
                                   {t.pendingReview}
-                                </span>
+                                </span> */}
+                                {submission.isFlagged && (
+                                  <div 
+                                    className="bg-red-100 p-1.5 rounded-full shadow-sm border border-red-200"
+                                    title="AI flagged: This painting might not meet contest requirements"
+                                  >
+                                    <IconAlertTriangle className="h-5 w-5 text-red-600 animate-pulse" />
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -837,7 +849,7 @@ function RoundDetailContent() {
                               </p>
 
                               {/* Actions */}
-                              <div className="flex gap-2">
+                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   onClick={() =>
                                     setSelectedPaintingId(submission.paintingId)

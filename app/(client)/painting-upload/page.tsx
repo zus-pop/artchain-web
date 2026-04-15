@@ -73,6 +73,7 @@ interface UploadRetryPayload {
   roundId: string;
   competitorId: string;
   ignoreAiCheck: boolean;
+  isFlagged: boolean;
 }
 
 export default function PaintingUploadSuspense() {
@@ -153,6 +154,7 @@ function PaintingUpload() {
       roundId: roundId!,
       competitorId: currentUser.userId.toString(),
       ignoreAiCheck: false,
+      isFlagged: false,
     };
 
     setLastPayload(payload);
@@ -165,7 +167,7 @@ function PaintingUpload() {
     }
 
     setErrorModalOpen(false);
-    mutate({ ...lastPayload, ignoreAiCheck: true });
+    mutate({ ...lastPayload, ignoreAiCheck: true, isFlagged: true });
   };
 
   const handleResubmitNewPainting = () => {
