@@ -32,7 +32,7 @@ import { CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -72,6 +72,13 @@ function RoundDetailContent() {
   const [pendingAcceptId, setPendingAcceptId] = useState<string | null>(null);
   const [pendingRejectId, setPendingRejectId] = useState<string | null>(null);
   const [pendingAcceptAllIds, setPendingAcceptAllIds] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [lasso, setLasso] = useState<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+  } | null>(null);
 
   // Fetch round details
   const { data: roundData, isLoading: isLoadingRound } = useQuery({
@@ -157,6 +164,95 @@ function RoundDetailContent() {
       });
     },
   });
+
+  // Lasso Selection Logic
+  useEffect(() => {
+    if (!lasso) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+      setLasso((prev) =>
+        prev ? { ...prev, currentX, currentY } : null
+      );
+    };
+
+    const handleMouseUp = () => {
+      if (!lasso || !containerRef.current) {
+        setLasso(null);
+        return;
+      }
+
+      const rect = containerRef.current.getBoundingClientRect();
+      const x1 = Math.min(lasso.startX, lasso.currentX);
+      const x2 = Math.max(lasso.startX, lasso.currentX);
+      const y1 = Math.min(lasso.startY, lasso.currentY);
+      const y2 = Math.max(lasso.startY, lasso.currentY);
+
+      // We only want to select items that are currently visible and relevant to the selected status
+      const items = containerRef.current.querySelectorAll("[data-selectable-id]");
+      const newSelected = new Set(selectedSubmissions);
+
+      items.forEach((item) => {
+        const itemRect = item.getBoundingClientRect();
+        const relativeItemRect = {
+          left: itemRect.left - rect.left,
+          right: itemRect.right - rect.left,
+          top: itemRect.top - rect.top,
+          bottom: itemRect.bottom - rect.top,
+        };
+
+        // Check for intersection
+        if (
+          relativeItemRect.left < x2 &&
+          relativeItemRect.right > x1 &&
+          relativeItemRect.top < y2 &&
+          relativeItemRect.bottom > y1
+        ) {
+          const id = item.getAttribute("data-selectable-id");
+          if (id) {
+            newSelected.add(id);
+          }
+        }
+      });
+
+      setSelectedSubmissions(newSelected);
+      setLasso(null);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [lasso, selectedSubmissions]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Only handle left click on the container background (not on buttons or cards directly if we want)
+    // Actually, allowing it anywhere on the container is fine as long as we don't block other clicks
+    if (e.button !== 0) return;
+    
+    // Don't start lasso if clicking on a button or checkbox
+    const target = e.target as HTMLElement;
+    if (target.closest("button") || target.closest("input") || target.closest(".z-10")) {
+      return;
+    }
+
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    setLasso({
+      startX: x,
+      startY: y,
+      currentX: x,
+      currentY: y,
+    });
+  };
 
   // Quick reject mutation
   const rejectMutation = useMutation({
@@ -592,10 +688,27 @@ function RoundDetailContent() {
                       {t.roundLoadingSubmissions}
                     </div>
                   ) : submissions.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div 
+                      ref={containerRef}
+                      onMouseDown={handleMouseDown}
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 relative select-none"
+                    >
+                      {/* Lasso Selection Box */}
+                      {lasso && (
+                        <div
+                          className="absolute border-2 border-orange-500 bg-orange-500/10 z-50 pointer-events-none transition-none"
+                          style={{
+                            left: Math.min(lasso.startX, lasso.currentX),
+                            top: Math.min(lasso.startY, lasso.currentY),
+                            width: Math.abs(lasso.currentX - lasso.startX),
+                            height: Math.abs(lasso.currentY - lasso.startY),
+                          }}
+                        />
+                      )}
                       {submissions.map((submission: Submission) => (
                         <div
                           key={submission.paintingId}
+                          data-selectable-id={submission.paintingId}
                           className={`border overflow-hidden hover:shadow-lg transition-shadow relative cursor-pointer ${
                             selectedSubmissions.has(submission.paintingId)
                               ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg bg-orange-50/30"
@@ -770,10 +883,27 @@ function RoundDetailContent() {
                         {t.roundLoadingSubmissions}
                       </div>
                     ) : counts.pending > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                      <div 
+                        ref={containerRef}
+                        onMouseDown={handleMouseDown}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 relative select-none"
+                      >
+                        {/* Lasso Selection Box */}
+                        {lasso && (
+                          <div
+                            className="absolute border-2 border-orange-500 bg-orange-500/10 z-50 pointer-events-none transition-none"
+                            style={{
+                              left: Math.min(lasso.startX, lasso.currentX),
+                              top: Math.min(lasso.startY, lasso.currentY),
+                              width: Math.abs(lasso.currentX - lasso.startX),
+                              height: Math.abs(lasso.currentY - lasso.startY),
+                            }}
+                          />
+                        )}
                         {submissions.map((submission: Submission) => (
                           <div
                             key={submission.paintingId}
+                            data-selectable-id={submission.paintingId}
                             className={`border-2 overflow-hidden hover:shadow-lg transition-all relative cursor-pointer ${
                               selectedSubmissions.has(submission.paintingId)
                                 ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg bg-orange-50/30"

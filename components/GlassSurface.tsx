@@ -201,15 +201,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   }, [width, height]);
 
   const supportsSVGFilters = () => {
-    // if (typeof window === 'undefined') return false;
-
-    const isWebkit =
-      /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    const isFirefox = /Firefox/.test(navigator.userAgent);
-
-    if (isWebkit || isFirefox) {
-      return false;
-    }
+    if (typeof window === "undefined") return false;
 
     const div = document.createElement("div");
     div.style.backdropFilter = `url(#${filterId})`;

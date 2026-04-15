@@ -14,6 +14,7 @@ import {
   Archive,
   Wallet,
   Gavel,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import GlassSurface from "@/components/GlassSurface";
@@ -240,6 +241,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
             blur={20}
             backgroundOpacity={0.2}
             saturation={2}
+            distortionScale={180}
             className="w-full"
           >
             <div className="w-full px-4 sm:px-6 lg:px-12 py-1 flex justify-between items-center gap-2">
@@ -268,7 +270,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
               </nav>
 
               <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                <div className="hidden sm:flex items-center">
+                <div className="hidden lg:flex items-center">
                   {displayUser?.wallet && (
                     <Link 
                       href="/auction"
@@ -280,7 +282,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                 </div>
 
                 {isAuthenticated ? (
-                  <div className="relative" ref={userDropdownRef}>
+                  <div className="relative hidden lg:block" ref={userDropdownRef}>
                     <button
                       onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                       className="flex items-center space-x-1 sm:space-x-2 rounded-lg py-1 cursor-pointer"
@@ -357,28 +359,52 @@ const Header: React.FC<ArtistNavigationProps> = ({
             </div>
           </GlassSurface>
 
-          {/* Mobile menu content */}
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="absolute top-full left-0 right-0 mt-2 lg:hidden z-40 px-2"
+      {/* Mobile menu content - Sidebar version */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] lg:hidden"
+            />
+            
+            {/* Sidebar */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="fixed top-0 right-0 bottom-0 w-[80%] max-w-[320px] z-[110] lg:hidden flex flex-col"
+            >
+              <GlassSurface
+                width="100%"
+                height="100vh"
+                borderRadius={0}
+                borderWidth={0.1}
+                brightness={95}
+                opacity={1}
+                blur={30}
+                backgroundOpacity={0.4}
+                saturation={2}
+                distortionScale={180}
+                className="shadow-2xl"
               >
-                <GlassSurface
-                  width="100%"
-                  height="auto"
-                  borderRadius={32}
-                  borderWidth={0.1}
-                  brightness={90}
-                  opacity={0.8}
-                  blur={25}
-                  backgroundOpacity={0.3}
-                  saturation={1.8}
-                  className="overflow-hidden shadow-2xl"
-                >
-                  <nav className="flex flex-col p-4 space-y-2">
+                <div className="flex flex-col h-full w-full p-6">
+                  <div className="flex justify-between items-center mb-10 pb-4 border-b border-black/10">
+                    <span className="font-bold text-xl text-black">ArtChain</span>
+                    <button 
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                    >
+                      <X className="h-6 w-6 text-black" />
+                    </button>
+                  </div>
+
+                  <nav className="flex flex-col space-y-4">
                     {navItems.map((item, index) => (
                       <a
                         key={item.label}
@@ -388,29 +414,79 @@ const Header: React.FC<ArtistNavigationProps> = ({
                           setIsMobileMenuOpen(false);
                           handleNavClick(item.href, e as unknown as React.MouseEvent<HTMLAnchorElement>);
                         }}
-                        className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        className={`px-5 py-4 rounded-2xl text-lg font-semibold transition-all border ${
                           activeTab === index
-                            ? 'bg-[#FF6E1A] text-white'
-                            : 'text-black hover:bg-gray-100'
+                            ? 'bg-[#FF6E1A] text-white shadow-xl translate-x-3 border-[#FF6E1A]'
+                            : 'text-black bg-black/5 border-black/5 hover:bg-black/10 hover:border-black/10'
                         }`}
                       >
                         {item.label}
                       </a>
                     ))}
-                    {!isAuthenticated && (
+                    
+                    {isAuthenticated ? (
+                      <div className="mt-8 pt-8 border-t border-black/10">
+                        <div className="flex items-center space-x-4 mb-6 px-3 py-4 rounded-2xl bg-black/5 border border-black/5">
+                          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ${displayUser?.role === "GUARDIAN" ? "bg-green-600" : "bg-red-600"}`}>
+                            {getAvatarInitial()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-lg text-black truncate">{getDisplayName()}</p>
+                            <p className="text-xs text-black/50 uppercase tracking-widest font-medium">
+                              {displayUser?.role === "GUARDIAN" ? "Đại diện" : "Thí sinh"}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-3">
+                          <Link 
+                            href="/me" 
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center space-x-4 px-5 py-4 rounded-2xl text-black bg-black/5 border border-black/5 hover:bg-black/10 hover:border-black/10 transition-all font-semibold"
+                          >
+                            <User className="h-5 w-5 text-[#FF6E1A]" />
+                            <span>Hồ sơ cá nhân</span>
+                          </Link>
+                          <Link 
+                            href="/auction" 
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center space-x-4 px-5 py-4 rounded-2xl text-black bg-black/5 border border-black/5 hover:bg-black/10 hover:border-black/10 transition-all font-semibold"
+                          >
+                            <Gavel className="h-5 w-5 text-[#FF6E1A]" />
+                            <span>Đấu giá trực tuyến</span>
+                          </Link>
+                          <button 
+                            onClick={() => {
+                              handleLogout();
+                              setIsMobileMenuOpen(false);
+                            }}
+                            className="flex items-center space-x-4 px-5 py-4 rounded-2xl text-[#FF6E1A] bg-[#FF6E1A]/5 border border-[#FF6E1A]/10 hover:bg-[#FF6E1A]/10 transition-all font-bold mt-4"
+                          >
+                            <LogOut className="h-5 w-5" />
+                            <span>Đăng xuất tài khoản</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
                       <Link
                         href="/auth"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="px-4 py-3 rounded-sm text-sm font-medium bg-[#FF6E1A] text-white text-center"
+                        className="mt-6 px-4 py-4 rounded-xl text-lg font-bold bg-[#FF6E1A] text-white text-center shadow-lg active:scale-95 transition-transform"
                       >
-                        {t.join}
+                        Tham Gia Ngay
                       </Link>
                     )}
                   </nav>
-                </GlassSurface>
-              </motion.div>
-            )}
-          </AnimatePresence>
+
+                  <div className="mt-auto pt-10 border-t border-black/10">
+                    <p className="text-sm text-black/50 text-center">© 2024 ArtChain Foundation</p>
+                  </div>
+                </div>
+              </GlassSurface>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
         </div>
       </div>
 
