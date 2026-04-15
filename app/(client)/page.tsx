@@ -300,7 +300,7 @@ export default function Page() {
   );
 
   return (
-    <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro)">
+    <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro) overflow-x-hidden">
 
 
       <main>
@@ -471,13 +471,12 @@ export default function Page() {
               Tin tức nổi bật
             </AnimatedContainer>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
+            {/* Desktop News Grid */}
+            <div className="hidden lg:grid lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 lg:gap-8">
               {loadingPosts ? (
-                // Combined news skeleton: left column, spotlight, right column
                 <>
                   <div className="flex flex-col justify-between gap-6 sm:gap-8">
                     <SkeletonNewsCardSmall />
-                    {/* make the second small card slightly shorter */}
                     <div className="flex flex-col overflow-hidden animate-pulse">
                       <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
                       <div className="p-3 sm:p-4">
@@ -490,7 +489,6 @@ export default function Page() {
                   <SkeletonSpotlightPost />
                   <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
                   <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {/* mirror with slight variation */}
                     <div className="flex flex-col overflow-hidden animate-pulse">
                       <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
                       <div className="p-3 sm:p-4">
@@ -504,60 +502,23 @@ export default function Page() {
               ) : (
                 <>
                   <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {smallPosts[0] ? (
-                      <Link href={`/posts/${smallPosts[0].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[0].image_url ||
-                            "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                          }
-                          category={
-                            smallPosts[0].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[0].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[0].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
+                    {[smallPosts[0], smallPosts[1]].map((post, i) => (
+                      post ? (
+                        <Link key={post.post_id} href={`/posts/${post.post_id}`}>
+                          <NewsCardSmall
+                            imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
+                            category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
+                            title={post.title || ""}
+                            content={post.content}
+                            darkBg={true}
+                          />
+                        </Link>
+                      ) : (
+                        <div key={i} className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4 min-h-[150px] justify-center text-center text-gray-400 text-xs">
+                          Bài viết mới sẽ sớm được cập nhật
                         </div>
-                      </div>
-                    )}
-                    {smallPosts[1] ? (
-                      <Link href={`/posts/${smallPosts[1].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[1].image_url ||
-                            "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                          }
-                          category={
-                            smallPosts[1].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[1].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[1].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
+                      )
+                    ))}
                   </div>
 
                   <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
@@ -566,139 +527,84 @@ export default function Page() {
                     {spotlightPost ? (
                       <Link href={`/posts/${spotlightPost.post_id}`}>
                         <img
-                          src={
-                            spotlightPost.image_url ||
-                            "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
-                          }
-                          alt={
-                            spotlightPost.title ||
-                            "Spotlight To Emerging Artist"
-                          }
+                          src={spotlightPost.image_url || "https://placehold.co/600x400/FF5733/ffffff?text=Spotlight"}
+                          alt={spotlightPost.title}
                           className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6 cursor-pointer"
-                          onError={(e) => {
-                            (
-                              e.target as HTMLImageElement
-                            ).style.backgroundColor = "#FF5733";
-                          }}
                         />
                       </Link>
                     ) : (
-                      <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-200 flex items-center justify-center mb-4 sm:mb-6">
-                        <div className="text-center text-gray-500">
-                          <div className="text-lg mb-2">Không có bài viết nổi bật</div>
-                          <p className="text-sm">Các bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
+                      <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-200 flex items-center justify-center mb-6 text-gray-400">Không có bài viết nổi bật</div>
                     )}
-                    <AnimatedContainer
-                      className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
-                      animation="animate-fade-in-left"
-                    >
-                      Artist Spotlight
-                    </AnimatedContainer>
-                    {spotlightPost ? (
+                    <span className="text-xs sm:text-sm font-semibold text-black uppercase mb-2">Artist Spotlight</span>
+                    {spotlightPost && (
                       <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <AnimatedContainer
-                          className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4 cursor-pointer"
-                          animation="animate-fade-in-right"
-                          delay={200}
-                        >
-                          <ReactMarkdown>{spotlightPost.title}</ReactMarkdown>
-                        </AnimatedContainer>
+                        <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-black cursor-pointer line-clamp-2">
+                           {spotlightPost.title}
+                        </h3>
                       </Link>
-                    ) : (
-                      <AnimatedContainer
-                        className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
-                        animation="animate-fade-in-right"
-                        delay={200}
-                      >
-                        Không có bài viết nổi bật
-                      </AnimatedContainer>
                     )}
-                    <AnimatedContainer
-                      className="text-sm sm:text-base text-black leading-relaxed"
-                      animation="animate-fade-in-up"
-                      delay={400}
-                    >
-                      {spotlightPost?.content ? (
-                        <div>
-                          <ReactMarkdown>
-                            {spotlightPost.content.length > 250
-                              ? spotlightPost.content.slice(0, 250) + "..."
-                              : spotlightPost.content}
-                          </ReactMarkdown>
-                        </div>
-                      ) : (
-                        <div className="text-gray-500 italic">
-                          Các bài viết nổi bật sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những nội dung thú vị về nghệ thuật và cuộc thi.
-                        </div>
-                      )}
-                    </AnimatedContainer>
+                    <div className="text-sm sm:text-base text-black leading-relaxed line-clamp-3">
+                      {spotlightPost?.content || "Thông tin nghệ sĩ sẽ được cập nhật sớm."}
+                    </div>
                   </div>
 
                   <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
 
                   <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {smallPosts[2] ? (
-                      <Link href={`/posts/${smallPosts[2].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[2].image_url ||
-                            "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                          }
-                          category={
-                            smallPosts[2].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[2].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[2].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
+                    {[smallPosts[2], smallPosts[3]].map((post, i) => (
+                      post ? (
+                        <Link key={post.post_id} href={`/posts/${post.post_id}`}>
+                          <NewsCardSmall
+                            imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
+                            category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
+                            title={post.title || ""}
+                            content={post.content}
+                            darkBg={true}
+                          />
+                        </Link>
+                      ) : (
+                        <div key={i} className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4 min-h-[150px] justify-center text-center text-gray-400 text-xs">
+                          Bài viết mới sẽ sớm được cập nhật
                         </div>
-                      </div>
-                    )}
-                    {smallPosts[3] ? (
-                      <Link href={`/posts/${smallPosts[3].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[3].image_url ||
-                            "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                          }
-                          category={
-                            smallPosts[3].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[3].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[3].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
+                      )
+                    ))}
                   </div>
                 </>
               )}
             </div>
+
+            {/* Mobile News Slider */}
+            <div className="lg:hidden mt-4">
+              <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 scrollbar-hide">
+                {loadingPosts ? (
+                  [0, 1, 2].map((i) => (
+                    <div key={i} className="min-w-[80vw] snap-center">
+                      <SkeletonNewsCardSmall />
+                    </div>
+                  ))
+                ) : (
+                  uniquePosts.map((post) => (
+                    <div key={post.post_id} className="min-w-[80vw] snap-center">
+                      <Link href={`/posts/${post.post_id}`}>
+                        <NewsCardSmall
+                          imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
+                          category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
+                          title={post.title || ""}
+                          content={post.content}
+                          darkBg={true}
+                        />
+                      </Link>
+                    </div>
+                  ))
+                )}
+                {!loadingPosts && uniquePosts.length === 0 && (
+                  <div className="w-full text-center py-8 text-black opacity-50">Không có bài viết nào</div>
+                )}
+              </div>
+            </div>
           </div>
         </AnimatedContainer>
+
 
         {/* --- Campaigns Section --- */}
         <AnimatedContainer
@@ -713,11 +619,12 @@ export default function Page() {
             >
               Chiến dịch đang diễn ra
             </AnimatedContainer>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
+            <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 pb-4 snap-x snap-mandatory scrollbar-hide">
               {loadingCampaigns
                 ? // show varied skeletons while loading
                   [0, 1, 2].map((i) => (
-                    <div key={i} className="p-2">
+                    <div key={i} className="min-w-[85vw] sm:min-w-0 snap-center p-2">
+                       {/* skeleton content ... */}
                       <div className="flex flex-col animate-pulse">
                         <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded" />
                         <div
@@ -747,19 +654,20 @@ export default function Page() {
                   ))
                 : campaigns.length > 0
                 ? campaigns.map((c, idx) => (
-                    <Link
-                      key={c.campaignId ?? idx}
-                      href={`/campaigns/${c.campaignId}`}
-                    >
-                      <CampaignCard
-                        imgSrc={
-                          c.image ||
-                          "https://placehold.co/400x300/cccccc/333333?text=No+Image"
-                        }
-                        title={c.title || "Không có tiêu đề"}
-                        description={c.description || ""}
-                      />
-                    </Link>
+                    <div key={c.campaignId ?? idx} className="min-w-[85vw] sm:min-w-0 snap-center">
+                      <Link
+                        href={`/campaigns/${c.campaignId}`}
+                      >
+                        <CampaignCard
+                          imgSrc={
+                            c.image ||
+                            "https://placehold.co/400x300/cccccc/333333?text=No+Image"
+                          }
+                          title={c.title || "Không có tiêu đề"}
+                          description={c.description || ""}
+                        />
+                      </Link>
+                    </div>
                   ))
                 : // Show no data message instead of mock data
                   <div className="col-span-full text-center py-12">

@@ -289,6 +289,14 @@
     background: #a39696;
   }
 
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   /* Staff Dashboard Artist Theme Colors */
   .staff-card {
     @apply border-2 border-[#e6e2da] bg-white shadow-md;

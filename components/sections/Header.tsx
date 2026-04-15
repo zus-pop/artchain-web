@@ -35,6 +35,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
   const pathname = usePathname();
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Khởi tạo activeTab với -1 để mặc định không có tab nào active nếu defaultTab = 0 không khớp
   const [activeTab, setActiveTab] = useState(defaultTab);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
@@ -227,257 +228,186 @@ const Header: React.FC<ArtistNavigationProps> = ({
   return (
     <>
       <style>{styles}</style>
-      {/* Header styled as GlassSurface (from news page) but keeping header logic */}
-      <div className="fixed top-2 sm:top-5 left-2 sm:left-4 right-2 sm:right-4 lg:left-0 lg:right-0 z-50 flex justify-center">
-        <GlassSurface
-          width="100%"
-          height="auto"
-          borderRadius={50}
-          backgroundOpacity={0.58}
-          blur={5}
-          saturation={3}
-          brightness={54}
-          opacity={1}
-          displace={0.5}
-          distortionScale={180}
-          redOffset={0}
-          greenOffset={10}
-          blueOffset={20}
-          className="max-w-7xl w-full overflow-visible"
-          style={{ justifyContent: "flex-start" }}
-        >
-          <div className="w-full px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
-            <Link href="/" className="flex items-center shrink-0">
-              <img src="/images/newlogo.png" alt="Artchain Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain mr-3" />
-            </Link>
+      <div className="fixed top-2 sm:top-5 inset-x-0 z-50 flex justify-center px-4 pointer-events-none">
+        <div className="w-full max-w-7xl pointer-events-auto relative">
+          <GlassSurface
+            width="100%"
+            height="auto"
+            borderRadius={50}
+            borderWidth={0.1}
+            brightness={90}
+            opacity={0.4}
+            blur={20}
+            backgroundOpacity={0.2}
+            saturation={2}
+            className="w-full"
+          >
+            <div className="w-full px-4 sm:px-6 lg:px-12 py-1 flex justify-between items-center gap-2">
+              <Link href="/" className="flex items-center shrink-0">
+                <img src="/images/newlogo.png" alt="Artchain Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+              </Link>
 
-            <nav className="hidden lg:flex gap-6">
-              {navItems.map((item, index) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleNavClick(item.href, e as unknown as React.MouseEvent<HTMLAnchorElement>);
-                  }}
-                  className={`text-sm font-medium whitespace-nowrap ${
-                    activeTab === index
-                      ? 'text-black border-b-2 border-black pb-1'
-                      : 'text-black hover:text-black'
-                  } transition-colors`}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-
-            {/* Mobile menu button */}
-            <button className="lg:hidden p-2 text-black hover:text-black">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-
-            <div className="flex items-center space-x-4">
-              {displayUser?.wallet && (
-                <Link 
-                  href="/auction"
-                  className="text-sm font-medium text-black hover:text-[#FF6E1A] transition-colors whitespace-nowrap"
-                >
-                  Chuyển trang đấu giá
-                </Link>
-              )}
-
-              {/* Keep existing right-side actions (auth + language) */}
-              {isAuthenticated ? (
-                <div className="relative" ref={userDropdownRef}>
-                  <button
-                    onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
-                    className="flex items-center space-x-2 rounded-lg px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
-                        displayUser?.role === "GUARDIAN"
-                          ? "bg-green-600"
-                          : "bg-red-600"
-                      }`}
-                    >
-                      {getAvatarInitial()}
-                    </div>
-                    {/* <span className="max-w-32 truncate">{getDisplayName()}</span> */}
-                    {/* <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                      <Wallet className="h-3 w-3" />
-                      {walletBalanceText}
-                    </span> */}
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-200 ${
-                        isUserDropdownOpen ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence>
-                    {isUserDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 25,
-                        }}
-                        className="absolute right-0 top-full mt-2 w-64 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-[60]"
-                      >
-                        <div className="p-4 border-b border-gray-100">
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
-                                displayUser?.role === "GUARDIAN"
-                                  ? "bg-green-600"
-                                  : "bg-red-600"
-                              }`}
-                            >
-                              {getAvatarInitial()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                {getDisplayName()}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {displayUser?.role === "GUARDIAN"
-                                  ? "Người đại diện"
-                                  : "Thí sinh"}
-                              </p>
-                              <p className="text-xs text-gray-400 truncate">
-                                {displayUser?.email || "email@example.com"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="py-2">
-                          <Link
-                            href="/me"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                          >
-                            <User className="h-4 w-4" />
-                            <span>Hồ sơ cá nhân</span>
-                          </Link>
-
-                          {/* <Link
-                            href="/me/orders"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                          >
-                            <Archive className="h-4 w-4" />
-                            <span>Đơn hàng</span>
-                          </Link> */}
-
-                          <Link
-                            href="/auction"
-                            onClick={() => setIsUserDropdownOpen(false)}
-                            className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
-                          >
-                            <Gavel className="h-4 w-4" />
-                            <span>Đấu giá</span>
-                          </Link>
-
-                          <div className="border-t border-gray-100 my-1"></div>
- 
-                          <button
-                            onClick={() => {
-                              handleLogout();
-                              setIsUserDropdownOpen(false);
-                            }}
-                            className="flex cursor-pointer w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-[#FF6E1A]/10 transition-colors duration-150"
-                          >
-                            <LogOut className="h-4 w-4" />
-                            <span>Đăng xuất</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ) : (
-                <Link
-                  href="/auth"
-                  onClick={(e) => handleNavClick("/auth", e)}
-                  className="bg-[#FF6E1A] text-white px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 text-xs sm:text-sm font-medium hover:bg-[#FF833B] inline-flex items-center space-x-2 rounded-sm transition-all duration-200"
-                >
-                  <span>{t.join}</span>
-                </Link>
-              )}
-
-              {/* Language Dropdown */}
-              {/* <div className="relative" ref={languageDropdownRef}>
-                <button
-                  onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-                  className="flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
-                >
-                  <Globe className="h-4 w-4" />
-                  <ChevronDown
-                    className={`h-2 w-2 transition-transform duration-200 ${
-                      isLanguageDropdownOpen ? "rotate-180" : ""
+              <nav className="hidden lg:flex gap-6 mx-auto">
+                {navItems.map((item, index) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavClick(item.href, e as unknown as React.MouseEvent<HTMLAnchorElement>);
+                    }}
+                    className={`text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
+                      activeTab === index
+                        ? 'text-black border-b-2 border-black pb-1'
+                        : 'text-black hover:text-black'
                     }`}
-                  />
-                </button>
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
 
-                <AnimatePresence>
-                  {isLanguageDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 25,
-                      }}
-                      className="absolute right-0 top-full mt-2 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 z-50"
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                <div className="hidden sm:flex items-center">
+                  {displayUser?.wallet && (
+                    <Link 
+                      href="/auction"
+                      className="text-xs sm:text-sm font-medium text-black hover:text-[#FF6E1A] transition-colors whitespace-nowrap mr-4"
                     >
-                      <div className="py-2">
-                        {languages.map((language) => (
-                          <button
-                            key={language.code}
-                            onClick={() => {
-                              setLanguage(language.code as "vi" | "en");
-                              setIsLanguageDropdownOpen(false);
-                            }}
-                            className={`flex w-full items-center space-x-3 px-4 py-3 text-sm transition-colors duration-150 ${
-                              currentLanguage === language.code
-                                ? "bg-red-50 text-red-600"
-                                : "text-gray-700 hover:bg-gray-50"
-                            }`}
-                          >
-                            <span className="text-lg">{language.code}</span>
-                            {currentLanguage === language.code && (
-                              <div className="ml-auto">
-                                <div className="h-2 w-2 rounded-full bg-red-600"></div>
-                              </div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </motion.div>
+                      Đấu giá
+                    </Link>
                   )}
-                </AnimatePresence>
-              </div> */}
+                </div>
+
+                {isAuthenticated ? (
+                  <div className="relative" ref={userDropdownRef}>
+                    <button
+                      onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                      className="flex items-center space-x-1 sm:space-x-2 rounded-lg py-1 cursor-pointer"
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                          displayUser?.role === "GUARDIAN"
+                            ? "bg-green-600"
+                            : "bg-red-600"
+                        }`}
+                      >
+                        {getAvatarInitial()}
+                      </div>
+                      <ChevronDown className={`h-4 w-4 text-black transition-transform duration-200 ${isUserDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isUserDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 z-[60]"
+                        >
+                          <div className="p-4 bg-gray-50/50 border-b border-gray-100">
+                            <p className="text-sm font-bold text-gray-900 truncate">{getDisplayName()}</p>
+                            <p className="text-[10px] text-gray-500 uppercase tracking-wider">
+                              {displayUser?.role === "GUARDIAN" ? "Đại diện" : "Thí sinh"}
+                            </p>
+                          </div>
+                          <div className="py-1">
+                            <Link href="/me" onClick={() => setIsUserDropdownOpen(false)} className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                              <User className="h-4 w-4" />
+                              <span>Hồ sơ</span>
+                            </Link>
+                            <Link href="/auction" onClick={() => setIsUserDropdownOpen(false)} className="flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                              <Gavel className="h-4 w-4" />
+                              <span>Đấu giá</span>
+                            </Link>
+                            <div className="border-t border-gray-100 my-1"></div>
+                            <button onClick={handleLogout} className="flex w-full items-center space-x-3 px-4 py-2 text-sm text-[#FF6E1A] hover:bg-red-50">
+                              <LogOut className="h-4 w-4" />
+                              <span>Đăng xuất</span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <Link
+                    href="/auth"
+                    className="hidden lg:inline-flex bg-[#FF6E1A] text-white px-3 sm:px-5 py-2 text-xs font-bold hover:bg-[#FF833B] rounded-sm transition-all shadow-md active:scale-95 shrink-0"
+                  >
+                    Tham Gia
+                  </Link>
+                )}
+
+                <button 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="lg:hidden p-1.5 text-black hover:bg-black/5 rounded-full transition-colors shrink-0"
+                >
+                  {isMobileMenuOpen ? (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 8h16M4 16h16" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
-        </GlassSurface>
+          </GlassSurface>
+
+          {/* Mobile menu content */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="absolute top-full left-0 right-0 mt-2 lg:hidden z-40 px-2"
+              >
+                <GlassSurface
+                  width="100%"
+                  height="auto"
+                  borderRadius={20}
+                  backgroundOpacity={0.9}
+                  blur={10}
+                  className="overflow-hidden"
+                >
+                  <nav className="flex flex-col p-4 space-y-2">
+                    {navItems.map((item, index) => (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsMobileMenuOpen(false);
+                          handleNavClick(item.href, e as unknown as React.MouseEvent<HTMLAnchorElement>);
+                        }}
+                        className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                          activeTab === index
+                            ? 'bg-[#FF6E1A] text-white'
+                            : 'text-black hover:bg-gray-100'
+                        }`}
+                      >
+                        {item.label}
+                      </a>
+                    ))}
+                    {!isAuthenticated && (
+                      <Link
+                        href="/auth"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="px-4 py-3 rounded-sm text-sm font-medium bg-[#FF6E1A] text-white text-center"
+                      >
+                        {t.join}
+                      </Link>
+                    )}
+                  </nav>
+                </GlassSurface>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Content area for active tab */}
