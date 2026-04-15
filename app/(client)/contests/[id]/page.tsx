@@ -271,9 +271,11 @@ export default function ContestDetailPage() {
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-3 sm:mb-4 leading-tight">
                   {contest.title}
                 </h1>
-                <p className="text-sm sm:text-base text-black">
-                  {contest.description}
-                </p>
+                <div className="max-h-[120px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+                  <p className="text-sm sm:text-base text-black whitespace-pre-line">
+                    {contest.description}
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
@@ -475,7 +477,7 @@ export default function ContestDetailPage() {
           className="mt-8 sm:mt-12"
         >
           <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-            Lịch trình vòng 1
+            Lịch trình vòng sơ khảo
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -552,7 +554,7 @@ export default function ContestDetailPage() {
           className="mt-8 sm:mt-12"
         >
           <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-            Lịch trình vòng 2
+            Lịch trình vòng chung khảo
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -562,7 +564,7 @@ export default function ContestDetailPage() {
                 Số lượng thí sinh
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                {contest.round2Quantity} thí sinh có bài thi tốt nhất sau vòng 1
+                {contest.round2Quantity} thí sinh có bài thi tốt nhất sau vòng sơ khảo
               </p>
             </div>
 

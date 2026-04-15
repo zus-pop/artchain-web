@@ -217,12 +217,12 @@ export default function GuardianProfileScreen({
                     <div className="text-right">
                       {evaluation.scoreRound1 && (
                         <p className="text-lg font-semibold text-blue-600">
-                          Điểm vòng 1: {evaluation.scoreRound1}/10
+                          Điểm vòng sơ khảo: {evaluation.scoreRound1}/10
                         </p>
                       )}
                       {evaluation.scoreRound2 && (
                         <p className="text-lg font-semibold text-green-600">
-                          Điểm vòng 2: {evaluation.scoreRound2}/10
+                          Điểm vòng chung khảo: {evaluation.scoreRound2}/10
                         </p>
                       )}
                     </div>

@@ -79,7 +79,7 @@ const CampaignCard = ({
       }}
     />
     <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
-    <div className="text-black text-sm leading-relaxed mb-6 text-center">
+    <div className="text-black text-sm leading-relaxed mb-6 text-center line-clamp-3">
       <ReactMarkdown>{description}</ReactMarkdown>
     </div>
     <button className="w-full cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
@@ -383,7 +383,7 @@ export default function Page() {
                   <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                     {activeContest?.title || "Không có cuộc thi nào"}
                   </h3>
-                  <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
+                  <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6 line-clamp-4">
                     {activeContest?.description ||
                       "Các cuộc thi sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những cơ hội tham gia thú vị."}
                   </p>
@@ -812,7 +812,7 @@ export default function Page() {
                     className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                   />
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    Nét Vẽ Xanh
+                    ArtChain
                   </h3>
                 </div>
                 <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
@@ -965,7 +965,7 @@ export default function Page() {
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
               <p className="text-gray-400 text-xs sm:text-sm text-center md:text-left">
-                &copy; 2026 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.
+                &copy; 2026 ArtChain. Đã đăng ký bản quyền.
               </p>
               <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
                 <a

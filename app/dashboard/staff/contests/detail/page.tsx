@@ -126,7 +126,7 @@ function ContestDetailContent() {
       queryClient.invalidateQueries({
         queryKey: ["contest-rounds", contestId],
       });
-      toast.success("Tạo vòng 2 thành công");
+      toast.success("Tạo vòng chung khảo thành công");
       setShowCreateRound2Confirm(false);
     },
     onError: (error) => {
@@ -187,10 +187,10 @@ function ContestDetailContent() {
     const round2Data = rounds.find((round) => round.isRound2);
     const round2Date = round2Data?.tables?.[0]?.startDate || "";
 
-    const subject = `Thông báo vào vòng 2 cuộc thi ${contest.title}`;
-    const text = `Chúc mừng bạn đã được chọn vào vòng 2 cuộc thi ${
+    const subject = `Thông báo vào vòng chung khảo cuộc thi ${contest.title}`;
+    const text = `Chúc mừng bạn đã được chọn vào vòng chung khảo cuộc thi ${
       contest.title
-    }! Vòng 2 dự kiến sẽ tổ chức thi vào ngày ${formatDate({
+    }! Vòng chung khảo dự kiến sẽ tổ chức thi vào ngày ${formatDate({
       dateString: round2Date,
       language: currentLanguage,
       dateStyle: "full",
@@ -205,7 +205,7 @@ function ContestDetailContent() {
       },
       {
         onSuccess: () => {
-          toast.success("Đã gửi thông báo đến thí sinh vòng 2");
+          toast.success("Đã gửi thông báo đến thí sinh vòng chung khảo");
           setIsNotifyingRound2(false);
         },
         onError: (error) => {
@@ -1499,7 +1499,7 @@ function ContestDetailContent() {
             <button
               onClick={() => {
                 if (!round2Date) {
-                  toast.error("Hãy chọn ngày cho vòng 2");
+                  toast.error("Hãy chọn ngày cho vòng chung khảo");
                   return;
                 }
                 createRound2Mutation.mutate({
