@@ -37,7 +37,7 @@ export default function ModernArtAuction() {
   const [mounted, setMounted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
-  const [activeLiveId, setActiveLiveId] = useState<string | null>(null);
+  const [activeLiveId, setActiveLiveId] = useState<string | number | null>(null);
   const { user } = useAuth();
   const { data: userData, refetch: refetchUser } = useMeQuery();
   const displayUser = userData || user;

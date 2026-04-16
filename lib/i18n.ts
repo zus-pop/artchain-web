@@ -272,6 +272,7 @@ export const translations = {
 
     // Selection and Bulk Actions
     selectAll: "Chọn Tất Cả",
+    deselectAll: "Bỏ Chọn Tất Cả",
     selected: "Đã Chọn",
     acceptAll: "Chấp Nhận Tất Cả",
     accepting: "Đang Chấp Nhận...",
@@ -2580,6 +2581,7 @@ export const translations = {
 
     // Selection and Bulk Actions
     selectAll: "Select All",
+    deselectAll: "Deselect All",
     selected: "Selected",
     acceptAll: "Accept All",
     accepting: "Accepting...",
