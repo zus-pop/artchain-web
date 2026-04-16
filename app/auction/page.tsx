@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Timer, Gavel, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, Timer, Gavel, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useGetAuctions } from '@/apis/auction';
 import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,6 +37,7 @@ export default function ModernArtAuction() {
   const [mounted, setMounted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [activeLiveId, setActiveLiveId] = useState<string | null>(null);
   const { user } = useAuth();
   const { data: userData, refetch: refetchUser } = useMeQuery();
   const displayUser = userData || user;
@@ -52,6 +53,13 @@ export default function ModernArtAuction() {
     setMounted(true);
   }, []);
 
+  // Initialize activeLiveId when auctions load
+  useEffect(() => {
+    if (allAuctions.length > 0 && !activeLiveId) {
+      setActiveLiveId(allAuctions[0].auctionId);
+    }
+  }, [allAuctions, activeLiveId]);
+
   useEffect(() => {
     if (!mounted || !hasWallet) return;
 
@@ -63,7 +71,10 @@ export default function ModernArtAuction() {
           }
         });
       },
-      { threshold: 0.2, rootMargin: "-10% 0px -70% 0px" } 
+      { 
+        threshold: 0.1,
+        rootMargin: "-15% 0px -15% 0px"
+      } 
     );
 
     const sections = document.querySelectorAll('section[id^="section-"]');
@@ -206,7 +217,6 @@ export default function ModernArtAuction() {
           </div>
         </main>
 
-        {/* Terms & Conditions Modal */}
         <AnimatePresence>
           {showTerms && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
@@ -295,7 +305,6 @@ export default function ModernArtAuction() {
 
       <HeaderWrapper />
       
-      {/* Quick Action Navigation Sidebar */}
       <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4 hidden lg:flex">
         {['section-01', 'section-02', 'section-03'].map((section, index) => (
           <button
@@ -311,7 +320,7 @@ export default function ModernArtAuction() {
         ))}
       </div>
 
-      {/* ================= SECTION 01: HERO ================= */}
+      {/* Hero Section */}
       <section id="section-01" className="relative pt-40 pb-20 px-[5%] max-w-[1600px] mx-auto grid grid-cols-12 gap-6 min-h-[90vh]">
         <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
            <p className={getNumberStyle('section-01')}>01</p>
@@ -355,11 +364,114 @@ export default function ModernArtAuction() {
         </motion.div>
       </section>
 
-      {/* ================= SECTION 02: COLLECTION ================= */}
+      {/* Live Bidding Section (Section 02) */}
       <section id="section-02" className="py-24 px-[5%] max-w-[1600px] mx-auto mb-20 relative min-h-[90vh]">
         <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
                 <p className={getNumberStyle('section-02')}>02</p>
+            </div>
+
+            <div className="col-span-12 lg:col-span-11">
+                <motion.div 
+                  className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6"
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={containerVariants}
+                >
+                  <motion.div variants={itemVariants}>
+                    <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">Đấu giá trực tiếp</h2>
+                    <p className="text-sm opacity-60 mt-4 max-w-sm uppercase tracking-widest font-bold">Tham gia đặt giá ngay cho các tác phẩm đang diễn ra</p>
+                  </motion.div>
+                  <motion.div variants={itemVariants} className="flex gap-4">
+                    <div className="flex gap-2">
+                       <button 
+                          onClick={() => {
+                             const idx = liveItems.findIndex(i => i.id === (activeLiveId || liveItems[0]?.id));
+                             const newIdx = (liveItems.length + idx - 1) % liveItems.length;
+                             setActiveLiveId(liveItems[newIdx].id);
+                          }}
+                          className="p-2 border border-black/10 hover:bg-black/5 transition-colors rounded-full"
+                       >
+                          <ArrowLeft size={20} />
+                       </button>
+                       <button 
+                          onClick={() => {
+                             const idx = liveItems.findIndex(i => i.id === (activeLiveId || liveItems[0]?.id));
+                             const newIdx = (idx + 1) % liveItems.length;
+                             setActiveLiveId(liveItems[newIdx].id);
+                          }}
+                          className="p-2 border border-black/10 hover:bg-black/5 transition-colors rounded-full"
+                       >
+                          <ArrowRight size={20} />
+                       </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                <div className="relative">
+                {isLoading ? (
+                  <div className="bg-white h-[400px] animate-pulse shadow-sm" />
+                ) : liveItems.length === 0 ? (
+                  <div className="py-20 text-center border-2 border-dashed border-gray-200">
+                    <p className="text-sm font-bold uppercase text-gray-400">Hiện chưa có phiên đấu giá</p>
+                  </div>
+                ) : (
+                  <AnimatePresence mode="wait">
+                    {liveItems.filter(item => item.id === (activeLiveId || liveItems[0].id)).map((item) => (
+                      <motion.div 
+                        key={item.id} 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.4 }}
+                        className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
+                      >
+                        <div className="lg:col-span-7 relative group">
+                            <div className="aspect-video overflow-hidden shadow-md bg-gray-100">
+                              <img src={item.img} className="w-full h-full object-cover" alt={item.title} />
+                            </div>
+                            <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse">LIVE</div>
+                        </div>
+
+                        <div className="lg:col-span-5">
+                            <h3 className="text-4xl font-black uppercase italic leading-none mb-4">{item.title}</h3>
+                            <p className="text-[#f07d44] font-bold uppercase tracking-widest text-xs mb-10">{item.artist}</p>
+
+                            <div className="grid grid-cols-2 gap-10 mb-12">
+                              <div>
+                                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-2">Giá hiện tại</p>
+                                  <p className="text-3xl font-black">{item.bid}</p>
+                              </div>
+                              <div>
+                                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-2">Thời gian</p>
+                                  <p className="text-3xl font-black flex items-center gap-2"><Timer size={24} className="opacity-20" /> {item.time}</p>
+                              </div>
+                            </div>
+
+                            <Link href={`/auction/${item.id}`}>
+                              <button className="w-full bg-[#1a1a1a] text-white py-5 font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3">
+                                  Đấu giá ngay <Gavel size={16} />
+                              </button>
+                            </Link>
+                            <p className="mt-6 text-[11px] opacity-40 font-bold uppercase tracking-wider">
+                              {item.watchers} người đang theo dõi lô tranh này
+                            </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )}
+                </div>
+            </div>
+        </div>
+      </section>
+
+      {/* Collection Section (Section 03) */}
+      <section id="section-03" className="py-24 px-[5%] max-w-[1600px] mx-auto mb-20 relative min-h-[90vh]">
+        <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
+                <p className={getNumberStyle('section-03')}>03</p>
             </div>
 
             <motion.div 
@@ -373,7 +485,7 @@ export default function ModernArtAuction() {
                   <motion.div variants={itemVariants} className="max-w-xl">
                       <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Phiên đấu giá được đề xuất</span>
                       <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">
-                        {featuredItem?.title || "Không có phiên đấu giá"}
+                        {featuredItem?.title || "Sàn Đấu Giá"}
                       </h2>
                   </motion.div>
                   <motion.div variants={itemVariants}>
@@ -407,7 +519,7 @@ export default function ModernArtAuction() {
                           </Link>
                           <div className="mt-8">
                               <h3 className="text-4xl font-black uppercase italic leading-none mb-3 line-clamp-1">{featuredItem?.paintingTitle}</h3>
-                              <p className="text-sm opacity-60 leading-relaxed font-medium uppercase tracking-widest text-[#f07d44]">{featuredItem?.artist}</p>
+                              <p className="text-sm opacity-60 leading-relaxed font-black uppercase tracking-widest text-[#f07d44]">{featuredItem?.artist}</p>
                           </div>
                           </div>
 
@@ -443,11 +555,9 @@ export default function ModernArtAuction() {
                                     <div className="px-2">
                                       <div className="flex justify-between items-start mb-2">
                                           <h4 className="text-lg font-black uppercase tracking-tight line-clamp-1">{ap.painting?.title}</h4>
-                                          {/* <span className="font-bold text-[#f07d44]">{new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(ap.currentBid || ap.basePrice)}</span> */}
                                       </div>
-                                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-black">Giá hiện tại cao nhất</p>
-                                <p className="text-3xl text-[#f07d44] ">{ap.currentBid || ap.basePrice}đ</p>
-                                      {/* <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] line-clamp-1">Lô #{String(i+2).padStart(3, '0')} — {ap.painting?.competitorName || "Nghệ sĩ"}</p> */}
+                                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-black">Giá hiện tại</p>
+                                      <p className="text-2xl font-black text-[#f07d44]">{formatVnd(ap.currentBid || ap.basePrice)}</p>
                                     </div>
                                 </Link>
                               </motion.div>
@@ -465,102 +575,8 @@ export default function ModernArtAuction() {
         </div>
       </section>
 
-      {/* ================= SECTION 03: LIVE BIDDING ================= */}
-      <section id="section-03" className="py-32 px-[5%] max-w-[1600px] mx-auto relative min-h-[90vh]">
-        <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
-                <p className={getNumberStyle('section-03')}>03</p>
-            </div>
-
-            <div className="col-span-12 lg:col-span-11">
-                <motion.div 
-                  className="mb-20 pl-4 lg:pl-0 flex flex-col md:flex-row md:items-end justify-between gap-6"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={containerVariants}
-                >
-                  <motion.div variants={itemVariants}>
-                    <h2 className="text-6xl font-serif font-bold text-slate-900 leading-tight">Đấu giá trực tiếp</h2>
-                    <p className="text-slate-400 mt-4 max-w-sm">Các tác phẩm nghệ thuật đang được đấu giá trực tuyến. Tham gia ngay để sở hữu những kiệt tác độc đáo cho bộ sưu tập của bạn.</p>
-                  </motion.div>
-                  <motion.div variants={itemVariants}>
-                    <Link href="/auction/list">
-                      <button className="bg-white border-2 border-[#FF6E1A] text-[#FF6E1A] px-8 py-4 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#FF6E1A] hover:text-white transition-all whitespace-nowrap flex items-center gap-3">
-                        Xem tất cả <ArrowRight size={16} />
-                      </button>
-                    </Link>
-                  </motion.div>
-                </motion.div>
-
-                <div className="flex flex-col gap-20">
-                {isLoading ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {Array.from({ length: 2 }).map((_, i) => (
-                      <div key={i} className="bg-white h-[360px] animate-pulse rounded-md" />
-                    ))}
-                  </div>
-                ) : liveItems.length === 0 ? (
-                  <div className="py-20 text-center border border-slate-200 bg-white/60">
-                    <p className="text-lg font-bold uppercase tracking-wider text-slate-500">Hiện chưa có phiên đấu giá</p>
-                  </div>
-                ) : (
-                  liveItems.map((item) => (
-                    <motion.div 
-                      key={item.id} 
-                      className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center border-b border-slate-200 pb-20 last:border-0 px-4 lg:px-0"
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true, margin: "-50px" }}
-                      variants={itemVariants}
-                    >
-                      <div className="lg:col-span-7 relative group">
-                          <div className="aspect-video overflow-hidden shadow-xl bg-gray-100">
-                            <img src={item.img} className="w-full h-full object-cover" alt={item.title} />
-                          </div>
-                          {item.status && (
-                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[9px] font-bold text-[#FF6E1A] uppercase tracking-widest shadow-sm">
-                                {item.status}
-                            </div>
-                          )}
-                      </div>
-
-                      <div className="lg:col-span-5">
-                          <h3 className="text-4xl font-serif font-bold text-slate-900 mb-2 leading-snug">{item.title}</h3>
-                          <p className="text-slate-400 italic text-lg mb-10">{item.artist}</p>
-
-                          <div className="grid grid-cols-2 gap-10 mb-12">
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-[0.2em] mb-2">Giá hiện tại</p>
-                                <p className="text-3xl font-bold text-slate-900">{item.bid}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-[0.2em] mb-2">Thời gian còn lại</p>
-                                <p className="text-3xl font-bold flex items-center gap-2"><Timer size={24} className="opacity-20" /> {item.time}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-4">
-                            <Link href={`/auction/${item.id}`} className="flex-1">
-                              <button className="w-full bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
-                                  Đấu giá ngay <Gavel size={16} />
-                              </button>
-                            </Link>
-                          </div>
-                          <p className="mt-6 text-[11px] text-slate-400 font-medium flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> {item.watchers} người đang theo dõi lô tranh này
-                          </p>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-                </div>
-            </div>
-        </div>
-      </section>
-
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
-         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — BỘ SƯU TẬP TÁC PHẨM</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — BỘ SƯU TẬP TÁC PHẨM</p>
       </footer>
     </div>
   );
