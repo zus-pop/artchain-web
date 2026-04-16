@@ -205,8 +205,11 @@ const NewsCardSmall = ({
 
 // --- Component Chính Của Trang ---
 export default function Page() {
-
   const router = useRouter();
+
+  // Slider states for mobile
+  const [currentPostIndex, setCurrentPostIndex] = useState(0);
+  const [currentCampaignIndex, setCurrentCampaignIndex] = useState(0);
 
   // Scroll to top state and function
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -299,6 +302,23 @@ export default function Page() {
     (_, i) => remainingUnique[i] ?? null
   );
 
+  // Auto-slide logic
+  useEffect(() => {
+    if (uniquePosts.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentPostIndex((prev) => (prev + 1) % uniquePosts.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [uniquePosts.length]);
+
+  useEffect(() => {
+    if (campaigns.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentCampaignIndex((prev) => (prev + 1) % campaigns.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [campaigns.length]);
+
   return (
     <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro) overflow-x-hidden">
 
@@ -307,7 +327,7 @@ export default function Page() {
         {/* --- Hero Section --- */}
         <section
           id="hero"
-          className="relative h-screen min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] flex items-center text-white pt-16 sm:pt-20"
+          className="relative h-[80vh] min-h-[400px] lg:h-screen lg:min-h-[700px] flex items-center text-white pt-16"
         >
           <div className="absolute inset-0">
             <img
@@ -361,7 +381,7 @@ export default function Page() {
         {/* --- Contest Info Section --- */}
         <AnimatedContainer
           id="contest"
-          className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden"
+          className="min-h-auto lg:min-h-screen bg-[#EAE6E0] flex items-center justify-center py-16 lg:py-32 overflow-x-hidden"
           animation="animate-fade-in-left"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
@@ -460,7 +480,7 @@ export default function Page() {
         {/* --- News Section with 3 Columns --- */}
         <AnimatedContainer
           id="news"
-          className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32"
+          className="min-h-auto lg:min-h-screen bg-[#EAE6E0] flex items-center justify-center py-16 lg:py-32"
           animation="animate-zoom-in"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
@@ -573,34 +593,56 @@ export default function Page() {
               )}
             </div>
 
-            {/* Mobile News Slider */}
-            <div className="lg:hidden mt-4">
-              <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 scrollbar-hide">
-                {loadingPosts ? (
-                  [0, 1, 2].map((i) => (
-                    <div key={i} className="min-w-[80vw] snap-center">
-                      <SkeletonNewsCardSmall />
-                    </div>
-                  ))
-                ) : (
-                  uniquePosts.map((post) => (
-                    <div key={post.post_id} className="min-w-[80vw] snap-center">
-                      <Link href={`/posts/${post.post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
-                          category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
-                          title={post.title || ""}
-                          content={post.content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    </div>
-                  ))
-                )}
-                {!loadingPosts && uniquePosts.length === 0 && (
-                  <div className="w-full text-center py-8 text-black opacity-50">Không có bài viết nào</div>
-                )}
-              </div>
+            {/* Mobile News Slider - Auto + Swipeable */}
+            <div className="lg:hidden mt-4 overflow-hidden relative">
+              {loadingPosts ? (
+                <SkeletonNewsCardSmall />
+              ) : uniquePosts.length > 0 ? (
+                <>
+                  <motion.div
+                    className="flex cursor-grab active:cursor-grabbing"
+                    animate={{ x: `-${currentPostIndex * 100}%` }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(_, info) => {
+                      const threshold = 50;
+                      if (info.offset.x < -threshold) {
+                        setCurrentPostIndex((prev) => (prev + 1) % uniquePosts.length);
+                      } else if (info.offset.x > threshold) {
+                        setCurrentPostIndex((prev) => (prev - 1 + uniquePosts.length) % uniquePosts.length);
+                      }
+                    }}
+                  >
+                    {uniquePosts.map((post) => (
+                      <div key={post.post_id} className="min-w-full pr-4">
+                        <Link href={`/posts/${post.post_id}`}>
+                          <NewsCardSmall
+                            imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
+                            category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
+                            title={post.title || ""}
+                            content={post.content}
+                            darkBg={true}
+                          />
+                        </Link>
+                      </div>
+                    ))}
+                  </motion.div>
+                  {/* Indicators */}
+                  <div className="flex justify-center gap-1.5 mt-6">
+                    {uniquePosts.map((_, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setCurrentPostIndex(idx)}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentPostIndex ? 'w-8 bg-[#FF6E1A]' : 'w-2 bg-black/20'}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="w-full text-center py-8 text-black opacity-50">Không có bài viết nào</div>
+              )}
             </div>
           </div>
         </AnimatedContainer>
@@ -609,7 +651,7 @@ export default function Page() {
         {/* --- Campaigns Section --- */}
         <AnimatedContainer
           id="campaigns"
-          className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32"
+          className="min-h-auto lg:min-h-screen bg-[#EAE6E0] flex items-center justify-center py-16 lg:py-32"
           animation="animate-fade-in-right"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
@@ -619,60 +661,68 @@ export default function Page() {
             >
               Chiến dịch đang diễn ra
             </AnimatedContainer>
-            <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10 pb-4 snap-x snap-mandatory scrollbar-hide">
+            {/* Desktop grid, Mobile auto-slider */}
+            <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
               {loadingCampaigns
-                ? // show varied skeletons while loading
-                  [0, 1, 2].map((i) => (
-                    <div key={i} className="min-w-[85vw] sm:min-w-0 snap-center p-2">
-                       {/* skeleton content ... */}
-                      <div className="flex flex-col animate-pulse">
-                        <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded" />
-                        <div
-                          className={`h-6 bg-gray-300 mb-2 rounded ${
-                            i === 0 ? "w-3/4" : i === 1 ? "w-2/3" : "w-1/2"
-                          }`}
-                        />
-                        <div className="space-y-2 mb-6">
-                          <div
-                            className={`h-4 bg-gray-300 rounded ${
-                              i === 2 ? "w-4/6" : "w-full"
-                            }`}
-                          ></div>
-                          <div
-                            className={`h-4 bg-gray-300 rounded ${
-                              i === 1 ? "w-3/4" : "w-5/6"
-                            }`}
-                          ></div>
-                        </div>
-                        <div
-                          className={`w-full h-10 bg-gray-300 rounded-sm ${
-                            i === 0 ? "" : "w-11/12"
-                          }`}
-                        />
+                ? [0, 1, 2].map((i) => <SkeletonCampaignCard key={i} />)
+                : campaigns.map((c, idx) => (
+                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`}>
+                      <CampaignCard
+                        imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
+                        title={c.title || "Không có tiêu đề"}
+                        description={c.description || ""}
+                      />
+                    </Link>
+                  ))}
+            </div>
+
+            <div className="sm:hidden relative overflow-hidden">
+              {loadingCampaigns ? (
+                <SkeletonCampaignCard />
+              ) : campaigns.length > 0 ? (
+                <>
+                  <motion.div
+                    className="flex cursor-grab active:cursor-grabbing"
+                    animate={{ x: `-${currentCampaignIndex * 100}%` }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={0.2}
+                    onDragEnd={(_, info) => {
+                      const threshold = 50;
+                      if (info.offset.x < -threshold) {
+                        setCurrentCampaignIndex((prev) => (prev + 1) % campaigns.length);
+                      } else if (info.offset.x > threshold) {
+                        setCurrentCampaignIndex((prev) => (prev - 1 + campaigns.length) % campaigns.length);
+                      }
+                    }}
+                  >
+                    {campaigns.map((c, idx) => (
+                      <div key={c.campaignId ?? idx} className="min-w-full pr-4">
+                        <Link href={`/campaigns/${c.campaignId}`}>
+                          <CampaignCard
+                            imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
+                            title={c.title || "Không có tiêu đề"}
+                            description={c.description || ""}
+                          />
+                        </Link>
                       </div>
-                    </div>
-                  ))
-                : campaigns.length > 0
-                ? campaigns.map((c, idx) => (
-                    <div key={c.campaignId ?? idx} className="min-w-[85vw] sm:min-w-0 snap-center">
-                      <Link
-                        href={`/campaigns/${c.campaignId}`}
-                      >
-                        <CampaignCard
-                          imgSrc={
-                            c.image ||
-                            "https://placehold.co/400x300/cccccc/333333?text=No+Image"
-                          }
-                          title={c.title || "Không có tiêu đề"}
-                          description={c.description || ""}
-                        />
-                      </Link>
-                    </div>
-                  ))
-                : // Show no data message instead of mock data
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-400 text-sm">Các chiến dịch sẽ được cập nhật sớm.</p>
-                  </div>}
+                    ))}
+                  </motion.div>
+                  {/* Indicators */}
+                  <div className="flex justify-center gap-1.5 mt-8">
+                    {campaigns.map((_, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setCurrentCampaignIndex(idx)}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentCampaignIndex ? 'w-8 bg-[#FF6E1A]' : 'w-2 bg-black/20'}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-12 text-gray-400 text-sm">Các chiến dịch sẽ được cập nhật sớm.</div>
+              )}
             </div>
           </div>
         </AnimatedContainer>

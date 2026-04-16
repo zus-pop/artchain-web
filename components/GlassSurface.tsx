@@ -41,6 +41,7 @@ export interface GlassSurfaceProps {
     | "plus-lighter";
   className?: string;
   style?: React.CSSProperties;
+  overflow?: "hidden" | "visible";
 }
 
 // const useDarkMode = () => {
@@ -81,6 +82,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   mixBlendMode = "difference",
   className = "",
   style = {},
+  overflow = "hidden",
 }) => {
   const uniqueId = useId().replace(/:/g, "-");
   const filterId = `glass-filter-${uniqueId}`;
@@ -269,8 +271,9 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     }
   };
 
-  const glassSurfaceClasses =
-    "relative flex items-center justify-center overflow-hidden transition-opacity duration-[260ms] ease-out";
+  const glassSurfaceClasses = `relative flex min-w-0 ${
+    overflow === "hidden" ? "overflow-hidden" : "overflow-visible"
+  } transition-opacity duration-[260ms] ease-out`;
 
   const focusVisibleClasses =
     "focus-visible:outline-2 focus-visible:outline-[#007AFF] focus-visible:outline-offset-2";
@@ -366,7 +369,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
         </defs>
       </svg>
 
-      <div className="w-full h-full flex items-center justify-center p-2 rounded-[inherit] relative z-10">
+      <div className="w-full h-full relative z-10 flex">
         {children}
       </div>
     </div>
