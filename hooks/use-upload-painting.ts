@@ -13,6 +13,7 @@ interface UploadPaintingData {
   roundId: string;
   competitorId: string;
   ignoreAiCheck: boolean;
+  isFlagged: boolean;
 }
 
 export function useUploadPainting() {
@@ -33,6 +34,7 @@ export function useUploadPainting() {
       formData.append("roundId", data.roundId);
       formData.append("competitorId", data.competitorId);
       formData.append("ignoreAiCheck", data.ignoreAiCheck.toString());
+      formData.append("isFlagged", data.isFlagged.toString());
       const response = await myAxios.post("/paintings/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",

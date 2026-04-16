@@ -224,8 +224,8 @@ export const translations = {
     noExaminersAssigned:
       "Chưa có giám khảo nào được chỉ định cho cuộc thi này.",
     role: "Vai Trò",
-    round1: "Vòng 1",
-    round2: "Vòng 2",
+    round1: "Sơ khảo",
+    round2: "Chung khảo",
     currentExaminers: "Giám Khảo Hiện Tại",
     scheduled: "Đã lên lịch",
     schedule: "Lên lịch",
@@ -251,7 +251,7 @@ export const translations = {
     roundEndDateLabel: "Ngày Kết Thúc",
     submissionDetail: "Chi tiết bài nộp",
     submissionDate: "Ngày Nộp Bài",
-    submissionRound2ImageUpload: "Cập nhật ảnh cho bài nộp vòng 2",
+    submissionRound2ImageUpload: "Cập nhật ảnh cho bài nộp vòng chung khảo",
     roundSubmissionDeadlineLabel: "Hạn Nộp Bài",
     resultAnnounce: "Công Bố Kết Quả",
     submissions: "Bài Nộp",
@@ -272,6 +272,7 @@ export const translations = {
 
     // Selection and Bulk Actions
     selectAll: "Chọn Tất Cả",
+    deselectAll: "Bỏ Chọn Tất Cả",
     selected: "Đã Chọn",
     acceptAll: "Chấp Nhận Tất Cả",
     accepting: "Đang Chấp Nhận...",
@@ -367,7 +368,7 @@ export const translations = {
     viewDetails: "Xem Chi Tiết",
     editContest: "Chỉnh Sửa Cuộc Thi",
     deleteContest: "Xóa Cuộc Thi",
-    notifyRound2: "Thông Báo Vòng 2",
+    notifyRound2: "Thông Báo Vòng chung khảo",
 
     // Search and Filter
     searchContests: "Tìm kiếm cuộc thi theo tiêu đề, mô tả hoặc danh mục...",
@@ -525,11 +526,11 @@ export const translations = {
     roundEndDate: "Ngày Kết Thúc Vòng",
     submissionDeadline: "Hạn Nộp",
     resultAnnounceDate: "Ngày Công Bố Kết Quả",
-    round1Schedule: "Lịch trình vòng 1",
+    round1Schedule: "Lịch trình vòng sơ khảo",
     sendOriginalDeadline: "Hạn Gửi Bản Gốc",
-    round2Settings: "Cài Đặt Vòng 2",
-    numberOfTopCompetitorsRound2: "Số thí sinh xuất sắc vòng 2",
-    numberOfTablesRound2: "Số bảng vòng 2",
+    round2Settings: "Cài Đặt Vòng chung khảo",
+    numberOfTopCompetitorsRound2: "Số thí sinh xuất sắc vòng chung khảo",
+    numberOfTablesRound2: "Số bảng vòng chung khảo",
     disabledWhenNoCompetitors: "Vô hiệu hóa khi không có thí sinh",
     competitorsDivideTables: "thí sinh chia bảng",
     competitorsDivisionMessage:
@@ -543,19 +544,19 @@ export const translations = {
     contestManagementBreadcrumb: "Quản Lý Cuộc Thi",
     contestIdLabelDetail: "ID Cuộc Thi:",
     contestIdLabel: "ID Cuộc Thi:",
-    round2CompetitorsLabel: "Số thí sinh vòng 2",
-    round2Configuration: "Tiêu chí Vòng 2",
+    round2CompetitorsLabel: "Số thí sinh vòng chung khảo",
+    round2Configuration: "Tiêu chí Vòng chung khảo",
     bannerPreview: "Xem Trước Banner",
     currentFile: "Tệp hiện tại:",
     pdfPreview: "Xem Trước PDF",
-    roundDates: "Lịch trình vòng 1",
+    roundDates: "Lịch trình vòng sơ khảo",
     files: "Tệp",
     bannerImage: "Hình Ảnh Banner",
     rulesFile: "Tệp Quy Tắc",
     selectedFile: "Đã chọn:",
     rulesFilePDF: "Tệp Quy Tắc PDF",
     creatingContest: "Đang tạo cuộc thi...",
-    contestScheduleRound2Settings: "Lịch trình vòng 2 cuộc thi",
+    contestScheduleRound2Settings: "Lịch trình vòng chung khảo cuộc thi",
     resultAnnouncementDate: "Ngày công bố kết quả",
 
     // Form Validation
@@ -584,7 +585,7 @@ export const translations = {
     topCompetitorsMin: "Số thí sinh xuất sắc phải ít nhất là 1",
     topCompetitorsMax: "Số thí sinh xuất sắc quá cao",
     tablesMin: "Số bảng phải ít nhất là 3",
-    tablesMax: "Tối đa 6 bảng cho vòng 2",
+    tablesMax: "Tối đa 6 bảng cho vòng chung khảo",
     competitorsEvenlyDivided: "Thí sinh phải được chia đều vào các bảng",
 
     // Date Range Validation
@@ -975,9 +976,9 @@ export const translations = {
     confirmDeleteRoundDetail: "Bạn có chắc chắn muốn xóa vòng thi này?",
 
     // Qualified Paintings Review
-    round1QualifiedPaintingsReview: "Đánh giá tranh vòng 1 đủ điều kiện",
+    round1QualifiedPaintingsReview: "Đánh giá tranh vòng sơ khảo đủ điều kiện",
     round1QualifiedPaintingsReviewDesc:
-      "Đánh giá tranh vòng 1 đủ điều kiện và quản lý trạng thái nộp bản gốc. Sử dụng giao diện này để theo dõi những nghệ sĩ nào đã nộp bản gốc trước khi tiến hành vòng 2.",
+      "Đánh giá tranh vòng sơ khảo đủ điều kiện và quản lý trạng thái nộp bản gốc. Sử dụng giao diện này để theo dõi những nghệ sĩ nào đã nộp bản gốc trước khi tiến hành vòng chung khảo.",
     originalPending: "Bản gốc đang chờ",
     artistLabel: "Tác giả",
     emailLabel: "Email",
@@ -1033,7 +1034,7 @@ export const translations = {
     manageAwardsDetail: "Quản Lý Giải Thưởng",
     assignPrizesToWinnersDetail: "Trao Giải Thưởng Cho Người Thắng Cuộc",
     contestRoundsDetail: "Vòng Thi Cuộc Thi",
-    round2Detail: "Vòng 2",
+    round2Detail: "Vòng chung khảo",
     viewRoundDetailsDetail: "Xem Chi Tiết Vòng Thi",
     submissionDeadlineDetail: "Hạn Nộp Bài",
     resultAnnounceDetail: "Công Bố Kết Quả",
@@ -1057,24 +1058,24 @@ export const translations = {
       "Tất cả giải thưởng phải có giá trị được đặt trước khi xuất bản",
     publishContestToMakeVisible:
       "Xuất bản cuộc thi để hiển thị cho người tham gia",
-    createRound2Detail: "Tạo Vòng 2",
-    round2Date: "Ngày Vòng 2",
+    createRound2Detail: "Tạo Vòng chung khảo",
+    round2Date: "Ngày Vòng chung khảo",
     dateConstraints: "Chi tiết các mốc thời gian",
     contestStart: "Ngày bắt đầu cuộc thi",
     contestEnd: "Ngày kết thúc cuộc thi",
-    round1Results: "Kết quả Vòng 1",
+    round1Results: "Kết quả Vòng sơ khảo",
     validRange: "Khoảng thời gian hợp lệ",
     round2DateHelp:
-      "Ngày phải sau khi công bố kết quả Vòng 1 và trong khoảng thời gian cuộc thi",
+      "Ngày phải sau khi công bố kết quả Vòng sơ khảo và trong khoảng thời gian cuộc thi",
     createRound2ConfirmDetail:
-      "Bạn có chắc chắn muốn tạo vòng 2 với cài đặt hiện tại?",
-    round2Quantity: "Số lượng thí sinh vào vòng 2",
+      "Bạn có chắc chắn muốn tạo vòng chung khảo với cài đặt hiện tại?",
+    round2Quantity: "Số lượng thí sinh vào vòng chung khảo",
     numberOfTablesDetail: "Số Bảng",
     currentContestSettingDetail: "Cài Đặt Số Bảng Của Cuộc Thi Hiện Tại",
     tablesDetail: "bảng",
     enterNumberOfTablesDetail: "Nhập số bảng",
     creatingDetail: "Đang tạo...",
-    createRound2BtnDetail: "Tạo Vòng 2",
+    createRound2BtnDetail: "Tạo Vòng chung khảo",
 
     // Awards Management
     awardsManagement: "Quản Lý Giải Thưởng",
@@ -2580,6 +2581,7 @@ export const translations = {
 
     // Selection and Bulk Actions
     selectAll: "Select All",
+    deselectAll: "Deselect All",
     selected: "Selected",
     acceptAll: "Accept All",
     accepting: "Accepting...",

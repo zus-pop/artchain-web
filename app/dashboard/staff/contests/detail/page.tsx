@@ -1499,7 +1499,7 @@ function ContestDetailContent() {
             <button
               onClick={() => {
                 if (!round2Date) {
-                  toast.error("Hãy chọn ngày cho vòng 2");
+                  toast.error("Hãy chọn ngày cho vòng chung khảo");
                   return;
                 }
                 createRound2Mutation.mutate({

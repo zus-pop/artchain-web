@@ -217,12 +217,12 @@ export default function GuardianProfileScreen({
                     <div className="text-right">
                       {evaluation.scoreRound1 && (
                         <p className="text-lg font-semibold text-blue-600">
-                          Điểm vòng 1: {evaluation.scoreRound1}/10
+                          Điểm vòng sơ khảo: {evaluation.scoreRound1}/10
                         </p>
                       )}
                       {evaluation.scoreRound2 && (
                         <p className="text-lg font-semibold text-green-600">
-                          Điểm vòng 2: {evaluation.scoreRound2}/10
+                          Điểm vòng chung khảo: {evaluation.scoreRound2}/10
                         </p>
                       )}
                     </div>
@@ -934,7 +934,7 @@ export default function GuardianProfileScreen({
                   whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
                 `}
               >
-                Đơn hàng
+                Tranh sở hữu
               </button>
 
               {/* Tab Thông tin */}
