@@ -245,17 +245,19 @@ const Header: React.FC<ArtistNavigationProps> = ({
             width="auto"
             height="auto"
             borderRadius={50}
-            borderWidth={0.1}
-            brightness={90}
-            opacity={0.4}
-            blur={20}
-            backgroundOpacity={0.2}
-            saturation={2}
-            distortionScale={180}
-            overflow="visible"
+          backgroundOpacity={0.58}
+          blur={5}
+          saturation={3}
+          brightness={54}
+          opacity={1}
+          displace={0.5}
+          distortionScale={180}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
             className="w-full max-w-full"
           >
-            <div className="w-full px-4 sm:px-6 lg:px-12 py-1 flex justify-between items-center gap-2">
+            <div className="w-full px-4 sm:px-6 lg:px-12 py-4 flex justify-between items-center gap-2">
               <Link href="/" className="flex items-center shrink-0">
                 <img src="/images/newlogo.png" alt="Artchain Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
               </Link>
@@ -394,17 +396,21 @@ const Header: React.FC<ArtistNavigationProps> = ({
               <GlassSurface
                 width="100%"
                 height="100vh"
-                borderRadius={0}
+                borderRadius={50}
                 borderWidth={0.1}
-                brightness={95}
+                brightness={54}
                 opacity={1}
-                blur={30}
-                backgroundOpacity={0.4}
-                saturation={2}
+                blur={5}
+                backgroundOpacity={0.58}
+                saturation={3}
                 distortionScale={180}
+                displace={0.5}
+          redOffset={0}
+          greenOffset={10}
+          blueOffset={20}
                 className="shadow-2xl"
               >
-                <div className="flex flex-col h-full w-full p-6 relative overflow-hidden">
+                <div className="w-full px-3 sm:px-6 lg:px-16 flex justify-between items-center gap-2 sm:gap-3">
                   <AnimatePresence mode="wait">
                     {menuView === 'main' ? (
                       <motion.div

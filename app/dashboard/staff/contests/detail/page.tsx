@@ -446,7 +446,7 @@ function ContestDetailContent() {
                       <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
-                          {t.quantity} {t.rounds} 2
+                          {t.numberOfCompetitors} Chung Khảo
                         </p>
                         <p className="text-sm staff-text-primary font-semibold">
                           {contest.round2Quantity}
@@ -458,7 +458,7 @@ function ContestDetailContent() {
                       <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
-                          {t.numberOfTables} {t.rounds} 2
+                          {t.numberOfTables} {t.rounds} Chung Khảo
                         </p>
                         <p className="text-sm staff-text-primary font-semibold">
                           {contest.numberOfTablesRound2}
@@ -733,11 +733,11 @@ function ContestDetailContent() {
               </div>
 
               {/* Contest Rounds */}
-              <div className="staff-card p-6">
+              <div className="">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold staff-text-primary">
+                  {/* <h3 className="text-lg font-bold staff-text-primary">
                     {t.contestRoundsDetail}
-                  </h3>
+                  </h3> */}
                   <div className="flex items-center gap-3">
                     {!rounds.some((round) => round.isRound2) && (
                       <button
@@ -767,8 +767,8 @@ function ContestDetailContent() {
                           <div className="flex items-center gap-3">
                             <h4 className="font-bold staff-text-primary">
                               {round.name === "ROUND_1"
-                                ? `${t.rounds} 1`
-                                : `${t.rounds} 2`}
+                                ? `${t.rounds} sơ khảo`
+                                : `${t.rounds} chung khảo`}
                             </h4>
                             {/* {round.status && (
                               <span className={getStatusColor(round.status)}>
