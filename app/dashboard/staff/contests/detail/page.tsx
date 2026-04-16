@@ -126,7 +126,7 @@ function ContestDetailContent() {
       queryClient.invalidateQueries({
         queryKey: ["contest-rounds", contestId],
       });
-      toast.success("Tạo vòng 2 thành công");
+      toast.success("Tạo vòng chung khảo thành công");
       setShowCreateRound2Confirm(false);
     },
     onError: (error) => {
@@ -180,17 +180,17 @@ function ContestDetailContent() {
       name: "ROUND_2",
     });
     const competitors = res.data.tables.flatMap(
-      (competitors) => competitors.competitors
+      (competitors) => competitors.competitors,
     );
 
     // Get round2Date from the round 2 data
     const round2Data = rounds.find((round) => round.isRound2);
     const round2Date = round2Data?.tables?.[0]?.startDate || "";
 
-    const subject = `Thông báo vào vòng 2 cuộc thi ${contest.title}`;
-    const text = `Chúc mừng bạn đã được chọn vào vòng 2 cuộc thi ${
+    const subject = `Thông báo vào vòng chung khảo cuộc thi ${contest.title}`;
+    const text = `Chúc mừng bạn đã được chọn vào vòng chung khảo cuộc thi ${
       contest.title
-    }! Vòng 2 dự kiến sẽ tổ chức thi vào ngày ${formatDate({
+    }! Vòng chung khảo dự kiến sẽ tổ chức thi vào ngày ${formatDate({
       dateString: round2Date,
       language: currentLanguage,
       dateStyle: "full",
@@ -205,7 +205,7 @@ function ContestDetailContent() {
       },
       {
         onSuccess: () => {
-          toast.success("Đã gửi thông báo đến thí sinh vòng 2");
+          toast.success("Đã gửi thông báo đến thí sinh vòng chung khảo");
           setIsNotifyingRound2(false);
         },
         onError: (error) => {
@@ -216,7 +216,7 @@ function ContestDetailContent() {
           toast.error(message);
           setIsNotifyingRound2(false);
         },
-      }
+      },
     );
   };
 
@@ -369,8 +369,8 @@ function ContestDetailContent() {
                         !contest.numOfAward || contest.numOfAward === 0
                           ? t.awardsMustBeConfiguredBeforePublishing
                           : contest.awards?.some((a) => Number(a.prize) === 0)
-                          ? t.allAwardsMustHavePrizeValues
-                          : t.publishContestToMakeVisible
+                            ? t.allAwardsMustHavePrizeValues
+                            : t.publishContestToMakeVisible
                       }
                     >
                       <IconTrophy className="h-4 w-4" />
@@ -787,7 +787,7 @@ function ContestDetailContent() {
                                   qualifiedPaintingsData?.data.qualified
                                     .length === 0 ||
                                   qualifiedPaintingsData?.data.qualified.some(
-                                    (i) => i.painting === null
+                                    (i) => i.painting === null,
                                   )
                                 }
                                 onClick={() =>
@@ -1183,28 +1183,28 @@ function ContestDetailContent() {
                                 item.painting.status === "ACCEPTED"
                                   ? "bg-green-100 text-green-800"
                                   : item.painting.status === "REJECTED"
-                                  ? "bg-red-100 text-red-800"
-                                  : item.painting.status ===
-                                    "ORIGINAL_SUBMITTED"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : item.painting.status ===
-                                    "NOT_SUBMITTED_ORIGINAL"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-gray-100 text-gray-800"
+                                    ? "bg-red-100 text-red-800"
+                                    : item.painting.status ===
+                                        "ORIGINAL_SUBMITTED"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : item.painting.status ===
+                                          "NOT_SUBMITTED_ORIGINAL"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-gray-100 text-gray-800"
                               }`}
                             >
                               {item.painting.status === "ORIGINAL_SUBMITTED"
                                 ? t.originalSubmittedStatus
                                 : item.painting.status ===
-                                  "NOT_SUBMITTED_ORIGINAL"
-                                ? t.originalNotSubmittedStatus
-                                : item.painting.status === "ACCEPTED"
-                                ? t.acceptedStatus
-                                : item.painting.status === "REJECTED"
-                                ? t.rejectedStatus
-                                : item.painting.status === "PENDING"
-                                ? t.pendingReviewStatus
-                                : item.painting.status}
+                                    "NOT_SUBMITTED_ORIGINAL"
+                                  ? t.originalNotSubmittedStatus
+                                  : item.painting.status === "ACCEPTED"
+                                    ? t.acceptedStatus
+                                    : item.painting.status === "REJECTED"
+                                      ? t.rejectedStatus
+                                      : item.painting.status === "PENDING"
+                                        ? t.pendingReviewStatus
+                                        : item.painting.status}
                             </span>
                           </div>
                         </div>
@@ -1383,7 +1383,7 @@ function ContestDetailContent() {
                 </div>
                 {(() => {
                   const round1ResultDate = rounds.find(
-                    (r) => !r.isRound2
+                    (r) => !r.isRound2,
                   )?.resultAnnounceDate;
                   return (
                     round1ResultDate && (
@@ -1409,7 +1409,7 @@ function ContestDetailContent() {
                     {(() => {
                       // Calculate the exact same dates used in input constraints
                       const round1Results = rounds.find(
-                        (r) => !r.isRound2
+                        (r) => !r.isRound2,
                       )?.resultAnnounceDate;
                       const today = new Date();
                       today.setHours(0, 0, 0, 0); // Set to start of today
@@ -1418,7 +1418,7 @@ function ContestDetailContent() {
                       if (round1Results) {
                         minDate = new Date(
                           new Date(round1Results).getTime() +
-                            24 * 60 * 60 * 1000
+                            24 * 60 * 60 * 1000,
                         );
                       } else {
                         minDate = new Date(contest.startDate);
@@ -1454,7 +1454,7 @@ function ContestDetailContent() {
                 onChange={(e) => setRound2Date(e.target.value)}
                 min={(() => {
                   const round1Results = rounds.find(
-                    (r) => !r.isRound2
+                    (r) => !r.isRound2,
                   )?.resultAnnounceDate;
                   const today = new Date();
                   today.setHours(0, 0, 0, 0); // Set to start of today
@@ -1462,7 +1462,7 @@ function ContestDetailContent() {
                   let minDate: Date;
                   if (round1Results) {
                     minDate = new Date(
-                      new Date(round1Results).getTime() + 24 * 60 * 60 * 1000
+                      new Date(round1Results).getTime() + 24 * 60 * 60 * 1000,
                     );
                   } else {
                     minDate = new Date(contest.startDate);
