@@ -60,13 +60,7 @@ const getCampaignSchema = (t: Lang) =>
       }, t.goalAmountMin),
     deadline: z.string().min(1, t.deadlineRequired),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
-    bronzeMinPrice: z
-      .string()
-      .min(1, "Mức Đồng phải lớn hơn hoặc bằng 1.000đ")
-      .refine((value) => {
-        const amount = parseCurrencyInput(value);
-        return !Number.isNaN(amount) && amount >= 1000;
-      }, "Mức Đồng phải lớn hơn hoặc bằng 1.000đ"),
+    bronzeMinPrice: z.string().optional(),
     silverMinPrice: z
       .string()
       .min(1, "Mức Bạc phải lớn hơn hoặc bằng 1.000đ")
@@ -93,30 +87,31 @@ const getCampaignSchema = (t: Lang) =>
       .refine((file) => file instanceof File && file.size > 0, t.imageRequired),
   })
   .superRefine((data, ctx) => {
-    const bronze = parseCurrencyInput(data.bronzeMinPrice);
-    const silver = parseCurrencyInput(data.silverMinPrice);
-    const gold = parseCurrencyInput(data.goldMinPrice);
-    const diamond = parseCurrencyInput(data.diamondMinPrice);
+    const bronze = parseCurrencyInput(data.bronzeMinPrice || "");
+    const silver = parseCurrencyInput(data.silverMinPrice || "");
+    const gold = parseCurrencyInput(data.goldMinPrice || "");
+    const diamond = parseCurrencyInput(data.diamondMinPrice || "");
 
+    // Validation sequence: 1 (Bronze) < 2 (Silver) < 3 (Gold) < 4 (Diamond)
     if (!Number.isNaN(bronze) && !Number.isNaN(silver) && silver <= bronze) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["silverMinPrice"],
-        message: "Mức Bạc phải lớn hơn mức Đồng",
+        message: "Mức giá hạng Bạc (Ưu tiên 2) phải lớn hơn mức Đồng (Ưu tiên 1)",
       });
     }
     if (!Number.isNaN(silver) && !Number.isNaN(gold) && gold <= silver) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["goldMinPrice"],
-        message: "Mức Vàng phải lớn hơn mức Bạc",
+        message: "Mức giá hạng Vàng (Ưu tiên 3) phải lớn hơn mức Bạc (Ưu tiên 2)",
       });
     }
     if (!Number.isNaN(gold) && !Number.isNaN(diamond) && diamond <= gold) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["diamondMinPrice"],
-        message: "Mức Kim cương phải lớn hơn mức Vàng",
+        message: "Mức giá hạng Kim cương (Ưu tiên 4) phải lớn hơn mức Vàng (Ưu tiên 3)",
       });
     }
   });
@@ -187,10 +182,10 @@ export default function CreateCampaignPage() {
       goalAmount: "",
       deadline: "",
       status: "DRAFT",
-      bronzeMinPrice: "500.000",
-      silverMinPrice: "1.000.000",
-      goldMinPrice: "2.000.000",
-      diamondMinPrice: "5.000.000",
+      bronzeMinPrice: "",
+      silverMinPrice: "",
+      goldMinPrice: "",
+      diamondMinPrice: "",
     },
     mode: "all",
   });
@@ -242,7 +237,7 @@ export default function CreateCampaignPage() {
 
     const tiersPayload: CampaignTierInput[] = tierDefinitions
       .map((tier) => {
-        const minPrice = parseCurrencyInput(data[tierFieldByName[tier.name]]);
+        const minPrice = parseCurrencyInput(data[tierFieldByName[tier.name]] || "");
         if (Number.isNaN(minPrice) || minPrice <= 0) {
           return null;
         }
@@ -383,6 +378,61 @@ export default function CreateCampaignPage() {
                       )}
                     </div>
 
+                    {/* Moved Deadline here */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {t.deadlineLabel} *
+                      </label>
+                      <input
+                        type="date"
+                        {...form.register("deadline")}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                      />
+                      {form.formState.errors.deadline && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {form.formState.errors.deadline.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Moved Goal and Status here */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t.goalAmountVND} *
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          {...form.register("goalAmount")}
+                          onChange={handleCurrencyInputChange("goalAmount")}
+                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          required
+                        />
+                        {form.formState.errors.goalAmount && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {form.formState.errors.goalAmount.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {t.campaignStatus}
+                        </label>
+                        <select
+                          {...form.register("status")}
+                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="DRAFT">{t.draftOption}</option>
+                          <option value="ACTIVE">{t.activeOption}</option>
+                          <option value="PAUSED">{t.pausedOption}</option>
+                          <option value="COMPLETED">{t.completedOption}</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         {t.campaignDescriptionLabel} *
@@ -521,111 +571,43 @@ export default function CreateCampaignPage() {
 
               {/* Right Column - Financial & Deadline (takes 1/3 of space) */}
               <div className="space-y-6">
-                {/* Financial & Status Details */}
-                <div className="bg-white  border border-[#e6e2da] p-6">
+                {/* Sponsorship Tiers only in the right column */}
+                <div className="bg-white border border-[#e6e2da] p-6">
                   <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                     <IconMoneybag className="h-5 w-5" />
-                    {t.financialStatusDetails}
+Hạng mục tài trợ
                   </h3>
+                  <div className="space-y-4">
+                    {tierDefinitions.map((tier) => {
+                      const fieldName = `${tier.name}MinPrice` as
+                        | "bronzeMinPrice"
+                        | "silverMinPrice"
+                        | "goldMinPrice"
+                        | "diamondMinPrice";
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t.goalAmountVND} *
-                      </label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        {...form.register("goalAmount")}
-                        onChange={handleCurrencyInputChange("goalAmount")}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required
-                      />
-                      {form.formState.errors.goalAmount && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {form.formState.errors.goalAmount.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t.campaignStatus}
-                      </label>
-                      <select
-                        {...form.register("status")}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="DRAFT">{t.draftOption}</option>
-                        <option value="ACTIVE">{t.activeOption}</option>
-                        <option value="PAUSED">{t.pausedOption}</option>
-                        <option value="COMPLETED">{t.completedOption}</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 border-t border-[#e6e2da] pt-6">
-                    <h4 className="text-sm font-semibold text-gray-800 mb-3">
-                      Mức tối thiểu theo hạng tài trợ
-                    </h4>
-                    <div className="space-y-4">
-                      {tierDefinitions.map((tier) => {
-                        const fieldName = `${tier.name}MinPrice` as
-                          | "bronzeMinPrice"
-                          | "silverMinPrice"
-                          | "goldMinPrice"
-                          | "diamondMinPrice";
-
-                        return (
-                          <div key={tier.id} className="border border-[#e6e2da] p-3 bg-[#fcfbf8]">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-semibold text-gray-800">
-                                {tier.display}
-                              </span>
-                              <span className="text-xs text-gray-500">Priority: {tier.priority}</span>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-2">{tier.benefits}</p>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              {...form.register(fieldName)}
-                              onChange={handleCurrencyInputChange(fieldName)}
-                              className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {form.formState.errors[fieldName] && (
-                              <p className="mt-1 text-xs text-red-600">
-                                {form.formState.errors[fieldName]?.message as string}
-                              </p>
-                            )}
+                      return (
+                        <div key={tier.id} className="border border-[#e6e2da] p-3 bg-[#fcfbf8]">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-gray-800">
+                              {tier.display}
+                            </span>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Deadline */}
-                <div className="bg-white  border border-[#e6e2da] p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                    <IconCalendar className="h-5 w-5" />
-                    {t.campaignDeadline}
-                  </h3>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t.deadlineLabel} *
-                    </label>
-                    <input
-                      type="date"
-                      {...form.register("deadline")}
-                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                    {form.formState.errors.deadline && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {form.formState.errors.deadline.message}
-                      </p>
-                    )}
+                          <p className="text-xs text-gray-600 mb-2">{tier.benefits}</p>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            {...form.register(fieldName)}
+                            onChange={handleCurrencyInputChange(fieldName)}
+                            className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {form.formState.errors[fieldName] && (
+                            <p className="mt-1 text-xs text-red-600">
+                              {form.formState.errors[fieldName]?.message as string}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

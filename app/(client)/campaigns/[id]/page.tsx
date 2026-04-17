@@ -288,9 +288,6 @@ const CampaignDetailPage = () => {
                               })}
                               {tier.tierDisplay}
                             </span>
-                            <span className="font-bold text-gray-900">
-                              từ {new Intl.NumberFormat('vi-VN').format(tier.minPrice)}đ
-                            </span>
                           </div>
                         </div>
                       ))
