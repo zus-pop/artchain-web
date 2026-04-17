@@ -18,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "../types";
-import { CreateCampaignRequest } from "../types/staff/campaign";
+import { CreateCampaignRequest, TierDefinition } from "../types/staff/campaign";
 
 /**
  * Staff Contest Management APIs
@@ -587,6 +587,7 @@ export const createStaffCampaign = async (data: CreateCampaignRequest) => {
   formData.append("goalAmount", data.goalAmount.toString());
   formData.append("deadline", data.deadline);
   formData.append("status", data.status);
+  formData.append("tiers", JSON.stringify(data.tiers));
   formData.append("image", data.image);
 
   const response = await myAxios.post("/staff/campaign", formData, {
@@ -594,6 +595,12 @@ export const createStaffCampaign = async (data: CreateCampaignRequest) => {
       "Content-Type": "multipart/form-data",
     },
   });
+  return response.data;
+};
+
+// GET /api/tiers - Get available sponsorship tiers
+export const getSponsorshipTierDefinitions = async () => {
+  const response = await myAxios.get<ApiResponse<TierDefinition[]>>("/tiers");
   return response.data;
 };
 
@@ -639,6 +646,7 @@ export const updateStaffCampaign = async (
     formData.append("goalAmount", data.goalAmount.toString());
   if (data.deadline) formData.append("deadline", data.deadline);
   if (data.status) formData.append("status", data.status);
+  if (data.tiers) formData.append("tiers", JSON.stringify(data.tiers));
   if (data.image) formData.append("image", data.image);
 
   const response = await myAxios.put(`/staff/campaign/${id}`, formData, {

@@ -1,5 +1,5 @@
 "use client";
-import { createStaffCampaign } from "@/apis/staff";
+import { createStaffCampaign, getSponsorshipTierDefinitions } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
@@ -12,7 +12,7 @@ import {
   IconFileText,
   IconMoneybag,
 } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -20,10 +20,25 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { CreateCampaignRequest } from "@/types/staff/campaign";
+import {
+  CampaignTierInput,
+  CreateCampaignRequest,
+  TierDefinition,
+} from "@/types/staff/campaign";
 import { Lang, useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";
+
+const parseCurrencyInput = (value: string) => {
+  const digitsOnly = value.replace(/\D/g, "");
+  return digitsOnly ? Number(digitsOnly) : NaN;
+};
+
+const formatCurrencyInput = (value: string) => {
+  const digitsOnly = value.replace(/\D/g, "");
+  if (!digitsOnly) return "";
+  return new Intl.NumberFormat("vi-VN").format(Number(digitsOnly));
+};
 
 // Zod schema for form validation
 const getCampaignSchema = (t: Lang) =>
@@ -36,12 +51,74 @@ const getCampaignSchema = (t: Lang) =>
       .string()
       .min(1, t.campaignDescriptionRequired)
       .max(1000, t.campaignDescriptionMaxLength),
-    goalAmount: z.number().min(1000, t.goalAmountMin),
+    goalAmount: z
+      .string()
+      .min(1, t.goalAmountMin)
+      .refine((value) => {
+        const amount = parseCurrencyInput(value);
+        return !Number.isNaN(amount) && amount >= 1000;
+      }, t.goalAmountMin),
     deadline: z.string().min(1, t.deadlineRequired),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
+    bronzeMinPrice: z
+      .string()
+      .min(1, "Mức Đồng phải lớn hơn hoặc bằng 1.000đ")
+      .refine((value) => {
+        const amount = parseCurrencyInput(value);
+        return !Number.isNaN(amount) && amount >= 1000;
+      }, "Mức Đồng phải lớn hơn hoặc bằng 1.000đ"),
+    silverMinPrice: z
+      .string()
+      .min(1, "Mức Bạc phải lớn hơn hoặc bằng 1.000đ")
+      .refine((value) => {
+        const amount = parseCurrencyInput(value);
+        return !Number.isNaN(amount) && amount >= 1000;
+      }, "Mức Bạc phải lớn hơn hoặc bằng 1.000đ"),
+    goldMinPrice: z
+      .string()
+      .min(1, "Mức Vàng phải lớn hơn hoặc bằng 1.000đ")
+      .refine((value) => {
+        const amount = parseCurrencyInput(value);
+        return !Number.isNaN(amount) && amount >= 1000;
+      }, "Mức Vàng phải lớn hơn hoặc bằng 1.000đ"),
+    diamondMinPrice: z
+      .string()
+      .min(1, "Mức Kim cương phải lớn hơn hoặc bằng 1.000đ")
+      .refine((value) => {
+        const amount = parseCurrencyInput(value);
+        return !Number.isNaN(amount) && amount >= 1000;
+      }, "Mức Kim cương phải lớn hơn hoặc bằng 1.000đ"),
     image: z
       .any()
       .refine((file) => file instanceof File && file.size > 0, t.imageRequired),
+  })
+  .superRefine((data, ctx) => {
+    const bronze = parseCurrencyInput(data.bronzeMinPrice);
+    const silver = parseCurrencyInput(data.silverMinPrice);
+    const gold = parseCurrencyInput(data.goldMinPrice);
+    const diamond = parseCurrencyInput(data.diamondMinPrice);
+
+    if (!Number.isNaN(bronze) && !Number.isNaN(silver) && silver <= bronze) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["silverMinPrice"],
+        message: "Mức Bạc phải lớn hơn mức Đồng",
+      });
+    }
+    if (!Number.isNaN(silver) && !Number.isNaN(gold) && gold <= silver) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["goldMinPrice"],
+        message: "Mức Vàng phải lớn hơn mức Bạc",
+      });
+    }
+    if (!Number.isNaN(gold) && !Number.isNaN(diamond) && diamond <= gold) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["diamondMinPrice"],
+        message: "Mức Kim cương phải lớn hơn mức Vàng",
+      });
+    }
   });
 
 type CampaignFormData = z.infer<ReturnType<typeof getCampaignSchema>>;
@@ -53,6 +130,44 @@ export default function CreateCampaignPage() {
   const queryClient = useQueryClient();
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+
+  const tierOrder: Array<TierDefinition["name"]> = [
+    "bronze",
+    "silver",
+    "gold",
+    "diamond",
+  ];
+
+  const fallbackTiers: TierDefinition[] = [
+    {
+      id: 1,
+      name: "bronze",
+      display: "Đồng",
+      priority: 1,
+      benefits: "Gói cơ bản",
+    },
+    {
+      id: 2,
+      name: "silver",
+      display: "Bạc",
+      priority: 2,
+      benefits: "Gói nâng cao",
+    },
+    {
+      id: 3,
+      name: "gold",
+      display: "Vàng",
+      priority: 3,
+      benefits: "Gói cao cấp",
+    },
+    {
+      id: 4,
+      name: "diamond",
+      display: "Kim cương",
+      priority: 4,
+      benefits: "Gói cao nhất",
+    },
+  ];
 
   // Cleanup image preview URL on unmount
   useEffect(() => {
@@ -69,11 +184,27 @@ export default function CreateCampaignPage() {
     defaultValues: {
       title: "",
       description: "",
-      goalAmount: 0,
+      goalAmount: "",
       deadline: "",
       status: "DRAFT",
+      bronzeMinPrice: "500.000",
+      silverMinPrice: "1.000.000",
+      goldMinPrice: "2.000.000",
+      diamondMinPrice: "5.000.000",
     },
     mode: "all",
+  });
+
+  const { data: tierDefinitionsRes } = useQuery({
+    queryKey: ["tier-definitions"],
+    queryFn: getSponsorshipTierDefinitions,
+  });
+
+  const tierDefinitions = tierOrder.map((name) => {
+    return (
+      tierDefinitionsRes?.data?.find((tier) => tier.name === name) ||
+      fallbackTiers.find((tier) => tier.name === name)!
+    );
   });
 
   const watchedImage = form.watch("image");
@@ -98,7 +229,42 @@ export default function CreateCampaignPage() {
 
   const handleSubmit = async (data: CampaignFormData) => {
     setIsSubmitting(true);
-    await mutation.mutateAsync(data);
+
+    const tierFieldByName: Record<
+      TierDefinition["name"],
+      "bronzeMinPrice" | "silverMinPrice" | "goldMinPrice" | "diamondMinPrice"
+    > = {
+      bronze: "bronzeMinPrice",
+      silver: "silverMinPrice",
+      gold: "goldMinPrice",
+      diamond: "diamondMinPrice",
+    };
+
+    const tiersPayload: CampaignTierInput[] = tierDefinitions
+      .map((tier) => {
+        const minPrice = parseCurrencyInput(data[tierFieldByName[tier.name]]);
+        if (Number.isNaN(minPrice) || minPrice <= 0) {
+          return null;
+        }
+
+        return {
+          tierId: tier.id,
+          minPrice,
+        };
+      })
+      .filter((tier): tier is CampaignTierInput => tier !== null);
+
+    const payload: CreateCampaignRequest = {
+      title: data.title,
+      description: data.description,
+      goalAmount: parseCurrencyInput(data.goalAmount),
+      deadline: data.deadline,
+      status: data.status,
+      image: data.image,
+      tiers: tiersPayload,
+    };
+
+    await mutation.mutateAsync(payload);
     setIsSubmitting(false);
   };
 
@@ -107,8 +273,18 @@ export default function CreateCampaignPage() {
     // Here you would typically make an API call to save as draft
   };
 
-  const formatVNDAmount = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN").format(amount);
+  const handleCurrencyInputChange = (
+    fieldName:
+      | "goalAmount"
+      | "bronzeMinPrice"
+      | "silverMinPrice"
+      | "goldMinPrice"
+      | "diamondMinPrice"
+  ) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    form.setValue(fieldName, formatCurrencyInput(e.target.value), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   return (
@@ -358,22 +534,13 @@ export default function CreateCampaignPage() {
                         {t.goalAmountVND} *
                       </label>
                       <input
-                        type="number"
-                        {...form.register("goalAmount", {
-                          valueAsNumber: true,
-                        })}
-                        step={100_000}
+                        type="text"
+                        inputMode="numeric"
+                        {...form.register("goalAmount")}
+                        onChange={handleCurrencyInputChange("goalAmount")}
                         className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         required
                       />
-                      {form.watch("goalAmount") > 0 && (
-                        <p className="mt-1 text-sm text-gray-600">
-                          {t.formattedAmount.replace(
-                            "{amount}",
-                            formatVNDAmount(form.watch("goalAmount"))
-                          )}
-                        </p>
-                      )}
                       {form.formState.errors.goalAmount && (
                         <p className="mt-1 text-sm text-red-600">
                           {form.formState.errors.goalAmount.message}
@@ -394,6 +561,45 @@ export default function CreateCampaignPage() {
                         <option value="PAUSED">{t.pausedOption}</option>
                         <option value="COMPLETED">{t.completedOption}</option>
                       </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 border-t border-[#e6e2da] pt-6">
+                    <h4 className="text-sm font-semibold text-gray-800 mb-3">
+                      Mức tối thiểu theo hạng tài trợ
+                    </h4>
+                    <div className="space-y-4">
+                      {tierDefinitions.map((tier) => {
+                        const fieldName = `${tier.name}MinPrice` as
+                          | "bronzeMinPrice"
+                          | "silverMinPrice"
+                          | "goldMinPrice"
+                          | "diamondMinPrice";
+
+                        return (
+                          <div key={tier.id} className="border border-[#e6e2da] p-3 bg-[#fcfbf8]">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-semibold text-gray-800">
+                                {tier.display}
+                              </span>
+                              <span className="text-xs text-gray-500">Priority: {tier.priority}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">{tier.benefits}</p>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              {...form.register(fieldName)}
+                              onChange={handleCurrencyInputChange(fieldName)}
+                              className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {form.formState.errors[fieldName] && (
+                              <p className="mt-1 text-xs text-red-600">
+                                {form.formState.errors[fieldName]?.message as string}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
