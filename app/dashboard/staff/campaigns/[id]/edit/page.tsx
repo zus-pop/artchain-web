@@ -19,8 +19,26 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
+import { getSponsorshipTiers } from "@/apis/campaign";
+import { getSponsorshipTierDefinitions } from "@/apis/staff";
+import {
+  CampaignTierInput,
+  TierDefinition,
+} from "@/types/staff/campaign";
+import { IconMoneybag } from "@tabler/icons-react";
+
+const parseCurrencyInput = (value: string) => {
+  const digitsOnly = value.replace(/\D/g, "");
+  return digitsOnly ? Number(digitsOnly) : NaN;
+};
+
+const formatCurrencyInput = (value: string) => {
+  const digitsOnly = value.replace(/\D/g, "");
+  if (!digitsOnly) return "";
+  return new Intl.NumberFormat("vi-VN").format(Number(digitsOnly));
+};
 
 export default function EditCampaignPage({
   params,
@@ -36,6 +54,10 @@ export default function EditCampaignPage({
     goalAmount: "",
     deadline: "",
     status: "DRAFT",
+    bronzeMinPrice: "",
+    silverMinPrice: "",
+    goldMinPrice: "",
+    diamondMinPrice: "",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -55,19 +77,68 @@ export default function EditCampaignPage({
 
   const campaignData = campaignResponse?.data;
 
-  // Initialize form data when campaign loads
+  // Fetch existing tiers
+  const { data: tiersResponse } = useQuery({
+    queryKey: ["campaign-tiers", id],
+    queryFn: () => getSponsorshipTiers(id),
+    enabled: !!id,
+  });
+
+  const existingTiers = tiersResponse?.data || [];
+
+  // Fetch tier definitions
+  const { data: tierDefinitionsRes } = useQuery({
+    queryKey: ["tier-definitions"],
+    queryFn: getSponsorshipTierDefinitions,
+  });
+
+  const tierOrder: Array<TierDefinition["name"]> = [
+    "bronze",
+    "silver",
+    "gold",
+    "diamond",
+  ];
+
+  const fallbackTiers: TierDefinition[] = [
+    { id: 1, name: "bronze", display: "Đồng", priority: 1, benefits: "Gói cơ bản" },
+    { id: 2, name: "silver", display: "Bạc", priority: 2, benefits: "Gói nâng cao" },
+    { id: 3, name: "gold", display: "Vàng", priority: 3, benefits: "Gói cao cấp" },
+    { id: 4, name: "diamond", display: "Kim cương", priority: 4, benefits: "Gói cao nhất" },
+  ];
+
+  const tierDefinitions = useMemo(() => {
+    return tierOrder.map((name) => {
+      return (
+        tierDefinitionsRes?.data?.find((tier) => tier.name === name) ||
+        fallbackTiers.find((tier) => tier.name === name)!
+      );
+    });
+  }, [tierDefinitionsRes]);
+
+  // Initialize form data when campaign and tiers load
   useEffect(() => {
     if (campaignData) {
+      const tierFormValues: any = {};
+      
+      existingTiers.forEach(tier => {
+        const fieldName = `${tier.tierName}MinPrice`;
+        tierFormValues[fieldName] = formatCurrencyInput(tier.minPrice.toString());
+      });
+
       setFormData({
         title: campaignData.title,
         description: campaignData.description,
-        goalAmount: campaignData.goalAmount,
-        deadline: campaignData.deadline.split("T")[0], // Format for date input
+        goalAmount: formatCurrencyInput(campaignData.goalAmount),
+        deadline: campaignData.deadline.split("T")[0],
         status: campaignData.status,
+        bronzeMinPrice: tierFormValues.bronzeMinPrice || "",
+        silverMinPrice: tierFormValues.silverMinPrice || "",
+        goldMinPrice: tierFormValues.goldMinPrice || "",
+        diamondMinPrice: tierFormValues.diamondMinPrice || "",
       });
       setImagePreview(campaignData.image);
     }
-  }, [campaignData]);
+  }, [campaignData, existingTiers]);
 
   // Update campaign mutation
   const updateMutation = useMutation({
@@ -122,7 +193,8 @@ export default function EditCampaignPage({
       return;
     }
 
-    if (!formData.goalAmount || parseFloat(formData.goalAmount) <= 0) {
+    const goalAmountValue = parseCurrencyInput(formData.goalAmount);
+    if (!goalAmountValue || goalAmountValue <= 0) {
       toast.error(t.goalAmountMin);
       return;
     }
@@ -132,20 +204,55 @@ export default function EditCampaignPage({
       return;
     }
 
-    const deadlineDate = new Date(formData.deadline);
-    if (deadlineDate <= new Date()) {
-      toast.error(t.deadlineMustBeFutureEdit);
+    // Tier price validation
+    const bronze = parseCurrencyInput(formData.bronzeMinPrice);
+    const silver = parseCurrencyInput(formData.silverMinPrice);
+    const gold = parseCurrencyInput(formData.goldMinPrice);
+    const diamond = parseCurrencyInput(formData.diamondMinPrice);
+
+    if (!Number.isNaN(bronze) && !Number.isNaN(silver) && silver <= bronze) {
+      toast.error("Tối thiểu hạng Bạc phải lớn hơn hạng Đồng");
+      return;
+    }
+    if (!Number.isNaN(silver) && !Number.isNaN(gold) && gold <= silver) {
+      toast.error("Tối thiểu hạng Vàng phải lớn hơn hạng Bạc");
+      return;
+    }
+    if (!Number.isNaN(gold) && !Number.isNaN(diamond) && diamond <= gold) {
+      toast.error("Tối thiểu hạng Kim cương phải lớn hơn hạng Vàng");
       return;
     }
 
     setIsSubmitting(true);
 
+    const tierFieldByName: Record<string, string> = {
+      bronze: "bronzeMinPrice",
+      silver: "silverMinPrice",
+      gold: "goldMinPrice",
+      diamond: "diamondMinPrice",
+    };
+
+    const tiersPayload: CampaignTierInput[] = tierDefinitions
+      .map((tier) => {
+        const minPrice = parseCurrencyInput((formData as any)[tierFieldByName[tier.name]] || "");
+        if (Number.isNaN(minPrice) || minPrice <= 0) {
+          return null;
+        }
+
+        return {
+          tierId: tier.id,
+          minPrice,
+        };
+      })
+      .filter((tier): tier is CampaignTierInput => tier !== null);
+
     const submitData = {
       title: formData.title.trim(),
       description: formData.description.trim(),
-      goalAmount: parseFloat(formData.goalAmount),
+      goalAmount: goalAmountValue,
       deadline: formData.deadline,
       status: formData.status as CampaignStatus,
+      tiers: tiersPayload,
       ...(selectedImage && { image: selectedImage }),
     };
 
@@ -250,205 +357,247 @@ export default function EditCampaignPage({
               </div>
 
               {/* Edit Form */}
-              <div className="max-w-4xl mx-auto">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Basic Information */}
-                  <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                      {t.basicInformationSection}
-                    </h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
-                          {t.campaignTitleRequiredEdit}
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.title}
-                          onChange={(e) =>
-                            handleInputChange("title", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
-                          placeholder={t.enterCampaignTitle}
-                          required
-                        />
-                      </div>
+              <div className="">
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+                  <div className="lg:col-span-2 space-y-6">
+                    {/* Basic Information */}
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconMoneybag className="h-5 w-5" />
+                        {t.basicInformationSection}
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                            {t.campaignTitleRequiredEdit}
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.title}
+                            onChange={(e) =>
+                              handleInputChange("title", e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            placeholder={t.enterCampaignTitle}
+                            required
+                          />
+                        </div>
 
-                      <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
-                          {t.descriptionRequiredEdit}
-                        </label>
-                        <textarea
-                          value={formData.description}
-                          onChange={(e) =>
-                            handleInputChange("description", e.target.value)
-                          }
-                          rows={4}
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
-                          placeholder={t.describeCampaignEdit}
-                          required
-                        />
+                        <div>
+                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                            {t.descriptionRequiredEdit}
+                          </label>
+                          <textarea
+                            value={formData.description}
+                            onChange={(e) =>
+                              handleInputChange("description", e.target.value)
+                            }
+                            rows={4}
+                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            placeholder={t.describeCampaignEdit}
+                            required
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Financial & Status */}
-                  <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                      {t.financialStatusDetails}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
-                          {t.goalAmountRequiredEdit}
-                        </label>
-                        <input
-                          type="number"
-                          value={formData.goalAmount}
-                          onChange={(e) =>
-                            handleInputChange("goalAmount", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
-                          placeholder={t.goalAmountPlaceholderEdit}
-                          min="1"
-                          required
-                        />
+                    {/* Financial & Status */}
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                        {t.financialStatusDetails}
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                            {t.goalAmountRequiredEdit} (VND)
+                          </label>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={formData.goalAmount}
+                            onChange={(e) =>
+                              handleInputChange("goalAmount", formatCurrencyInput(e.target.value))
+                            }
+                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            placeholder={t.goalAmountPlaceholderEdit}
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                            {t.deadlineRequiredEdit}
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.deadline}
+                            onChange={(e) =>
+                              handleInputChange("deadline", e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                            {t.statusRequiredEdit}
+                          </label>
+                          <select
+                            value={formData.status}
+                            onChange={(e) =>
+                              handleInputChange("status", e.target.value)
+                            }
+                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                          >
+                            <option value="DRAFT">Draft</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="PAUSED">Paused</option>
+                            <option value="COMPLETED">Completed</option>
+                            <option value="CANCELLED">Cancelled</option>
+                          </select>
+                        </div>
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
-                          {t.deadlineRequiredEdit}
-                        </label>
-                        <input
-                          type="date"
-                          value={formData.deadline}
-                          onChange={(e) =>
-                            handleInputChange("deadline", e.target.value)
+                    {/* Campaign Image */}
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                        {t.campaignImageLabel}
+                      </h3>
+                      <div className="space-y-4">
+                        <div
+                          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#d9534f] transition-colors cursor-pointer"
+                          onClick={() =>
+                            document.getElementById("image-upload")?.click()
                           }
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
-                          {t.statusRequiredEdit}
-                        </label>
-                        <select
-                          value={formData.status}
-                          onChange={(e) =>
-                            handleInputChange("status", e.target.value)
-                          }
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
                         >
-                          <option value="DRAFT">Draft</option>
-                          <option value="ACTIVE">Active</option>
-                          <option value="PAUSED">Paused</option>
-                          <option value="COMPLETED">Completed</option>
-                        </select>
+                          {imagePreview ? (
+                            <div className="space-y-4">
+                              <div className="relative w-full h-48 mx-auto">
+                                <img
+                                  src={imagePreview}
+                                  alt="Campaign preview"
+                                  className="w-full h-full object-cover rounded-lg border border-gray-200"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedImage(null);
+                                    setImagePreview(campaignData.image);
+                                  }}
+                                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                >
+                                  <IconX className="h-4 w-4" />
+                                </button>
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {selectedImage
+                                    ? selectedImage.name
+                                    : t.currentImageEdit}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {t.clickToChangeImage}
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                                <IconUpload className="h-6 w-6 text-gray-400" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {t.clickToUploadImageEdit}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {t.imageRequirements}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <input
+                          id="image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+
+                        <p className="text-xs staff-text-secondary">
+                          {t.uploadCampaignImageOptionalEdit}
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Campaign Image */}
-                  <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4">
-                      {t.campaignImageLabel}
-                    </h3>
-                    <div className="space-y-4">
-                      <div
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#d9534f] transition-colors cursor-pointer"
-                        onClick={() =>
-                          document.getElementById("image-upload")?.click()
-                        }
+                  {/* Right Column - Sponsorship Tiers */}
+                  <div className="space-y-6">
+                    <div className="staff-card p-6">
+                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <IconMoneybag className="h-5 w-5" />
+                        Thông tin tài trợ
+                      </h3>
+                      <div className="space-y-4">
+                        {tierDefinitions.map((tier) => {
+                          const fieldName = `${tier.name}MinPrice` as any;
+
+                          return (
+                            <div key={tier.id} className="border border-[#e6e2da] p-3 bg-[#fcfbf8]">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-semibold text-gray-800">
+                                  {tier.display}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mb-2">{tier.benefits}</p>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={(formData as any)[fieldName]}
+                                  onChange={(e) =>
+                                    handleInputChange(fieldName, formatCurrencyInput(e.target.value))
+                                  }
+                                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#d9534f] pr-8"
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">đ</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons moved here for visibility or kept below */}
+                    <div className="flex flex-col gap-3 pt-6 border-t border-[#e6e2da]">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || updateMutation.isPending}
+                        className="w-full px-6 py-3 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
-                        {imagePreview ? (
-                          <div className="space-y-4">
-                            <div className="relative w-full h-48 mx-auto">
-                              <img
-                                src={imagePreview}
-                                alt="Campaign preview"
-                                className="w-full h-full object-cover rounded-lg border border-gray-200"
-                              />
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedImage(null);
-                                  setImagePreview(campaignData.image);
-                                }}
-                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                              >
-                                <IconX className="h-4 w-4" />
-                              </button>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">
-                                {selectedImage
-                                  ? selectedImage.name
-                                  : t.currentImageEdit}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {t.clickToChangeImage}
-                              </p>
-                            </div>
-                          </div>
+                        {isSubmitting || updateMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            {t.updatingCampaign}
+                          </>
                         ) : (
-                          <div className="space-y-2">
-                            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                              <IconUpload className="h-6 w-6 text-gray-400" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">
-                                {t.clickToUploadImageEdit}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {t.imageRequirements}
-                              </p>
-                            </div>
-                          </div>
+                          <>
+                            <IconCheck className="h-4 w-4" />
+                            {t.updateCampaignBtn}
+                          </>
                         )}
-                      </div>
-
-                      <input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
-
-                      <p className="text-xs staff-text-secondary">
-                        {t.uploadCampaignImageOptionalEdit}
-                      </p>
+                      </button>
+                      <Link
+                        href={`/dashboard/staff/campaigns/${id}`}
+                        className="w-full px-6 py-3 border border-[#e6e2da] staff-text-primary hover:bg-gray-50 transition-colors text-center"
+                      >
+                        {t.cancel}
+                      </Link>
                     </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
-                    <Link
-                      href={`/dashboard/staff/campaigns/${id}`}
-                      className="px-6 py-2 border border-[#e6e2da] staff-text-primary hover:bg-gray-50 transition-colors"
-                    >
-                      {t.cancel}
-                    </Link>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || updateMutation.isPending}
-                      className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {isSubmitting || updateMutation.isPending ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          {t.updatingCampaign}
-                        </>
-                      ) : (
-                        <>
-                          <IconCheck className="h-4 w-4" />
-                          {t.updateCampaignBtn}
-                        </>
-                      )}
-                    </button>
                   </div>
                 </form>
               </div>

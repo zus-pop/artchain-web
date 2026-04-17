@@ -57,6 +57,8 @@ function RoundDetailContent() {
     "ALL" | "PENDING" | "ACCEPTED" | "REJECTED"
   >("PENDING");
 
+  const [reviewTab, setReviewTab] = useState<"NORMAL" | "WARNING">("NORMAL");
+
   const [selectedPaintingId, setSelectedPaintingId] = useState<string | null>(
     null
   );
@@ -115,6 +117,11 @@ function RoundDetailContent() {
   });
 
   const submissions: Submission[] = submissionsData?.data || [];
+
+  const displaySubmissions = submissions.filter((s) => {
+    if (reviewTab === "WARNING") return s.isFlagged;
+    return !s.isFlagged;
+  });
 
   // Accept multiple submissions mutation
   const acceptMultipleMutation = useMutation({
@@ -388,18 +395,23 @@ function RoundDetailContent() {
   };
 
   const getStatusCounts = () => {
-    const all = submissions.length;
-    const pending = submissions.filter(
+    const tabFiltered = submissions.filter((s) => 
+      reviewTab === "WARNING" ? s.isFlagged : !s.isFlagged
+    );
+    
+    const all = tabFiltered.length;
+    const pending = tabFiltered.filter(
       (s: Submission) => s.status === "PENDING"
     ).length;
-    const accepted = submissions.filter(
+    const accepted = tabFiltered.filter(
       (s: Submission) => s.status === "ACCEPTED"
     ).length;
-    const rejected = submissions.filter(
+    const rejected = tabFiltered.filter(
       (s: Submission) => s.status === "REJECTED"
     ).length;
+    const flagged = submissions.filter((s: Submission) => s.isFlagged).length;
 
-    return { all, pending, accepted, rejected };
+    return { all, pending, accepted, rejected, flagged };
   };
 
   const counts = getStatusCounts();
@@ -607,6 +619,44 @@ function RoundDetailContent() {
               </div>
 
               {/* Submissions Section */}
+              <div className="flex border-b border-[#e6e2da] mb-2">
+                <button
+                  onClick={() => {
+                    setReviewTab("NORMAL");
+                    // When switching back to Normal, if not ROUND_2, default to PENDING
+                    if (!round?.name?.toUpperCase().includes("ROUND_2")) {
+                      setSelectedStatus("PENDING");
+                    }
+                  }}
+                  className={`px-6 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                    reviewTab === "NORMAL"
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <IconClock className={`h-4 w-4 ${reviewTab === "NORMAL" ? "text-blue-600" : "text-gray-400"}`} />
+                  {t.normalReview}
+                </button>
+                <button
+                  onClick={() => {
+                    setReviewTab("WARNING");
+                  }}
+                  className={`px-6 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                    reviewTab === "WARNING"
+                      ? "border-red-600 text-red-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <IconAlertTriangle className={`h-4 w-4 ${reviewTab === "WARNING" ? "text-red-600" : "text-gray-400"}`} />
+                  {t.warningPaintings}
+                  {counts.flagged > 0 && (
+                    <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full border border-red-200">
+                      {counts.flagged}
+                    </span>
+                  )}
+                </button>
+              </div>
+
               {round.name.toUpperCase().includes("ROUND_2") ? (
                 // ROUND_2 Layout - Show all submissions with status filters
                 <div className="staff-card p-6">
@@ -687,7 +737,7 @@ function RoundDetailContent() {
                     <div className="text-center py-8 staff-text-secondary">
                       {t.roundLoadingSubmissions}
                     </div>
-                  ) : submissions.length > 0 ? (
+                  ) : displaySubmissions.length > 0 ? (
                     <div 
                       ref={containerRef}
                       onMouseDown={handleMouseDown}
@@ -705,7 +755,7 @@ function RoundDetailContent() {
                           }}
                         />
                       )}
-                      {submissions.map((submission: Submission) => (
+                      {displaySubmissions.map((submission: Submission) => (
                         <div
                           key={submission.paintingId}
                           data-selectable-id={submission.paintingId}
@@ -844,11 +894,13 @@ function RoundDetailContent() {
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <h3 className="text-xl font-bold staff-text-primary flex items-center gap-2">
-                          <div className="w-3 h-3 bg-orange-500"></div>
-                          {t.pendingReview} ({counts.pending})
+                          <div className={`w-3 h-3 ${reviewTab === "WARNING" ? "bg-red-500 animate-pulse" : "bg-orange-500"}`}></div>
+                          {reviewTab === "WARNING" ? t.warningPaintings : t.pendingReview} ({reviewTab === "WARNING" ? counts.all : counts.pending})
                         </h3>
                         <p className="text-sm staff-text-secondary mt-1">
-                          {t.submissionsAwaitingReview}
+                          {reviewTab === "WARNING" 
+                            ? (t.flaggedSubmissionsDescription || "Review paintings flagged for potential issues") 
+                            : t.submissionsAwaitingReview}
                         </p>
                       </div>
 
@@ -882,7 +934,7 @@ function RoundDetailContent() {
                       <div className="text-center py-8 staff-text-secondary">
                         {t.roundLoadingSubmissions}
                       </div>
-                    ) : counts.pending > 0 ? (
+                    ) : displaySubmissions.length > 0 ? (
                       <div 
                         ref={containerRef}
                         onMouseDown={handleMouseDown}
@@ -900,7 +952,7 @@ function RoundDetailContent() {
                             }}
                           />
                         )}
-                        {submissions.map((submission: Submission) => (
+                        {displaySubmissions.map((submission: Submission) => (
                           <div
                             key={submission.paintingId}
                             data-selectable-id={submission.paintingId}

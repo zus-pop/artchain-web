@@ -21,125 +21,103 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../hooks";
 
-const data = {
-  user: {
-    name: "Admin User",
-    email: "admin@artchain.com",
-    avatar: "/avatars/admin.jpg",
-  },
-  navMain: [
-    {
-      title: "Bảng điều khiển",
-      url: "/dashboard/admin",
-      icon: IconDashboard,
-    },
-    {
-      title: "Quản lý tài khoản",
-      url: "/dashboard/admin/accounts",
-      icon: IconUsers,
-      items: [
-        {
-          title: "Tất cả người dùng",
-          url: "/dashboard/admin/accounts",
-        },
-        {
-          title: "Người tham gia",
-          url: "/dashboard/admin/accounts/competitors",
-        },
-        {
-          title: "Người giám hộ",
-          url: "/dashboard/admin/accounts/guardians",
-        },
-        {
-          title: "Nhân viên",
-          url: "/dashboard/admin/accounts/staff",
-        },
-      ],
-    },
-    {
-      title: "Phân tích cuộc thi",
-      url: "/dashboard/admin/contests",
-      icon: IconChartBar,
-      items: [
-        {
-          title: "Tổng quan",
-          url: "/dashboard/admin/statistics",
-        },
-        {
-          title: "Phân tích người dùng",
-          url: "/dashboard/admin/statistics/users",
-        },
-        {
-          title: "Phân tích cuộc thi",
-          url: "/dashboard/admin/statistics/contests",
-        },
-        {
-          title: "Phân tích báo cáo",
-          url: "/dashboard/admin/statistics/reports",
-        },
-      ],
-    },
-    // {
-    //   title: "Quản lý báo cáo",
-    //   url: "/dashboard/admin/reports",
-    //   icon: IconReport,
-    //   items: [
-    //     {
-    //       title: "Báo cáo người dùng",
-    //       url: "/dashboard/admin/reports",
-    //     },
-    //     {
-    //       title: "Báo cáo đang chờ",
-    //       url: "/dashboard/admin/reports/pending",
-    //     },
-    //     {
-    //       title: "Báo cáo đã giải quyết",
-    //       url: "/dashboard/admin/reports/resolved",
-    //     },
-    //   ],
-    // },
-  ],
-  navSecondary: [],
-};
-
 export function AdminSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isHydrated, isLoading } = useAuth();
+
+  const data = React.useMemo(() => ({
+    user: {
+      name: user?.fullName || "Admin User",
+      email: user?.email || "admin@artchain.com",
+      avatar: "/avatars/admin.jpg",
+    },
+    navMain: [
+      {
+        title: "Bảng điều khiển",
+        url: "/dashboard/admin",
+        icon: IconDashboard,
+      },
+      {
+        title: "Quản lý tài khoản",
+        url: "/dashboard/admin/accounts",
+        icon: IconUsers,
+        items: [
+          {
+            title: "Tất cả người dùng",
+            url: "/dashboard/admin/accounts",
+          },
+          {
+            title: "Người tham gia",
+            url: "/dashboard/admin/accounts/competitors",
+          },
+          {
+            title: "Người giám hộ",
+            url: "/dashboard/admin/accounts/guardians",
+          },
+          {
+            title: "Nhân viên",
+            url: "/dashboard/admin/accounts/staff",
+          },
+        ],
+      },
+      {
+        title: "Phân tích cuộc thi",
+        url: "/dashboard/admin/contests",
+        icon: IconChartBar,
+        items: [
+          {
+            title: "Tổng quan",
+            url: "/dashboard/admin/statistics",
+          },
+          {
+            title: "Phân tích người dùng",
+            url: "/dashboard/admin/statistics/users",
+          },
+          {
+            title: "Phân tích cuộc thi",
+            url: "/dashboard/admin/statistics/contests",
+          },
+          {
+            title: "Phân tích báo cáo",
+            url: "/dashboard/admin/statistics/reports",
+          },
+        ],
+      },
+    ],
+    navSecondary: [],
+  }), [user]);
 
   React.useEffect(() => {
-    if (!isAuthenticated) {
+    if (isHydrated && !isLoading && !isAuthenticated) {
       // Redirect to auth page if not authenticated
       router.push("/auth");
       return;
     }
-  }, [isAuthenticated, user, router]);
-
-  if (user) {
-    data.user.name = user.fullName;
-    data.user.email = user.email;
-  }
+  }, [isAuthenticated, isHydrated, isLoading, router]);
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="flex items-center justify-between gap-1 group-data-[state=collapsed]:justify-center">
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:p-1.5!"
+              className="data-[slot=sidebar-menu-button]:p-1.5! hover:bg-transparent! active:bg-transparent! group-data-[state=collapsed]:hidden"
             >
               <Link href="/">
                 <IconShield className="size-5! text-blue-600" />
                 <span className="text-base font-semibold">ArtChain Quản trị</span>
               </Link>
             </SidebarMenuButton>
+            <SidebarTrigger className="-mr-1 border-0 hover:bg-transparent group-data-[state=collapsed]:mr-0" />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>

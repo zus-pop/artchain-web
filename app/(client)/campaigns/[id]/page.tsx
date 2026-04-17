@@ -223,7 +223,7 @@ const CampaignDetailPage = () => {
     setPendingSponsorData(sponsorData);
     setConfirmMeta({
       amount: sponsorshipAmountValue,
-      tierDisplay: activeTier ? activeTier.tierDisplay : 'Chưa đạt mốc',
+      tierDisplay: activeTier ? activeTier.tierDisplay : 'Đồng hành',
       tierName: activeTier?.tierName,
     });
     setConfirmDialogOpen(true);
@@ -277,7 +277,13 @@ const CampaignDetailPage = () => {
                       tiers.map((tier) => (
                         <div
                           key={tier.id}
-                          className={`p-4 rounded-xl border shadow-sm hover:border-[#FF6E1A] transition-all ${getTierConfig(tier.tierName).cardClass}`}
+                          className={`p-4 rounded-xl border shadow-sm hover:shadow-md hover:border-[#FF6E1A] transition-all cursor-pointer group ${getTierConfig(tier.tierName).cardClass}`}
+                          onClick={() => {
+                            setValue('sponsorshipAmount', formatSponsorshipAmountInput(tier.minPrice.toString()), {
+                              shouldDirty: true,
+                              shouldValidate: true,
+                            });
+                          }}
                         >
                           <div className="flex justify-between items-center">
                             <span
@@ -288,6 +294,12 @@ const CampaignDetailPage = () => {
                               })}
                               {tier.tierDisplay}
                             </span>
+                            <div className="flex flex-col items-end">
+                              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Tối thiểu</span>
+                              <span className="text-sm font-black text-gray-900">
+                                {new Intl.NumberFormat('vi-VN').format(tier.minPrice)}<span className="text-xs ml-0.5">đ</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
                       ))

@@ -61,27 +61,9 @@ const getCampaignSchema = (t: Lang) =>
     deadline: z.string().min(1, t.deadlineRequired),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
     bronzeMinPrice: z.string().optional(),
-    silverMinPrice: z
-      .string()
-      .min(1, "Mức Bạc phải lớn hơn hoặc bằng 1.000đ")
-      .refine((value) => {
-        const amount = parseCurrencyInput(value);
-        return !Number.isNaN(amount) && amount >= 1000;
-      }, "Mức Bạc phải lớn hơn hoặc bằng 1.000đ"),
-    goldMinPrice: z
-      .string()
-      .min(1, "Mức Vàng phải lớn hơn hoặc bằng 1.000đ")
-      .refine((value) => {
-        const amount = parseCurrencyInput(value);
-        return !Number.isNaN(amount) && amount >= 1000;
-      }, "Mức Vàng phải lớn hơn hoặc bằng 1.000đ"),
-    diamondMinPrice: z
-      .string()
-      .min(1, "Mức Kim cương phải lớn hơn hoặc bằng 1.000đ")
-      .refine((value) => {
-        const amount = parseCurrencyInput(value);
-        return !Number.isNaN(amount) && amount >= 1000;
-      }, "Mức Kim cương phải lớn hơn hoặc bằng 1.000đ"),
+    silverMinPrice: z.string().optional(),
+    goldMinPrice: z.string().optional(),
+    diamondMinPrice: z.string().optional(),
     image: z
       .any()
       .refine((file) => file instanceof File && file.size > 0, t.imageRequired),
@@ -97,21 +79,21 @@ const getCampaignSchema = (t: Lang) =>
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["silverMinPrice"],
-        message: "Mức giá hạng Bạc (Ưu tiên 2) phải lớn hơn mức Đồng (Ưu tiên 1)",
+        message: "Tối thiểu hạng Bạc phải lớn hơn hạng Đồng",
       });
     }
     if (!Number.isNaN(silver) && !Number.isNaN(gold) && gold <= silver) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["goldMinPrice"],
-        message: "Mức giá hạng Vàng (Ưu tiên 3) phải lớn hơn mức Bạc (Ưu tiên 2)",
+        message: "Tối thiểu hạng Vàng phải lớn hơn hạng Bạc",
       });
     }
     if (!Number.isNaN(gold) && !Number.isNaN(diamond) && diamond <= gold) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["diamondMinPrice"],
-        message: "Mức giá hạng Kim cương (Ưu tiên 4) phải lớn hơn mức Vàng (Ưu tiên 3)",
+        message: "Tối thiểu hạng Kim cương phải lớn hơn hạng Vàng",
       });
     }
   });
@@ -575,7 +557,7 @@ export default function CreateCampaignPage() {
                 <div className="bg-white border border-[#e6e2da] p-6">
                   <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
                     <IconMoneybag className="h-5 w-5" />
-Hạng mục tài trợ
+Thông tin tài trợ
                   </h3>
                   <div className="space-y-4">
                     {tierDefinitions.map((tier) => {

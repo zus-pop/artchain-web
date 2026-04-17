@@ -81,7 +81,7 @@ export const translations = {
     prize: "Giải thưởng",
     participants: "Thí sinh tham gia",
     deadline: "Hạn nộp",
-    status: "Đang mở",
+    status: "Trạng thái",
 
     // OnboardingFeatures
     contestsTitle: "Cuộc Thi",
@@ -269,6 +269,8 @@ export const translations = {
     noPendingSubmissions: "Không có bài nộp đang chờ để duyệt.",
     confirmAcceptSubmission: "Bạn có chắc chắn muốn chấp nhận bài nộp này?",
     confirmRejectSubmission: "Bạn có chắc chắn muốn từ chối bài nộp này?",
+    normalReview: "Tranh chờ duyệt",
+    warningPaintings: "Tranh bị cảnh báo",
 
     // Selection and Bulk Actions
     selectAll: "Chọn Tất Cả",
@@ -1608,6 +1610,8 @@ export const translations = {
       "Submissions awaiting approval or rejection from you",
     allCaughtUp: "All caught up!",
     noPendingSubmissions: "No pending submissions to review.",
+    normalReview: "Normal Review",
+    warningPaintings: "Flagged Paintings",
     confirmAcceptSubmission: "Are you sure you want to accept this submission?",
     confirmRejectSubmission: "Are you sure you want to reject this submission?",
 

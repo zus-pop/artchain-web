@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  IconBriefcase,
   IconDashboard,
   IconFileText,
   IconMoneybag,
@@ -11,9 +10,9 @@ import {
 import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavSettings } from "@/components/nav-settings";
-import { NavUser } from "@/components/nav-user";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { IconLogout } from "@tabler/icons-react";
+import { useAuthStore } from "@/store";
 import {
   Sidebar,
   SidebarContent,
@@ -22,6 +21,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useClientAuth } from "@/hooks";
 import { useTranslation } from "@/lib/i18n";
@@ -32,13 +32,14 @@ import { useRouter } from "next/navigation";
 export function StaffSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const { isAuthenticated, user, isHydrated, isLoading } = useClientAuth();
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
 
-  const data = {
+  const data = React.useMemo(() => ({
     user: {
-      name: "Staff User",
-      email: "staff@artchain.com",
+      name: user?.fullName || "Staff User",
+      email: user?.email || "staff@artchain.com",
       avatar: "/avatars/staff.jpg",
     },
     navMain: [
@@ -47,38 +48,6 @@ export function StaffSidebar({
         url: "/dashboard/staff",
         icon: IconDashboard,
       },
-      // {
-      //   title: t.financeManagement,
-      //   url: "/dashboard/staff/finance",
-      //   icon: IconMoneybag,
-      // },
-      // {
-      //   title: t.competitorManagement,
-      //   url: "/dashboard/staff/competitors",
-      //   icon: IconUsers,
-      //   items: [
-      //     {
-      //       title: "All Competitors",
-      //       url: "/dashboard/staff/competitors",
-      //     },
-      //     {
-      //       title: "Search & Filter",
-      //       url: "/dashboard/staff/competitors/search",
-      //     },
-      //     {
-      //       title: "Paintings - Pending Review",
-      //       url: "/dashboard/staff/competitors/paintings/pending",
-      //     },
-      //     {
-      //       title: "Paintings - Approved",
-      //       url: "/dashboard/staff/competitors/paintings/approved",
-      //     },
-      //     {
-      //       title: "Paintings - Rejected",
-      //       url: "/dashboard/staff/competitors/paintings/rejected",
-      //     },
-      //   ],
-      // },
       {
         title: t.contestManagement,
         url: "/dashboard/staff/contests",
@@ -167,7 +136,7 @@ export function StaffSidebar({
       {
         title: t.auctionManagement,
         url: "/dashboard/staff/auctions",
-        icon: IconTrophy, // Using IconTrophy as a fallback if IconGavel is not available, or I can try to import it
+        icon: IconTrophy,
         items: [
           {
             title: t.allAuctions,
@@ -186,49 +155,68 @@ export function StaffSidebar({
       },
     ],
     navSecondary: [],
-  };
+  }), [t, user]);
 
   const router = useRouter();
-  const { isAuthenticated, user } = useClientAuth();
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    router.replace("/auth");
+  };
 
   React.useEffect(() => {
-    if (!isAuthenticated) {
+    if (isHydrated && !isLoading && !isAuthenticated) {
       // Redirect to auth page if not authenticated
       router.push("/auth");
       return;
     }
-  }, [isAuthenticated, user, router]);
-
-  if (user) {
-    data.user.name = user.fullName;
-    data.user.email = user.email;
-  }
+  }, [isAuthenticated, isHydrated, isLoading, router]);
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="flex items-center justify-between gap-1 group-data-[state=collapsed]:justify-center">
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:p-1.5!"
+              size="lg"
+              className="data-[slot=sidebar-menu-button]:p-1.5! hover:bg-transparent! active:bg-transparent! hover:text-inherit! active:text-inherit! hover:opacity-100! opacity-100! group-data-[state=collapsed]:hidden"
             >
-              <Link href="/">
-                <IconBriefcase className="size-5! text-blue-600" />
-                <span className="text-base font-semibold">
-                  {t.artChainStaff}
-                </span>
+              <Link href="/dashboard/staff">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage src={data.user.avatar} alt={data.user.name} />
+                  <AvatarFallback className="rounded-lg bg-transparent! hover:bg-transparent!">ST</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold text-blue-600">
+                    {t.artChainStaff}
+                  </span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    {data.user.name}
+                  </span>
+                </div>
               </Link>
             </SidebarMenuButton>
+            <SidebarTrigger className="-mr-1 border-0 hover:bg-transparent group-data-[state=collapsed]:mr-0" />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-        <NavSettings />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              onClick={handleLogout}
+              className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+            >
+              <IconLogout className="size-5" />
+              <span className="font-medium group-data-[state=collapsed]:hidden">Log out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   );
