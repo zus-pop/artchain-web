@@ -22,6 +22,7 @@ export interface AuctionPainting {
     roundId?: number;
     contestId?: number;
     competitorId: string;
+    competitorName?: string;
     description?: string;
     title: string;
     imageUrl: string | null;

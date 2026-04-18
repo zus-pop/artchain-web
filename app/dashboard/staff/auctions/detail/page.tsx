@@ -27,6 +27,7 @@ import {
   IconX,
   IconUsers,
   IconCircleCheck,
+  IconSend,
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -316,6 +317,13 @@ function AuctionDetailContent() {
                       {t.endAuction}
                     </button>
                   )}
+                  <Link 
+                    href={`/dashboard/staff/auctions/promote?id=${auctionId}`}
+                    className="staff-btn-secondary flex items-center justify-center gap-2 py-3 border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 transition-all font-black uppercase tracking-widest text-[10px]"
+                  >
+                    <IconSend className="h-5 w-5" />
+                    {t.promoteAuction}
+                  </Link>
                 </div>
               </div>
             </div>

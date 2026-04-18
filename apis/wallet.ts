@@ -28,6 +28,8 @@ export interface WalletTransaction {
   note: string;
   createdAt: string;
   updatedAt: string;
+  walletImpact: "DEBIT" | "CREDIT" | "NONE";
+  signedAmount: number;
 }
 
 export interface WalletTransactionResponse {

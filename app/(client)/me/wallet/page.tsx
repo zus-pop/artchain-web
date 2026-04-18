@@ -7,6 +7,9 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronLeft,
+  Clock,
+  Check,
+  X,
   CreditCard,
   Eye,
   History,
@@ -24,6 +27,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useMeQuery } from "@/hooks/useMeQuery";
 import { 
   addBankAccount, 
@@ -40,6 +48,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const weekData = [80, 130, 100, 170, 140, 185, 150];
 
@@ -54,7 +63,8 @@ export default function WalletPage() {
   const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
   
   const [newBank, setNewBank] = useState({ bankName: "", accountNumber: "", accountHolderName: "" });
-  const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [txLimit, setTxLimit] = useState(10);
+  const [bankToDelete, setBankToDelete] = useState<any>(null);
 
   const queryClient = useQueryClient();
   const { data: userData, refetch } = useMeQuery();
@@ -85,6 +95,7 @@ export default function WalletPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bank-accounts"] });
       toast.success("Đã xóa tài khoản ngân hàng thành công!");
+      setBankToDelete(null);
     },
     onError: (error: any) => {
       toast.error(error?.message || "Không thể xóa tài khoản ngân hàng");
@@ -108,9 +119,9 @@ export default function WalletPage() {
   const [topupAmount, setTopupAmount] = useState("200000");
   const [isTopupLoading, setIsTopupLoading] = useState(false);
 
-  const { data: transactionsData, isLoading: isTransactionsLoading } = useQuery({
-    queryKey: ["wallet-transactions"],
-    queryFn: () => getWalletTransactions(userData!.userId),
+  const { data: transactionsData, isLoading: isTransactionsLoading, isFetching: isTransactionsFetching } = useQuery({
+    queryKey: ["wallet-transactions", txLimit],
+    queryFn: () => getWalletTransactions(userData!.userId, 1, txLimit),
     enabled: !!userData,
   });
 
@@ -245,9 +256,9 @@ export default function WalletPage() {
                   <History size={18} className="text-[#FF6E1A]" />
                   Giao dịch gần đây
                 </h3>
-                <button className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">
+                {/* <button className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600 hover:bg-gray-50">
                   Gần nhất <ChevronDown size={14} />
-                </button>
+                </button> */}
               </div>
 
               <div className="space-y-3">
@@ -267,12 +278,22 @@ export default function WalletPage() {
                 ) : (
                   <>
                     <div className="divide-y divide-gray-100">
-                      {(showAllTransactions 
-                        ? transactionsData.data 
-                        : transactionsData.data.slice(0, 3)
-                      ).map((tx) => {
-                        const isIncome = tx.note.toUpperCase().includes("NAP TIEN") || tx.note.toUpperCase().includes("HOÀN TIỀN");
-                        const Icon = isIncome ? ArrowUpRight : ArrowDownLeft;
+                      {(transactionsData.data || []).map((tx) => {
+                        const impact = tx.walletImpact;
+                        const status = tx.status;
+
+                        let Icon = Clock;
+                        let iconColor = "bg-amber-50 text-amber-600";
+                        if (status === "SUCCESS") {
+                          Icon = Check;
+                          iconColor = "bg-emerald-50 text-emerald-600";
+                        } else if (status === "FAILED" || status === "REJECTED") {
+                          Icon = X;
+                          iconColor = "bg-red-50 text-red-600";
+                        }
+
+                        const amountColor = impact === "NONE" ? "text-gray-400 opacity-60" : impact === "CREDIT" ? "text-emerald-600" : "text-red-500";
+                        const sign = impact === "CREDIT" ? "+" : impact === "DEBIT" ? "-" : "";
 
                         return (
                           <div
@@ -280,15 +301,21 @@ export default function WalletPage() {
                             className="flex items-center justify-between bg-white py-4 transition first:pt-0 last:pb-0"
                           >
                             <div className="flex items-center gap-4">
-                              <div
-                                className={`flex h-11 w-11 items-center justify-center rounded-xl ${
-                                  isIncome
-                                    ? "bg-emerald-100 text-emerald-600"
-                                    : "bg-orange-100 text-[#FF6E1A]"
-                                }`}
-                              >
-                                <Icon size={18} />
-                              </div>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={`flex h-11 w-11 cursor-default items-center justify-center rounded-xl ${iconColor}`}
+                                  >
+                                    <Icon size={18} />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  {status === "SUCCESS" ? "Thành công" : 
+                                   status === "PENDING" ? "Đang xử lý" : 
+                                   status === "FAILED" ? "Thất bại" : 
+                                   status === "REJECTED" ? "Từ chối" : status}
+                                </TooltipContent>
+                              </Tooltip>
                               <div>
                                 <p className="text-sm font-bold text-gray-900">{tx.note}</p>
                                 <p className="text-xs font-medium text-gray-500">
@@ -300,34 +327,27 @@ export default function WalletPage() {
                             <div className="flex items-center gap-4">
                               <div className="text-right">
                                 <p
-                                  className={`text-sm font-black ${
-                                    isIncome ? "text-emerald-600" : "text-gray-900"
-                                  }`}
+                                  className={`text-sm font-black ${amountColor}`}
                                 >
-                                  {isIncome ? "+" : "-"}
+                                  {sign}
                                   {new Intl.NumberFormat("vi-VN").format(tx.amount)}đ
                                 </p>
-                                <p className={`text-[10px] font-bold ${
-                                  tx.status === "SUCCESS" ? "text-emerald-500" : 
-                                  tx.status === "PENDING" ? "text-amber-500" : "text-red-500"
-                                }`}>
-                                  {tx.status}
-                                </p>
-                              </div>
-                              <button className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+                                </div>
+                              {/* <button className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                                 <MoreHorizontal size={16} />
-                              </button>
+                              </button> */}
                             </div>
                           </div>
                         );
                       })}
                     </div>
-                    {transactionsData.data.length > 3 && (
+                    {transactionsData.pagination && transactionsData.pagination.total > txLimit && (
                       <button 
-                        onClick={() => setShowAllTransactions(!showAllTransactions)}
-                        className="mt-4 w-full rounded-lg border border-gray-100 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+                        onClick={() => setTxLimit(prev => prev + 10)}
+                        disabled={isTransactionsFetching}
+                        className="mt-4 w-full rounded-lg border border-gray-100 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50"
                       >
-                        {showAllTransactions ? "Thu gọn" : `Xem thêm giao dịch`}
+                        {isTransactionsFetching ? "Đang tải thêm..." : "Xem thêm giao dịch"}
                       </button>
                     )}
                   </>
@@ -355,11 +375,7 @@ export default function WalletPage() {
                         </div>
                       </div>
                       <button 
-                        onClick={() => {
-                          if (confirm("Bạn có chắc chắn muốn xóa tài khoản ngân hàng này?")) {
-                            deleteBankMutation.mutate(bank.bankAccountId);
-                          }
-                        }}
+                        onClick={() => setBankToDelete(bank)}
                         className="p-2 text-gray-400 hover:text-red-500 transition-all opacity-0 group-hover/bank:opacity-100"
                       >
                         <Trash2 size={16} />
@@ -400,9 +416,13 @@ export default function WalletPage() {
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nhập số tiền cần nạp</p>
                       <div className="relative">
                         <input
-                          type="number"
-                          value={topupAmount}
-                          onChange={(e) => setTopupAmount(e.target.value)}
+                          type="text"
+                          inputMode="numeric"
+                          value={new Intl.NumberFormat("vi-VN").format(Number(topupAmount.replace(/\D/g, "") || 0))}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            setTopupAmount(val);
+                          }}
                           className="w-full rounded-sm border border-gray-100 bg-gray-50 px-5 py-4 text-2xl font-black text-gray-900 outline-none ring-0 focus:border-[#FF6E1A] transition-all"
                           placeholder="0"
                         />
@@ -577,9 +597,13 @@ export default function WalletPage() {
                              </div>
                              <div className="relative">
                                <input
-                                 type="number"
-                                 value={withdrawAmount}
-                                 onChange={(e) => setWithdrawAmount(e.target.value)}
+                                 type="text"
+                                 inputMode="numeric"
+                                 value={new Intl.NumberFormat("vi-VN").format(Number(withdrawAmount.replace(/\D/g, "") || 0))}
+                                 onChange={(e) => {
+                                   const val = e.target.value.replace(/\D/g, "");
+                                   setWithdrawAmount(val);
+                                 }}
                                  className="w-full rounded-sm border border-gray-100 bg-gray-50 px-5 py-4 text-2xl font-black text-gray-900 outline-none ring-0 focus:border-[#FF6E1A] transition-all"
                                  placeholder="0"
                                />
@@ -798,6 +822,26 @@ export default function WalletPage() {
           </section>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={!!bankToDelete}
+        onClose={() => setBankToDelete(null)}
+        onConfirm={() => {
+          if (bankToDelete) {
+            deleteBankMutation.mutate(bankToDelete.bankAccountId);
+          }
+        }}
+        title="Xóa tài khoản ngân hàng"
+        description={
+          <>
+            Bạn có chắc chắn muốn xóa tài khoản <b>{bankToDelete?.bankName} ({bankToDelete?.accountNumber})</b>? 
+            Thao tác này không thể hoàn tác.
+          </>
+        }
+        variant="destructive"
+        confirmText="XÓA NGAY"
+        isLoading={deleteBankMutation.isPending}
+      />
     </div>
   </main>
   );

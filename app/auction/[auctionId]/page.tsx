@@ -473,13 +473,16 @@ export default function AuctionDetailPage() {
   const resolvedPaintingStartTime =
     selectedTiming?.auctionStartTime ?? selectedPainting?.auctionStartTime;
   
-  // Logic for countdown target: 
-  // - If painting is live -> count to its end time
-  // - If painting is waiting -> count to its start time
-  // - Fallback to auction general times
-  const countdownTarget = isPaintingLive 
-    ? resolvedPaintingEndTime
-    : (isPaintingWaiting ? resolvedPaintingStartTime : (isAuctionLive ? auction?.endTime : (auction?.startTime ?? "")));
+  const isAllPaintingsEnded = paintings.length > 0 && paintings.every((p) => 
+    (p.status && ["END", "ENDED", "SOLD"].includes(p.status)) || p.painting?.status === "SOLD"
+  );
+  
+  const countdownTarget = isAllPaintingsEnded
+    ? null 
+    : (isPaintingLive 
+        ? resolvedPaintingEndTime
+        : (isPaintingWaiting ? resolvedPaintingStartTime : (isAuctionLive ? auction?.endTime : (auction?.startTime ?? "")))
+      );
   
   const countdown = useCountdown(countdownTarget || "", serverTimeOffsetMs, () => {
     // When countdown expires (painting ends or starts), trigger syncs
@@ -574,20 +577,19 @@ export default function AuctionDetailPage() {
           )}
 
           {/* Countdown */}
-          {countdownTarget && (
-            <div className={`mt-6 inline-flex items-center gap-3 ${isPaintingWaiting ? "bg-orange-100 text-orange-900" : "bg-[#1a1a1a] text-white"} px-6 py-4 rounded-sm transition-colors`}>
-              <Timer size={20} className={isPaintingWaiting ? "text-orange-600" : "text-[#f07d44]"} />
+          {(countdownTarget || isAllPaintingsEnded) && (
+            <div className={`mt-6 inline-flex items-center gap-3 ${isAllPaintingsEnded ? "bg-gray-100 text-gray-500" : (isPaintingWaiting ? "bg-orange-100 text-orange-900" : "bg-[#1a1a1a] text-white")} px-6 py-4 rounded-sm transition-colors`}>
+              <Timer size={20} className={isAllPaintingsEnded ? "text-gray-400" : (isPaintingWaiting ? "text-orange-600" : "text-[#f07d44]")} />
               <div>
                 <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest flex items-center gap-2">
-                  <span>{isPaintingLive ? "Kết thúc sau" : (isPaintingWaiting ? "Bắt đầu sau" : (isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau"))}</span>
-                  {selectedPainting?.auctionDurationMinutes && (
+                  <span>{isAllPaintingsEnded ? "Phiên đấu giá" : (isPaintingLive ? "Kết thúc sau" : (isPaintingWaiting ? "Bắt đầu sau" : (isAuctionLive ? "Kết thúc sau" : "Bắt đầu sau")))}</span>
+                  {selectedPainting?.auctionDurationMinutes && !isAllPaintingsEnded && (
                     <>
                       <span className="w-1 h-1 rounded-full bg-current opacity-20" />
-                      {/* <span></span> */}
                     </>
                   )}
                 </p>
-                <p className="text-2xl font-black tracking-widest">{formatCountdown(countdown)}</p>
+                <p className="text-2xl font-black tracking-widest">{isAllPaintingsEnded ? "Đã kết thúc" : formatCountdown(countdown)}</p>
               </div>
             </div>
           )}

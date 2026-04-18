@@ -265,6 +265,8 @@ export const translations = {
     pendingReview: "Đang Chờ Duyệt",
     submissionsAwaitingReview:
       "Bài nộp đang chờ phê duyệt hoặc từ chối của bạn",
+    flaggedSubmissionsDescription:
+      "Xem xét các tác phẩm bị hệ thống cảnh báo có vấn đề",
     allCaughtUp: "Đã xử lý xong!",
     noPendingSubmissions: "Không có bài nộp đang chờ để duyệt.",
     confirmAcceptSubmission: "Bạn có chắc chắn muốn chấp nhận bài nộp này?",
@@ -1326,6 +1328,20 @@ export const translations = {
     startingPriceLabelAuction: "Giá Khởi Điểm (VND)",
     searchPaintingsToAddPlaceholder: "Tìm kiếm tranh theo tiêu đề hoặc nghệ sĩ...",
     viewAuctionDetails: "Xem Chi Tiết Đấu Giá",
+
+    // Auction Promotion
+    promoteAuction: "Quảng bá đấu giá",
+    createPromotionPost: "Tạo bài viết quảng bá",
+    auctionPromotionDesc: "Tạo một bài viết công khai để quảng bá phiên đấu giá này và các tác phẩm tiêu biểu.",
+    auctionPromotionTitleLabel: "Thông báo phiên đấu giá mới",
+    promoteNow: "Quảng bá ngay",
+    auctionPromotionSuccess: "Đã tạo bài viết quảng bá thành công!",
+    postPromotionBreadcrumb: "Quảng bá đấu giá",
+    featuredArtworksLabel: "Các tác phẩm tiêu biểu",
+    upcomingAuctionAnnounced: "Một phiên đấu giá mới sắp diễn ra!",
+    thrilledToAnnounceAuction: "Chúng tôi rất vui được giới thiệu các tác phẩm đặc sắc trong phiên đấu giá sắp tới.",
+    auctionTime: "Thời gian đấu giá",
+    auctionSummary: "Tóm tắt đấu giá",
     selectContestPrompt: "Vui lòng chọn một cuộc thi để xem danh sách tranh nhận giải",
     addedToAuction: "Đã nằm trong đấu giá",
     totalBids: "Tổng Lượt Giá",
@@ -1608,6 +1624,7 @@ export const translations = {
     pendingReview: "Pending Review",
     submissionsAwaitingReview:
       "Submissions awaiting approval or rejection from you",
+    flaggedSubmissionsDescription: "Review paintings flagged for potential issues",
     allCaughtUp: "All caught up!",
     noPendingSubmissions: "No pending submissions to review.",
     normalReview: "Normal Review",
@@ -2655,6 +2672,20 @@ export const translations = {
     totalBids: "Total Bids",
     pricingConfiguration: "Pricing Configuration",
     selectPaintingsToConfigure: "Select paintings to configure prices",
+
+    // Auction Promotion
+    promoteAuction: "Promote Auction",
+    createPromotionPost: "Create Promotion Post",
+    auctionPromotionDesc: "Create a public post to promote this auction and its featured paintings.",
+    auctionPromotionTitleLabel: "New Auction Announcement",
+    promoteNow: "Promote Now",
+    auctionSummary: "Auction Summary",
+    auctionPromotionSuccess: "Promotion post created successfully!",
+    postPromotionBreadcrumb: "Promote Auction",
+    featuredArtworksLabel: "Featured Artworks",
+    upcomingAuctionAnnounced: "A new auction session is coming!",
+    thrilledToAnnounceAuction: "We are thrilled to introduce the exceptional artworks in the upcoming auction.",
+    auctionTime: "Auction Time",
     ceilPrice: "Ceiling Price",
     bidStep: "Bid Step",
     auctionDuration: "Duration (Minutes)",

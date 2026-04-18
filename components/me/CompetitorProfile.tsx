@@ -94,11 +94,11 @@ export default function CompetitorProfileScreen({
   // LƯU Ý: Kiểu WhoAmI của bạn có thể không có 'class', bạn cần thêm vào nếu muốn dùng
   const profile = {
     name: authUser?.fullName || "Việt Hoàng",
-    school: authUser?.schoolName || "Trường Tiểu học Nha Trang",
-    class: authUser?.grade ? `Lớp ${authUser.grade}` : "Lớp 5", // Giả sử authUser có 'class'
+    school: authUser?.schoolName || "Trường THCS Nha Trang",
+    class: authUser?.grade ? `Lớp ${authUser.grade}` : "Lớp 6",
     dob: authUser?.birthday
       ? new Date(authUser.birthday).toLocaleDateString("vi-VN")
-      : "15/10/2004",
+      : "15/10/2012",
     ward: authUser?.ward || "Phường Sài Gòn",
     avatarUrl:
       authUser?.avatarUrl ||

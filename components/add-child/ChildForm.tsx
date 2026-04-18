@@ -137,8 +137,8 @@ export function ChildForm({
   // Calculate valid grade range based on birthday
   const getValidGrades = () => {
     if (!watchedBirthday) {
-      // If no birthday selected, show all grades 1-9
-      return Array.from({ length: 9 }, (_, i) => i + 1);
+      // If no birthday selected, show all grades 6-9
+      return Array.from({ length: 4 }, (_, i) => i + 6);
     }
 
     const birthYear = new Date(watchedBirthday).getFullYear();
@@ -148,8 +148,8 @@ export function ChildForm({
     // Expected grade = age - 5 (since grade 1 = 6 years old)
     const expectedGrade = age - 5;
 
-    // For strict validation: only allow grades that match expected age ±1 year
-    const minGrade = Math.max(1, expectedGrade - 1);
+    // For strict validation: only allow grades that match expected age ±1 year, restricted to 6-9
+    const minGrade = Math.max(6, expectedGrade - 1);
     const maxGrade = Math.min(9, expectedGrade + 1);
 
     const validGrades = [];
@@ -159,7 +159,7 @@ export function ChildForm({
 
     return validGrades.length > 0
       ? validGrades
-      : Array.from({ length: 9 }, (_, i) => i + 1);
+      : Array.from({ length: 4 }, (_, i) => i + 6);
   };
 
   const validGrades = getValidGrades();
@@ -313,8 +313,8 @@ export function ChildForm({
                         }}
                         placeholder="Chọn ngày sinh *"
                         error={errors.birthday?.message}
-                        min={`${new Date().getFullYear() - 16}-01-01`}
-                        max={`${new Date().getFullYear() - 5}-12-31`}
+                        min={`${new Date().getFullYear() - 15}-01-01`}
+                        max={`${new Date().getFullYear() - 10}-12-31`}
                       />
                     )}
                   />

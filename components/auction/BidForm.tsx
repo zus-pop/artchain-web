@@ -117,10 +117,13 @@ export default function BidForm({
             </p>
             <div className="relative">
               <input
-                type="number"
-                value={amount}
-                min={minBid}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                type="text"
+                inputMode="numeric"
+                value={new Intl.NumberFormat("vi-VN").format(amount)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "");
+                  setAmount(val ? parseInt(val, 10) : 0);
+                }}
                 className="w-full border-2 border-gray-200 focus:border-[#f07d44] rounded-xl px-4 py-3 text-lg font-black outline-none transition pr-14"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold opacity-30">

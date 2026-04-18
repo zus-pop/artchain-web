@@ -68,7 +68,7 @@ const CampaignCard = ({
   title: string;
   description: string;
 }) => (
-  <div className="flex flex-col">
+  <div className="flex flex-col h-full">
     <img
       src={imgSrc}
       alt={title}
@@ -82,7 +82,7 @@ const CampaignCard = ({
     <div className="text-black text-sm leading-relaxed mb-6 text-center line-clamp-3">
       <ReactMarkdown>{description}</ReactMarkdown>
     </div>
-    <button className="w-full cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
+    <button className="w-full mt-auto cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
       Đăng kí tài trợ <ArrowRightIcon />
     </button>
   </div>
@@ -90,7 +90,7 @@ const CampaignCard = ({
 
 // Skeleton component for CampaignCard
 const SkeletonCampaignCard = () => (
-  <div className="flex flex-col animate-pulse">
+  <div className="flex flex-col h-full animate-pulse">
     <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
     <div className="h-6 bg-gray-300 mb-2 rounded text-center"></div>
     <div className="space-y-2 mb-6">
@@ -98,7 +98,7 @@ const SkeletonCampaignCard = () => (
       <div className="h-4 bg-gray-300 rounded w-3/4"></div>
       <div className="h-4 bg-gray-300 rounded w-1/2"></div>
     </div>
-    <div className="w-full h-10 bg-gray-300 rounded-sm"></div>
+    <div className="w-full h-10 mt-auto bg-gray-300 rounded-sm"></div>
   </div>
 );
 
@@ -666,7 +666,7 @@ export default function Page() {
               {loadingCampaigns
                 ? [0, 1, 2].map((i) => <SkeletonCampaignCard key={i} />)
                 : campaigns.map((c, idx) => (
-                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`}>
+                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`} className="h-full">
                       <CampaignCard
                         imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
                         title={c.title || "Không có tiêu đề"}
@@ -699,7 +699,7 @@ export default function Page() {
                   >
                     {campaigns.map((c, idx) => (
                       <div key={c.campaignId ?? idx} className="min-w-full pr-4">
-                        <Link href={`/campaigns/${c.campaignId}`}>
+                        <Link href={`/campaigns/${c.campaignId}`} className="h-full block">
                           <CampaignCard
                             imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
                             title={c.title || "Không có tiêu đề"}
