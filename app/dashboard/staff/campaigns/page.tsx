@@ -162,9 +162,9 @@ export default function CampaignsPage() {
                         {t.campaignsManagement} (
                         {campaignsResponse?.meta?.total || campaigns.length})
                       </h2>
-                      <p className="text-sm staff-text-secondary mt-1">
+                      {/* <p className="text-sm staff-text-secondary mt-1">
                         {t.manageCampaigns}
-                      </p>
+                      </p> */}
                     </div>
                     <Link
                       href="/dashboard/staff/campaigns/create"
@@ -321,9 +321,9 @@ export default function CampaignsPage() {
                                             <div className="text-sm font-medium staff-text-primary">
                                               {campaign.title}
                                             </div>
-                                            <div className="text-sm staff-text-secondary line-clamp-2">
+                                            {/* <div className="text-sm staff-text-secondary line-clamp-2">
                                               {campaign.description}
-                                            </div>
+                                            </div> */}
                                           </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">

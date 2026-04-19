@@ -3,8 +3,8 @@ import { PaintingStatus } from "./dashboard";
 export interface CreateExhibitionRequest {
   name: string;
   description: string;
-  startDate: string;
-  endDate: string;
+  startDate?: string;
+  endDate?: string;
   status: ExhibitionStatus;
 }
 

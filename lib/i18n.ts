@@ -721,7 +721,7 @@ export const translations = {
     searchExhibitions: "Tìm kiếm triển lãm theo tên hoặc mô tả...",
     totalExhibitions: "Tổng Triển Lãm",
     allExhibitionsText: "Tất cả triển lãm",
-    activeExhibitions: "Triển Lãm Đang Diễn Ra",
+    activeExhibitions: "Đang Diễn Ra",
     paintingsOnDisplay: "Tranh đang trưng bày",
     finishedExhibitions: "Triển lãm đã kết thúc",
     exhibitionsTip:
@@ -1301,14 +1301,14 @@ export const translations = {
     
     // Auction Management
     auctionManagement: "Quản Lý Đấu Giá",
-    allAuctions: "Tất Cả Phiên Đấu Giá",
+    allAuctions: "Tổng Phiên Đấu Giá",
     createAuction: "Tạo Phiên Đấu Giá",
     auctionStatus: "Trạng Thái",
     totalAuctions: "Tổng Phiên Đấu Giá",
-    activeAuctions: "Đấu Giá Đang Diễn Ra",
-    upcomingAuctions: "Đấu Giá Sắp Diễn Ra",
-    completedAuctions: "Đấu Giá Đã Kết Thúc",
-    pendingAuctions: "Đấu Giá Chờ Duyệt",
+    activeAuctions: "Đang Diễn Ra",
+    upcomingAuctions: "Sắp Diễn Ra",
+    completedAuctions: "Đã Kết Thúc",
+    pendingAuctions: "Chờ Duyệt",
     auctionTitle: "Tiêu Đề",
     startingPrice: "Giá Khởi Điểm",
     currentPrice: "Giá Hiện Tại",

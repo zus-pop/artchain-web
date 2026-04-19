@@ -1,7 +1,7 @@
 import React from "react";
 
 export interface StatCard {
-  title: string;
+  title?: string;
   value: string | number;
   subtitle?: string;
   icon: React.ReactNode;
@@ -41,9 +41,11 @@ export function StatsCards({ stats }: StatsCardsProps) {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium staff-text-secondary">
-                {stat.title}
-              </p>
+              {stat.title && (
+                <p className="text-sm font-medium staff-text-secondary">
+                  {stat.title}
+                </p>
+              )}
               <p className="text-3xl font-bold staff-text-primary">
                 {stat.value}
               </p>

@@ -169,14 +169,14 @@ export default function PostsPage() {
                   <h2 className="text-2xl font-bold staff-text-primary">
                     {t.postsManagement} ({totalPosts})
                   </h2>
-                  <p className="text-sm staff-text-secondary mt-1">
+                  {/* <p className="text-sm staff-text-secondary mt-1">
                     {t.manageArtCompetitions}
-                  </p>
-                  <p className="text-xs staff-text-secondary mt-1">
+                  </p> */}
+                  {/* <p className="text-xs staff-text-secondary mt-1">
                     💡 <strong>{t.archivedStatus}</strong>{" "}
                     {t.archivedStatus.toLowerCase()} old content accessible but
                     hidden from main listings for better organization
-                  </p>
+                  </p> */}
                 </div>
                 <Link
                   href="/dashboard/staff/posts/create"
@@ -193,7 +193,7 @@ export default function PostsPage() {
                   {
                     title: t.totalPosts,
                     value: totalPosts,
-                    subtitle: t.allContent,
+                    // subtitle: t.allContent,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "info",
                   },
@@ -201,7 +201,7 @@ export default function PostsPage() {
                     title: t.publishedStatus,
                     value: posts.filter((p: Post) => p.status === "PUBLISHED")
                       .length,
-                    subtitle: t.liveContent,
+                    // subtitle: t.liveContent,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "warning",
                   },
@@ -209,7 +209,7 @@ export default function PostsPage() {
                     title: t.drafts,
                     value: posts.filter((p: Post) => p.status === "DRAFT")
                       .length,
-                    subtitle: t.workInProgress,
+                    // subtitle: t.workInProgress,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "success",
                   },
@@ -222,7 +222,7 @@ export default function PostsPage() {
                         )
                       )
                     ).length,
-                    subtitle: t.uniqueTags,
+                    // subtitle: t.uniqueTags,
                     icon: <IconEye className="h-6 w-6" />,
                     variant: "primary",
                   },

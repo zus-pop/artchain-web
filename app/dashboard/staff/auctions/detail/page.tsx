@@ -242,7 +242,7 @@ function AuctionDetailContent() {
                       </div>
                       <div>
                         <h1 className="text-3xl font-bold staff-text-primary">{auction.title}</h1>
-                        <p className="text-sm staff-text-secondary mt-1">{t.auctionDetail}</p>
+                        {/* <p className="text-sm staff-text-secondary mt-1">{t.auctionDetail}</p> */}
                       </div>
                     </div>
                   </div>

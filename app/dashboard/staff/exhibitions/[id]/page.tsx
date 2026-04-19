@@ -169,9 +169,9 @@ export default function ExhibitionDetailPage({
                               <h1 className="text-3xl font-bold staff-text-primary">
                                 {exhibition.name}
                               </h1>
-                              <p className="text-sm staff-text-secondary mt-1">
+                              {/* <p className="text-sm staff-text-secondary mt-1">
                                 {t.exhibitionDetailsManagement}
-                              </p>
+                              </p> */}
                             </div>
                           </div>
                         </div>
@@ -195,7 +195,7 @@ export default function ExhibitionDetailPage({
                             ></div>
                             {exhibition.status}
                           </span>
-                          <div className="flex items-center gap-2 text-sm staff-text-secondary">
+                          {/* <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconCalendar className="h-4 w-4" />
                             {formatDate({
                               dateString: exhibition.startDate,
@@ -206,7 +206,7 @@ export default function ExhibitionDetailPage({
                               dateString: exhibition.endDate,
                               language: currentLanguage,
                             })}
-                          </div>
+                          </div> */}
                           <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconPhoto className="h-4 w-4" />
                             {exhibition.numberOfPaintings} {t.paintingsText}
@@ -247,7 +247,7 @@ export default function ExhibitionDetailPage({
                 </div>
 
                 {/* Key Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="staff-card p-6">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-blue-100">
@@ -295,7 +295,7 @@ export default function ExhibitionDetailPage({
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -310,12 +310,13 @@ export default function ExhibitionDetailPage({
                           </div>
                           <div>
                             <h2 className="text-xl font-semibold staff-text-primary">
-                              {t.exhibitionPaintingsGallery}
+                              {t.exhibitionPaintingsGallery} ({" "}
+                              {exhibition.exhibitionPaintings?.length || 0}{" "})
                             </h2>
-                            <p className="text-sm staff-text-secondary">
+                            {/* <p className="text-sm staff-text-secondary">
                               {exhibition.exhibitionPaintings?.length || 0}{" "}
                               {t.paintingsCurated}
-                            </p>
+                            </p> */}
                           </div>
                         </div>
                       </div>

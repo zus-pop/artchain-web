@@ -168,12 +168,12 @@ export default function ExhibitionsPage() {
                   <h2 className="text-2xl font-bold staff-text-primary">
                     {t.allExhibitions} ({totalExhibitionsCount})
                   </h2>
-                  <p className="text-sm staff-text-secondary mt-1">
+                  {/* <p className="text-sm staff-text-secondary mt-1">
                     {t.manageExhibitions}
-                  </p>
-                  <p className="text-xs staff-text-secondary mt-1">
+                  </p> */}
+                  {/* <p className="text-xs staff-text-secondary mt-1">
                     {t.exhibitionsTip}
-                  </p>
+                  </p> */}
                 </div>
                 <Link
                   href="/dashboard/staff/exhibitions/create"
@@ -190,14 +190,14 @@ export default function ExhibitionsPage() {
                   {
                     title: t.totalExhibitions,
                     value: totalExhibitionsCount,
-                    subtitle: t.allExhibitionsText,
+                    // subtitle: t.allExhibitionsText,
                     icon: <IconPalette className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
                     title: t.activeExhibitions,
                     value: activeExhibitions,
-                    subtitle: t.currentlyRunning,
+                    // subtitle: t.currentlyRunning,
                     icon: <IconCalendar className="h-6 w-6" />,
                     variant: "warning",
                   },
@@ -261,9 +261,9 @@ export default function ExhibitionsPage() {
                           <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                             {t.paintings}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
+                          {/* <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                             {t.dates}
-                          </th>
+                          </th> */}
                           <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
                             {t.actions}
                           </th>
@@ -292,9 +292,9 @@ export default function ExhibitionsPage() {
                                     <div className="text-sm font-medium staff-text-primary line-clamp-1">
                                       {exhibition.name}
                                     </div>
-                                    <div className="text-sm staff-text-secondary line-clamp-2">
+                                    {/* <div className="text-sm staff-text-secondary line-clamp-2">
                                       {exhibition.description}
-                                    </div>
+                                    </div> */}
                                   </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -307,13 +307,13 @@ export default function ExhibitionsPage() {
                                     {exhibition.status}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                   <div className="flex items-center gap-2">
                                     <IconPalette className="h-4 w-4" />
                                     {exhibition.numberOfPaintings} {t.paintings}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
+                                {/*<td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
                                   <div>
                                     <div>
                                       {t.start}:{" "}
@@ -328,7 +328,7 @@ export default function ExhibitionsPage() {
                                       ).toLocaleDateString()}
                                     </div>
                                   </div>
-                                </td>
+                                </td> */}
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                   <div className="flex items-center justify-end gap-2">
                                     <Link
@@ -362,7 +362,7 @@ export default function ExhibitionsPage() {
                                         <IconCalendar className="h-4 w-4" />
                                       </button>
                                     )}
-                                    {exhibition.status === "ACTIVE" && (
+                                    {/* {exhibition.status === "ACTIVE" && (
                                       <button
                                         onClick={() =>
                                           handleStatusChange(
@@ -378,7 +378,7 @@ export default function ExhibitionsPage() {
                                       >
                                         <IconPalette className="h-4 w-4" />
                                       </button>
-                                    )}
+                                    )} */}
                                     <button
                                       onClick={() =>
                                         handleDeleteExhibition(

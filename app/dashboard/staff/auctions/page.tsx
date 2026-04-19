@@ -23,11 +23,13 @@ import {
   IconChevronsRight,
 } from "@tabler/icons-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
 
 export default function AuctionsManagementPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<AuctionStatus | "ALL">(
     "ALL"
@@ -183,7 +185,7 @@ export default function AuctionsManagementPage() {
                     {t.allAuctions} ({totalEntries})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    {t.manageArtCompetitions} {/* Fallback translation */}
+                     {/* Fallback translation */}
                   </p>
                 </div>
                 <Link
@@ -199,35 +201,35 @@ export default function AuctionsManagementPage() {
               <StatsCards
                 stats={[
                   {
-                    title: t.totalAuctions,
+                    // title: t.totalAuctions,
                     value: auctions.length,
                     subtitle: t.allAuctions,
                     icon: <IconGavel className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
-                    title: t.pendingAuctions,
+                    // title: t.pendingAuctions,
                     value: pendingAuctionsCount,
-                    subtitle: t.pending,
+                    subtitle: t.pendingAuctions,
                     icon: <IconClock className="h-6 w-6" />,
                     variant: "warning",
                   },
                   {
-                    title: t.upcomingAuctions,
+                    // title: t.upcomingAuctions,
                     value: upcomingAuctionsCount,
-                    subtitle: t.upcoming,
+                    subtitle: t.upcomingAuctions,
                     icon: <IconClock className="h-6 w-6" />,
                     variant: "purple",
                   },
                   {
-                    title: t.activeAuctions,
+                    // title: t.activeAuctions,
                     value: activeAuctionsCount,
-                    subtitle: t.currentlyRunning,
+                    subtitle: t.activeAuctions,
                     icon: <IconCircleCheck className="h-6 w-6" />,
                     variant: "success",
                   },
                   {
-                    title: t.completedAuctions,
+                    // title: t.completedAuctions,
                     value: endedAuctionsCount,
                     subtitle: t.ended,
                     icon: <IconCircleCheck className="h-6 w-6" />,
@@ -284,27 +286,24 @@ export default function AuctionsManagementPage() {
                         <th className="px-6 py-3 text-left text-xs font-semibold staff-text-secondary uppercase tracking-wider">
                           {t.datesTable}
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold staff-text-secondary uppercase tracking-wider">
-                          {t.actions}
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {isLoading ? (
                         <tr>
-                          <td colSpan={5} className="px-6 py-12 text-center staff-text-secondary">
+                          <td colSpan={4} className="px-6 py-12 text-center staff-text-secondary">
                             {t.loadingAdmin}
                           </td>
                         </tr>
                       ) : error ? (
                         <tr>
-                          <td colSpan={5} className="px-6 py-12 text-center text-red-500">
+                          <td colSpan={4} className="px-6 py-12 text-center text-red-500">
                             {t.errorLoadingContests}
                           </td>
                         </tr>
                       ) : paginatedAuctions.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-6 py-12 text-center staff-text-secondary">
+                          <td colSpan={4} className="px-6 py-12 text-center staff-text-secondary">
                             {t.noDataAvailable}
                           </td>
                         </tr>
@@ -312,65 +311,46 @@ export default function AuctionsManagementPage() {
                         paginatedAuctions.map((auction: Auction) => {
                           const StatusIcon = getStatusIcon(auction.status);
                           return (
-                            <tr key={auction.auctionId} className="hover:bg-gray-50 transition-colors duration-150">
-                              <td className="px-6 py-4">
-                                <div className="text-sm font-bold staff-text-primary">
-                                  {auction.title}
-                                </div>
-                                <div className="text-xs staff-text-secondary mt-1 max-w-xs truncate">
-                                  {auction.description}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[10px] uppercase font-black tracking-wider ${getStatusBadgeColor(auction.status)}`}>
-                                  <StatusIcon className="h-3 w-3" />
-                                  {auction.status}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-bold staff-text-primary">
-                                    {auction.auctionPaintings?.length || 0}
-                                  </span>
-                                  <span className="text-xs uppercase font-semibold text-gray-400">
-                                    {t.paintingsText}
-                                  </span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-xs staff-text-secondary">
-                                <div>
-                                  <div className="font-medium text-blue-600">
-                                    {t.startText}: {new Date(auction.startTime).toLocaleString()}
-                                  </div>
-                                  <div className="font-medium text-red-500">
-                                    {t.endText}: {new Date(auction.endTime).toLocaleString()}
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <Link
-                                  href={`/dashboard/staff/auctions/detail?id=${auction.auctionId}`}
-                                  className="text-blue-600 hover:text-blue-900 p-2 rounded-full hover:bg-blue-50 transition-all inline-block mr-2"
-                                  title={t.viewDetails}
-                                >
-                                  <IconEye className="h-5 w-5" />
-                                </Link>
-                                {auction.status === "ONGOING" && (
-                                  <button
-                                    onClick={() => handleEndAuction(auction.auctionId)}
-                                    className="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50 transition-all inline-block"
-                                    title={t.endAuction}
-                                    disabled={endAuctionMutation.isPending}
-                                  >
-                                    {endAuctionMutation.isPending ? (
-                                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-600"></div>
-                                    ) : (
-                                      <IconCircleCheck className="h-5 w-5" />
-                                    )}
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
+                             <tr 
+                               key={auction.auctionId} 
+                               className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                               onClick={() => router.push(`/dashboard/staff/auctions/detail?id=${auction.auctionId}`)}
+                             >
+                               <td className="px-6 py-4">
+                                 <div className="text-sm font-bold staff-text-primary">
+                                   {auction.title}
+                                 </div>
+                                 <div className="text-xs staff-text-secondary mt-1 max-w-xs truncate">
+                                   {auction.description}
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4 whitespace-nowrap">
+                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[10px] uppercase font-black tracking-wider ${getStatusBadgeColor(auction.status)}`}>
+                                   <StatusIcon className="h-3 w-3" />
+                                   {auction.status}
+                                 </span>
+                               </td>
+                               <td className="px-6 py-4 whitespace-nowrap text-sm staff-text-secondary">
+                                 <div className="flex items-center gap-2">
+                                   <span className="font-bold staff-text-primary">
+                                     {auction.auctionPaintings?.length || 0}
+                                   </span>
+                                   <span className="text-xs uppercase font-semibold text-gray-400">
+                                     {t.paintingsText}
+                                   </span>
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4 whitespace-nowrap text-xs staff-text-secondary">
+                                 <div>
+                                   <div className="font-medium text-blue-600">
+                                     {t.startText}: {new Date(auction.startTime).toLocaleString()}
+                                   </div>
+                                   <div className="font-medium text-red-500">
+                                     {t.endText}: {new Date(auction.endTime).toLocaleString()}
+                                   </div>
+                                 </div>
+                               </td>
+                             </tr>
                           );
                         })
                       )}

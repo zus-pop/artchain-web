@@ -159,9 +159,9 @@ export default function CampaignDetailPage({
                       {campaignData?.title || `Campaign ${id}`} | {t.sponsor} (
                       {filteredSponsors.length})
                     </h2>
-                    <p className="text-sm staff-text-secondary mt-1">
+                    {/* <p className="text-sm staff-text-secondary mt-1">
                       {t.viewManageSponsors}
-                    </p>
+                    </p> */}
                   </div>
                 </div>
                 {campaignData && (
@@ -404,9 +404,9 @@ export default function CampaignDetailPage({
                             <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                               {t.status}
                             </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
+                            {/* <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
                               {t.actions}
-                            </th>
+                            </th> */}
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -468,7 +468,7 @@ export default function CampaignDetailPage({
                                     {sponsor.status}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {/* <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                   <div className="flex items-center justify-end gap-2">
                                     <button
                                       className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
@@ -477,7 +477,7 @@ export default function CampaignDetailPage({
                                       <IconSearch className="h-4 w-4" />
                                     </button>
                                   </div>
-                                </td>
+                                </td> */}
                               </tr>
                             ))
                           )}

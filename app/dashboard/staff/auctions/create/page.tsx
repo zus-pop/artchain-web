@@ -169,9 +169,9 @@ export default function CreateAuctionPage() {
                         <IconGavel className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <h2 className="text-xl font-semibold staff-text-primary">
+                        {/* <h2 className="text-xl font-semibold staff-text-primary">
                           {t.auctionDetails}
-                        </h2>
+                        </h2> */}
                         <p className="text-sm staff-text-secondary">
                           {t.basicAuctionInfo ||
                             "General information about the auction"}
