@@ -783,25 +783,7 @@ export default function GuardianProfileScreen({
                       >
                         Xem chứng chỉ
                       </button>
-                      {selectedChild?.userId ? (
-                        <Link
-                          href={{
-                            pathname: "/mint-nft",
-                            query: {
-                              paintingId: selectedAchievement.paintingId,
-                              competitorUserId: selectedChild.userId,
-                            },
-                          }}
-                          onClick={handleCloseAwardDialog}
-                          className="inline-flex items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                        >
-                          NFT
-                        </Link>
-                      ) : (
-                        <span className="inline-flex cursor-not-allowed items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white opacity-50">
-                          NFT
-                        </span>
-                      )}
+
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

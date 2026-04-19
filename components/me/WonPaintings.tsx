@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useGetWonPaintings } from "@/apis/auction";
 import { WonPainting } from "@/types/auction";
 import { formatCurrency } from "@/lib/utils";
@@ -86,10 +87,24 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
               </div>
             </div>
 
-            {/* Action Button (Optional) */}
-            <button className="w-full mt-5 bg-black text-white py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition shadow-sm active:scale-95">
-              Chi tiết đơn hàng
-            </button>
+            {/* Action Buttons */}
+            <div className="mt-5 flex gap-2">
+              <button className="flex-1 bg-black text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition shadow-sm active:scale-95">
+                Chi tiết
+              </button>
+              <Link
+                href={{
+                  pathname: "/mint-nft",
+                  query: {
+                    paintingId: wp.painting.paintingId,
+                    competitorUserId: wp.painting.competitorId,
+                  },
+                }}
+                className="flex-1 bg-[#FF6E1A] text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition shadow-sm active:scale-95 text-center"
+              >
+                Mint NFT
+              </Link>
+            </div>
           </div>
         </div>
       ))}
