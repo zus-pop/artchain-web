@@ -348,7 +348,7 @@ export default function Page() {
                 animation="animate-fade-in-down"
               >
                 CUỘC THI <br />
-                NÉT VẼ XANH <br />
+                NÉT VẼ ƯỚC MƠ <br />
                 2026
               </AnimatedContainer>
               <AnimatedContainer
