@@ -21,6 +21,7 @@ import GlassSurface from "@/components/GlassSurface";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 const AuctionHeader: React.FC = () => {
   const router = useRouter();
@@ -29,6 +30,7 @@ const AuctionHeader: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(-1);
   const [menuView, setMenuView] = useState<'main' | 'account'>('main');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const { currentLanguage } = useLanguageStore();
@@ -76,6 +78,10 @@ const AuctionHeader: React.FC = () => {
   };
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     router.push("/auth");
   };
@@ -447,6 +453,16 @@ const AuctionHeader: React.FC = () => {
           </AnimatePresence>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Đăng xuất"
+        description="Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?"
+        confirmText="Đăng xuất"
+        variant="destructive"
+      />
     </>
   );
 };

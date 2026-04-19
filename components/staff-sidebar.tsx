@@ -26,6 +26,7 @@ import {
 import { useClientAuth } from "@/hooks";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -159,8 +160,13 @@ export function StaffSidebar({
 
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     router.replace("/auth");
   };
@@ -218,6 +224,15 @@ export function StaffSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Đăng xuất"
+        description="Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?"
+        confirmText="Đăng xuất"
+        variant="destructive"
+      />
     </Sidebar>
   );
 }

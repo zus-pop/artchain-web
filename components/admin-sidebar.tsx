@@ -10,9 +10,9 @@ import {
 import * as React from "react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
-import { NavSettings } from "@/components/nav-settings";
-import { NavUser } from "@/components/nav-user";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { IconLogout } from "@tabler/icons-react";
+import { useAuthStore } from "@/store";
 import {
   Sidebar,
   SidebarContent,
@@ -23,15 +23,19 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useClientAuth } from "@/hooks";
+import { useTranslation } from "@/lib/i18n";
+import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../hooks";
 
 export function AdminSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
-  const router = useRouter();
-  const { isAuthenticated, user, isHydrated, isLoading } = useAuth();
+  const { isAuthenticated, user, isHydrated, isLoading } = useClientAuth();
+  const { currentLanguage } = useLanguageStore();
+  const t = useTranslation(currentLanguage);
 
   const data = React.useMemo(() => ({
     user: {
@@ -41,59 +45,72 @@ export function AdminSidebar({
     },
     navMain: [
       {
-        title: "Bảng điều khiển",
+        title: t.dashboard,
         url: "/dashboard/admin",
         icon: IconDashboard,
       },
       {
-        title: "Quản lý tài khoản",
+        title: t.accountManagement,
         url: "/dashboard/admin/accounts",
         icon: IconUsers,
         items: [
           {
-            title: "Tất cả người dùng",
+            title: t.allUsers,
             url: "/dashboard/admin/accounts",
           },
           {
-            title: "Người tham gia",
+            title: t.competitors,
             url: "/dashboard/admin/accounts/competitors",
           },
           {
-            title: "Người giám hộ",
+            title: t.guardians,
             url: "/dashboard/admin/accounts/guardians",
           },
           {
-            title: "Nhân viên",
+            title: t.staffs,
             url: "/dashboard/admin/accounts/staff",
           },
         ],
       },
       {
-        title: "Phân tích cuộc thi",
+        title: t.contestAnalysis,
         url: "/dashboard/admin/contests",
         icon: IconChartBar,
         items: [
           {
-            title: "Tổng quan",
+            title: t.overview,
             url: "/dashboard/admin/statistics",
           },
           {
-            title: "Phân tích người dùng",
+            title: t.userAnalysis,
             url: "/dashboard/admin/statistics/users",
           },
           {
-            title: "Phân tích cuộc thi",
+            title: t.contestAnalysis,
             url: "/dashboard/admin/statistics/contests",
           },
           {
-            title: "Phân tích báo cáo",
+            title: t.reportAnalysis,
             url: "/dashboard/admin/statistics/reports",
           },
         ],
       },
     ],
     navSecondary: [],
-  }), [user]);
+  }), [t, user]);
+
+  const router = useRouter();
+  const logout = useAuthStore((state) => state.logout);
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    router.replace("/auth");
+  };
 
   React.useEffect(() => {
     if (isHydrated && !isLoading && !isAuthenticated) {
@@ -110,11 +127,22 @@ export function AdminSidebar({
           <SidebarMenuItem className="flex items-center justify-between gap-1 group-data-[state=collapsed]:justify-center">
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:p-1.5! hover:bg-transparent! active:bg-transparent! group-data-[state=collapsed]:hidden"
+              size="lg"
+              className="data-[slot=sidebar-menu-button]:p-1.5! hover:bg-transparent! active:bg-transparent! hover:text-inherit! active:text-inherit! hover:opacity-100! opacity-100! group-data-[state=collapsed]:hidden"
             >
-              <Link href="/">
-                <IconShield className="size-5! text-blue-600" />
-                <span className="text-base font-semibold">ArtChain Quản trị</span>
+              <Link href="/dashboard/admin">
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage src={data.user.avatar} alt={data.user.name} />
+                  <AvatarFallback className="rounded-lg bg-transparent! hover:bg-transparent!">AD</AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold text-blue-600">
+                    {t.artChainAdmin}
+                  </span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    {data.user.name}
+                  </span>
+                </div>
               </Link>
             </SidebarMenuButton>
             <SidebarTrigger className="-mr-1 border-0 hover:bg-transparent group-data-[state=collapsed]:mr-0" />
@@ -123,12 +151,30 @@ export function AdminSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-        <NavSettings />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="lg"
+              onClick={handleLogout}
+              className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
+            >
+              <IconLogout className="size-5" />
+              <span className="font-medium group-data-[state=collapsed]:hidden">Log out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Đăng xuất"
+        description="Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?"
+        confirmText="Đăng xuất"
+        variant="destructive"
+      />
     </Sidebar>
   );
 }

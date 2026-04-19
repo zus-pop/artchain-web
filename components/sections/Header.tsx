@@ -23,6 +23,7 @@ import GlassSurface from "@/components/GlassSurface";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "@/store";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 // Avatar will be rendered as an initial-letter circle; no Next/Image needed here
 
 interface ArtistNavigationProps {
@@ -42,6 +43,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
   // Khởi tạo activeTab với -1 để mặc định không có tab nào active nếu defaultTab = 0 không khớp
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [menuView, setMenuView] = useState<'main' | 'account'>('main');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const languageDropdownRef = useRef<HTMLDivElement>(null);
   const userDropdownRef = useRef<HTMLDivElement>(null);
   const { currentLanguage, setLanguage } = useLanguageStore();
@@ -111,6 +113,10 @@ const Header: React.FC<ArtistNavigationProps> = ({
   const walletBalanceText = `${new Intl.NumberFormat("vi-VN").format(getWalletBalance())}đ`;
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     router.push("/auth");
   };
@@ -245,17 +251,18 @@ const Header: React.FC<ArtistNavigationProps> = ({
             width="auto"
             height="auto"
             borderRadius={50}
-          backgroundOpacity={0.58}
-          blur={5}
-          saturation={3}
-          brightness={54}
-          opacity={1}
-          displace={0.5}
-          distortionScale={180}
-          redOffset={0}
-          greenOffset={10}
-          blueOffset={20}
+            backgroundOpacity={0.58}
+            blur={5}
+            saturation={3}
+            brightness={54}
+            opacity={1}
+            displace={0.5}
+            distortionScale={180}
+            redOffset={0}
+            greenOffset={10}
+            blueOffset={20}
             className="w-full max-w-full"
+            overflow="visible"
           >
             <div className="w-full px-4 sm:px-6 lg:px-12 py-4 flex justify-between items-center gap-2">
               <Link href="/" className="flex items-center shrink-0">
@@ -579,6 +586,16 @@ const Header: React.FC<ArtistNavigationProps> = ({
 
       {/* Content area for active tab */}
       {activeContent && <div className="w-full">{activeContent}</div>}
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={confirmLogout}
+        title="Đăng xuất"
+        description="Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?"
+        confirmText="Đăng xuất"
+        variant="destructive"
+      />
     </>
   );
 };
