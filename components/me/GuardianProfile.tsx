@@ -15,6 +15,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import WonPaintings from "./WonPaintings";
+import { UpdateUserRequest } from "@/apis/user";
+import { useUpdateUserMutation } from "@/hooks/useUpdateUserMutation";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Edit } from "lucide-react";
 
 interface GuardianProfileScreenProps {
   authUser: WhoAmI | null;
@@ -48,6 +62,26 @@ export default function GuardianProfileScreen({
     useState<AchievementItem | null>(null);
   const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
   const [isCertificateViewerOpen, setIsCertificateViewerOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
+
+  const updateUserMutation = useUpdateUserMutation();
+
+  // Initialize form data when authUser is available
+  useEffect(() => {
+    if (authUser && isEditDialogOpen) {
+      setEditFormData({
+        fullName: authUser.fullName || "",
+        email: authUser.email || "",
+        phone: authUser.phone || "",
+      });
+    }
+  }, [authUser, isEditDialogOpen]);
+
   const itemsPerPage = 2;
 
   // Fetch achievements for selected child (hook is safe to call with undefined)
@@ -97,6 +131,36 @@ export default function GuardianProfileScreen({
 
   const handleCloseCertificateViewer = () => {
     setIsCertificateViewerOpen(false);
+  };
+
+  const handleOpenEditDialog = () => {
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+  };
+
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authUser?.userId) return;
+
+    try {
+      await updateUserMutation.mutateAsync({
+        id: authUser.userId,
+        data: editFormData,
+      });
+      toast.success("Cập nhật thông tin thành công!");
+      handleCloseEditDialog();
+    } catch (error) {
+      console.error("Update profile error:", error);
+      toast.error("Cập nhật thông tin thất bại. Vui lòng thử lại sau.");
+    }
   };
 
   // Component for displaying painting evaluation details
@@ -450,6 +514,17 @@ export default function GuardianProfileScreen({
               <p className="mt-1 text-base font-regular text-black">
                 {profile.ward}
               </p>
+            </div>
+
+            {/* Edit Button */}
+            <div className="flex items-center pb-1">
+              <button
+                onClick={handleOpenEditDialog}
+                className="flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-black hover:text-white"
+              >
+                <Edit className="h-4 w-4" />
+                Sửa hồ sơ
+              </button>
             </div>
           </div>
         </div>
@@ -1065,11 +1140,81 @@ export default function GuardianProfileScreen({
               </div>
             </div>
           )}
-
-          {/* Nội dung tab "Đơn hàng" */}
-          {activeTab === "orders" && <WonPaintings userId={authUser?.userId} />}
         </div>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              Chỉnh sửa hồ sơ
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateProfile} className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-sm font-medium">
+                  Họ và tên
+                </Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={editFormData.fullName}
+                  onChange={handleEditFormChange}
+                  className="rounded-md border-gray-300 focus:border-black focus:ring-black"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={handleEditFormChange}
+                  className="rounded-md border-gray-300 focus:border-black focus:ring-black"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  Số điện thoại
+                </Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={editFormData.phone}
+                  onChange={handleEditFormChange}
+                  className="rounded-md border-gray-300 focus:border-black focus:ring-black"
+                  placeholder="Nhập số điện thoại"
+                />
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseEditDialog}
+                disabled={updateUserMutation.isPending}
+                className="rounded-md"
+              >
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateUserMutation.isPending}
+                className="bg-black text-white hover:bg-gray-800 rounded-md"
+              >
+                {updateUserMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
