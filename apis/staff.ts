@@ -147,6 +147,33 @@ export function toggleExaminerScheduleEnforcement() {
   });
 }
 
+export function toggleIgnoreAICheck() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (contestId: string) => {
+      const response = await myAxios.patch(
+        `/staff/contests/${contestId}/ignore-ai-check`,
+      );
+      return response.data;
+    },
+    onSuccess: (value: { data: { ignoreAiCheck: boolean } }) => {
+      queryClient.invalidateQueries({ queryKey: ["contest-detail"] });
+      if (value.data.ignoreAiCheck) {
+        toast.success("Bật bỏ qua kiểm tra AI thành công");
+      } else {
+        toast.success("Tắt bỏ qua kiểm tra AI thành công");
+      }
+    },
+    onError: (error) => {
+      let message = error.message;
+      if (error instanceof AxiosError) {
+        message = error.response?.data.message;
+      }
+      toast.error(message);
+    },
+  });
+}
+
 // GET /api/staff/contests/{id} - Get contest by ID (staff view)
 export const getStaffContestById = async (id: number) => {
   const response = await myAxios.get(`/staff/contests/${id}`);

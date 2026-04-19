@@ -219,7 +219,7 @@ export function StaffSidebar({
               className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"
             >
               <IconLogout className="size-5" />
-              <span className="font-medium group-data-[state=collapsed]:hidden">Log out</span>
+              <span className="font-medium group-data-[state=collapsed]:hidden">Đăng xuất</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

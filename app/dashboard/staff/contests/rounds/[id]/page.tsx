@@ -523,8 +523,8 @@ function RoundDetailContent() {
                     <div className="flex items-center gap-3">
                       <h2 className="text-2xl font-bold staff-text-primary">
                         {round.name === "ROUND_1"
-                          ? `${t.rounds} 1`
-                          : `${t.rounds} 2`}
+                          ? `${t.rounds} Sơ Khảo`
+                          : `${t.rounds} Chung Khảo`}
                         {round.name === "ROUND_2" && round.table && (
                           <span className="ml-2 text-lg font-normal staff-text-secondary">
                             ({t.table} {round.table})
@@ -618,44 +618,63 @@ function RoundDetailContent() {
                 )}
               </div>
 
-              {/* Submissions Section */}
-              <div className="flex border-b border-[#e6e2da] mb-2">
-                <button
-                  onClick={() => {
-                    setReviewTab("NORMAL");
-                    // When switching back to Normal, if not ROUND_2, default to PENDING
-                    if (!round?.name?.toUpperCase().includes("ROUND_2")) {
-                      setSelectedStatus("PENDING");
-                    }
-                  }}
-                  className={`px-6 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-                    reviewTab === "NORMAL"
-                      ? "border-blue-600 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <IconClock className={`h-4 w-4 ${reviewTab === "NORMAL" ? "text-blue-600" : "text-gray-400"}`} />
-                  {t.normalReview}
-                </button>
-                <button
-                  onClick={() => {
-                    setReviewTab("WARNING");
-                  }}
-                  className={`px-6 py-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-                    reviewTab === "WARNING"
-                      ? "border-red-600 text-red-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
-                >
-                  <IconAlertTriangle className={`h-4 w-4 ${reviewTab === "WARNING" ? "text-red-600" : "text-gray-400"}`} />
-                  {t.warningPaintings}
-                  {counts.flagged > 0 && (
-                    <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full border border-red-200">
-                      {counts.flagged}
-                    </span>
-                  )}
-                </button>
-              </div>
+              {/* Submissions Section - Only show review tabs for Round 1 or other rounds that aren't ROUND_2 */}
+              {!round.name.toUpperCase().includes("ROUND_2") && (
+                <div className="flex w-full border-b border-[#e6e2da] mb-2">
+                  <button
+                    onClick={() => {
+                      setReviewTab("NORMAL");
+                      // When switching back to Normal, if not ROUND_2, default to PENDING
+                      if (!round?.name?.toUpperCase().includes("ROUND_2")) {
+                        setSelectedStatus("PENDING");
+                      }
+                    }}
+                    className={`flex-1 justify-center px-6 py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                      reviewTab === "NORMAL"
+                        ? "border-blue-600 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <IconClock
+                      className={`h-4 w-4 ${
+                        reviewTab === "NORMAL"
+                          ? "text-blue-600"
+                          : "text-gray-400"
+                      }`}
+                    />
+                    {t.normalReview}
+                    {counts.pending > 0 && (
+                      <span className="bg-blue-100 text-blue-600 text-[10px] px-1.5 py-0.5 rounded-full border border-blue-200">
+                        {counts.pending}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setReviewTab("WARNING");
+                    }}
+                    className={`flex-1 justify-center px-6 py-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
+                      reviewTab === "WARNING"
+                        ? "border-red-600 text-red-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <IconAlertTriangle
+                      className={`h-4 w-4 ${
+                        reviewTab === "WARNING"
+                          ? "text-red-600"
+                          : "text-gray-400"
+                      }`}
+                    />
+                    {t.warningPaintings}
+                    {counts.flagged > 0 && (
+                      <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full border border-red-200">
+                        {counts.flagged}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              )}
 
               {round.name.toUpperCase().includes("ROUND_2") ? (
                 // ROUND_2 Layout - Show all submissions with status filters
@@ -692,7 +711,7 @@ function RoundDetailContent() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => setSelectedStatus("ALL")}
-                        className={`px-4 py-2 font-semibold transition-all ${
+                        className={`px-4 py-2 font-semibold text-sm transition-all ${
                           selectedStatus === "ALL"
                             ? "bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white shadow-md"
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
@@ -702,7 +721,7 @@ function RoundDetailContent() {
                       </button>
                       <button
                         onClick={() => setSelectedStatus("PENDING")}
-                        className={`px-4 py-2 font-semibold transition-all ${
+                        className={`px-4 py-2 text-sm font-semibold transition-all ${
                           selectedStatus === "PENDING"
                             ? "bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-md"
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
@@ -712,7 +731,7 @@ function RoundDetailContent() {
                       </button>
                       <button
                         onClick={() => setSelectedStatus("ACCEPTED")}
-                        className={`px-4 py-2 font-semibold transition-all ${
+                        className={`px-4 py-2 text-sm font-semibold transition-all ${
                           selectedStatus === "ACCEPTED"
                             ? "bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-md"
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
@@ -722,7 +741,7 @@ function RoundDetailContent() {
                       </button>
                       <button
                         onClick={() => setSelectedStatus("REJECTED")}
-                        className={`px-4 py-2 font-semibold transition-all ${
+                        className={`px-4 py-2 text-sm font-semibold transition-all ${
                           selectedStatus === "REJECTED"
                             ? "bg-linear-to-r from-red-500 to-rose-500 text-white shadow-md"
                             : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
@@ -759,7 +778,7 @@ function RoundDetailContent() {
                         <div
                           key={submission.paintingId}
                           data-selectable-id={submission.paintingId}
-                          className={`border overflow-hidden hover:shadow-lg transition-shadow relative cursor-pointer ${
+                          className={`border overflow-hidden hover:shadow-lg transition-shadow relative cursor-pointer flex flex-col ${
                             selectedSubmissions.has(submission.paintingId)
                               ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg bg-orange-50/30"
                               : "border-[#B8AAAA] hover:border-orange-500/60"
@@ -821,7 +840,7 @@ function RoundDetailContent() {
                           </div>
 
                           {/* Content */}
-                          <div className="p-4">
+                          <div className="p-4 flex-1 flex flex-col">
                             <h4 className="font-bold staff-text-primary mb-2 line-clamp-1">
                               {submission.title}
                             </h4>
@@ -841,7 +860,7 @@ function RoundDetailContent() {
                             )}
 
                             {/* Actions */}
-                            <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex gap-2 mt-auto" onClick={(e) => e.stopPropagation()}>
                               <button
                                 onClick={() =>
                                   setSelectedPaintingId(submission.paintingId)
@@ -897,11 +916,11 @@ function RoundDetailContent() {
                           <div className={`w-3 h-3 ${reviewTab === "WARNING" ? "bg-red-500 animate-pulse" : "bg-orange-500"}`}></div>
                           {reviewTab === "WARNING" ? t.warningPaintings : t.pendingReview} ({reviewTab === "WARNING" ? counts.all : counts.pending})
                         </h3>
-                        <p className="text-sm staff-text-secondary mt-1">
+                        {/* <p className="text-sm staff-text-secondary mt-1">
                           {reviewTab === "WARNING" 
                             ? (t.flaggedSubmissionsDescription || "Review paintings flagged for potential issues") 
                             : t.submissionsAwaitingReview}
-                        </p>
+                        </p> */}
                       </div>
 
                       {/* Selection Header */}
@@ -956,7 +975,7 @@ function RoundDetailContent() {
                           <div
                             key={submission.paintingId}
                             data-selectable-id={submission.paintingId}
-                            className={`border-2 overflow-hidden hover:shadow-lg transition-all relative cursor-pointer ${
+                            className={`border-2 overflow-hidden hover:shadow-lg transition-all relative cursor-pointer flex flex-col ${
                               selectedSubmissions.has(submission.paintingId)
                                 ? "border-orange-500 -translate-x-1 -translate-y-1 shadow-lg bg-orange-50/30"
                                 : "border-[#B8AAAA] hover:border-orange-500/60"
@@ -1016,7 +1035,7 @@ function RoundDetailContent() {
                             </div>
 
                             {/* Content */}
-                            <div className="p-4">
+                            <div className="p-4 flex-1 flex flex-col">
                               <h4 className="font-bold staff-text-primary mb-2 line-clamp-1">
                                 {submission.title}
                               </h4>
@@ -1031,7 +1050,7 @@ function RoundDetailContent() {
                               </p>
 
                               {/* Actions */}
-                              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex gap-2 mt-auto" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   onClick={() =>
                                     setSelectedPaintingId(submission.paintingId)

@@ -57,6 +57,7 @@ export interface ContestDTO {
   createdBy: string;
   rounds: RoundDTO[];
   examiners: ExaminerDTO[];
+  ignoreAiCheck: boolean;
 }
 
 /**
@@ -193,6 +194,7 @@ export interface CreateContestResponse {
     round2Quantity: string;
     numberOfTablesRound2: number;
     isScheduleEnforced: boolean;
+    ignoreAiCheck: boolean;
     ruleUrl: string;
     startDate: string;
     endDate: string;

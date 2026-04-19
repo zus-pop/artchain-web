@@ -311,11 +311,11 @@ export function ExaminersDialog({
   const getTaskByRole = (role: ExaminerRole) => {
     switch (role) {
       case "ROUND_1":
-        return "Round 1 Evaluation";
+        return "Chấm Vòng Sơ Khảo";
       case "ROUND_2":
-        return "Round 2 Evaluation";
+        return "Chấm Vòng Chung Khảo";
       default:
-        return "Evaluation";
+        return "Chấm Bài";
     }
   };
 

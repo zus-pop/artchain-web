@@ -30,6 +30,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
@@ -52,10 +53,12 @@ const convertContestDTOToContest = (dto: ContestDTO): Contest => {
     rounds: dto.rounds,
     round2Quantity: dto.round2Quantity,
     numberOfTablesRound2: dto.numberOfTablesRound2,
+    ignoreAiCheck: dto.ignoreAiCheck,
   };
 };
 
 export default function ContestsManagementPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<ContestStatus | "ALL">(
     "ALL"
@@ -105,21 +108,23 @@ export default function ContestsManagementPage() {
     "CANCELLED",
   ];
 
-  const getStatusBadgeColor = (status: DashboardContestStatus) => {
-    const colors = {
+  const getStatusBadgeColor = (status: string) => {
+    const colors: Record<string, string> = {
       DRAFT: "staff-badge-neutral",
       ACTIVE: "staff-badge-active",
-      COMPLETED: "staff-badge-active",
+      COMPLETED: "staff-badge-neutral",
+      ENDED: "staff-badge-neutral",
       CANCELLED: "staff-badge-rejected",
     };
-    return colors[status];
+    return colors[status] || "staff-badge-neutral";
   };
 
-  const getStatusIcon = (status: DashboardContestStatus) => {
-    const icons = {
+  const getStatusIcon = (status: string) => {
+    const icons: Record<string, any> = {
       DRAFT: IconEdit,
       ACTIVE: IconCircleCheck,
       COMPLETED: IconTrophy,
+      ENDED: IconTrophy,
       CANCELLED: IconCircleX,
     };
     return icons[status] ?? IconEdit;
@@ -165,9 +170,9 @@ export default function ContestsManagementPage() {
                   <h2 className="text-2xl font-bold staff-text-primary">
                     {t.allContestsCount} ({totalFromAPI})
                   </h2>
-                  <p className="text-sm staff-text-secondary mt-1">
+                  {/* <p className="text-sm staff-text-secondary mt-1">
                     {t.manageArtCompetitions}
-                  </p>
+                  </p> */}
                 </div>
                 <Link
                   href="/dashboard/staff/contests/create"
@@ -184,14 +189,14 @@ export default function ContestsManagementPage() {
                   {
                     title: t.totalContests,
                     value: totalContests,
-                    subtitle: t.allCompetitions,
+                    // subtitle: t.allCompetitions,
                     icon: <IconTrophy className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
                     title: t.activeContests,
                     value: activeContests,
-                    subtitle: t.currentlyRunning,
+                    // subtitle: t.currentlyRunning,
                     icon: <IconCircleCheck className="h-6 w-6" />,
                     variant: "warning",
                   },
@@ -249,9 +254,6 @@ export default function ContestsManagementPage() {
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           {t.datesTable}
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          {t.actions}
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -296,10 +298,11 @@ export default function ContestsManagementPage() {
                           return (
                             <tr
                               key={contest.contestId}
-                              className="hover:bg-gray-50"
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => router.push(`/dashboard/staff/contests/detail?id=${contest.contestId}`)}
                             >
                               <td className="px-6 py-4">
-                                <div className="flex items-start gap-3">
+                                <div className="flex items-center gap-3">
                                   {contest.bannerUrl && (
                                     <Image
                                       src={contest.bannerUrl}
@@ -313,9 +316,9 @@ export default function ContestsManagementPage() {
                                     <div className="text-sm font-medium staff-text-primary">
                                       {contest.title}
                                     </div>
-                                    <div className="text-xs staff-text-secondary mt-1 max-w-xs truncate">
+                                    {/* <div className="text-xs staff-text-secondary mt-1 max-w-xs truncate">
                                       {contest.description}
-                                    </div>
+                                    </div> */}
                                   </div>
                                 </div>
                               </td>
@@ -356,32 +359,10 @@ export default function ContestsManagementPage() {
                                   <div className="text-xs">
                                     {t.startText}: {contest.startDate}
                                   </div>
-                                  <div className="text-xs">
+                                  <div className="text-xs bg-blue-50 px-1 py-0.5 rounded-sm inline-block mt-0.5">
                                     {t.endText}: {contest.endDate}
                                   </div>
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <Link
-                                  href={`/dashboard/staff/contests/detail?id=${contest.contestId}`}
-                                  className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors mr-2 inline-block"
-                                  title="View Details"
-                                >
-                                  <IconEye className="h-4 w-4" />
-                                </Link>
-                                {/* <Link
-                                  href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
-                                  className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors mr-2 inline-block"
-                                  title="Edit Contest"
-                                >
-                                  <IconEdit className="h-4 w-4" />
-                                </Link> */}
-                                {/* <button
-                                  className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors mr-2 inline-block"
-                                  title="Delete Contest"
-                                >
-                                  <IconTrash className="h-4 w-4" />
-                                </button> */}
                               </td>
                             </tr>
                           );

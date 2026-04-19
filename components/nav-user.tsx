@@ -104,7 +104,7 @@ export function NavUser({
               }}
             >
               <IconLogout />
-              Log out
+              Đăng xuất
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -9,6 +9,7 @@ import {
   getStaffRounds,
   publishStaffContest,
   toggleExaminerScheduleEnforcement,
+  toggleIgnoreAICheck,
   useGetQualifiedPaintingForRound2,
   useUpdateOriginalSubmissionStatus,
 } from "@/apis/staff";
@@ -24,6 +25,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTranslation } from "@/lib/i18n";
 import { formatDate, formatDateForInput } from "@/lib/utils";
@@ -161,6 +170,9 @@ function ContestDetailContent() {
 
   // Toggle schedule enforcement mutation
   const toggleScheduleEnforcementMutation = toggleExaminerScheduleEnforcement();
+ 
+  // Toggle ignore AI check mutation
+  const toggleIgnoreAICheckMutation = toggleIgnoreAICheck();
 
   const handleDeleteRound = (roundId: number) => {
     if (confirm(t.confirmDeleteRoundDetail)) {
@@ -492,51 +504,87 @@ function ContestDetailContent() {
                     </div>
                   </div>
 
-                  {/* Schedule Enforcement Toggle */}
+                  {/* Contest Advanced Settings Dropdown */}
                   <div className="pt-4 border-t border-[#e6e2da]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <IconSettings className="h-5 w-5 staff-text-secondary" />
                         <div>
                           <p className="text-sm font-medium staff-text-primary">
-                            {t.scheduleEnforcementDetail}
-                          </p>
-                          <p className="text-xs staff-text-secondary">
-                            {t.controlExaminerScheduleDetail}
+                            {t.contestAdvancedSettings || "Cài đặt nâng cao"}
                           </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() =>
-                          toggleScheduleEnforcementMutation.mutate(contestId)
-                        }
-                        disabled={toggleScheduleEnforcementMutation.isPending}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                          contest.isScheduleEnforced
-                            ? "bg-green-600"
-                            : "bg-gray-200"
-                        } ${
-                          toggleScheduleEnforcementMutation.isPending
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                            contest.isScheduleEnforced
-                              ? "translate-x-6"
-                              : "translate-x-1"
-                          }`}
-                        />
-                      </button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-2 hover:bg-gray-100 rounded-full transition-colors outline-none">
+                            <IconSettings className="h-5 w-5 staff-text-secondary" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-64 p-2 bg-white">
+                          <DropdownMenuLabel className="staff-text-primary font-bold">
+                            {t.contestSettings || "Cài đặt cuộc thi"}
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          
+                          {/* Schedule Enforcement Toggle */}
+                          <div className="flex items-center justify-between px-2 py-3">
+                            <span className="text-sm staff-text-primary font-medium">
+                              {t.scheduleEnforcementDetail}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleScheduleEnforcementMutation.mutate(contestId);
+                              }}
+                              disabled={toggleScheduleEnforcementMutation.isPending}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                                contest.isScheduleEnforced ? "bg-green-600" : "bg-gray-200"
+                              } ${toggleScheduleEnforcementMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+                            >
+                              <span
+                                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                  contest.isScheduleEnforced ? "translate-x-5" : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+
+                          <DropdownMenuSeparator />
+
+                          {/* Ignore AI Check Toggle */}
+                          <div className="flex items-center justify-between px-2 py-3">
+                            <span className="text-sm staff-text-primary font-medium">
+                              {t.ignoreAICheckDetail}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                toggleIgnoreAICheckMutation.mutate(contestId);
+                              }}
+                              disabled={toggleIgnoreAICheckMutation.isPending}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                                contest.ignoreAiCheck ? "bg-green-600" : "bg-gray-200"
+                              } ${toggleIgnoreAICheckMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+                            >
+                              <span
+                                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                  contest.ignoreAiCheck ? "translate-x-5" : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Stats Cards */}
+            
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div className="staff-card staff-stat-info p-4">
+                {/* <div className="staff-card staff-stat-info p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
                       <IconTrophy className="h-5 w-5 text-white" />
@@ -550,7 +598,7 @@ function ContestDetailContent() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* <div className="staff-card staff-stat-success p-4">
                   <div className="flex items-center gap-3">
@@ -566,7 +614,7 @@ function ContestDetailContent() {
                   </div>
                 </div> */}
 
-                <div className="staff-card staff-stat-secondary p-4">
+                {/* <div className="staff-card staff-stat-secondary p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
                       <IconUsers className="h-5 w-5 text-white" />
@@ -580,9 +628,9 @@ function ContestDetailContent() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
-                <div className="staff-card staff-stat-primary p-4">
+                {/* <div className="staff-card staff-stat-primary p-4">
                   <div className="flex items-center gap-3">
                     <div className="stat-icon">
                       <IconClock className="h-5 w-5 text-white" />
@@ -596,7 +644,7 @@ function ContestDetailContent() {
                       </p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Rules PDF */}
@@ -613,9 +661,9 @@ function ContestDetailContent() {
                           <h3 className="text-lg font-bold staff-text-primary">
                             {t.contestRulesAndRegulationsDetail}
                           </h3>
-                          <p className="text-sm staff-text-secondary">
+                          {/* <p className="text-sm staff-text-secondary">
                             {t.officialContestGuidelinesDetail}
-                          </p>
+                          </p> */}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -707,9 +755,9 @@ function ContestDetailContent() {
                       {t.manageExaminersDetail} (
                       {contest.examiners?.length || 0})
                     </p>
-                    <p className="text-xs staff-text-secondary text-left">
+                    {/* <p className="text-xs staff-text-secondary text-left">
                       {t.inviteAndManageJudgesDetail}
-                    </p>
+                    </p> */}
                   </div>
                 </button>
                 <Link
@@ -725,9 +773,9 @@ function ContestDetailContent() {
                     <p className="text-sm font-bold staff-text-primary text-left">
                       {t.manageAwardsDetail} ({contest.numOfAward || 0})
                     </p>
-                    <p className="text-xs staff-text-secondary text-left">
+                    {/* <p className="text-xs staff-text-secondary text-left">
                       {t.assignPrizesToWinnersDetail}
-                    </p>
+                    </p> */}
                   </div>
                 </Link>
               </div>
@@ -1097,13 +1145,13 @@ function ContestDetailContent() {
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <div className="bg-blue-500/10 p-2 rounded-full">
+              {/* <div className="bg-blue-500/10 p-2 rounded-full">
                 <IconEye className="h-6 w-6 text-blue-600" />
-              </div>
+              </div> */}
               {t.round1QualifiedPaintingsReview}
             </DialogTitle>
             <DialogDescription>
-              {t.round1QualifiedPaintingsReviewDesc}
+              {/* {t.round1QualifiedPaintingsReviewDesc} */}
               {qualifiedPaintingsData?.data?.summary && (
                 <div className="mt-2 p-3 bg-gray-50">
                   <div className="grid grid-cols-3 gap-4 text-sm">
@@ -1159,22 +1207,18 @@ function ContestDetailContent() {
                           <h4 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-1 text-center">
                             {item.painting.title}
                           </h4>
-                          <p className="text-xs text-gray-600 mb-1">
-                            <strong>{t.artistLabel}: </strong>
-                            {item.competitorName}
-                          </p>
-                          <p className="text-xs text-gray-600 mb-1 truncate">
-                            <strong>{t.emailLabel}: </strong>
-                            {item.competitorEmail}
-                          </p>
-                          <div className="flex items-center justify-start gap-4 mb-2">
-                            <span className="text-xs text-gray-600">
-                              <strong>{t.scoreLabel}: </strong>
-                              {item.avgScore.toFixed(1)}
+                          <div className="text-[11px] text-gray-500 mb-0.5 truncate" title={item.competitorName}>
+                            <span className="font-bold text-gray-700">{t.artistLabel}:</span> {item.competitorName}
+                          </div>
+                          <div className="text-[11px] text-gray-500 mb-0.5 truncate" title={item.competitorEmail}>
+                            <span className="font-bold text-gray-700">{t.emailLabel}:</span> {item.competitorEmail}
+                          </div>
+                          <div className="flex items-center gap-4 mb-2 text-[11px] text-gray-500">
+                            <span>
+                              <span className="font-bold text-gray-700">{t.scoreLabel}:</span> {item.avgScore.toFixed(1)}
                             </span>
-                            <span className="text-xs text-gray-600">
-                              <strong>{t.reviewsLabel}: </strong>
-                              {item.evaluationCount}
+                            <span>
+                              <span className="font-bold text-gray-700">{t.reviewsLabel}:</span> {item.evaluationCount}
                             </span>
                           </div>
                           <div className="mb-3 flex justify-center">
