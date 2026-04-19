@@ -29,7 +29,15 @@ export const NavMain = React.memo(function NavMain({ items }: NavMainProps) {
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => {
-            const isActive = pathname === item.url || pathname.startsWith(item.url + "/");
+            // Fix: For dashboard root paths, only exact match should be active.
+            // Otherwise, sub-pages will always keep the main dashboard tab highlighted.
+            const isDashboardRoot = 
+              item.url === "/dashboard/staff" || 
+              item.url === "/dashboard/admin";
+              
+            const isActive = isDashboardRoot 
+              ? pathname === item.url 
+              : pathname === item.url || pathname.startsWith(item.url + "/");
 
             return (
               <SidebarMenuItem key={item.url}>
