@@ -844,7 +844,7 @@ export default function Page() {
                       className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
-                      Nét Vẽ Xanh 2026
+                      NÉT VẼ ƯỚC MƠ 2026
                     </a>
                   </li>
                   <li>

@@ -170,7 +170,7 @@ export default function AuctionRulesPage() {
       </main>
 
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30 mt-10">
-         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — ĐẢM BẢO QUYỀN LỢI NHÀ SƯU TẬP</p>
+         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ ƯỚC MƠ — ĐẢM BẢO QUYỀN LỢI NHÀ SƯU TẬP</p>
       </footer>
     </div>
   );

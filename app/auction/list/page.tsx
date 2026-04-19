@@ -168,7 +168,7 @@ export default function AuctionListPage() {
       {/* Footer */}
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">
-          © 2026 NÉT VẼ XANH — SÀN ĐẤU GIÁ NGHỆ THUẬT
+          © 2026 NÉT VẼ ƯỚC MƠ — SÀN ĐẤU GIÁ NGHỆ THUẬT
         </p>
       </footer>
     </div>

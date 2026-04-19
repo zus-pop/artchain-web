@@ -190,7 +190,7 @@ export default function CongratulationPage() {
       </main>
 
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
-         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — CHÚC MỪNG CHIẾN THẮNG</p>
+         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ ƯỚC MƠ — CHÚC MỪNG CHIẾN THẮNG</p>
       </footer>
       
       <style jsx global>{`
