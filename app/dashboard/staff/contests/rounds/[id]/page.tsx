@@ -12,6 +12,7 @@ import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
 import { SubmissionDetailDialog } from "@/components/staff/SubmissionDetailDialog";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useTranslation } from "@/lib/i18n";
 import { formatDate } from "@/lib/utils";
 import { useLanguageStore } from "@/store/language-store";
@@ -71,6 +72,7 @@ function RoundDetailContent() {
   const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [acceptAllDialogOpen, setAcceptAllDialogOpen] = useState(false);
+  const [alertDialog, setAlertDialog] = useState<{ isOpen: boolean; message: string }>({ isOpen: false, message: "" });
   const [pendingAcceptId, setPendingAcceptId] = useState<string | null>(null);
   const [pendingRejectId, setPendingRejectId] = useState<string | null>(null);
   const [pendingAcceptAllIds, setPendingAcceptAllIds] = useState<string[]>([]);
@@ -342,7 +344,7 @@ function RoundDetailContent() {
     );
 
     if (pendingSelected.length === 0) {
-      alert(t.noPendingSubmissionsSelected);
+      setAlertDialog({ isOpen: true, message: t.noPendingSubmissionsSelected || "Không có bài nộp nào đang chờ duyệt được chọn" });
       return;
     }
 
@@ -1189,6 +1191,18 @@ function RoundDetailContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Alert Dialog */}
+      <ConfirmDialog
+        isOpen={alertDialog.isOpen}
+        onClose={() => setAlertDialog({ isOpen: false, message: "" })}
+        onConfirm={() => setAlertDialog({ isOpen: false, message: "" })}
+        title="Thông báo"
+        description={alertDialog.message}
+        confirmText="Đóng"
+        cancelText="Đóng"
+        variant="warning"
+      />
     </SidebarProvider>
   );
 }

@@ -10,64 +10,63 @@ import Loader from '@/components/Loaders';
 
 const NewsCard = ({ news }: { news: Post }) => {
   return (
-    <div className="border border-[#b8aaaa] overflow-hidden hover:shadow-lg transition-all hover:scale-105 duration-300 flex flex-col h-full">
+    <div className="group bg-white border border-[#e6e2da] shadow-sm rounded-md overflow-hidden hover:shadow-md transition-all hover:scale-[1.01] duration-300 flex flex-col h-full">
 
       {/* Hình ảnh */}
-      <div className="w-full mb-4 relative">
-        <div className="relative h-48 w-full bg-gray-100">
-          <Image
-            src={news.image_url || "https://placehold.co/600x400/6b7280/ffffff?text=No+Image"}
-            alt={news.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        </div>
-      </div>
+      <Link href={`/posts/${news.post_id}`} className="block w-full aspect-video overflow-hidden border-b border-[#e6e2da] relative">
+        <Image
+          src={news.image_url || "https://placehold.co/600x400/EAE6E0/423137?text=No+Image"}
+          alt={news.title}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+      </Link>
 
       {/* Nội dung */}
-      <div className="flex flex-col flex-grow p-4">
+      <div className="flex flex-col flex-1 p-4">
         {/* Tags */}
-        {news.postTags && news.postTags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
+        {news.postTags && news.postTags.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 mb-2">
             {news.postTags.map((postTag) => (
-              <span key={postTag.tag_id} className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center">
-                <Tag className="w-3 h-3 mr-1" />
+              <span key={postTag.tag_id} className="text-[10px] font-bold tracking-widest text-[#FF6E1A] uppercase drop-shadow-sm">
                 {postTag.tag.tag_name}
               </span>
             ))}
           </div>
+        ) : (
+          <div className="text-[10px] font-bold tracking-widest text-[#FF6E1A] uppercase mb-2 drop-shadow-sm">Tin Tức</div>
         )}
 
         {/* Title */}
-        <h2 className="font-extrabold text-gray-900 dark:text-white leading-tight text-xl mb-2">
-          {news.title}
-        </h2>
-
+        <Link href={`/posts/${news.post_id}`}>
+          <h2 className="text-lg font-bold text-[#423137] leading-snug mb-2.5 line-clamp-2 hover:text-[#FF6E1A] transition-colors duration-200">
+            {news.title}
+          </h2>
+        </Link>
+        
         {/* Content Preview */}
-        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+        <p className="text-xs text-[#423137]/70 font-medium leading-relaxed line-clamp-3 mb-4 flex-1">
           {news.content.replace(/[#*`]/g, '').substring(0, 150)}...
         </p>
 
         {/* Footer/Metadata - luôn ở dưới cùng */}
-        <div className="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:justify-between sm:items-center border-t pt-3 border-[#b8aaaa] mt-auto">
-          <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+        <div className="mt-auto flex items-center justify-between gap-3 pt-3">
+          <div className="flex items-center space-x-3 text-[10px] text-[#423137]/70 font-semibold">
             <span className="flex items-center">
-              <Calendar className="w-4 h-4 mr-1 text-[#FF6E1A]" />
+              <Calendar className="w-3 h-3 mr-1 text-[#423137]/40" />
               {new Date(news.published_at).toLocaleDateString('vi-VN')}
             </span>
             <span className="flex items-center">
-              <Eye className="w-4 h-4 mr-1 text-[#FF6E1A]" />
+              <Eye className="w-3 h-3 mr-1 text-[#423137]/40" />
               {news.creator.fullName}
             </span>
           </div>
 
-          {/* Read More Button */}
           <Link href={`/posts/${news.post_id}`}>
-            <button className="flex cursor-pointer items-center text-[#FF6E1A] dark:text-[#FF6E1A] font-medium hover:text-[#FF6E1A] dark:hover:text-[#FF6E1A] transition-colors text-sm">
-              Đọc Chi Tiết
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </button>
+            <span className="flex-shrink-0 flex items-center text-xs font-bold text-[#FF6E1A] transition-colors duration-200 group-hover:text-[#FF833B]">
+              Chi tiết <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </span>
           </Link>
         </div>
       </div>
@@ -96,14 +95,14 @@ const Pagination = ({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!hasPreviousPage}
-        className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center px-3.5 py-2 text-xs font-semibold border transition-colors border-[#e6e2da] text-[#423137]/70 bg-white hover:border-[#FF6E1A] hover:text-[#FF6E1A] rounded-sm disabled:opacity-30 disabled:cursor-not-allowed"
       >
-        <ChevronLeft className="w-4 h-4 mr-1" />
+        <ChevronLeft className="w-3.5 h-3.5 mr-1" />
         Trước
       </button>
 
       {/* Page Numbers */}
-      <div className="flex items-center space-x-1">
+      <div className="flex items-center space-x-1 border-[#e6e2da]">
         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
           let pageNum;
           if (totalPages <= 5) {
@@ -120,10 +119,10 @@ const Pagination = ({
             <button
               key={pageNum}
               onClick={() => onPageChange(pageNum)}
-              className={`px-3 py-2 text-sm font-medium border transition-colors ${
+              className={`w-8 h-8 rounded-sm text-xs font-semibold border transition-colors ${
                 currentPage === pageNum
                   ? 'bg-[#FF6E1A] text-white border-[#FF6E1A]'
-                  : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-50'
+                  : 'bg-white border-[#e6e2da] text-[#423137]/70 hover:border-[#FF6E1A] hover:text-[#FF6E1A]'
               }`}
             >
               {pageNum}
@@ -136,10 +135,10 @@ const Pagination = ({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!hasNextPage}
-        className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center px-3.5 py-2 text-xs font-semibold border transition-colors border-[#e6e2da] text-[#423137]/70 bg-white hover:border-[#FF6E1A] hover:text-[#FF6E1A] rounded-sm disabled:opacity-30 disabled:cursor-not-allowed"
       >
         Sau
-        <ChevronRight className="w-4 h-4 ml-1" />
+        <ChevronRight className="w-3.5 h-3.5 ml-1" />
       </button>
     </div>
   );
@@ -207,20 +206,14 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-25 px-4 bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen pt-24 px-4 sm:px-8 lg:px-16 bg-[#EAE6E0] pb-16">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        {/* <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">
-            Tin Tức <span className="text-[#FF6E1A] dark:text-gray-300">&</span> Sự Kiện
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Cập nhật những thông tin mới nhất về cuộc thi, sự kiện và câu chuyện từ cộng đồng nghệ sĩ ArtChain
-          </p>
-        </div> */}
+        <p className="text-xs font-semibold tracking-widest text-[#423137]/60 uppercase mb-5">
+           Tin Tức & Sự Kiện
+        </p>
 
         {posts.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map(post => (
               <NewsCard key={post.post_id} news={post} />
             ))}
@@ -240,8 +233,8 @@ export default function PostsPage() {
 
         {/* Empty State */}
         {posts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
+          <div className="text-center py-24">
+            <p className="text-[#423137]/40 font-semibold text-sm">
               Chưa có tin tức nào được công bố
             </p>
           </div>

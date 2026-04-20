@@ -352,7 +352,7 @@ function AuctionPromotionPage() {
           </div>
 
           {/* Auction Summary */}
-          <div className="staff-card p-6 space-y-4">
+          {/* <div className="staff-card p-6 space-y-4">
             <h3 className="font-semibold flex items-center gap-2">
               <IconCheck className="h-5 w-5 text-green-500" />
               {t.auctionSummary || "Auction Summary"}
@@ -367,7 +367,7 @@ function AuctionPromotionPage() {
                 <span className="font-bold">{auction.participantCount || 0}</span>
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

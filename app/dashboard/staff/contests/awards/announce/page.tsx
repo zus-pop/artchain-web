@@ -746,7 +746,7 @@ function AnnounceResultsPage() {
                   </div>
 
                   {/* Preview Info */}
-                  <div className="staff-card p-4">
+                  {/* <div className="staff-card p-4">
                     <h4 className="font-semibold staff-text-primary mb-3">
                       {t.whatHappensWhenPublish}
                     </h4>
@@ -768,7 +768,7 @@ function AnnounceResultsPage() {
                         <span>{t.communityEngagementIncreases}</span>
                       </li>
                     </ul>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
