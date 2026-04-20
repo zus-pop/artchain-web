@@ -574,9 +574,9 @@ export default function Page() {
                   <div className="hidden lg:block bg-[#423137]/20 self-stretch mx-8"></div>
 
                   {/* ── Center column: spotlight post ── */}
-                  <div className="group flex flex-col h-full bg-[#f5f2ed] border border-[#ff6e1a]/30 shadow-md rounded-md overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
+                  <div className="group flex flex-col">
                     {/* Hero image */}
-                    <div className="w-full overflow-hidden border-b border-[#e6e2da]">
+                    <div className="w-full overflow-hidden mb-4">
                       {spotlightPost ? (
                         <Link href={`/posts/${spotlightPost.post_id}`}>
                           <img
@@ -586,30 +586,27 @@ export default function Page() {
                           />
                         </Link>
                       ) : (
-                        <div className="w-full h-52 lg:h-72 bg-[#423137]/10 flex items-center justify-center text-[#423137]/40 text-sm font-medium">
+                        <div className="w-full h-52 lg:h-72 bg-[#423137]/10 flex items-center justify-center text-[#423137]/40 text-sm">
                           Không có bài viết nổi bật
                         </div>
                       )}
                     </div>
-                    
-                    <div className="flex flex-col flex-1 p-5">
-                      {/* Metadata label */}
-                      <p className="text-[10px] font-bold tracking-widest text-[#FF6E1A] uppercase mb-2 drop-shadow-sm">
-                        Artist Spotlight
-                      </p>
-                      {/* Title */}
-                      {spotlightPost && (
-                        <Link href={`/posts/${spotlightPost.post_id}`}>
-                          <h3 className="text-xl font-extrabold text-[#423137] leading-snug mb-2.5 line-clamp-2 cursor-pointer hover:text-[#FF6E1A] transition-colors duration-200">
-                            {spotlightPost.title}
-                          </h3>
-                        </Link>
-                      )}
-                      {/* Description */}
-                      <p className="text-xs text-[#423137]/70 font-medium leading-relaxed line-clamp-3">
-                        {spotlightPost?.content ? cleanMarkdown(spotlightPost.content) : "Thông tin nghệ sĩ sẽ được cập nhật sớm."}
-                      </p>
-                    </div>
+                    {/* Metadata label */}
+                    <p className="text-[10px] font-semibold tracking-widest text-[#FF6E1A] uppercase mb-2">
+                      Artist Spotlight
+                    </p>
+                    {/* Title */}
+                    {spotlightPost && (
+                      <Link href={`/posts/${spotlightPost.post_id}`}>
+                        <h3 className="text-xl font-bold text-[#423137] leading-snug mb-2.5 line-clamp-2 cursor-pointer hover:text-[#FF6E1A] transition-colors duration-200">
+                          {spotlightPost.title}
+                        </h3>
+                      </Link>
+                    )}
+                    {/* Description */}
+                    <p className="text-xs text-[#423137]/60 leading-relaxed line-clamp-8">
+                      {spotlightPost?.content || "Thông tin nghệ sĩ sẽ được cập nhật sớm."}
+                    </p>
                   </div>
 
                   {/* Thin divider */}
@@ -805,10 +802,10 @@ export default function Page() {
       )}
 
       {/* --- Footer --- */}
-      <footer className="relative bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
+      <footer className="relative bg-[#423137] text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6E0]/20 via-transparent to-[#EAE6E0]/20"></div>
         </div>
 
         <div className="relative py-12 sm:py-16 md:py-20">
@@ -827,26 +824,26 @@ export default function Page() {
                     ArtChain
                   </h3>
                 </div>
-                <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+                <p className="text-[#EAE6E0]/80 text-sm sm:text-base leading-relaxed mb-6">
                   Nơi nuôi dưỡng tài năng hội họa trẻ, kết nối cộng đồng nghệ sĩ
                   và lan tỏa giá trị nghệ thuật đến mọi nhà.
                 </p>
                 <div className="flex space-x-4">
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                   >
                     <Facebook className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                   >
                     <Instagram className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                   >
                     <Youtube className="w-5 h-5" />
                   </a>
@@ -860,7 +857,7 @@ export default function Page() {
                 </h5>
                 <ul className="space-y-3 text-sm sm:text-base">
                   {/* <li>
-                    <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group">
+                    <a href="#" className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group">
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nhiệm vụ
                     </a>
@@ -868,7 +865,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Đội ngũ
@@ -877,7 +874,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Liên hệ
@@ -895,7 +892,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       NÉT VẼ ƯỚC MƠ 2026
@@ -904,7 +901,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Thể lệ
@@ -913,7 +910,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nộp bài
@@ -930,37 +927,37 @@ export default function Page() {
                 <ul className="space-y-3 text-sm sm:text-base">
                   <li className="flex items-start space-x-3">
                     <MapPin className="w-4 h-4 text-[#FF6E1A] mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-300">
+                    <span className="text-[#EAE6E0]/80">
                       123 Đường ABC, Quận 1<br />
                       TP.HCM, Việt Nam
                     </span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Phone className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">+84 123 456 789</span>
+                    <span className="text-[#EAE6E0]/80">+84 123 456 789</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">artchain999@gmail.com</span>
+                    <span className="text-[#EAE6E0]/80">artchain999@gmail.com</span>
                   </li>
                 </ul>
               </div>
             </div>
 
             {/* Newsletter Signup */}
-            <div className="border-t border-gray-800 pt-8 sm:pt-12">
+            {/* <div className="border-t border-[#EAE6E0]/10 pt-8 sm:pt-12">
               <div className="max-w-md mx-auto text-center">
                 <h4 className="text-lg sm:text-xl font-bold text-white mb-3">
                   Đăng ký nhận tin
                 </h4>
-                <p className="text-gray-300 text-sm sm:text-base mb-6">
+                <p className="text-[#EAE6E0]/80 text-sm sm:text-base mb-6">
                   Nhận thông tin mới nhất về cuộc thi và các sự kiện nghệ thuật
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="email"
                     placeholder="Nhập email của bạn"
-                    className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
+                    className="flex-1 px-4 py-3 bg-[#EAE6E0]/5 border border-[#EAE6E0]/10 rounded-lg text-white placeholder-[#EAE6E0]/40 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
                   />
                   <button className="px-6 py-3 bg-[#FF6E1A] hover:bg-[#FF833B] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
                     <Send className="w-4 h-4" />
@@ -968,33 +965,33 @@ export default function Page() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+        <div className="border-t border-[#EAE6E0]/10 bg-black/10 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-gray-400 text-xs sm:text-sm text-center md:text-left">
+              <p className="text-[#EAE6E0]/60 text-xs sm:text-sm text-center md:text-left">
                 &copy; 2026 ArtChain. Đã đăng ký bản quyền.
               </p>
               <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                 >
                   Điều khoản dịch vụ
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                 >
                   Chính sách bảo mật
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                 >
                   Cookie Policy
                 </a>
