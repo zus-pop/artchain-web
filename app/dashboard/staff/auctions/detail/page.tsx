@@ -15,6 +15,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
+import { AuctionPainting } from "@/types/auction";
 import {
   IconArrowLeft,
   IconCalendar,
@@ -47,6 +48,10 @@ function AuctionDetailContent() {
   const [selectedContestId, setSelectedContestId] = useState<string>("");
   const [selectedPaintingIds, setSelectedPaintingIds] = useState<string[]>([]);
   const [showAddPaintingDialog, setShowAddPaintingDialog] = useState(false);
+  const [selectedAuctionPainting, setSelectedAuctionPainting] =
+    useState<AuctionPainting | null>(null);
+  const [showPaintingDetailDialog, setShowPaintingDetailDialog] =
+    useState(false);
   
   // Pricing state for each selected painting
   const [paintingPrices, setPaintingPrices] = useState<Record<string, { basePrice: number; ceilPrice: number; bidStep: number; auctionDurationMinutes: number }>>({});
@@ -160,6 +165,35 @@ function AuctionDetailContent() {
   const formatVND = (value: number | undefined) => {
     if (!value) return "";
     return new Intl.NumberFormat('vi-VN').format(value);
+  };
+
+  const formatDateTime = (value?: string | null) => {
+    if (!value) return "-";
+    return new Date(value).toLocaleString("vi-VN");
+  };
+
+  const getPaintingStatusBadge = (status?: string) => {
+    switch (status) {
+      case "LIVE":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "WAITING":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "END":
+      case "ENDED":
+        return "bg-gray-100 text-gray-700 border-gray-200";
+      default:
+        return "bg-blue-100 text-blue-700 border-blue-200";
+    }
+  };
+
+  const handleOpenPaintingDetail = (auctionPainting: AuctionPainting) => {
+    setSelectedAuctionPainting(auctionPainting);
+    setShowPaintingDetailDialog(true);
+  };
+
+  const handleClosePaintingDetail = () => {
+    setShowPaintingDetailDialog(false);
+    setSelectedAuctionPainting(null);
   };
 
   if (auctionLoading) {
@@ -393,7 +427,8 @@ function AuctionDetailContent() {
                       return (
                         <div
                           key={auctionPainting.auctionPaintingId}
-                          className="group bg-white border border-[#e6e2da] hover:border-blue-400 hover:shadow-xl transition-all duration-300 flex flex-col"
+                          onClick={() => handleOpenPaintingDetail(auctionPainting)}
+                          className="group bg-white border border-[#e6e2da] hover:border-blue-400 hover:shadow-xl transition-all duration-300 flex flex-col cursor-pointer"
                         >
                           <div className="aspect-square relative overflow-hidden bg-gray-50 border-b border-[#e6e2da]">
                             {painting.imageUrl ? (
@@ -414,12 +449,16 @@ function AuctionDetailContent() {
                               </button>
                             </div>
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <Link 
-                                href={`/dashboard/staff/auctions/painting-detail?id=${auctionPainting.auctionPaintingId}`}
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleOpenPaintingDetail(auctionPainting);
+                                }}
                                 className="bg-white text-gray-900 px-4 py-2 text-xs font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors"
                               >
                                 {t.viewDetails}
-                              </Link>
+                              </button>
                             </div>
                           </div>
                           <div className="p-4 flex-1 flex flex-col">
@@ -474,6 +513,134 @@ function AuctionDetailContent() {
           </div>
         </div>
       </div>
+
+      {/* Painting Detail Modal */}
+      {showPaintingDetailDialog && selectedAuctionPainting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            className="absolute inset-0"
+            onClick={handleClosePaintingDetail}
+          />
+
+          <div className="relative z-10 w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-xl border border-[#e6e2da] bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#e6e2da] bg-[#fcfbf9] px-6 py-4">
+              <div>
+                <h3 className="text-lg font-black uppercase tracking-wide staff-text-primary">
+                  Chi tiet tranh dau gia
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  {auction.title} - ID #{selectedAuctionPainting.auctionPaintingId}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleClosePaintingDetail}
+                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                <IconX className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-5">
+              <div className="lg:col-span-2">
+                <div className="relative aspect-square overflow-hidden rounded-lg border border-[#e6e2da] bg-gray-50">
+                  {selectedAuctionPainting.painting?.imageUrl ? (
+                    <Image
+                      src={selectedAuctionPainting.painting.imageUrl}
+                      alt={selectedAuctionPainting.painting.title}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <IconPhoto className="h-12 w-12 text-gray-300" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-6 lg:col-span-3">
+                <div className="rounded-lg border border-[#e6e2da] bg-[#fffdf9] p-4">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${getPaintingStatusBadge(selectedAuctionPainting.status)}`}
+                    >
+                      {selectedAuctionPainting.status || "UNKNOWN"}
+                    </span>
+                    <span className="inline-flex items-center rounded-full border border-[#e6e2da] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-gray-600">
+                      {selectedAuctionPainting.isSold ? "Sold" : "Not Sold"}
+                    </span>
+                  </div>
+
+                  <h4 className="text-xl font-bold text-gray-900">
+                    {selectedAuctionPainting.painting?.title || "-"}
+                  </h4>
+                  <p className="mt-2 text-sm text-gray-600">
+                    {selectedAuctionPainting.painting?.description || "Khong co mo ta"}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="rounded-lg border border-[#e6e2da] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      Base Price
+                    </p>
+                    <p className="mt-1 text-lg font-black text-blue-700">
+                      {(selectedAuctionPainting.basePrice || 0).toLocaleString("vi-VN")} VND
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[#e6e2da] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      Current Bid
+                    </p>
+                    <p className="mt-1 text-lg font-black text-red-600">
+                      {(selectedAuctionPainting.currentBid || 0).toLocaleString("vi-VN")} VND
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[#e6e2da] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      Ceil Price
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-gray-800">
+                      {(selectedAuctionPainting.ceilPrice || 0).toLocaleString("vi-VN")} VND
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-[#e6e2da] p-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      Bid Step
+                    </p>
+                    <p className="mt-1 text-sm font-bold text-gray-800">
+                      {(selectedAuctionPainting.bidStep || 0).toLocaleString("vi-VN")} VND
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-[#e6e2da] p-4">
+                  <h5 className="mb-3 text-xs font-black uppercase tracking-widest text-gray-500">
+                    Thong tin phien dau gia
+                  </h5>
+                  <div className="grid grid-cols-1 gap-3 text-sm text-gray-700 md:grid-cols-2">
+                    <p><span className="font-bold">Auction ID:</span> {selectedAuctionPainting.auctionId}</p>
+                    <p><span className="font-bold">Painting ID:</span> {selectedAuctionPainting.paintingId}</p>
+                    <p><span className="font-bold">Current Bidder ID:</span> {selectedAuctionPainting.currentBidderId || "-"}</p>
+                    <p><span className="font-bold">Revoked:</span> {selectedAuctionPainting.revoked ?? 0}</p>
+                    <p><span className="font-bold">Duration:</span> {selectedAuctionPainting.auctionDurationMinutes || 0} minutes</p>
+                    <p><span className="font-bold">Painting Status:</span> {selectedAuctionPainting.painting?.status || "-"}</p>
+                    <p><span className="font-bold">Auction Start:</span> {formatDateTime(selectedAuctionPainting.auctionStartTime)}</p>
+                    <p><span className="font-bold">Auction End:</span> {formatDateTime(selectedAuctionPainting.auctionEndTime)}</p>
+                    <p><span className="font-bold">Created At:</span> {formatDateTime(selectedAuctionPainting.createdAt)}</p>
+                    <p><span className="font-bold">Updated At:</span> {formatDateTime(selectedAuctionPainting.updatedAt)}</p>
+                    <p><span className="font-bold">Contest ID:</span> {selectedAuctionPainting.painting?.contestId ?? "-"}</p>
+                    <p><span className="font-bold">Round ID:</span> {selectedAuctionPainting.painting?.roundId ?? "-"}</p>
+                    <p><span className="font-bold">Competitor ID:</span> {selectedAuctionPainting.painting?.competitorId || "-"}</p>
+                    <p><span className="font-bold">Award ID:</span> {selectedAuctionPainting.painting?.awardId ?? "-"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Painting Modal / Dialog */}
       {showAddPaintingDialog && (
