@@ -184,7 +184,7 @@ export function AdminSidebar({
         title="Đăng xuất"
         description="Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?"
         confirmText="Đăng xuất"
-        variant="destructive"
+        variant="primary"
       />
     </Sidebar>
   );
