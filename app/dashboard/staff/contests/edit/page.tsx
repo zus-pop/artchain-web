@@ -529,7 +529,7 @@ function EditContestContent() {
       <SidebarInset>
         <SiteHeader title={t.editContestTitle} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -552,12 +552,12 @@ function EditContestContent() {
                 <div className="flex items-center gap-4">
                   <Link
                     href={`/dashboard/staff/contests/detail?id=${contestId}`}
-                    className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                    className="staff-btn-outline p-2"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       {t.editContestTitle}
                     </h2>
                   </div>
@@ -573,14 +573,14 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.contestTitle} *
                       </label>
                       <input
                         type="text"
                         {...register("title")}
                         readOnly={readOnly}
-                        className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                           readOnly
                             ? "opacity-50 bg-gray-50 cursor-not-allowed"
                             : ""
@@ -594,7 +594,7 @@ function EditContestContent() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <label className="block text-sm font-medium staff-text-primary mb-2">
+                    <label className="staff-type-label staff-text-primary mb-2 block">
                       {t.description} *
                     </label>
                     <textarea
@@ -602,7 +602,7 @@ function EditContestContent() {
                       required
                       rows={4}
                       readOnly={readOnly}
-                      className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                         readOnly
                           ? "opacity-50 bg-gray-50 cursor-not-allowed"
                           : ""
@@ -623,7 +623,7 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.startDate} *
                       </label>
                       <Controller
@@ -641,7 +641,7 @@ function EditContestContent() {
                             required
                             min={todayString}
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -656,7 +656,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.endDate} *
                       </label>
                       <Controller
@@ -679,7 +679,7 @@ function EditContestContent() {
                                 : todayString
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly || !watchedStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -703,7 +703,7 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.roundStartDate}
                       </label>
                       <Controller
@@ -730,7 +730,7 @@ function EditContestContent() {
                                 : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly || !watchedStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -745,7 +745,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.roundEndDate}
                       </label>
                       <Controller
@@ -778,7 +778,7 @@ function EditContestContent() {
                                 : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly || !watchedRoundStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -793,7 +793,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.submissionDeadline}
                       </label>
                       <Controller
@@ -834,7 +834,7 @@ function EditContestContent() {
                                   : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly ||
                               !watchedRoundStartDate ||
                               !watchedRoundEndDate
@@ -851,7 +851,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.resultAnnouncementDate}
                       </label>
                       <Controller
@@ -887,7 +887,7 @@ function EditContestContent() {
                                   ? formatDateForInput(new Date(watchedEndDate))
                                   : undefined
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedRoundEndDate || readOnly
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -902,7 +902,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.sendOriginalDeadline}
                       </label>
                       <Controller
@@ -941,7 +941,7 @@ function EditContestContent() {
                                   : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly ||
                               !watchedRoundStartDate ||
                               !watchedRoundEndDate
@@ -967,7 +967,7 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.round2CompetitorsLabel}
                       </label>
                       <Controller
@@ -982,7 +982,7 @@ function EditContestContent() {
                               field.onChange(value);
                             }}
                             min="0"
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field`}
                           />
                         )}
                       />
@@ -993,7 +993,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.numberOfTablesRound2}
                       </label>
                       <Controller
@@ -1009,7 +1009,7 @@ function EditContestContent() {
                             }}
                             disabled={watchedRound2Quantity === 0}
                             step={1}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:bg-gray-100 disabled:cursor-not-allowed"
                             placeholder={
                               watchedRound2Quantity === 0
                                 ? "0"
@@ -1078,7 +1078,7 @@ function EditContestContent() {
                     {/* Banner Section */}
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.bannerImage}
                         </label>
                         <input
@@ -1086,7 +1086,7 @@ function EditContestContent() {
                           accept="image/*"
                           onChange={(e) => handleFileChange(e, "banner")}
                           disabled={readOnly}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                         />
                       </div>
                       {bannerPreview && (
@@ -1099,7 +1099,7 @@ function EditContestContent() {
                             alt="Banner preview"
                             width={300}
                             height={150}
-                            className="object-cover rounded border shadow-sm w-full"
+                            className="object-cover rounded-sm border shadow-sm w-full"
                           />
                         </div>
                       )}
@@ -1108,7 +1108,7 @@ function EditContestContent() {
                     {/* PDF Section */}
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.rulesFile}
                         </label>
                         <input
@@ -1116,7 +1116,7 @@ function EditContestContent() {
                           accept=".pdf"
                           disabled={readOnly}
                           onChange={(e) => handleFileChange(e, "rule")}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                         />
                         {watchedRule && (
                           <p className="text-sm staff-text-secondary mt-1">
@@ -1132,8 +1132,8 @@ function EditContestContent() {
 
                       {/* Small PDF Viewer */}
                       {(contest?.ruleUrl || watchedRule) && (
-                        <div className="border border-[#e6e2da] rounded overflow-hidden">
-                          <div className="bg-blue-50 px-3 py-2 border-b border-[#e6e2da]">
+                        <div className="border border-[var(--staff-border)] rounded-sm overflow-hidden">
+                          <div className="bg-blue-50 px-3 py-2 border-b border-[var(--staff-border)]">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <IconFileText className="h-4 w-4 text-blue-600" />
@@ -1178,7 +1178,7 @@ function EditContestContent() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
+                    className="px-6 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
                   >
                     <IconX className="h-4 w-4" />
                     {t.cancel}
@@ -1188,7 +1188,7 @@ function EditContestContent() {
                     disabled={
                       isSubmitting || updateMutation.isPending || !isValid
                     }
-                    className="px-6 py-2 bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2 bg-[var(--staff-primary)] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
                     {isSubmitting || updateMutation.isPending
@@ -1210,7 +1210,7 @@ export default function EditContestPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--staff-primary)]"></div>
         </div>
       }
     >

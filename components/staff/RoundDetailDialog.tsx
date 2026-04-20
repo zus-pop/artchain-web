@@ -192,7 +192,7 @@ function RoundDetailDialog({
         <DialogContent className="sm:max-w-[600px]">
           <DialogTitle className="sr-only">Loading Round Details</DialogTitle>
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--staff-primary)]"></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -223,7 +223,7 @@ function RoundDetailDialog({
 
         {!isEditing ? (
           <div className="space-y-4">
-            <div className="flex items-start justify-between pb-4 border-b border-[#e6e2da]">
+            <div className="flex items-start justify-between pb-4 border-b border-[var(--staff-border)]">
               <div className="flex items-center gap-3">
                 <h3 className="text-lg font-bold staff-text-primary">
                   {round.name}
@@ -241,7 +241,7 @@ function RoundDetailDialog({
               {/* Cột 2: Nút Edit (Icon) */}
               <button
                 onClick={handleEdit}
-                className="p-2 border border-[#e6e2da] text-gray-600 rounded-md hover:bg-[#f9f7f4] transition-colors flex-shrink-0"
+                className="p-2 border border-[var(--staff-border)] text-gray-600 rounded-sm hover:bg-[#f9f7f4] transition-colors flex-shrink-0"
                 aria-label="Edit Round"
               >
                 <IconEdit className="h-5 w-5" />
@@ -251,7 +251,7 @@ function RoundDetailDialog({
             {/* Dates Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {round.startDate && (
-                <div className="border border-[#e6e2da] p-3 rounded-md">
+                <div className="border border-[var(--staff-border)] p-3 rounded-sm">
                   <div className="flex items-center gap-2 mb-2">
                     <IconCalendar className="h-4 w-4 staff-text-secondary" />
                     <p className="text-sm font-medium staff-text-secondary">
@@ -265,7 +265,7 @@ function RoundDetailDialog({
               )}
 
               {round.endDate && (
-                <div className="border border-[#e6e2da] p-3 rounded-md">
+                <div className="border border-[var(--staff-border)] p-3 rounded-sm">
                   <div className="flex items-center gap-2 mb-2">
                     <IconCalendar className="h-4 w-4 staff-text-secondary" />
                     <p className="text-sm font-medium staff-text-secondary">
@@ -279,7 +279,7 @@ function RoundDetailDialog({
               )}
 
               {round.submissionDeadline && (
-                <div className="border border-[#e6e2da] p-3 rounded-md">
+                <div className="border border-[var(--staff-border)] p-3 rounded-sm">
                   <div className="flex items-center gap-2 mb-2">
                     <IconClock className="h-4 w-4 staff-text-secondary" />
                     <p className="text-sm font-medium staff-text-secondary">
@@ -293,7 +293,7 @@ function RoundDetailDialog({
               )}
 
               {round.resultAnnounceDate && (
-                <div className="border border-[#e6e2da] p-3 rounded-md">
+                <div className="border border-[var(--staff-border)] p-3 rounded-sm">
                   <div className="flex items-center gap-2 mb-2">
                     <IconCalendar className="h-4 w-4 staff-text-secondary" />
                     <p className="text-sm font-medium staff-text-secondary">
@@ -307,7 +307,7 @@ function RoundDetailDialog({
               )}
 
               {round.sendOriginalDeadline && (
-                <div className="border border-[#e6e2da] p-3 rounded-md">
+                <div className="border border-[var(--staff-border)] p-3 rounded-sm">
                   <div className="flex items-center gap-2 mb-2">
                     <IconClock className="h-4 w-4 staff-text-secondary" />
                     <p className="text-sm font-medium staff-text-secondary">
@@ -322,7 +322,7 @@ function RoundDetailDialog({
             </div>
 
             {/* Metadata */}
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#e6e2da]">
+            {/* <div className=" ">
               <div>
                 <p className="text-xs staff-text-secondary mb-1">Created At</p>
                 <p className="text-sm staff-text-primary">
@@ -335,7 +335,7 @@ function RoundDetailDialog({
                   {formatDate({ dateString: round.updatedAt })}
                 </p>
               </div>
-            </div>
+            </div> */}
           </div>
         ) : (
           // Edit Mode
@@ -351,7 +351,7 @@ function RoundDetailDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                   placeholder="e.g., ROUND1"
                 />
               </div>
@@ -366,7 +366,7 @@ function RoundDetailDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, table: e.target.value })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                   placeholder="e.g., A, B, C"
                 />
               </div>
@@ -381,7 +381,7 @@ function RoundDetailDialog({
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
                 }
-                className="staff-input w-full rounded-md"
+                className="staff-input w-full rounded-sm"
               >
                 <option value="DRAFT">DRAFT</option>
                 <option value="ACTIVE">ACTIVE</option>
@@ -401,7 +401,7 @@ function RoundDetailDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, startDate: e.target.value })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                 />
               </div>
 
@@ -415,7 +415,7 @@ function RoundDetailDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, endDate: e.target.value })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                 />
               </div>
 
@@ -432,7 +432,7 @@ function RoundDetailDialog({
                       submissionDeadline: e.target.value,
                     })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                 />
               </div>
 
@@ -449,7 +449,7 @@ function RoundDetailDialog({
                       resultAnnounceDate: e.target.value,
                     })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                 />
               </div>
 
@@ -466,7 +466,7 @@ function RoundDetailDialog({
                       sendOriginalDeadline: e.target.value,
                     })
                   }
-                  className="staff-input w-full rounded-md"
+                  className="staff-input w-full rounded-sm"
                 />
               </div>
             </div>
@@ -477,14 +477,14 @@ function RoundDetailDialog({
           <DialogFooter className="flex gap-2">
             <button
               onClick={handleCancel}
-              className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold rounded-md hover:bg-[#f7f7f7] transition-colors"
+              className="staff-btn-secondary !px-4 !py-2"
               disabled={updateMutation.isPending}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold rounded-md shadow-md hover:shadow-lg transition-shadow disabled:opacity-50"
+              className="staff-btn-primary !px-4 !py-2 disabled:opacity-50"
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? "Saving..." : "Save Changes"}

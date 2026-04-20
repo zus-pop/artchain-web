@@ -283,7 +283,7 @@ export const translations = {
     noPendingSubmissionsSelected:
       "Không có bài nộp đang chờ nào được chọn để chấp nhận.",
     acceptAllSelectedPending:
-      "Chấp nhận tất cả ${count} bài nộp đang chờ đã chọn?",
+      "Chấp nhận tất cả ${count} bài nộp đã chọn?",
 
     // Admin Dashboard
     totalUsersAdmin: "Tổng Người Dùng",

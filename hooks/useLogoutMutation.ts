@@ -37,7 +37,8 @@ export function useLogoutMutation() {
 
       // Show error message
       toast.error(
-        error.message || "Logout failed, but you've been logged out locally."
+        error.message ||
+          "Đăng xuất trên máy chủ thất bại, nhưng bạn đã được đăng xuất cục bộ."
       );
 
       // Navigate to login page

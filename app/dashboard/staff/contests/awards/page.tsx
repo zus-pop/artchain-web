@@ -367,7 +367,7 @@ function AwardsManagementPage() {
       <SidebarInset>
         <SiteHeader title={`${contest?.title || "Contest"}`} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -475,7 +475,7 @@ function AwardsManagementPage() {
               </div>
 
               {/* Tabs */}
-              <div className="border-b border-[#e6e2da]">
+              <div className="border-b border-[var(--staff-border)]">
                 <div className="flex space-x-8">
                   <button
                     onClick={() => setActiveTab("top-paintings")}
@@ -597,7 +597,7 @@ function AwardsManagementPage() {
                                     {assignedAward ? (
                                       <div className="flex flex-col items-center gap-2">
                                         <div className="flex flex-col items-center gap-1">
-                                          <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg">
+                                          <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-sm">
                                             <IconTrophy className="h-4 w-4" />
                                             {assignedAward.name}
                                           </div>
@@ -614,7 +614,7 @@ function AwardsManagementPage() {
                                         </div>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg">
+                                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-sm">
                                         <IconTrophy className="h-4 w-4" />
                                         {t.unassigned}
                                       </div>
@@ -653,7 +653,7 @@ function AwardsManagementPage() {
                                     (painting, index) => (
                                       <div
                                         key={painting.paintingId}
-                                        className={`border border-[#e6e2da] p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30 rounded-lg ${
+                                        className={`border border-[var(--staff-border)] p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30 rounded-sm ${
                                           isExpanded
                                             ? `animate-slide-in-up`
                                             : ""
@@ -696,7 +696,7 @@ function AwardsManagementPage() {
                                           {/* Painting Image - Left side with click to view full */}
                                           {painting.imageUrl && (
                                             <div
-                                              className="shrink-0 w-40 h-40 bg-gray-100 overflow-hidden border-2 border-[#e6e2da] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                              className="shrink-0 w-40 h-40 bg-gray-100 overflow-hidden border-2 border-[var(--staff-border)] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                                               onClick={() =>
                                                 setSelectedImage(
                                                   painting.imageUrl
@@ -734,7 +734,7 @@ function AwardsManagementPage() {
                                             </div>
 
                                             {/* Detailed Score Breakdown */}
-                                            <div className="bg-gray-50 border border-[#e6e2da] rounded-lg p-3 mb-4">
+                                            <div className="bg-gray-50 border border-[var(--staff-border)] rounded-sm p-3 mb-4">
                                               <div className="text-xs font-semibold staff-text-primary mb-2">
                                                 {t.scoreBreakdown}:
                                               </div>
@@ -881,12 +881,12 @@ function AwardsManagementPage() {
                                       : "bg-linear-to-r from-yellow-50 to-amber-50 hover:shadow-md"
                                   }`}
                                 >
-                                  <div className="flex items-center justify-between gap-4">
+                                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                     {/* Left side - Trophy, Name, Prize */}
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="flex min-w-0 flex-1 items-start gap-3">
                                       <div className="shrink-0">
                                         <div
-                                          className={`w-12 h-12 flex rounded-full items-center justify-center shadow-sm transition-all duration-300 ${
+                                          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-sm transition-all duration-300 ${
                                             isExpanded
                                               ? "bg-yellow-200 scale-110"
                                               : "bg-yellow-100"
@@ -899,12 +899,12 @@ function AwardsManagementPage() {
                                           />
                                         </div>
                                       </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                          <h3 className="text-lg font-bold text-yellow-900">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <h3 className="min-w-0 text-lg leading-tight font-bold text-yellow-900 break-words">
                                             {award.name}
                                           </h3>
-                                          <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold whitespace-nowrap">
+                                          <div className="shrink-0 whitespace-nowrap bg-yellow-100 px-2 py-1 text-sm font-semibold text-yellow-800">
                                             {(() => {
                                               const prizeValue = parseFloat(
                                                 award.prize
@@ -914,7 +914,7 @@ function AwardsManagementPage() {
                                                 : formatCurrency(prizeValue);
                                             })()}
                                           </div>
-                                          <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium whitespace-nowrap">
+                                          <div className="shrink-0 whitespace-nowrap bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                                             {t.totalVotesLabel}{" "}
                                             {award.totalVotes}
                                           </div>
@@ -923,13 +923,13 @@ function AwardsManagementPage() {
                                     </div>
 
                                     {/* Right side - Assign action and status */}
-                                    <div className="shrink-0 flex items-center gap-3">
+                                    <div className="flex items-center justify-end gap-2 lg:ml-4 lg:gap-3">
                                       {currentlyAssignedPainting ? (
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
                                           {award.totalVotes > 0 &&
                                             topVotedPainting && (
                                               <div
-                                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg ${
+                                                className={`flex items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ${
                                                   currentlyAssignedPainting.paintingId ===
                                                   topVotedPainting.paintingId
                                                     ? "bg-green-100 text-green-800"
@@ -959,7 +959,7 @@ function AwardsManagementPage() {
                                                   topVotedPainting.paintingId
                                               )
                                             }
-                                            className="px-2 py-1 staff-btn-outline text-xs font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                            className="flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium staff-btn-outline transition-colors disabled:cursor-not-allowed disabled:opacity-50"
                                             title={
                                               award.totalVotes > 0 &&
                                               topVotedPainting &&
@@ -974,11 +974,11 @@ function AwardsManagementPage() {
                                           </button>
                                         </div>
                                       ) : (
-                                        <div className="flex items-center gap-2">
-                                          <label className="text-sm font-semibold staff-text-primary">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
+                                          <label className="whitespace-nowrap text-sm font-semibold staff-text-primary">
                                             {t.assignAward}
                                           </label>
-                                          <div className="flex gap-2">
+                                          <div className="flex flex-wrap justify-end gap-2">
                                             {(() => {
                                               const isAlreadyAssigned =
                                                 prizeAward
@@ -1006,7 +1006,7 @@ function AwardsManagementPage() {
                                                     assignMutation.isPending ||
                                                     removeMutation.isPending
                                                   }
-                                                  className="px-3 py-1.5 text-sm bg-white hover:bg-gray-50 border border-[#e6e2da] staff-text-primary rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                  className="rounded-sm border border-[var(--staff-border)] bg-white px-3 py-1.5 text-sm whitespace-nowrap staff-text-primary transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
                                                   {award.totalVotes > 0 &&
                                                   topVotedPainting
@@ -1016,17 +1016,17 @@ function AwardsManagementPage() {
                                               ) : award.totalVotes === 0 ? (
                                                 <button
                                                   disabled
-                                                  className="px-3 py-1.5 text-sm bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg cursor-not-allowed"
+                                                  className="cursor-not-allowed rounded-sm border border-[var(--staff-border)] bg-gray-50 px-3 py-1.5 text-sm whitespace-nowrap text-gray-500"
                                                 >
                                                   {t.noVotesYet}
                                                 </button>
                                               ) : isAlreadyAssigned ? (
-                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm">
+                                                <div className="flex items-center gap-2 rounded-sm border border-green-300 bg-green-100 px-3 py-1.5 text-sm whitespace-nowrap text-green-800">
                                                   <IconTrophy className="h-4 w-4" />
                                                   {t.assignedStatus}
                                                 </div>
                                               ) : (
-                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg text-sm">
+                                                <div className="flex items-center gap-2 rounded-sm border border-[var(--staff-border)] bg-gray-50 px-3 py-1.5 text-sm whitespace-nowrap text-gray-500">
                                                   <IconTrophy className="h-4 w-4" />
                                                   {t.awardSlotsFull}
                                                 </div>
@@ -1035,24 +1035,24 @@ function AwardsManagementPage() {
                                           </div>
                                         </div>
                                       )}
-                                    </div>
 
-                                    <button
-                                      onClick={() =>
-                                        toggleAwardExpansion(award.awardId)
-                                      }
-                                      className={`shrink-0 p-2 transition-all duration-300 border ${
-                                        isExpanded
-                                          ? "bg-yellow-100 border-yellow-300 hover:bg-yellow-200 shadow-md"
-                                          : "hover:bg-yellow-100 border-yellow-200"
-                                      }`}
-                                    >
-                                      <IconChevronDown
-                                        className={`h-4 w-4 text-yellow-600 transition-transform duration-300 ${
-                                          isExpanded ? "rotate-180" : ""
+                                      <button
+                                        onClick={() =>
+                                          toggleAwardExpansion(award.awardId)
+                                        }
+                                        className={`shrink-0 border p-2 transition-all duration-300 ${
+                                          isExpanded
+                                            ? "bg-yellow-100 border-yellow-300 hover:bg-yellow-200 shadow-md"
+                                            : "hover:bg-yellow-100 border-yellow-200"
                                         }`}
-                                      />
-                                    </button>
+                                      >
+                                        <IconChevronDown
+                                          className={`h-4 w-4 text-yellow-600 transition-transform duration-300 ${
+                                            isExpanded ? "rotate-180" : ""
+                                          }`}
+                                        />
+                                      </button>
+                                    </div>
                                   </div>
 
                                   {/* Painting Comparison at Bottom */}
@@ -1132,7 +1132,7 @@ function AwardsManagementPage() {
                                                     2
                                                   ) || "N/A"}
                                                 </div>
-                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-sm">
                                                   {currentlyAssignedVoteCount}{" "}
                                                   {t.votesLabel.toLowerCase()}
                                                 </div>
@@ -1201,7 +1201,7 @@ function AwardsManagementPage() {
                                                     2
                                                   ) || "N/A"}
                                                 </div>
-                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-sm">
                                                   {t.votesLabel.toLowerCase()}
                                                   {
                                                     topVotedPainting.voteCount
@@ -1315,7 +1315,7 @@ function AwardsManagementPage() {
                                         return (
                                           <div
                                             key={painting.paintingId}
-                                            className={`border border-[#e6e2da] p-4 hover:shadow-md transition-all duration-300 rounded-lg ${
+                                            className={`border border-[var(--staff-border)] p-4 hover:shadow-md transition-all duration-300 rounded-sm ${
                                               isTopVoted
                                                 ? "hover:border-yellow-300 hover:bg-yellow-50/50 ring-1 ring-yellow-200/50"
                                                 : "hover:border-yellow-300 hover:bg-yellow-50/30"
@@ -1332,7 +1332,7 @@ function AwardsManagementPage() {
                                               {/* Painting Image */}
                                               {painting.imageUrl && (
                                                 <div
-                                                  className="shrink-0 w-40 h-40 bg-gray-100 rounded-lg overflow-hidden border-2 border-[#e6e2da] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                                  className="shrink-0 w-40 h-40 bg-gray-100 rounded-sm overflow-hidden border-2 border-[var(--staff-border)] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                                                   onClick={() =>
                                                     setSelectedImage(
                                                       painting.imageUrl
@@ -1358,7 +1358,7 @@ function AwardsManagementPage() {
                                                       {isTopVoted &&
                                                         award.totalVotes >
                                                           0 && (
-                                                          <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                                                          <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-sm">
                                                             🏆 {t.topVoted}{" "}
                                                           </div>
                                                         )}
@@ -1384,7 +1384,7 @@ function AwardsManagementPage() {
                                                   {/* Assignment Status and Actions */}
                                                   <div className="ml-4 flex flex-col items-end gap-1">
                                                     {isAssignedToThisAward ? (
-                                                      <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                                      <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                                         <IconTrophy className="h-3 w-3" />
                                                         {t.currentWinner}
                                                       </div>
@@ -1410,11 +1410,11 @@ function AwardsManagementPage() {
                                                       prizeAward.paintings
                                                         .length >=
                                                         prizeAward.quantity ? (
-                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-sm">
                                                         {t.awardSlotsFull}
                                                       </div>
                                                     ) : (
-                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-sm">
                                                         {
                                                           t.noMatchingAwardStatus
                                                         }
@@ -1451,7 +1451,7 @@ function AwardsManagementPage() {
                 <div className="space-y-4">
                   {/* Awards Summary */}
                   <div className="staff-card p-4 sticky top-4">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4">
                       {activeTab === "top-paintings"
                         ? t.topAwardsSummary
                         : t.votedAwardsSummary}
@@ -1507,7 +1507,7 @@ function AwardsManagementPage() {
                               return (
                                 <div
                                   key={award.awardId}
-                                  className={`p-4 rounded-lg border-2 ${
+                                  className={`p-4 rounded-sm border-2 ${
                                     isFull
                                       ? "bg-green-50 border-green-300"
                                       : "bg-blue-50 border-blue-300"
@@ -1543,7 +1543,7 @@ function AwardsManagementPage() {
                                         </div>
                                       </div>
                                       {isFull && (
-                                        <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                        <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                           {t.completeStatus}
                                         </div>
                                       )}
@@ -1592,7 +1592,7 @@ function AwardsManagementPage() {
                             return (
                               <div
                                 key={award.awardId}
-                                className={`p-4 rounded-lg border-2 ${
+                                className={`p-4 rounded-sm border-2 ${
                                   hasMismatch && award.totalVotes === 0
                                     ? "bg-orange-50 border-orange-300"
                                     : hasMismatch && award.totalVotes > 0
@@ -1644,17 +1644,17 @@ function AwardsManagementPage() {
                                       </div>
                                     </div>
                                     {hasMismatch && award.totalVotes === 0 && (
-                                      <div className="mt-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">
+                                      <div className="mt-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-sm">
                                         {t.noVotesYet}
                                       </div>
                                     )}
                                     {hasMismatch && award.totalVotes > 0 && (
-                                      <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+                                      <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-sm">
                                         {t.mismatchStatus}
                                       </div>
                                     )}
                                     {isFull && !hasMismatch && (
-                                      <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                      <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                         {t.completeStatus}
                                       </div>
                                     )}
@@ -1666,7 +1666,7 @@ function AwardsManagementPage() {
                     </div>
 
                     {/* Overall Progress */}
-                    <div className="mt-6 pt-4 border-t border-[#e6e2da]">
+                    <div className="mt-6 pt-4 border-t border-[var(--staff-border)]">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="staff-text-primary font-medium">
                           {t.overallProgress}
@@ -1693,14 +1693,14 @@ function AwardsManagementPage() {
                         ></div>
                       </div>
                       {activeTab === "vote-results" && mismatchCount > 0 && (
-                        <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+                        <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-sm">
                           {mismatchCount} {t.mismatchesFound}
                         </div>
                       )}
                       {allAwardSlotsFilled &&
                         (activeTab !== "vote-results" ||
                           mismatchCount === 0) && (
-                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-sm">
                             <div className="flex items-center gap-2 text-green-800 text-sm font-medium">
                               <IconTrophy className="h-4 w-4" />
                               {t.allAwardsAssignedReady}

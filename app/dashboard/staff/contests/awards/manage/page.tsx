@@ -255,7 +255,7 @@ function AwardManagementPage() {
       <SidebarInset>
         <SiteHeader title={`${contest?.title || "Contest"}`} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -280,7 +280,7 @@ function AwardManagementPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.awardManagement} - {contest?.title || "Contest"}
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
@@ -303,14 +303,14 @@ function AwardManagementPage() {
               <div className="staff-card p-6">
                 {/* Create New Awards */}
                 <div className="mb-8">
-                  <h4 className="text-lg font-semibold staff-text-primary mb-4">
+                  <h4 className="staff-type-section-title staff-text-primary mb-4">
                     {t.createNewAwards}
                   </h4>
                   <div className="space-y-4">
                     {newAwards.map((award, index) => (
                       <div
                         key={index}
-                        className="border border-[#e6e2da] rounded-lg p-4 bg-white"
+                        className="border border-[var(--staff-border)] rounded-sm p-4 bg-white"
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
@@ -365,7 +365,7 @@ function AwardManagementPage() {
                           {newAwards.length > 1 && (
                             <button
                               onClick={() => removeNewAward(index)}
-                              className="px-3 py-2 text-red-600 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-lg transition-colors"
+                              className="px-3 py-2 text-red-600 hover:text-red-800 border border-red-300 hover:border-red-400 rounded-sm transition-colors"
                             >
                               <IconX className="h-4 w-4" />
                             </button>
@@ -414,14 +414,14 @@ function AwardManagementPage() {
 
                 {/* Existing Awards List */}
                 <div>
-                  <h4 className="text-lg font-semibold staff-text-primary mb-4">
+                  <h4 className="staff-type-section-title staff-text-primary mb-4">
                     {t.existingAwards} ({awards.length})
                   </h4>
                   <div className="space-y-4">
                     {awards.map((award) => (
                       <div
                         key={award.awardId}
-                        className="border border-[#e6e2da] rounded-lg p-4 bg-white"
+                        className="border border-[var(--staff-border)] rounded-sm p-4 bg-white"
                       >
                         {editingAward?.awardId === award.awardId ? (
                           // Edit Mode
@@ -533,7 +533,7 @@ function AwardManagementPage() {
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
                                 <IconTrophy className="h-5 w-5 text-yellow-600" />
-                                <h5 className="text-lg font-semibold staff-text-primary">
+                                <h5 className="staff-type-section-title staff-text-primary">
                                   {award.name}
                                 </h5>
                               </div>
@@ -553,7 +553,7 @@ function AwardManagementPage() {
                             <div className="flex gap-2">
                               <button
                                 onClick={() => startEditingAward(award)}
-                                className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                                className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-sm transition-colors"
                                 title="Edit Award"
                               >
                                 <IconEdit className="h-4 w-4" />
@@ -564,7 +564,7 @@ function AwardManagementPage() {
                                     handleDeleteAward(award.awardId)
                                   }
                                   disabled={deleteMutation.isPending}
-                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-sm transition-colors disabled:opacity-50"
                                   title="Delete Award"
                                 >
                                   <IconTrash className="h-4 w-4" />

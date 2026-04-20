@@ -368,7 +368,7 @@ export default function Exhibition3DPage({
                   return (
                     <div
                       key={painting.paintingId}
-                      className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 ${
+                      className={`bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 ${
                         isAdded
                           ? "cursor-not-allowed"
                           : "cursor-pointer hover:opacity-90 hover:scale-105"
@@ -397,14 +397,14 @@ export default function Exhibition3DPage({
                         />
                         {painting.award && (
                           <div className="absolute top-1 right-1">
-                            <span className="bg-yellow-500 text-white text-xs font-bold px-1.5 py-0.5 rounded shadow-sm">
+                            <span className="bg-yellow-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-sm shadow-sm">
                               #{painting.award.rank}
                             </span>
                           </div>
                         )}
                         {isAdded && (
                           <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
-                            <span className="text-white font-bold text-sm px-3 py-1 rounded">
+                            <span className="text-white font-bold text-sm px-3 py-1 rounded-sm">
                               Đã thêm
                             </span>
                           </div>

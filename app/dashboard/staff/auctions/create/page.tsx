@@ -100,7 +100,7 @@ export default function CreateAuctionPage() {
   const onSubmit = async (data: AuctionFormData) => {
     try {
       if (!user?.userId) {
-        toast.error("User session not found");
+        toast.error("Không tìm thấy phiên đăng nhập người dùng");
         return;
       }
 
@@ -127,7 +127,7 @@ export default function CreateAuctionPage() {
       <SidebarInset>
         <SiteHeader title={t.createAuction} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -146,7 +146,7 @@ export default function CreateAuctionPage() {
                   <div className="flex items-center gap-4">
                     <Link
                       href="/dashboard/staff/auctions"
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                      className="p-2 hover:bg-gray-100 rounded-sm transition-colors border border-gray-200"
                       title={t.allAuctions}
                     >
                       <IconArrowLeft className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function CreateAuctionPage() {
                 <div className="space-y-6">
                   <div className="staff-card p-6">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-blue-100 rounded-lg">
+                      <div className="p-2 bg-blue-100 rounded-sm">
                         <IconGavel className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
@@ -185,16 +185,16 @@ export default function CreateAuctionPage() {
                     >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.auctionTitle}
                           </label>
                           <input
                             type="text"
                             {...register("title")}
-                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                            className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all ${
                               errors.title
                                 ? "border-red-300 bg-red-50"
-                                : "border-[#e6e2da] bg-white"
+                                : "border-[var(--staff-border)] bg-white"
                             }`}
                             placeholder={
                               t.enterAuctionTitle || "Nhập tiêu đề đấu giá"
@@ -208,16 +208,16 @@ export default function CreateAuctionPage() {
                         </div>
 
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.descriptionLabel}
                           </label>
                           <textarea
                             {...register("description")}
                             rows={5}
-                            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
+                            className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all resize-none ${
                               errors.description
                                 ? "border-red-300 bg-red-50"
-                                : "border-[#e6e2da] bg-white"
+                                : "border-[var(--staff-border)] bg-white"
                             }`}
                             placeholder={
                               t.describeAuction ||
@@ -232,7 +232,7 @@ export default function CreateAuctionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.auctionStartTime}
                           </label>
                           <div className="relative">
@@ -240,10 +240,10 @@ export default function CreateAuctionPage() {
                               type="datetime-local"
                               {...register("startTime")}
                               min={minDateTime}
-                              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                              className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all ${
                                 errors.startTime
                                   ? "border-red-300 bg-red-50"
-                                  : "border-[#e6e2da] bg-white"
+                                  : "border-[var(--staff-border)] bg-white"
                               }`}
                             />
                           </div>
@@ -255,7 +255,7 @@ export default function CreateAuctionPage() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.auctionEndTime}
                           </label>
                           <div className="relative">
@@ -263,10 +263,10 @@ export default function CreateAuctionPage() {
                               type="datetime-local"
                               {...register("endTime")}
                               min={watchedStartTime || minDateTime}
-                              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                              className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all ${
                                 errors.endTime
                                   ? "border-red-300 bg-red-50"
-                                  : "border-[#e6e2da] bg-white"
+                                  : "border-[var(--staff-border)] bg-white"
                               }`}
                             />
                           </div>
@@ -278,7 +278,7 @@ export default function CreateAuctionPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end gap-3 pt-8 border-t border-[#e6e2da]">
+                      <div className="flex items-center justify-end gap-3 pt-8 border-t border-[var(--staff-border)]">
                         <Link
                           href="/dashboard/staff/auctions"
                           className="staff-btn-secondary flex items-center gap-2 px-6"

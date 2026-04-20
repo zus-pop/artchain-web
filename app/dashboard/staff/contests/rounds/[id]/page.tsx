@@ -139,25 +139,21 @@ function RoundDetailContent() {
       if (meta.failureCount === 0) {
         // All successful
         toast.success(
-          `Successfully accepted ${meta.successCount} submission${
-            meta.successCount > 1 ? "s" : ""
-          }!`
+          `Đã duyệt thành công ${meta.successCount} bài nộp!`
         );
       } else if (meta.successCount === 0) {
         // All failed
         toast.error(
-          `Failed to accept all ${meta.failureCount} submission${
-            meta.failureCount > 1 ? "s" : ""
-          }`
+          `Không thể duyệt ${meta.failureCount} bài nộp.`
         );
       } else {
         // Partial success
         toast.warning(
-          `Processed ${meta.total} submissions: ${meta.successCount} accepted, ${meta.failureCount} failed`,
+          `Đã xử lý ${meta.total} bài nộp: ${meta.successCount} bài đã duyệt, ${meta.failureCount} bài thất bại`,
           {
             description:
               data.failed.length > 0
-                ? `Failed: ${data.failed.map((f) => f.error).join(", ")}`
+                ? `Không duyệt được: ${data.failed.map((f) => f.error).join(", ")}`
                 : undefined,
             duration: 5000,
           }
@@ -165,9 +161,11 @@ function RoundDetailContent() {
       }
     },
     onError: (error) => {
-      toast.error("Failed to accept submissions", {
+      toast.error("Không thể duyệt bài nộp", {
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error
+            ? error.message
+            : "Đã xảy ra lỗi không xác định",
       });
     },
   });
@@ -492,7 +490,7 @@ function RoundDetailContent() {
       <SidebarInset>
         <SiteHeader title="Round Detail" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -515,13 +513,13 @@ function RoundDetailContent() {
                 <div className="flex items-center gap-4">
                   <Link
                     href={`/dashboard/staff/contests/detail?id=${contestId}`}
-                    className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                    className="staff-btn-outline p-2"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
                     <div className="flex items-center gap-3">
-                      <h2 className="text-2xl font-bold staff-text-primary">
+                      <h2 className="staff-type-page-title staff-text-primary">
                         {round.name === "ROUND_1"
                           ? `${t.rounds} Sơ Khảo`
                           : `${t.rounds} Chung Khảo`}
@@ -620,7 +618,7 @@ function RoundDetailContent() {
 
               {/* Submissions Section - Only show review tabs for Round 1 or other rounds that aren't ROUND_2 */}
               {!round.name.toUpperCase().includes("ROUND_2") && (
-                <div className="flex w-full border-b border-[#e6e2da] mb-2">
+                <div className="flex w-full border-b border-[var(--staff-border)] mb-2">
                   <button
                     onClick={() => {
                       setReviewTab("NORMAL");
@@ -644,7 +642,7 @@ function RoundDetailContent() {
                     />
                     {t.normalReview}
                     {counts.pending > 0 && (
-                      <span className="bg-blue-100 text-blue-600 text-[10px] px-1.5 py-0.5 rounded-full border border-blue-200">
+                      <span className="bg-blue-100 text-blue-600 text-xs px-1.5 py-0.5 rounded-full border border-blue-200">
                         {counts.pending}
                       </span>
                     )}
@@ -668,7 +666,7 @@ function RoundDetailContent() {
                     />
                     {t.warningPaintings}
                     {counts.flagged > 0 && (
-                      <span className="bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full border border-red-200">
+                      <span className="bg-red-100 text-red-600 text-xs px-1.5 py-0.5 rounded-full border border-red-200">
                         {counts.flagged}
                       </span>
                     )}
@@ -694,7 +692,7 @@ function RoundDetailContent() {
                           <button
                             onClick={handleAcceptAllSelected}
                             disabled={acceptMultipleMutation.isPending}
-                            className="px-3 py-1 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 text-sm font-semibold rounded"
+                            className="staff-btn-success !px-3 !py-1 disabled:opacity-50"
                           >
                             {acceptMultipleMutation.isPending ? 'Accepting...' : 'Accept All'}
                           </button>
@@ -713,8 +711,8 @@ function RoundDetailContent() {
                         onClick={() => setSelectedStatus("ALL")}
                         className={`px-4 py-2 font-semibold text-sm transition-all ${
                           selectedStatus === "ALL"
-                            ? "bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white shadow-md"
-                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                            ? "bg-[var(--staff-primary)] text-white shadow-md"
+                            : "border-2 border-[var(--staff-border)] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
                         {t.all} ({counts.all})
@@ -724,7 +722,7 @@ function RoundDetailContent() {
                         className={`px-4 py-2 text-sm font-semibold transition-all ${
                           selectedStatus === "PENDING"
                             ? "bg-linear-to-r from-orange-500 to-amber-500 text-white shadow-md"
-                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                            : "border-2 border-[var(--staff-border)] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
                         {t.pendingReview} ({counts.pending})
@@ -734,7 +732,7 @@ function RoundDetailContent() {
                         className={`px-4 py-2 text-sm font-semibold transition-all ${
                           selectedStatus === "ACCEPTED"
                             ? "bg-linear-to-r from-green-500 to-emerald-500 text-white shadow-md"
-                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                            : "border-2 border-[var(--staff-border)] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
                         {t.approved} ({counts.accepted})
@@ -744,7 +742,7 @@ function RoundDetailContent() {
                         className={`px-4 py-2 text-sm font-semibold transition-all ${
                           selectedStatus === "REJECTED"
                             ? "bg-linear-to-r from-red-500 to-rose-500 text-white shadow-md"
-                            : "border-2 border-[#e6e2da] staff-text-secondary hover:bg-[#f7f7f7]"
+                            : "border-2 border-[var(--staff-border)] staff-text-secondary hover:bg-[#f7f7f7]"
                         }`}
                       >
                         {t.rejected} ({counts.rejected})
@@ -865,7 +863,7 @@ function RoundDetailContent() {
                                 onClick={() =>
                                   setSelectedPaintingId(submission.paintingId)
                                 }
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[var(--staff-border)] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
                               >
                                 <IconEye className="h-4 w-4" />
                                 {t.viewBtn}
@@ -877,7 +875,7 @@ function RoundDetailContent() {
                                       handleQuickAccept(submission.paintingId)
                                     }
                                     disabled={acceptMultipleMutation.isPending}
-                                    className="px-3 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50"
+                                    className="staff-btn-success !px-3 !py-2 disabled:opacity-50"
                                     title={t.acceptBtn}
                                   >
                                     <IconCheck className="h-4 w-4" />
@@ -887,7 +885,7 @@ function RoundDetailContent() {
                                       handleQuickReject(submission.paintingId)
                                     }
                                     disabled={rejectMutation.isPending}
-                                    className="px-3 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                                    className="staff-btn-danger !px-3 !py-2 disabled:opacity-50"
                                     title={t.rejectBtn}
                                   >
                                     <IconX className="h-4 w-4" />
@@ -928,7 +926,7 @@ function RoundDetailContent() {
                         <button
                           onClick={handleAcceptAllSelected}
                           disabled={selectedSubmissions.size === 0 || acceptMultipleMutation.isPending}
-                          className="px-4 py-2 bg-[#10B981] text-white hover:bg-[#059669] transition-all disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] disabled:cursor-not-allowed text-sm font-bold rounded shadow-sm flex items-center gap-2"
+                          className="staff-btn-success !px-4 !py-2 disabled:bg-[#F3F4F6] disabled:text-[#9CA3AF] disabled:cursor-not-allowed shadow-sm flex items-center gap-2"
                         >
                           <IconCheck className="h-4 w-4" />
                           {acceptMultipleMutation.isPending ? t.accepting : t.acceptAll}
@@ -1055,7 +1053,7 @@ function RoundDetailContent() {
                                   onClick={() =>
                                     setSelectedPaintingId(submission.paintingId)
                                   }
-                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[#e6e2da] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
+                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-[var(--staff-border)] staff-text-primary hover:bg-[#f7f7f4] transition-colors text-sm font-semibold"
                                 >
                                   <IconEye className="h-4 w-4" />
                                   {t.viewBtn}
@@ -1065,7 +1063,7 @@ function RoundDetailContent() {
                                     handleQuickAccept(submission.paintingId)
                                   }
                                   disabled={acceptMultipleMutation.isPending}
-                                  className="px-4 py-2 bg-green-500 text-white hover:bg-green-600 transition-colors disabled:opacity-50 font-semibold"
+                                  className="staff-btn-success !px-4 !py-2 disabled:opacity-50"
                                   title={t.acceptBtn}
                                 >
                                   <IconCheck className="h-4 w-4" />
@@ -1075,7 +1073,7 @@ function RoundDetailContent() {
                                     handleQuickReject(submission.paintingId)
                                   }
                                   disabled={rejectMutation.isPending}
-                                  className="px-4 py-2 bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50 font-semibold"
+                                  className="staff-btn-danger !px-4 !py-2 disabled:opacity-50"
                                   title={t.rejectBtn}
                                 >
                                   <IconX className="h-4 w-4" />
@@ -1117,7 +1115,7 @@ function RoundDetailContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t.confirmAccept || "Confirm Accept"}</DialogTitle>
-            <DialogDescription>{t.confirmAcceptSubmission}</DialogDescription>
+            {/* <DialogDescription>{t.confirmAcceptSubmission}</DialogDescription> */}
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -1143,7 +1141,7 @@ function RoundDetailContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t.confirmReject || "Confirm Reject"}</DialogTitle>
-            <DialogDescription>{t.confirmRejectSubmission}</DialogDescription>
+            {/* <DialogDescription>{t.confirmRejectSubmission}</DialogDescription> */}
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -1167,12 +1165,12 @@ function RoundDetailContent() {
       <Dialog open={acceptAllDialogOpen} onOpenChange={setAcceptAllDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{"Confirm Accept All"}</DialogTitle>
-            <DialogDescription>
-              {t.acceptAllSelectedPending.replace(
+            <DialogTitle>{t.acceptAllSelectedPending.replace(
                 "${count}",
                 pendingAcceptAllIds.length.toString()
-              )}
+              )}</DialogTitle>
+            <DialogDescription>
+              
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -1200,7 +1198,7 @@ export default function RoundDetailPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--staff-primary)]"></div>
         </div>
       }
     >

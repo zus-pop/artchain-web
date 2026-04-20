@@ -172,7 +172,7 @@ export default function EditExhibitionPaintingsPage({
       <SidebarInset>
         <SiteHeader title={t.editExhibitionPaintings} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -196,7 +196,7 @@ export default function EditExhibitionPaintingsPage({
                   <div className="flex items-center gap-4">
                     <Link
                       href={`/dashboard/staff/exhibitions/${id}`}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 rounded-sm transition-colors"
                       title={t.backToExhibitionEdit}
                     >
                       <IconArrowLeft className="h-5 w-5" />
@@ -275,7 +275,7 @@ export default function EditExhibitionPaintingsPage({
                                           exhibitionPainting.paintingId,
                                         )
                                       }
-                                      className="p-1.5 bg-red-500 text-white hover:bg-red-600 transition-colors shadow-lg"
+                                      className="staff-btn-danger !px-1.5 !py-1.5 shadow-lg"
                                       title="Remove from exhibition"
                                       disabled={
                                         deletePaintingMutation.isPending
@@ -322,7 +322,7 @@ export default function EditExhibitionPaintingsPage({
                   {/* Sidebar Column */}
                   <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
                     {/* <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                      <h3 className="staff-type-section-title staff-text-primary mb-4">
                         {t.exhibitionStats}
                       </h3>
                       <div className="space-y-4">
@@ -374,7 +374,7 @@ export default function EditExhibitionPaintingsPage({
                           <IconTrophy className="h-5 w-5 text-purple-600" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold staff-text-primary">
+                          <h3 className="staff-type-section-title staff-text-primary">
                             {t.addPaintings}
                           </h3>
                           <p className="text-sm staff-text-secondary">
@@ -386,7 +386,7 @@ export default function EditExhibitionPaintingsPage({
                       <div className="space-y-4">
                         {/* Contest Selection */}
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.chooseContest}
                           </label>
                           <select
@@ -394,7 +394,7 @@ export default function EditExhibitionPaintingsPage({
                             onChange={(e) =>
                               setSelectedContestId(e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field transition-colors"
                           >
                             <option value="">{t.chooseContest}</option>
                             {contestsResponse?.data?.map((contest) => (
@@ -424,7 +424,7 @@ export default function EditExhibitionPaintingsPage({
                                 {awardsResponse.data.map((award) => (
                                   <div
                                     key={award.awardId}
-                                    className="rounded-lg p-3"
+                                    className="rounded-sm p-3"
                                   >
                                     <div className="flex items-center justify-between mb-3">
                                       <div>
@@ -494,7 +494,7 @@ export default function EditExhibitionPaintingsPage({
                                                 )}
                                                 {isAlreadyAdded ? (
                                                   <div className="absolute inset-0 bg-opacity-40 flex items-center justify-center">
-                                                    <span className="bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded font-medium">
+                                                    <span className="bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded-sm font-medium">
                                                       {t.addedToExhibition}
                                                     </span>
                                                   </div>
@@ -513,7 +513,7 @@ export default function EditExhibitionPaintingsPage({
                                                             e.target.checked,
                                                           );
                                                         }}
-                                                        className="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer transition-all duration-200 hover:border-blue-400 checked:bg-blue-600 checked:border-blue-600"
+                                                        className="w-5 h-5 text-blue-600 bg-white border-2 border-gray-300 rounded-sm focus:ring-[var(--staff-primary)] focus:ring-2 cursor-pointer transition-all duration-200 hover:border-blue-400 checked:bg-blue-600 checked:border-blue-600"
                                                       />
                                                     </div>
                                                   </div>

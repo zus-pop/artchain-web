@@ -542,7 +542,7 @@ export function ExaminersDialog({
                 <div className="flex gap-4">
                   {/* Examiner Search */}
                   <div className="flex-1 relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="staff-type-label text-gray-700 mb-2 block">
                       {t.selectExaminer}
                     </label>
                     <div className="relative">
@@ -606,7 +606,7 @@ export function ExaminersDialog({
 
                   {/* Role Selection */}
                   <div className="w-48">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="staff-type-label text-gray-700 mb-2 block">
                       {t.role}
                     </label>
                     <select
@@ -636,7 +636,7 @@ export function ExaminersDialog({
                 {t.currentExaminers} ({filteredContestExaminers.length})
               </h3>
 
-              <div className="inline-flex border border-gray-200 rounded overflow-hidden self-start md:self-auto">
+              <div className="inline-flex border border-gray-200 rounded-sm overflow-hidden self-start md:self-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -808,7 +808,7 @@ export function ExaminersDialog({
                                 onClick={() =>
                                   handleToggleScheduleDropdown(examiner)
                                 }
-                                className="px-4 py-2 bg-green-500/10 text-green-700 border border-green-500/20 rounded hover:bg-green-500/20 transition-colors text-sm font-medium flex items-center gap-2 whitespace-nowrap"
+                                className="staff-btn-outline !px-4 !py-2 text-sm text-green-700 border-green-300 hover:bg-green-50 flex items-center gap-2 whitespace-nowrap"
                               >
                                 <IconCalendar className="h-4 w-4" />
                                 {currentSchedule
@@ -825,7 +825,7 @@ export function ExaminersDialog({
                                   onClick={() =>
                                     handleToggleScheduleDropdown(examiner)
                                   }
-                                  className="px-3 py-2 bg-blue-500/10 text-blue-700 border border-blue-500/20 rounded hover:bg-blue-500/20 transition-colors text-sm font-medium flex items-center gap-2 whitespace-nowrap"
+                                  className="staff-btn-outline !px-3 !py-2 text-sm text-blue-700 border-blue-300 hover:bg-blue-50 flex items-center gap-2 whitespace-nowrap"
                                 >
                                   <IconTag className="h-4 w-4" />
                                   {displayedRound2Table
@@ -836,10 +836,10 @@ export function ExaminersDialog({
                             </div>
 
                             {showScheduleDropdown === assignmentKey && (
-                              <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[280px]">
+                              <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-sm shadow-lg p-3 min-w-[280px]">
                                 {examiner.role === "ROUND_2" && (
                                   <div className="mb-3">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label className="staff-type-label text-gray-700 mb-2 block">
                                       {t.table}
                                     </label>
                                     <select
@@ -851,7 +851,7 @@ export function ExaminersDialog({
                                           e.target.value,
                                         )
                                       }
-                                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                                      className="staff-select w-full border-gray-300"
                                     >
                                       <option value="">
                                         {availableTables.length > 0
@@ -884,11 +884,11 @@ export function ExaminersDialog({
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                  className="staff-field border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
                                 />
 
                                 {(roundStartDate || roundEndDate) && (
-                                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+                                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-sm text-xs text-blue-700">
                                     <div className="font-medium mb-1">
                                       {t.availableDatesForRound}{" "}
                                       {examiner.role === "ROUND_1"
@@ -934,7 +934,7 @@ export function ExaminersDialog({
                                     onClick={() =>
                                       setShowScheduleDropdown(null)
                                     }
-                                    className="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                    className="staff-btn-secondary !px-3 !py-1.5"
                                   >
                                     Cancel
                                   </button>

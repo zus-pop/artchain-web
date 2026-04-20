@@ -170,7 +170,7 @@ export default function AuctionsManagementPage() {
       <SidebarInset>
         <SiteHeader title={t.auctionManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.auctionManagement }]}
               homeHref="/dashboard/staff"
@@ -215,13 +215,6 @@ export default function AuctionsManagementPage() {
                     variant: "warning",
                   },
                   {
-                    // title: t.upcomingAuctions,
-                    value: upcomingAuctionsCount,
-                    subtitle: t.upcomingAuctions,
-                    icon: <IconClock className="h-6 w-6" />,
-                    variant: "purple",
-                  },
-                  {
                     // title: t.activeAuctions,
                     value: activeAuctionsCount,
                     subtitle: t.activeAuctions,
@@ -241,13 +234,12 @@ export default function AuctionsManagementPage() {
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder={t.searchAuctionsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] bg-white"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -257,7 +249,7 @@ export default function AuctionsManagementPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as AuctionStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    className="staff-select bg-white"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -325,7 +317,7 @@ export default function AuctionsManagementPage() {
                                  </div>
                                </td>
                                <td className="px-6 py-4 whitespace-nowrap">
-                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[10px] uppercase font-black tracking-wider ${getStatusBadgeColor(auction.status)}`}>
+                                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs uppercase font-black tracking-wider ${getStatusBadgeColor(auction.status)}`}>
                                    <StatusIcon className="h-3 w-3" />
                                    {auction.status}
                                  </span>
@@ -369,7 +361,7 @@ export default function AuctionsManagementPage() {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm font-bold"
+                    className="px-2 py-1 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] bg-white text-sm font-bold"
                   >
                     {[5, 10, 20, 50].map((size) => (
                       <option key={size} value={size}>{size}</option>
@@ -387,33 +379,33 @@ export default function AuctionsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="p-2 border-2 border-[#e6e2da] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="p-2 border-2 border-[var(--staff-border)] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <IconChevronsLeft className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setCurrentPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="p-2 border-2 border-[#e6e2da] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="p-2 border-2 border-[var(--staff-border)] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <IconChevronLeft className="h-4 w-4" />
                     </button>
 
-                    <div className="px-4 py-2 border-2 border-[#e6e2da] bg-white text-xs font-black staff-text-primary uppercase tracking-widest">
+                    <div className="px-4 py-2 border-2 border-[var(--staff-border)] bg-white text-xs font-black staff-text-primary uppercase tracking-widest">
                       {t.pageText} {currentPage} / {totalPages}
                     </div>
 
                     <button
                       onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="p-2 border-2 border-[#e6e2da] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="p-2 border-2 border-[var(--staff-border)] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <IconChevronRight className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="p-2 border-2 border-[#e6e2da] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      className="p-2 border-2 border-[var(--staff-border)] hover:bg-red-50 hover:border-red-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
                       <IconChevronsRight className="h-4 w-4" />
                     </button>
