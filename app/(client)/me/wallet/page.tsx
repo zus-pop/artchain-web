@@ -789,8 +789,10 @@ export default function WalletPage() {
                               {selectedWd?.status === "APPROVED" && selectedWd?.proofImageUrl && (
                                 <div className="space-y-2">
                                   <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Chứng từ chuyển khoản</p>
+                                  <div>{selectedWd.staffNote}</div>
                                   <div className="relative aspect-video rounded-xl border border-gray-100 bg-gray-50 overflow-hidden">
                                     <Image src={selectedWd.proofImageUrl} alt="Proof" fill className="object-contain" />
+                                    
                                   </div>
                                 </div>
                               )}

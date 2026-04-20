@@ -258,8 +258,8 @@ export default function StaffFinancePage() {
                                             <div>
                                               <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Tài khoản ngân hàng</p>
                                               <p className="text-sm font-bold text-gray-700">{req.bankName}</p>
-                                              <p className="text-xs font-black text-gray-400 tracking-wider">STK: {req.bankAccountNumber}</p>
-                                              <p className="text-xs font-black text-gray-400 tracking-wider">Tên: {req.bankAccountName}</p>
+                                              <p className="text-xs font-black text-gray-400 tracking-wider">STK: {req.recipientBankAccountNumber}</p>
+                                              <p className="text-xs font-black text-gray-400 tracking-wider">Tên: {req.recipientBankAccountName}</p>
                                             </div>
                                          </div>
                                          <div className="text-right flex flex-col justify-center">

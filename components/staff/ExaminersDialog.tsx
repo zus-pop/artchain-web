@@ -620,7 +620,7 @@ export function ExaminersDialog({
                       <option value="ROUND_2" disabled={!hasRound2}>
                         {hasRound2
                           ? t.round2
-                          : `${t.round2} (Create Round 2 first)`}
+                          : `${t.round2}`}
                       </option>
                     </select>
                   </div>
@@ -836,7 +836,7 @@ export function ExaminersDialog({
                             </div>
 
                             {showScheduleDropdown === assignmentKey && (
-                              <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-sm shadow-lg p-3 min-w-[280px]">
+                              <div className="absolute right-0 bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-sm shadow-lg p-3 min-w-[280px]">
                                 {examiner.role === "ROUND_2" && (
                                   <div className="mb-3">
                                     <label className="staff-type-label text-gray-700 mb-2 block">

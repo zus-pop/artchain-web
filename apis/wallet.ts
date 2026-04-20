@@ -110,8 +110,8 @@ export interface StaffWithdrawRequest {
   amount: number;
   status: "PENDING" | "APPROVED" | "REJECTED";
   bankName: string;
-  bankAccountNumber: string;
-  bankAccountName: string;
+  recipientBankAccountNumber: string;
+  recipientBankAccountName: string;
   bankBranch?: string;
   createdAt: string;
   staffNote?: string;
