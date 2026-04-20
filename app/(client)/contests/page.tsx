@@ -4,38 +4,59 @@ import { useGetContestsPaginated } from "@/apis/contests";
 import { formatDate } from "@/lib/utils";
 import { ContestStatus } from "@/types/contest";
 import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Clock, Filter, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
-const statusColors = {
-  UPCOMING: "bg-blue-500",
-  ACTIVE: "bg-green-500",
-  DRAFT: "bg-[#EAE6E0]0",
-  ENDED: "bg-orange-500",
-  COMPLETED: "bg-purple-500",
-  CANCELLED: "bg-gray-600",
-  ALL: "bg-[#EAE6E0]0",
+// ── Design tokens (mirrors globals.css / existing product tokens) ──────────────
+const TOKEN = {
+  primary: "#FF6E1A",
+  primaryHover: "#FF833B",
+  textPrimary: "#423137",
+  bg: "#EAE6E0",
 };
 
-const statusLabels = {
-  UPCOMING: "Sắp diễn ra",
-  ACTIVE: "Đang diễn ra",
-  DRAFT: "Bản nháp",
-  ENDED: "Đã kết thúc",
-  COMPLETED: "Hoàn thành",
-  CANCELLED: "Đã hủy",
-  ALL: "Tất cả",
+// ── Status config ──────────────────────────────────────────────────────────────
+type StatusKey = "UPCOMING" | "ACTIVE" | "DRAFT" | "ENDED" | "COMPLETED" | "CANCELLED" | "ALL";
+
+const statusConfig: Record<StatusKey, { label: string; dot: string }> = {
+  UPCOMING: { label: "Sắp diễn ra", dot: "bg-blue-500" },
+  ACTIVE:   { label: "Đang diễn ra", dot: "bg-green-500" },
+  DRAFT:    { label: "Bản nháp",     dot: "bg-gray-400" },
+  ENDED:    { label: "Đã kết thúc",  dot: "bg-orange-400" },
+  COMPLETED:{ label: "Hoàn thành",   dot: "bg-purple-500" },
+  CANCELLED:{ label: "Đã hủy",       dot: "bg-gray-500" },
+  ALL:      { label: "Tất cả",       dot: "bg-gray-300" },
 };
 
 const PLACEHOLDER_IMAGE_URL =
-  "https://via.placeholder.com/300x150?text=No+Banner";
+  "https://placehold.co/600x400/EAE6E0/423137?text=No+Image";
 
+// ── Skeleton card ──────────────────────────────────────────────────────────────
+const SkeletonContestCard = () => (
+  <div className="flex flex-col overflow-hidden animate-pulse">
+    {/* Banner */}
+    <div className="w-full aspect-video bg-[#423137]/10" />
+    {/* Body */}
+    <div className="pt-3 pb-1">
+      <div className="flex items-center gap-2 mb-2.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+        <div className="h-3 bg-gray-300 rounded w-20" />
+      </div>
+      <div className="h-4 bg-gray-300 rounded mb-1.5 w-4/5" />
+      <div className="h-4 bg-gray-300 rounded w-3/5" />
+      <div className="flex items-center justify-between mt-4">
+        <div className="h-3 bg-gray-200 rounded w-24" />
+        <div className="h-8 bg-gray-300 rounded-sm w-24" />
+      </div>
+    </div>
+  </div>
+);
+
+// ── Main page ──────────────────────────────────────────────────────────────────
 export default function ContestsPage() {
-  const [selectedStatus, setSelectedStatus] = useState<
-    ContestStatus | undefined
-  >();
+  const [selectedStatus, setSelectedStatus] = useState<ContestStatus | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
@@ -45,127 +66,73 @@ export default function ContestsPage() {
     itemsPerPage
   );
 
-  // Filter out draft contests
-  const filteredContests = contests?.filter(contest => contest.status !== 'DRAFT') || [];
-
-  // Calculate total pages (assuming we have all data, adjust if API returns total count)
-  const totalPages = filteredContests && filteredContests.length === itemsPerPage ? currentPage + 1 : currentPage;
+  const filteredContests = contests?.filter((c) => c.status !== "DRAFT") || [];
+  const totalPages =
+    filteredContests.length === itemsPerPage ? currentPage + 1 : currentPage;
 
   const filterOptions: { label: string; value: ContestStatus | undefined }[] = [
-    { label: "Tất cả", value: undefined },
-    { label: "Đang diễn ra", value: "ACTIVE" },
-    { label: "Sắp diễn ra", value: "UPCOMING" },
-    { label: "Đã kết thúc", value: "ENDED" },
-    { label: "Hoàn thành", value: "COMPLETED" },
+    { label: "Tất cả",         value: undefined },
+    { label: "Đang diễn ra",   value: "ACTIVE" },
+    { label: "Sắp diễn ra",    value: "UPCOMING" },
+    { label: "Đã kết thúc",    value: "ENDED" },
+    { label: "Hoàn thành",     value: "COMPLETED" },
   ];
 
-  const getTimeRemaining = (endDate: string) => {
-    const now = new Date();
-    const end = new Date(endDate);
-    const diff = end.getTime() - now.getTime();
-
-    if (diff <= 0) return "Đã kết thúc";
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-    if (days > 0) return `Còn ${days} ngày`;
-    return `Còn ${hours} giờ`;
-  };
-
+  // ── Loading ──
   if (isLoading) {
     return (
-      <div className="w-full pt-25 min-h-screen bg-[#EAE6E0]">
-        <div className="mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="group relative rounded-md overflow-hidden shadow-xl flex flex-col animate-pulse bg-white"
-              >
-                {/* Banner skeleton with date/status placeholders */}
-                <div className="relative w-full h-48 md:h-56 lg:h-44 bg-gray-200">
-                  <div className="absolute left-4 top-4 h-4 w-28 bg-gray-300 rounded" />
-                  <div className="absolute right-4 top-4 h-3 w-16 bg-gray-300 rounded-full" />
-                </div>
-
-                {/* Content skeleton */}
-                <div className="p-4 flex flex-col flex-1">
-                  <div className="h-5 md:h-6 w-3/4 bg-gray-300 rounded mb-2" />
-                  <div className="h-4 w-full bg-gray-200 rounded mb-4" />
-
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="h-10 w-28 bg-gray-300 rounded" />
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-14 bg-gray-300 rounded" />
-                      <div className="h-5 w-5 bg-gray-300 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <div className="w-full pt-24 min-h-screen bg-[#EAE6E0] px-4 sm:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          {/* Filter bar skeleton */}
+          <div className="flex gap-2 mb-10 animate-pulse">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-8 w-24 bg-[#423137]/10 rounded-sm" />
             ))}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonContestCard key={i} />)}
           </div>
         </div>
       </div>
     );
   }
 
+  // ── Error ──
   if (error) {
     return (
-      <div className="w-full py-25 px-4 bg-[#EAE6E0]">
-        <div className="mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-            Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
-          </h2>
-          <p className="text-[#FF6E1A]">Có lỗi xảy ra khi tải dữ liệu cuộc thi</p>
-        </div>
+      <div className="w-full py-24 px-4 bg-[#EAE6E0] flex items-center justify-center min-h-screen">
+        <p className="text-sm text-[#423137]/60">Có lỗi xảy ra khi tải dữ liệu cuộc thi.</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full py-25 px-4 bg-[#EAE6E0]">
-      <div className="mx-auto">
-        {/* Header */}
-        {/* <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-            Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
-          </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Khám phá và tham gia các cuộc thi nghệ thuật hấp dẫn
-          </p>
-        </motion.div> */}
+    <div className="w-full pt-24 pb-16 bg-[#EAE6E0] min-h-screen px-4 sm:px-8 lg:px-16">
+      <div className="max-w-7xl mx-auto">
 
-        {/* Filter Bar */}
+        {/* ── Filter bar ── */}
         <motion.div
-          className="mb-12 ml-5"
-          initial={{ opacity: 0, y: 20 }}
+          className="mb-10"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center space-x-4 mb-4">
-            <Filter className="h-5 w-5 text-gray-600" />
-            <span className="text-gray-700 font-medium">
-              Lọc theo trạng thái:
-            </span>
-          </div>
+          {/* Section label — same pattern as homepage News / Campaigns */}
+          <p className="text-xs font-semibold tracking-widest text-[#423137]/60 uppercase mb-4">
+            Cuộc thi nghệ thuật
+          </p>
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((option) => (
               <button
                 key={option.label}
                 onClick={() => {
                   setSelectedStatus(option.value);
-                  setCurrentPage(1); // Reset to first page when filter changes
+                  setCurrentPage(1);
                 }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`text-xs font-semibold tracking-wide px-3.5 py-2 rounded-sm transition-colors duration-200 ${
                   selectedStatus === option.value
-                    ? "bg-[#FF6E1A] text-white shadow-md"
-                    : "bg-[#EAE6E0] text-black border border-primary hover:bg-gray-100 shadow-sm"
+                    ? "bg-[#FF6E1A] text-white"
+                    : "border border-[#423137]/20 text-[#423137]/70 hover:border-[#FF6E1A] hover:text-[#FF6E1A]"
                 }`}
               >
                 {option.label}
@@ -174,91 +141,87 @@ export default function ContestsPage() {
           </div>
         </motion.div>
 
-        {/* Contests Grid */}
+        {/* ── Contest Grid ── */}
         <AnimatePresence mode="wait">
-          {filteredContests && filteredContests.length > 0 ? (
+          {filteredContests.length > 0 ? (
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.3 }}
             >
-              {filteredContests.map((contest, index) => (
-                <motion.div
-                  key={contest.contestId}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                >
-                  <Link href={`/contests/${contest.contestId}`}>
-                    <div className="group min-h-80 relative rounded-md overflow-hidden shadow-xl flex flex-col">
-                      {/* Banner image */}
-                      <div className="relative w-full h-48 md:h-56 lg:h-44">
-                        <Image
-                          src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
-                          alt={contest.title}
-                          fill
-                          className="object-cover w-full h-full"
-                        />
+              {filteredContests.map((contest, index) => {
+                const status = statusConfig[contest.status as StatusKey] ?? statusConfig.ALL;
 
-                        {/* Date pill (top-left) */}
-                        <div className="absolute left-4 top-4 bg-white/95 text-gray-800 rounded-md px-3 py-1 flex items-center gap-2 text-sm shadow">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate({ dateString: contest.startDate })}</span>
+                return (
+                  <motion.div
+                    key={contest.contestId}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.45, delay: index * 0.07 }}
+                  >
+                    <Link href={`/contests/${contest.contestId}`} className="group block h-full">
+                      {/* ── Card ── */}
+                      <div className="flex flex-col h-full bg-white border border-[#e6e2da] shadow-sm rounded-md overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
+
+                        {/* Banner image */}
+                        <div className="w-full aspect-video overflow-hidden border-b border-[#e6e2da]">
+                          <Image
+                            src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
+                            alt={contest.title}
+                            width={600}
+                            height={338}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
                         </div>
 
-                        {/* Status badge (top-right) */}
-                        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${statusColors[contest.status]}`}>
-                          {statusLabels[contest.status]}
-                        </div>
+                        {/* Card body */}
+                        <div className="flex flex-col flex-1 p-4">
+                          {/* Status dot + label (metadata) */}
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${status.dot}`} />
+                            <span className="text-[10px] font-bold tracking-widest text-[#423137]/60 uppercase">
+                              {status.label}
+                            </span>
+                          </div>
 
-                        {/* Dark gradient overlay (kept for visual) */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                      </div>
+                          {/* Title */}
+                          <h3 className="text-sm font-bold text-[#423137] leading-snug line-clamp-2 mb-2.5">
+                            {contest.title ?? ""}
+                          </h3>
 
-                      {/* Content moved below the banner image and anchored to bottom */}
-                      <div className="p-4 bg-transparent text-gray-800 flex flex-col flex-1">
-                        {/* Title area: reserve space even if title is empty */}
-                        <h3 className="text-xl md:text-2xl font-bold leading-tight min-h-[3rem]">
-                          {contest.title ?? ""}
-                        </h3>
-
-                        {/* Bottom actions always stay at the bottom */}
-                        <div className="mt-auto flex items-center justify-between gap-3">
-                          <button className="flex items-center gap-2 bg-[#FF6E1A] hover:bg-[#ff7f35] text-white px-4 py-2 rounded-lg font-semibold shadow">
-                            Chi tiết
-                            <span className="sr-only">Chi tiết {contest.title}</span>
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{contest.numOfAward} giải</span>
-                            {/* <Trophy className="h-4 w-4 text-gray-600" /> */}
+                          {/* Footer row: date + CTA */}
+                          <div className="mt-auto flex items-center justify-between gap-3 pt-3">
+                            <span className="text-[10px] text-[#423137]/70 font-semibold">
+                              {formatDate({ dateString: contest.startDate })}
+                              {contest.numOfAward > 0 && (
+                                <> · {contest.numOfAward} giải</>
+                              )}
+                            </span>
+                            <span className="flex-shrink-0 text-xs font-bold text-[#FF6E1A] transition-colors duration-200 group-hover:text-[#FF833B]">
+                              Xem chi tiết →
+                            </span>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           ) : (
             <motion.div
-              className="text-center py-16 min-h-screen"
+              className="text-center py-24"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.5 }}
             >
-              <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                Không có cuộc thi nào
-              </h3>
-              <p className="text-gray-600">
+              <Trophy className="h-10 w-10 text-[#423137]/20 mx-auto mb-4" />
+              <p className="text-sm font-semibold text-[#423137]/50">
                 {selectedStatus
                   ? `Không có cuộc thi nào với trạng thái "${
-                      filterOptions.find((f) => f.value === selectedStatus)
-                        ?.label
+                      filterOptions.find((f) => f.value === selectedStatus)?.label
                     }"`
                   : "Hiện tại chưa có cuộc thi nào được tổ chức"}
               </p>
@@ -266,31 +229,26 @@ export default function ContestsPage() {
           )}
         </AnimatePresence>
 
-        {/* Pagination */}
-        {filteredContests && filteredContests.length > 0 && (
+        {/* ── Pagination ── */}
+        {filteredContests.length > 0 && (
           <motion.div
-            className="flex justify-center items-center gap-2 mt-12 mb-8"
-            initial={{ opacity: 0, y: 20 }}
+            className="flex justify-center items-center gap-2 mt-14"
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                currentPage === 1
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
-              }`}
+              className="flex items-center gap-1 text-xs font-semibold px-3.5 py-2 rounded-sm border border-[#423137]/20 text-[#423137]/60 hover:border-[#FF6E1A] hover:text-[#FF6E1A] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3.5 w-3.5" />
               Trước
             </button>
 
-            <div className="flex items-center gap-2">
-              {/* Show page numbers */}
+            <div className="flex items-center gap-1.5">
               {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                let pageNumber;
+                let pageNumber: number;
                 if (totalPages <= 5) {
                   pageNumber = idx + 1;
                 } else if (currentPage <= 3) {
@@ -300,15 +258,14 @@ export default function ContestsPage() {
                 } else {
                   pageNumber = currentPage - 2 + idx;
                 }
-
                 return (
                   <button
                     key={idx}
                     onClick={() => setCurrentPage(pageNumber)}
-                    className={`w-10 h-10 rounded-lg font-medium transition-all duration-200 ${
+                    className={`w-8 h-8 text-xs font-semibold rounded-sm transition-colors duration-200 ${
                       currentPage === pageNumber
-                        ? "bg-[#FF6E1A] text-white shadow-md"
-                        : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100"
+                        ? "bg-[#FF6E1A] text-white"
+                        : "border border-[#423137]/20 text-[#423137]/60 hover:border-[#FF6E1A] hover:text-[#FF6E1A]"
                     }`}
                   >
                     {pageNumber}
@@ -318,16 +275,12 @@ export default function ContestsPage() {
             </div>
 
             <button
-              onClick={() => setCurrentPage((prev) => prev + 1)}
+              onClick={() => setCurrentPage((p) => p + 1)}
               disabled={filteredContests.length < itemsPerPage}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                filteredContests.length < itemsPerPage
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
-              }`}
+              className="flex items-center gap-1 text-xs font-semibold px-3.5 py-2 rounded-sm border border-[#423137]/20 text-[#423137]/60 hover:border-[#FF6E1A] hover:text-[#FF6E1A] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Sau
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </motion.div>
         )}

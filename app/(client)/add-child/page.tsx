@@ -79,7 +79,7 @@ export default function AddChildPage() {
 
   const handleSubmitAll = async () => {
     if (user?.role !== "GUARDIAN") {
-      toast.error("Only guardians can assign competitors.");
+      toast.error("Chỉ tài khoản phụ huynh mới có thể gán thí sinh.");
       return;
     }
     // TODO: Submit all children to server

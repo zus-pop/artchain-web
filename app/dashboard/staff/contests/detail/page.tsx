@@ -324,7 +324,7 @@ function ContestDetailContent() {
       <SidebarInset>
         <SiteHeader title={t.contestDetailTitle} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -343,13 +343,13 @@ function ContestDetailContent() {
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/contests"
-                    className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                    className="staff-btn-outline p-2"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
                     <div className="flex items-center">
-                      <h2 className="text-2xl font-bold staff-text-primary">
+                      <h2 className="staff-type-page-title staff-text-primary">
                         {contest.title}
                       </h2>
                       {/* <span className={getStatusColor(contest.status)}>
@@ -362,7 +362,7 @@ function ContestDetailContent() {
                   {!rounds.some((round) => round.isRound2) && (
                     <Link
                       href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
-                      className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                      className="bg-[var(--staff-primary)] text-white px-4 py-2.5 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
                     >
                       <IconEdit className="h-4 w-4" />
                       {t.editContestDetail}
@@ -424,7 +424,7 @@ function ContestDetailContent() {
                   </h3>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                    <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                       <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
@@ -439,7 +439,7 @@ function ContestDetailContent() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                    <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                       <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
@@ -454,7 +454,7 @@ function ContestDetailContent() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                    <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                       <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
@@ -466,7 +466,7 @@ function ContestDetailContent() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                    <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                       <IconUsers className="h-5 w-5 staff-text-secondary mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium staff-text-secondary">
@@ -505,7 +505,7 @@ function ContestDetailContent() {
                   </div>
 
                   {/* Contest Advanced Settings Dropdown */}
-                  <div className="pt-4 border-t border-[#e6e2da]">
+                  <div className="pt-4 border-t border-[var(--staff-border)]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <IconSettings className="h-5 w-5 staff-text-secondary" />
@@ -593,7 +593,7 @@ function ContestDetailContent() {
                       <p className="text-sm font-medium staff-text-secondary">
                         {t.awardsDetail}
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">
+                      <p className="staff-type-page-title staff-text-primary">
                         {contest.numOfAward}
                       </p>
                     </div>
@@ -609,7 +609,7 @@ function ContestDetailContent() {
                       <p className="text-sm font-medium staff-text-secondary">
                         {t.participantsDetail}
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">0</p>
+                      <p className="staff-type-page-title staff-text-primary">0</p>
                     </div>
                   </div>
                 </div> */}
@@ -623,7 +623,7 @@ function ContestDetailContent() {
                       <p className="text-sm font-medium staff-text-secondary">
                         {t.examinersDetail}
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">
+                      <p className="staff-type-page-title staff-text-primary">
                         {contest.examiners?.length || 0}
                       </p>
                     </div>
@@ -651,7 +651,7 @@ function ContestDetailContent() {
               {contest.ruleUrl && (
                 <div className="staff-card p-0 overflow-hidden">
                   {/* PDF Header */}
-                  <div className="bg-linear-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-[#e6e2da]">
+                  <div className="bg-linear-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-[var(--staff-border)]">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="bg-blue-100 p-2">
@@ -679,7 +679,7 @@ function ContestDetailContent() {
                           href={contest.ruleUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-all duration-200 hover:scale-105"
+                          className="bg-[var(--staff-primary)] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-all duration-200 hover:scale-105"
                         >
                           <IconEye className="h-4 w-4" />
                           {t.viewPDFDetail}
@@ -691,7 +691,7 @@ function ContestDetailContent() {
                   {/* PDF Viewer */}
                   {showEmbeddedPdf && (
                     <div className="relative">
-                      <div className="bg-gray-50 px-6 py-3 border-b border-[#e6e2da]">
+                      <div className="bg-gray-50 px-6 py-3 border-b border-[var(--staff-border)]">
                         <div className="flex items-center gap-2 text-sm staff-text-secondary">
                           <IconFileText className="h-4 w-4" />
                           <span>{t.pdfDocumentViewerDetail}</span>
@@ -726,7 +726,7 @@ function ContestDetailContent() {
                 {/* <button
                   type="button"
                   // onClick={() => setIsExaminersDialogOpen(true)} // Hàm mở dialog
-                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                  className="flex items-center space-x-3 border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
                   <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconUsers className="h-5 w-5 text-white" />
@@ -743,7 +743,7 @@ function ContestDetailContent() {
                 <button
                   type="button"
                   onClick={() => setIsExaminersDialogOpen(true)}
-                  className="flex items-center cursor-pointer space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                  className="flex items-center cursor-pointer space-x-3 border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
                   {/* Icon Section */}
                   <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
@@ -762,7 +762,7 @@ function ContestDetailContent() {
                 </button>
                 <Link
                   href={`/dashboard/staff/contests/awards?id=${contest.contestId}`}
-                  className="flex items-center space-x-3 border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
+                  className="flex items-center space-x-3 border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group w-full"
                 >
                   {/* Icon Section */}
                   <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
@@ -795,7 +795,7 @@ function ContestDetailContent() {
                           (qualifiedPaintingsData?.data?.summary?.submitted ||
                             0) < contest.round2Quantity
                         }
-                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-[var(--staff-primary)] text-white px-4 py-2 font-semibold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <IconPlus className="h-4 w-4" />
                         {t.round2Detail}
@@ -809,7 +809,7 @@ function ContestDetailContent() {
                     {rounds.map((round) => (
                       <div
                         key={round.name}
-                        className="border border-[#e6e2da] p-4 rounded-md"
+                        className="border border-[var(--staff-border)] p-4 rounded-sm"
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
@@ -829,7 +829,7 @@ function ContestDetailContent() {
                         {!round.isRound2 ? (
                           <div className="space-y-4">
                             {/* Action Buttons - Moved to top for better visibility */}
-                            <div className="flex flex-col sm:flex-row gap-3 p-4rounded-lg">
+                            <div className="flex flex-col sm:flex-row gap-3 p-4 rounded-sm">
                               <button
                                 disabled={
                                   qualifiedPaintingsData?.data.qualified
@@ -861,7 +861,7 @@ function ContestDetailContent() {
                             {/* Key Dates */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {round.startDate && (
-                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                   <span className="text-sm staff-text-secondary">
                                     {t.startDate}
                                   </span>
@@ -874,7 +874,7 @@ function ContestDetailContent() {
                                 </div>
                               )}
                               {round.endDate && (
-                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                   <span className="text-sm staff-text-secondary">
                                     {t.endDate}
                                   </span>
@@ -891,7 +891,7 @@ function ContestDetailContent() {
                             {/* Submission Deadlines */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {round.submissionDeadline && (
-                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                   <span className="text-sm staff-text-secondary">
                                     {t.submissionDeadlineDetail}
                                   </span>
@@ -904,7 +904,7 @@ function ContestDetailContent() {
                                 </div>
                               )}
                               {round.resultAnnounceDate && (
-                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                   <span className="text-sm staff-text-secondary">
                                     {t.resultAnnounceDetail}
                                   </span>
@@ -921,7 +921,7 @@ function ContestDetailContent() {
                             {/* Original Submission & Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {round.sendOriginalDeadline && (
-                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                   <span className="text-sm staff-text-secondary">
                                     {t.originalDeadlineDetail}
                                   </span>
@@ -933,7 +933,7 @@ function ContestDetailContent() {
                                   </span>
                                 </div>
                               )}
-                              <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                              <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                 <span className="text-sm staff-text-secondary">
                                   {t.approvedPaintings}
                                 </span>
@@ -946,7 +946,7 @@ function ContestDetailContent() {
                         ) : (
                           <div className="space-y-6">
                             {/* Round 2 Header with Stats and Actions */}
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-gray-50 rounded-sm">
                               <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
                                   <IconUsers className="h-5 w-5 text-gray-600" />
@@ -958,7 +958,7 @@ function ContestDetailContent() {
                               <button
                                 onClick={handleNotifyRound2}
                                 disabled={isNotifyingRound2}
-                                className="cursor-pointer bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="cursor-pointer bg-[var(--staff-primary)] text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <IconMail className="h-4 w-4" />
                                 {isNotifyingRound2
@@ -972,7 +972,7 @@ function ContestDetailContent() {
                               {round.tables &&
                                 round.tables.length > 0 &&
                                 round.tables[0].startDate && (
-                                  <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                     <span className="text-sm staff-text-secondary">
                                       {t.startDate}
                                     </span>
@@ -987,7 +987,7 @@ function ContestDetailContent() {
                               {round.tables &&
                                 round.tables.length > 0 &&
                                 round.tables[0].endDate && (
-                                  <div className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                                  <div className="flex justify-between items-center p-3 border border-gray-200 rounded-sm">
                                     <span className="text-sm staff-text-secondary">
                                       {t.endDate}
                                     </span>
@@ -1007,7 +1007,7 @@ function ContestDetailContent() {
                                 {round.tables.map((table) => (
                                   <div
                                     key={table.roundId}
-                                    className="border border-[#e6e2da] rounded-lg p-6 hover:shadow-md transition-shadow bg-white flex flex-col min-h-[200px]"
+                                    className="border border-[var(--staff-border)] rounded-sm p-6 hover:shadow-md transition-shadow bg-white flex flex-col min-h-[200px]"
                                   >
                                     {/* Table Name */}
                                     <div className="flex-1 mb-4">
@@ -1017,7 +1017,7 @@ function ContestDetailContent() {
                                       {/* Table Stats */}
                                       <div className="mb-6">
                                         <div className="flex justify-center">
-                                          <div className="flex justify-between items-center p-2 rounded-lg min-w-[120px]">
+                                          <div className="flex justify-between items-center p-2 rounded-sm min-w-[120px]">
                                             <span className="text-sm staff-text-secondary">
                                               {t.totalPaintings}:
                                             </span>
@@ -1031,7 +1031,7 @@ function ContestDetailContent() {
                                       <div className="flex justify-center mt-auto">
                                         <Link
                                           href={`/dashboard/staff/contests/rounds/${table.roundId}?contestId=${contest.contestId}`}
-                                          className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 w-full text-center"
+                                          className="bg-[var(--staff-primary)] text-white px-4 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 w-full text-center"
                                         >
                                           {t.viewTableDetailsDetail ||
                                             "View Details"}
@@ -1042,7 +1042,7 @@ function ContestDetailContent() {
                                 ))}
                               </div>
                             ) : (
-                              <div className="text-center py-8 staff-text-secondary bg-gray-50 rounded-lg">
+                              <div className="text-center py-8 staff-text-secondary bg-gray-50 rounded-sm">
                                 No tables created yet
                               </div>
                             )}
@@ -1073,15 +1073,15 @@ function ContestDetailContent() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              <div className="bg-[#d9534f]/10 p-2 rounded-full">
-                <IconTrophy className="h-6 w-6 text-[#d9534f]" />
+              <div className="bg-[var(--staff-primary)]/10 p-2 rounded-full">
+                <IconTrophy className="h-6 w-6 text-[var(--staff-primary)]" />
               </div>
               {t.publishContestDetail}
             </DialogTitle>
             <DialogDescription>
               {t.publishContestConfirmDetail}
               {(!contest.numOfAward || contest.numOfAward === 0) && (
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-sm">
                   <div className="flex items-center gap-2 text-yellow-800 text-sm">
                     <IconTrophy className="h-4 w-4" />
                     <span>
@@ -1093,7 +1093,7 @@ function ContestDetailContent() {
               )}
               {contest.awards?.some((a) => Number(a.prize) === 0) &&
                 contest.numOfAward > 0 && (
-                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-sm">
                     <div className="flex items-center gap-2 text-yellow-800 text-sm">
                       <IconTrophy className="h-4 w-4" />
                       <span>
@@ -1108,7 +1108,7 @@ function ContestDetailContent() {
           <DialogFooter>
             <button
               onClick={() => setShowPublishConfirm(false)}
-              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-[var(--staff-border)] text-staff-text-secondary hover:bg-gray-50 transition-colors"
             >
               {t.cancelDetail}
             </button>
@@ -1127,7 +1127,7 @@ function ContestDetailContent() {
                 contest.numOfAward === 0 ||
                 contest.awards?.some((a) => Number(a.prize) === 0)
               }
-              className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[var(--staff-primary)] text-white px-4 py-2 font-semibold shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {publishContestMutation.isPending
                 ? t.publishingDetail
@@ -1207,13 +1207,13 @@ function ContestDetailContent() {
                           <h4 className="font-semibold text-gray-900 text-sm mb-2 line-clamp-1 text-center">
                             {item.painting.title}
                           </h4>
-                          <div className="text-[11px] text-gray-500 mb-0.5 truncate" title={item.competitorName}>
+                          <div className="text-xs text-gray-500 mb-0.5 truncate" title={item.competitorName}>
                             <span className="font-bold text-gray-700">{t.artistLabel}:</span> {item.competitorName}
                           </div>
-                          <div className="text-[11px] text-gray-500 mb-0.5 truncate" title={item.competitorEmail}>
+                          <div className="text-xs text-gray-500 mb-0.5 truncate" title={item.competitorEmail}>
                             <span className="font-bold text-gray-700">{t.emailLabel}:</span> {item.competitorEmail}
                           </div>
-                          <div className="flex items-center gap-4 mb-2 text-[11px] text-gray-500">
+                          <div className="flex items-center gap-4 mb-2 text-xs text-gray-500">
                             <span>
                               <span className="font-bold text-gray-700">{t.scoreLabel}:</span> {item.avgScore.toFixed(1)}
                             </span>
@@ -1283,7 +1283,7 @@ function ContestDetailContent() {
                                 disabled={
                                   updateOriginalSubmissionStatus.isPending
                                 }
-                                className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-[var(--staff-primary)] text-white px-3 py-1.5 text-xs font-medium shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {t.originalNotSubmittedStatus}
                               </button>
@@ -1303,7 +1303,7 @@ function ContestDetailContent() {
           <DialogFooter>
             <button
               onClick={() => setShowQualifiedPaintingsDialog(false)}
-              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-[var(--staff-border)] text-staff-text-secondary hover:bg-gray-50 transition-colors"
             >
               {t.closeDialog}
             </button>
@@ -1341,7 +1341,7 @@ function ContestDetailContent() {
                 setShowConfirmUpdateDialog(false);
                 setPendingUpdate(null);
               }}
-              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-[var(--staff-border)] text-staff-text-secondary hover:bg-gray-50 transition-colors"
             >
               {t.cancelBtn}
             </button>
@@ -1399,7 +1399,7 @@ function ContestDetailContent() {
 
           <div className="space-y-4">
             {/* Date Constraints Display */}
-            <div className="p-4 bg-[#f9f7f4] border border-[#e6e2da]">
+            <div className="p-4 bg-[#f9f7f4] border border-[var(--staff-border)]">
               <h4 className="text-sm font-medium staff-text-primary mb-3 flex items-center gap-2">
                 <IconCalendar className="h-4 w-4" />
                 {t.dateConstraints}
@@ -1445,7 +1445,7 @@ function ContestDetailContent() {
                     )
                   );
                 })()}
-                <div className="flex justify-between items-center border-t border-[#e6e2da] pt-3 mt-1">
+                <div className="flex justify-between items-center border-t border-[var(--staff-border)] pt-3 mt-1">
                   <span className="staff-text-secondary font-medium">
                     {t.validRange}:
                   </span>
@@ -1489,7 +1489,7 @@ function ContestDetailContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium staff-text-primary mb-2">
+              <label className="staff-type-label staff-text-primary mb-2 block">
                 {t.round2Date || "Round 2 Date"}
               </label>
               <input
@@ -1520,7 +1520,7 @@ function ContestDetailContent() {
                   return formatDateForInput(minDate);
                 })()}
                 max={formatDateForInput(contest.endDate)}
-                className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                 required
               />
               <p className="text-xs staff-text-secondary mt-1">
@@ -1536,7 +1536,7 @@ function ContestDetailContent() {
                 setShowCreateRound2Confirm(false);
                 setRound2Date("");
               }}
-              className="px-4 py-2 border border-[#e6e2da] text-staff-text-secondary hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-[var(--staff-border)] text-staff-text-secondary hover:bg-gray-50 transition-colors"
             >
               {t.cancelDetail}
             </button>
@@ -1570,7 +1570,7 @@ export default function ContestDetailPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--staff-primary)]"></div>
         </div>
       }
     >

@@ -48,7 +48,7 @@ const MDXEditorWrapper = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[400px] border border-[#e6e2da] animate-pulse bg-gray-50" />
+      <div className="h-[400px] border border-[var(--staff-border)] animate-pulse bg-gray-50" />
     ),
   }
 );
@@ -271,7 +271,7 @@ function ViewPostContent() {
           <SiteHeader title="Post Detail" />
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f] mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--staff-primary)] mx-auto"></div>
               <p className="mt-4 staff-text-secondary">{t.loadingPost}</p>
             </div>
           </div>
@@ -316,7 +316,7 @@ function ViewPostContent() {
       <SidebarInset>
         <SiteHeader title={t.postDetail} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 { label: t.postsManagement, href: "/dashboard/staff/posts" },
@@ -332,7 +332,7 @@ function ViewPostContent() {
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/posts"
-                    className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                    className="staff-btn-outline p-2"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
@@ -355,7 +355,7 @@ function ViewPostContent() {
                       <div className="flex items-center gap-3">
                         <button
                           onClick={handleShare}
-                          className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2"
+                          className="border-2 border-[var(--staff-border)] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2"
                         >
                           <IconShare className="h-4 w-4" />
                           {t.share}
@@ -370,7 +370,7 @@ function ViewPostContent() {
                       </div>
                       <button
                         onClick={() => setIsEditing(true)}
-                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-4 py-2 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
+                        className="bg-[var(--staff-primary)] text-white px-4 py-2 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow"
                       >
                         <IconEdit className="h-4 w-4" />
                         {t.editPostBtn}
@@ -381,7 +381,7 @@ function ViewPostContent() {
                       <button
                         onClick={handleCancelEdit}
                         disabled={updatePostMutation.isPending}
-                        className="border-2 border-[#e6e2da] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2 disabled:opacity-50"
+                        className="border-2 border-[var(--staff-border)] px-4 py-2 text-sm font-medium text-gray-700 hover:bg-[#f9f7f4] transition-colors flex items-center gap-2 disabled:opacity-50"
                       >
                         <IconX className="h-4 w-4" />
                         {t.cancelDetail}
@@ -389,7 +389,7 @@ function ViewPostContent() {
                       <button
                         onClick={handleSave}
                         disabled={updatePostMutation.isPending}
-                        className="bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white px-6 py-3 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
+                        className="bg-[var(--staff-primary)] text-white px-6 py-3 font-bold shadow-md flex items-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50"
                       >
                         <IconDeviceFloppy className="h-4 w-4" />
                         {updatePostMutation.isPending
@@ -423,27 +423,27 @@ function ViewPostContent() {
                     <>
                       {/* Edit Title */}
                       <div className="staff-card p-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.postTitleLabel}
                         </label>
                         <input
                           type="text"
                           value={editedTitle}
                           onChange={(e) => setEditedTitle(e.target.value)}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg font-medium"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-lg font-medium"
                         />
                       </div>
 
                       {/* Edit Image Upload */}
                       <div className="staff-card p-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.featuredImage}
                         </label>
 
                         {/* Upload Area */}
                         <div className="space-y-4">
                           <div
-                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
+                            className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
                             onClick={() =>
                               document
                                 .getElementById("edit-image-upload")
@@ -457,7 +457,7 @@ function ViewPostContent() {
                                     src={URL.createObjectURL(editedImageFile)}
                                     alt="Preview"
                                     fill
-                                    className="object-cover rounded-lg border border-gray-200"
+                                    className="object-cover rounded-sm border border-gray-200"
                                     onError={(e) => {
                                       (
                                         e.target as HTMLImageElement
@@ -496,7 +496,7 @@ function ViewPostContent() {
                                     src={post.image_url}
                                     alt="Current image"
                                     fill
-                                    className="object-cover rounded-lg border border-gray-200"
+                                    className="object-cover rounded-sm border border-gray-200"
                                     onError={(e) => {
                                       (
                                         e.target as HTMLImageElement
@@ -578,7 +578,7 @@ function ViewPostContent() {
 
                       {/* Edit Content */}
                       <div className="staff-card p-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.contentLabel}
                         </label>
                         <MDXEditorWrapper
@@ -614,7 +614,7 @@ function ViewPostContent() {
                     {isEditing ? (
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className="staff-type-label text-gray-700 mb-2 block">
                             {t.statusLabel}
                           </label>
                           <select
@@ -622,7 +622,7 @@ function ViewPostContent() {
                             onChange={(e) =>
                               setEditedStatus(e.target.value as PostStatus)
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                           >
                             <option value="DRAFT">{t.draftStatusPost}</option>
                             <option value="PUBLISHED">
@@ -636,7 +636,7 @@ function ViewPostContent() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                        <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                           <IconUser className="h-5 w-5 staff-text-secondary mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-medium staff-text-secondary">
@@ -648,7 +648,7 @@ function ViewPostContent() {
                           </div>
                         </div>
 
-                        <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                        <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                           <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-medium staff-text-secondary">
@@ -661,7 +661,7 @@ function ViewPostContent() {
                         </div>
 
                         {post.published_at && (
-                          <div className="flex items-start gap-3 pb-3 border-b border-[#e6e2da]">
+                          <div className="flex items-start gap-3 pb-3 border-b border-[var(--staff-border)]">
                             <IconCalendar className="h-5 w-5 staff-text-secondary mt-0.5" />
                             <div className="flex-1">
                               <p className="text-sm font-medium staff-text-secondary">
@@ -706,7 +706,7 @@ function ViewPostContent() {
                             {selectedTags.map((tag: Tag) => (
                               <span
                                 key={`selected-tag-${tag.tag_id}`}
-                                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded border border-blue-200"
+                                className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-sm border border-blue-200"
                               >
                                 {tag.tag_name || "Unnamed Tag"}
                                 <button
@@ -734,12 +734,12 @@ function ViewPostContent() {
                               }}
                               onFocus={() => setShowTagDropdown(true)}
                               placeholder={t.searchOrCreateTags}
-                              className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                              className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                             />
                           </div>
 
                           {showTagDropdown && (
-                            <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da] shadow-lg max-h-60 overflow-y-auto">
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--staff-border)] shadow-lg max-h-60 overflow-y-auto">
                               {isLoadingTags ? (
                                 <div className="px-4 py-3 text-sm text-gray-500 text-center">
                                   {t.loadingTags}
@@ -784,7 +784,7 @@ function ViewPostContent() {
                                         type="button"
                                         onClick={handleCreateTag}
                                         disabled={createTagMutation.isPending}
-                                        className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
+                                        className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[var(--staff-border)] text-blue-700 font-medium disabled:opacity-50"
                                       >
                                         <IconPlus className="h-4 w-4" />
                                         {createTagMutation.isPending
@@ -804,7 +804,7 @@ function ViewPostContent() {
                           post.postTags.map((postTag: PostTag) => (
                             <span
                               key={`post-tag-${postTag.tag_id}`}
-                              className="inline-flex px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded"
+                              className="inline-flex px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800 rounded-sm"
                             >
                               {postTag.tag.tag_name}
                             </span>
@@ -832,7 +832,7 @@ export default function ViewPostPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--staff-primary)]"></div>
         </div>
       }
     >

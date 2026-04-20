@@ -277,7 +277,7 @@ export default function CreateCampaignPage() {
       <SidebarInset>
         <SiteHeader title={t.createSponsorshipCampaign} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -295,13 +295,13 @@ export default function CreateCampaignPage() {
               <div className="flex items-center gap-4">
                 <Link
                   href="/dashboard/staff/campaigns"
-                  className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                  className="staff-btn-outline p-2"
                 >
                   <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                 </Link>
 
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.createNewCampaign}
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
@@ -335,22 +335,22 @@ export default function CreateCampaignPage() {
               {/* Left Column - Basic Information (takes 2/3 of space) */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Basic Information */}
-                <div className="bg-white  border border-[#e6e2da] p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                <div className="bg-white  border border-[var(--staff-border)] p-6">
+                  <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                     <IconFileText className="h-5 w-5" />
                     {t.basicInformationSection}
                   </h3>
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.campaignTitleLabel} *
                       </label>
                       <input
                         type="text"
                         {...form.register("title")}
                         placeholder={t.enterCampaignTitle}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                         required
                       />
                       {form.formState.errors.title && (
@@ -362,13 +362,13 @@ export default function CreateCampaignPage() {
 
                     {/* Moved Deadline here */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.deadlineLabel} *
                       </label>
                       <input
                         type="date"
                         {...form.register("deadline")}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                         required
                       />
                       {form.formState.errors.deadline && (
@@ -381,7 +381,7 @@ export default function CreateCampaignPage() {
                     {/* Moved Goal and Status here */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.goalAmountVND} *
                         </label>
                         <input
@@ -389,7 +389,7 @@ export default function CreateCampaignPage() {
                           inputMode="numeric"
                           {...form.register("goalAmount")}
                           onChange={handleCurrencyInputChange("goalAmount")}
-                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                           required
                         />
                         {form.formState.errors.goalAmount && (
@@ -400,12 +400,12 @@ export default function CreateCampaignPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.campaignStatus}
                         </label>
                         <select
                           {...form.register("status")}
-                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                         >
                           <option value="DRAFT">{t.draftOption}</option>
                           <option value="ACTIVE">{t.activeOption}</option>
@@ -416,14 +416,14 @@ export default function CreateCampaignPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.campaignDescriptionLabel} *
                       </label>
                       <textarea
                         {...form.register("description")}
                         placeholder={t.enterCampaignDescription}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                         required
                       />
                       <div className="flex justify-between items-center mt-1">
@@ -436,7 +436,7 @@ export default function CreateCampaignPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.campaignImageLabel} *
                       </label>
                       <div className="space-y-3">
@@ -468,7 +468,7 @@ export default function CreateCampaignPage() {
                         <div className="relative">
                           <label
                             htmlFor="campaign-image"
-                            className={`flex flex-col items-center justify-center aspect-video border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 group ${
+                            className={`flex flex-col items-center justify-center aspect-video border-2 border-dashed rounded-sm cursor-pointer transition-colors duration-200 group ${
                               imagePreviewUrl
                                 ? "border-green-300 bg-green-50"
                                 : "border-gray-300 bg-gray-50 hover:bg-gray-100"
@@ -503,7 +503,7 @@ export default function CreateCampaignPage() {
 
                           {/* Preview overlay */}
                           {imagePreviewUrl && (
-                            <div className="absolute inset-0 rounded-lg overflow-hidden">
+                            <div className="absolute inset-0 rounded-sm overflow-hidden">
                               <Image
                                 src={imagePreviewUrl}
                                 alt="Campaign preview"
@@ -554,8 +554,8 @@ export default function CreateCampaignPage() {
               {/* Right Column - Financial & Deadline (takes 1/3 of space) */}
               <div className="space-y-6">
                 {/* Sponsorship Tiers only in the right column */}
-                <div className="bg-white border border-[#e6e2da] p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                <div className="bg-white border border-[var(--staff-border)] p-6">
+                  <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                     <IconMoneybag className="h-5 w-5" />
 Thông tin tài trợ
                   </h3>
@@ -568,7 +568,7 @@ Thông tin tài trợ
                         | "diamondMinPrice";
 
                       return (
-                        <div key={tier.id} className="border border-[#e6e2da] p-3 bg-[#fcfbf8]">
+                        <div key={tier.id} className="border border-[var(--staff-border)] p-3 bg-[#fcfbf8]">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-sm font-semibold text-gray-800">
                               {tier.display}
@@ -580,7 +580,7 @@ Thông tin tài trợ
                             inputMode="numeric"
                             {...form.register(fieldName)}
                             onChange={handleCurrencyInputChange(fieldName)}
-                            className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 focus:outline-none staff-field"
                           />
                           {form.formState.errors[fieldName] && (
                             <p className="mt-1 text-xs text-red-600">

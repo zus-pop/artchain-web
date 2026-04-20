@@ -400,7 +400,7 @@ export default function CreateContestPage() {
         typeof error.response.data === "object" &&
         "message" in error.response.data
           ? String(error.response.data.message)
-          : "Failed to create contest";
+          : "Không thể tạo cuộc thi";
       toast.error(errorMessage);
     },
   });
@@ -436,7 +436,7 @@ export default function CreateContestPage() {
       <SidebarInset>
         <SiteHeader title={t.createContest} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -454,12 +454,12 @@ export default function CreateContestPage() {
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/contests"
-                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className=" border border-[var(--staff-border)] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       {t.createNewContest}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
@@ -477,13 +477,13 @@ export default function CreateContestPage() {
                   </h3>
                   <div className="grid gap-4">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.contestTitle} *
                       </label>
                       <input
                         type="text"
                         {...register("title")}
-                        className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                         placeholder={t.enterContestTitle}
                       />
                       {errors.title && (
@@ -494,14 +494,14 @@ export default function CreateContestPage() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <label className="block text-sm font-medium staff-text-primary mb-2">
+                    <label className="staff-type-label staff-text-primary mb-2 block">
                       {t.description} *
                     </label>
                     <textarea
                       {...register("description")}
                       required
                       rows={4}
-                      className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                       placeholder={t.describeContestTheme}
                     />
                     {errors.description && (
@@ -519,7 +519,7 @@ export default function CreateContestPage() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.startDate} *
                       </label>
                       <Controller
@@ -536,7 +536,7 @@ export default function CreateContestPage() {
                             }
                             required
                             min={todayString}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                           />
                         )}
                       />
@@ -547,7 +547,7 @@ export default function CreateContestPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.endDate} *
                       </label>
                       <Controller
@@ -569,7 +569,7 @@ export default function CreateContestPage() {
                                 ? formatDateForInput(new Date(watchedStartDate))
                                 : todayString
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -593,7 +593,7 @@ export default function CreateContestPage() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.roundStartDate}
                       </label>
                       <Controller
@@ -619,7 +619,7 @@ export default function CreateContestPage() {
                                 ? formatDateForInput(new Date(watchedEndDate))
                                 : undefined
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -634,7 +634,7 @@ export default function CreateContestPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.roundEndDate}
                       </label>
                       <Controller
@@ -666,7 +666,7 @@ export default function CreateContestPage() {
                                 ? formatDateForInput(new Date(watchedEndDate))
                                 : undefined
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedRoundStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -681,7 +681,7 @@ export default function CreateContestPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.submissionDeadline}
                       </label>
                       <Controller
@@ -719,7 +719,7 @@ export default function CreateContestPage() {
                                   ? formatDateForInput(new Date(watchedEndDate))
                                   : undefined
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedRoundStartDate || !watchedRoundEndDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -734,7 +734,7 @@ export default function CreateContestPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.sendOriginalDeadline}
                       </label>
                       <Controller
@@ -773,7 +773,7 @@ export default function CreateContestPage() {
                                   ? formatDateForInput(new Date(watchedEndDate))
                                   : undefined
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedRoundSubmissionDeadline ||
                               !watchedRoundEndDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
@@ -789,7 +789,7 @@ export default function CreateContestPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.resultAnnouncementDate}
                       </label>
                       <Controller
@@ -825,7 +825,7 @@ export default function CreateContestPage() {
                                   ? formatDateForInput(new Date(watchedEndDate))
                                   : undefined
                             }
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedRoundEndDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -849,7 +849,7 @@ export default function CreateContestPage() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.round2CompetitorsLabel}
                       </label>
                       <Controller
@@ -864,7 +864,7 @@ export default function CreateContestPage() {
                               field.onChange(value);
                             }}
                             min="6"
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                           />
                         )}
                       />
@@ -875,7 +875,7 @@ export default function CreateContestPage() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.numberOfTablesRound2}
                       </label>
                       <Controller
@@ -891,7 +891,7 @@ export default function CreateContestPage() {
                             }}
                             disabled={watchedRound2Quantity < 6}
                             step={1}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:bg-gray-100 disabled:cursor-not-allowed"
                             placeholder={
                               watchedRound2Quantity < 6
                                 ? "0"
@@ -956,14 +956,14 @@ export default function CreateContestPage() {
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.bannerImage} *
                         </label>
                         <input
                           type="file"
                           accept="image/*"
                           onChange={(e) => handleFileChange(e, "banner")}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                         />
                         {errors.banner && (
                           <p className="text-red-500 text-sm mt-1">
@@ -983,7 +983,7 @@ export default function CreateContestPage() {
                             alt="Banner preview"
                             width={300}
                             height={150}
-                            className="object-cover rounded border shadow-sm w-full"
+                            className="object-cover rounded-sm border shadow-sm w-full"
                           />
                         </div>
                       )}
@@ -991,14 +991,14 @@ export default function CreateContestPage() {
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.rulesFilePDF} *
                         </label>
                         <input
                           type="file"
                           accept=".pdf"
                           onChange={(e) => handleFileChange(e, "rule")}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                         />
                         {errors.rule && (
                           <p className="text-red-500 text-sm mt-1">
@@ -1016,8 +1016,8 @@ export default function CreateContestPage() {
 
                       {/* Small PDF Viewer */}
                       {watchedRule && (
-                        <div className="border border-[#e6e2da] rounded overflow-hidden">
-                          <div className="bg-blue-50 px-3 py-2 border-b border-[#e6e2da]">
+                        <div className="border border-[var(--staff-border)] rounded-sm overflow-hidden">
+                          <div className="bg-blue-50 px-3 py-2 border-b border-[var(--staff-border)]">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <IconFileText className="h-4 w-4 text-blue-600" />
@@ -1053,7 +1053,7 @@ export default function CreateContestPage() {
                 <div className="flex gap-4 justify-end">
                   <Link
                     href="/dashboard/staff/contests"
-                    className="px-6 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
+                    className="px-6 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
                   >
                     <IconX className="h-4 w-4" />
                     {t.cancel}
@@ -1063,7 +1063,7 @@ export default function CreateContestPage() {
                     disabled={
                       isSubmitting || createMutation.isPending || !isValid
                     }
-                    className="px-6 py-2 bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2 bg-[var(--staff-primary)] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
                     {isSubmitting || createMutation.isPending

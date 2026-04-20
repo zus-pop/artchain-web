@@ -318,7 +318,7 @@ export default function EditCampaignPage({
       <SidebarInset>
         <SiteHeader title={t.editCampaignTitle} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -341,12 +341,12 @@ export default function EditCampaignPage({
                 <div className="flex items-center gap-4">
                   <Link
                     href={`/dashboard/staff/campaigns/${id}`}
-                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className="border border-[var(--staff-border)] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       {t.editCampaignTitle}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
@@ -362,13 +362,13 @@ export default function EditCampaignPage({
                   <div className="lg:col-span-2 space-y-6">
                     {/* Basic Information */}
                     <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                         <IconMoneybag className="h-5 w-5" />
                         {t.basicInformationSection}
                       </h3>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.campaignTitleRequiredEdit}
                           </label>
                           <input
@@ -377,14 +377,14 @@ export default function EditCampaignPage({
                             onChange={(e) =>
                               handleInputChange("title", e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                             placeholder={t.enterCampaignTitle}
                             required
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.descriptionRequiredEdit}
                           </label>
                           <textarea
@@ -393,7 +393,7 @@ export default function EditCampaignPage({
                               handleInputChange("description", e.target.value)
                             }
                             rows={4}
-                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                             placeholder={t.describeCampaignEdit}
                             required
                           />
@@ -403,12 +403,12 @@ export default function EditCampaignPage({
 
                     {/* Financial & Status */}
                     <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                      <h3 className="staff-type-section-title staff-text-primary mb-4">
                         {t.financialStatusDetails}
                       </h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.goalAmountRequiredEdit} (VND)
                           </label>
                           <input
@@ -418,14 +418,14 @@ export default function EditCampaignPage({
                             onChange={(e) =>
                               handleInputChange("goalAmount", formatCurrencyInput(e.target.value))
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                             placeholder={t.goalAmountPlaceholderEdit}
                             required
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.deadlineRequiredEdit}
                           </label>
                           <input
@@ -434,13 +434,13 @@ export default function EditCampaignPage({
                             onChange={(e) =>
                               handleInputChange("deadline", e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                             required
                           />
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium staff-text-primary mb-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.statusRequiredEdit}
                           </label>
                           <select
@@ -448,7 +448,7 @@ export default function EditCampaignPage({
                             onChange={(e) =>
                               handleInputChange("status", e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                           >
                             <option value="DRAFT">Draft</option>
                             <option value="ACTIVE">Active</option>
@@ -462,12 +462,12 @@ export default function EditCampaignPage({
 
                     {/* Campaign Image */}
                     <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                      <h3 className="staff-type-section-title staff-text-primary mb-4">
                         {t.campaignImageLabel}
                       </h3>
                       <div className="space-y-4">
                         <div
-                          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#d9534f] transition-colors cursor-pointer"
+                          className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-[var(--staff-primary)] transition-colors cursor-pointer"
                           onClick={() =>
                             document.getElementById("image-upload")?.click()
                           }
@@ -478,7 +478,7 @@ export default function EditCampaignPage({
                                 <img
                                   src={imagePreview}
                                   alt="Campaign preview"
-                                  className="w-full h-full object-cover rounded-lg border border-gray-200"
+                                  className="w-full h-full object-cover rounded-sm border border-gray-200"
                                 />
                                 <button
                                   type="button"
@@ -538,7 +538,7 @@ export default function EditCampaignPage({
                   {/* Right Column - Sponsorship Tiers */}
                   <div className="space-y-6">
                     <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                      <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                         <IconMoneybag className="h-5 w-5" />
                         Thông tin tài trợ
                       </h3>
@@ -547,7 +547,7 @@ export default function EditCampaignPage({
                           const fieldName = `${tier.name}MinPrice` as any;
 
                           return (
-                            <div key={tier.id} className="border border-[#e6e2da] p-3 bg-[#fcfbf8]">
+                            <div key={tier.id} className="border border-[var(--staff-border)] p-3 bg-[#fcfbf8]">
                               <div className="flex items-center justify-between mb-2">
                                 <span className="text-sm font-semibold text-gray-800">
                                   {tier.display}
@@ -562,7 +562,7 @@ export default function EditCampaignPage({
                                   onChange={(e) =>
                                     handleInputChange(fieldName, formatCurrencyInput(e.target.value))
                                   }
-                                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#d9534f] pr-8"
+                                  className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] pr-8"
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">đ</span>
                               </div>
@@ -573,7 +573,7 @@ export default function EditCampaignPage({
                     </div>
 
                     {/* Action Buttons moved here for visibility or kept below */}
-                    <div className="flex flex-col gap-3 pt-6 border-t border-[#e6e2da]">
+                    <div className="flex flex-col gap-3 pt-6 border-t border-[var(--staff-border)]">
                       <button
                         type="submit"
                         disabled={isSubmitting || updateMutation.isPending}
@@ -593,7 +593,7 @@ export default function EditCampaignPage({
                       </button>
                       <Link
                         href={`/dashboard/staff/campaigns/${id}`}
-                        className="w-full px-6 py-3 border border-[#e6e2da] staff-text-primary hover:bg-gray-50 transition-colors text-center"
+                        className="w-full px-6 py-3 border border-[var(--staff-border)] staff-text-primary hover:bg-gray-50 transition-colors text-center"
                       >
                         {t.cancel}
                       </Link>

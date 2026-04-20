@@ -156,7 +156,7 @@ export default function ContestsManagementPage() {
       <SidebarInset>
         <SiteHeader title={t.contestManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.contestManagement }]}
               homeHref="/dashboard/staff"
@@ -167,7 +167,7 @@ export default function ContestsManagementPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.allContestsCount} ({totalFromAPI})
                   </h2>
                   {/* <p className="text-sm staff-text-secondary mt-1">
@@ -206,13 +206,12 @@ export default function ContestsManagementPage() {
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder={t.searchContestsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -222,7 +221,7 @@ export default function ContestsManagementPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as ContestStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -309,7 +308,7 @@ export default function ContestsManagementPage() {
                                       alt={contest.title}
                                       width={64}
                                       height={64}
-                                      className="w-16 h-16 object-cover rounded"
+                                      className="w-16 h-16 object-cover rounded-sm"
                                     />
                                   )}
                                   <div>
@@ -383,7 +382,7 @@ export default function ContestsManagementPage() {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="px-2 py-1 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
@@ -405,7 +404,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="First page"
                     >
                       <IconChevronsLeft className="h-4 w-4" />
@@ -413,7 +412,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="Previous page"
                     >
                       <IconChevronLeft className="h-4 w-4" />
@@ -426,7 +425,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="Next page"
                     >
                       <IconChevronRight className="h-4 w-4" />
@@ -434,7 +433,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="Last page"
                     >
                       <IconChevronsRight className="h-4 w-4" />

@@ -154,7 +154,7 @@ export default function ExhibitionsPage() {
       <SidebarInset>
         <SiteHeader title={t.exhibitionsManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.exhibitionsManagement }]}
               homeHref="/dashboard/staff"
@@ -165,7 +165,7 @@ export default function ExhibitionsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.allExhibitions} ({totalExhibitionsCount})
                   </h2>
                   {/* <p className="text-sm staff-text-secondary mt-1">
@@ -207,13 +207,12 @@ export default function ExhibitionsPage() {
               {/* Search and Filters */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder={t.searchExhibitions}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)] focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -225,7 +224,7 @@ export default function ExhibitionsPage() {
                         e.target.value as ExhibitionStatus | "ALL"
                       )
                     }
-                    className="px-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -269,7 +268,7 @@ export default function ExhibitionsPage() {
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-[#fffdf9] divide-y divide-gray-200">
+                      <tbody className="bg-[var(--staff-surface)] divide-y divide-gray-200">
                         {paginatedExhibitions.length === 0 ? (
                           <tr>
                             <td
@@ -299,7 +298,7 @@ export default function ExhibitionsPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                   <span
-                                    className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded ${getStatusBadgeColor(
+                                    className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-sm ${getStatusBadgeColor(
                                       exhibition.status
                                     )}`}
                                   >
@@ -333,14 +332,14 @@ export default function ExhibitionsPage() {
                                   <div className="flex items-center justify-end gap-2">
                                     <Link
                                       href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}`}
-                                      className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                                      className="staff-btn-icon-primary"
                                       title="View Details"
                                     >
                                       <IconEye className="h-4 w-4" />
                                     </Link>
                                     <Link
                                       href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/edit`}
-                                      className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
+                                      className="staff-btn-icon-neutral"
                                       title="Edit"
                                     >
                                       <IconEdit className="h-4 w-4" />
@@ -353,7 +352,7 @@ export default function ExhibitionsPage() {
                                             "ACTIVE"
                                           )
                                         }
-                                        className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                                        className="staff-btn-icon-success"
                                         title="Activate"
                                         disabled={
                                           updateExhibitionMutation.isPending
@@ -370,7 +369,7 @@ export default function ExhibitionsPage() {
                                             "COMPLETED"
                                           )
                                         }
-                                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                                        className="staff-btn-icon-primary"
                                         title="Complete"
                                         disabled={
                                           updateExhibitionMutation.isPending
@@ -385,7 +384,7 @@ export default function ExhibitionsPage() {
                                           exhibition.exhibitionId
                                         )
                                       }
-                                      className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                                      className="staff-btn-icon-danger"
                                       title="Delete"
                                       disabled={
                                         deleteExhibitionMutation.isPending
@@ -418,7 +417,7 @@ export default function ExhibitionsPage() {
                         setPageSize(Number(e.target.value));
                         setCurrentPage(1);
                       }}
-                      className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="px-2 py-1 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                     >
                       <option value={5}>5</option>
                       <option value={10}>10</option>
@@ -440,7 +439,7 @@ export default function ExhibitionsPage() {
                   <button
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="First page"
                   >
                     <IconChevronsLeft className="h-4 w-4" />
@@ -450,7 +449,7 @@ export default function ExhibitionsPage() {
                       setCurrentPage((prev) => Math.max(1, prev - 1))
                     }
                     disabled={currentPage === 1}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="Previous page"
                   >
                     <IconChevronLeft className="h-4 w-4" />
@@ -465,7 +464,7 @@ export default function ExhibitionsPage() {
                       setCurrentPage((prev) => Math.min(totalPages, prev + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="Next page"
                   >
                     <IconChevronRight className="h-4 w-4" />
@@ -473,7 +472,7 @@ export default function ExhibitionsPage() {
                   <button
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="Last page"
                   >
                     <IconChevronsRight className="h-4 w-4" />

@@ -68,37 +68,44 @@ const CampaignCard = ({
   title: string;
   description: string;
 }) => (
-  <div className="flex flex-col h-full">
-    <img
-      src={imgSrc}
-      alt={title}
-      className="w-full aspect-4/3 object-cover mb-4 sm:mb-6"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src =
-          "https://placehold.co/400x300/cccccc/333333?text=Image+Failed";
-      }}
-    />
-    <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
-    <div className="text-black text-sm leading-relaxed mb-6 text-center line-clamp-3">
-      <ReactMarkdown>{description}</ReactMarkdown>
+  <div className="group flex flex-col h-full bg-white border border-[#e6e2da] shadow-sm rounded-md overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
+    {/* Image — fixed 4:3 aspect ratio, subtle zoom on hover */}
+    <div className="w-full aspect-4/3 overflow-hidden border-b border-[#e6e2da]">
+      <img
+        src={imgSrc}
+        alt={title}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src =
+            "https://placehold.co/400x300/cccccc/333333?text=Image+Failed";
+        }}
+      />
     </div>
-    <button className="w-full mt-auto cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
-      Đăng kí tài trợ <ArrowRightIcon />
-    </button>
+    {/* Card body */}
+    <div className="flex flex-col flex-1 p-4">
+      <h3 className="text-sm font-bold text-[#423137] leading-snug mb-2 line-clamp-2">{title}</h3>
+      <div className="text-xs text-[#423137]/70 font-medium leading-relaxed mb-4 line-clamp-3 flex-1">
+        <ReactMarkdown>{description}</ReactMarkdown>
+      </div>
+      {/* CTA button — full-width, consistent with design tokens */}
+      <button className="w-full mt-auto cursor-pointer bg-[#FF6E1A] hover:bg-[#FF833B] transition-colors duration-200 rounded-sm text-white text-xs font-bold tracking-wide px-4 py-2.5 flex items-center justify-center gap-1.5 shadow-sm">
+        Đăng kí tài trợ <ArrowRightIcon />
+      </button>
+    </div>
   </div>
 );
 
 // Skeleton component for CampaignCard
 const SkeletonCampaignCard = () => (
   <div className="flex flex-col h-full animate-pulse">
-    <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
-    <div className="h-6 bg-gray-300 mb-2 rounded text-center"></div>
-    <div className="space-y-2 mb-6">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+    <div className="w-full aspect-4/3 bg-gray-300 mb-4"></div>
+    <div className="h-4 bg-gray-300 rounded mb-2 w-3/4"></div>
+    <div className="space-y-2 mb-4">
+      <div className="h-3 bg-gray-300 rounded"></div>
+      <div className="h-3 bg-gray-300 rounded w-5/6"></div>
+      <div className="h-3 bg-gray-300 rounded w-2/3"></div>
     </div>
-    <div className="w-full h-10 mt-auto bg-gray-300 rounded-sm"></div>
+    <div className="w-full h-9 mt-auto bg-gray-300 rounded-sm"></div>
   </div>
 );
 
@@ -159,6 +166,28 @@ const truncateAtWord = (text: string | undefined, maxChars: number) => {
   return text;
 };
 
+// Helper to strip markdown and HTML entities for clean plain-text excerpts
+const cleanMarkdown = (text: string | undefined) => {
+  if (!text) return "";
+  return text
+    // Remove images
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    // Remove links
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    // Remove headings
+    .replace(/#{1,6}\s/g, "")
+    // Remove bold/italics
+    .replace(/(\*\*|\*|__|_)(.*?)\1/g, "$2")
+    // Remove lists and blockquotes
+    .replace(/^\s*[->*+]\s/gm, "")
+    // Remove HTML entities like &#x20;
+    .replace(/&#x[0-9a-fA-F]+;/g, " ")
+    .replace(/&nbsp;/g, " ")
+    // Replace multiple spaces/newlines with a single space
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 // Component Card cho Tin tức nhỏ
 const NewsCardSmall = ({
   imgSrc,
@@ -174,29 +203,36 @@ const NewsCardSmall = ({
   darkBg?: boolean;
 }) => (
   <div
-    className={`flex flex-col overflow-hidden hover:scale-105 transition-transform duration-300 ${
-      darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
+    className={`group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01] border border-[#e6e2da] shadow-sm rounded-md ${
+      darkBg ? "bg-[#f5f2ed] text-black" : "bg-white text-black"
     }`}
   >
-    <img
-      src={imgSrc}
-      alt={title}
-      className="w-full h-32 sm:h-40 object-cover"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src =
-          "https://placehold.co/300x160/cccccc/333333?text=Image";
-      }}
-    />
-    <div className="pt-2">
-      <p className="text-3xl sm:text-sm font-semibold text-black uppercase mb-1">
+    {/* Image — fixed aspect ratio for consistency */}
+    <div className="w-full aspect-video overflow-hidden border-b border-[#e6e2da]">
+      <img
+        src={imgSrc}
+        alt={title}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src =
+            "https://placehold.co/300x160/cccccc/333333?text=Image";
+        }}
+      />
+    </div>
+    {/* Text block */}
+    <div className="flex flex-col flex-1 p-4">
+      {/* Category / Tag — small label */}
+      <p className="text-[10px] font-bold tracking-widest text-[#FF6E1A] uppercase mb-1.5 drop-shadow-sm">
         {category}
       </p>
-      <div className="text-sm sm:text-base font-semibold">
+      {/* Title — balanced weight */}
+      <div className="text-sm font-bold text-black leading-snug line-clamp-2">
         <ReactMarkdown>{title}</ReactMarkdown>
       </div>
+      {/* Description — muted, compact */}
       {content && (
-        <div className="text-base text-gray-600 mt-2 line-clamp-2">
-          <ReactMarkdown>{truncateAtWord(content, 100)}</ReactMarkdown>
+        <div className="text-xs text-[#423137]/70 font-medium mt-1.5 line-clamp-2 leading-relaxed">
+          {truncateAtWord(cleanMarkdown(content), 120)}
         </div>
       )}
     </div>
@@ -484,45 +520,35 @@ export default function Page() {
           animation="animate-zoom-in"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
+            {/* Section label — matches other section headings on the page */}
             <AnimatedContainer
-              className="text-sm text-black sm:text-base font-semibold mb-4 sm:mb-6"
+              className="text-xs font-semibold tracking-widest text-[#423137]/60 uppercase mb-5"
               animation="animate-fade-in-down"
             >
               Tin tức nổi bật
             </AnimatedContainer>
 
-            {/* Desktop News Grid */}
-            <div className="hidden lg:grid lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 lg:gap-8">
+            {/* Desktop News Grid — 3 columns separated by thin dividers */}
+            <div className="hidden lg:grid lg:grid-cols-[1fr_1px_1.35fr_1px_1fr] gap-0">
               {loadingPosts ? (
                 <>
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
+                  <div className="flex flex-col justify-between gap-8 pr-8">
                     <SkeletonNewsCardSmall />
-                    <div className="flex flex-col overflow-hidden animate-pulse">
-                      <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
-                      <div className="p-3 sm:p-4">
-                        <div className="h-3 bg-gray-300 rounded mb-1 w-2/3"></div>
-                        <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-                      </div>
-                    </div>
+                    <SkeletonNewsCardSmall />
                   </div>
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  <div className="hidden lg:block bg-[#423137]/20 self-stretch"></div>
                   <SkeletonSpotlightPost />
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    <div className="flex flex-col overflow-hidden animate-pulse">
-                      <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
-                      <div className="p-3 sm:p-4">
-                        <div className="h-3 bg-gray-300 rounded mb-1 w-1/3"></div>
-                        <div className="h-4 bg-gray-300 rounded w-4/6"></div>
-                      </div>
-                    </div>
+                  <div className="hidden lg:block bg-[#423137]/20 self-stretch"></div>
+                  <div className="flex flex-col justify-between gap-8 pl-8">
+                    <SkeletonNewsCardSmall />
                     <SkeletonNewsCardSmall />
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {[smallPosts[0], smallPosts[1]].map((post, i) => (
+                  {/* ── Left column: 2 small posts ── */}
+                  <div className="flex flex-col justify-between gap-8 pr-8">
+                    {[smallPosts[0], smallPosts[1]].map((post, i) =>
                       post ? (
                         <Link key={post.post_id} href={`/posts/${post.post_id}`}>
                           <NewsCardSmall
@@ -534,44 +560,61 @@ export default function Page() {
                           />
                         </Link>
                       ) : (
-                        <div key={i} className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4 min-h-[150px] justify-center text-center text-gray-400 text-xs">
+                        <div
+                          key={i}
+                          className="flex items-center justify-center aspect-video bg-[#423137]/5 text-[#423137]/35 text-xs"
+                        >
                           Bài viết mới sẽ sớm được cập nhật
                         </div>
                       )
-                    ))}
+                    )}
                   </div>
 
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  {/* Thin divider */}
+                  <div className="hidden lg:block bg-[#423137]/20 self-stretch mx-8"></div>
 
-                  <div className="flex flex-col bg-[#EAE6E0] text-white hover:scale-105 transition-transform duration-300">
-                    {spotlightPost ? (
-                      <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <img
-                          src={spotlightPost.image_url || "https://placehold.co/600x400/FF5733/ffffff?text=Spotlight"}
-                          alt={spotlightPost.title}
-                          className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6 cursor-pointer"
-                        />
-                      </Link>
-                    ) : (
-                      <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-200 flex items-center justify-center mb-6 text-gray-400">Không có bài viết nổi bật</div>
-                    )}
-                    <span className="text-xs sm:text-sm font-semibold text-black uppercase mb-2">Artist Spotlight</span>
+                  {/* ── Center column: spotlight post ── */}
+                  <div className="group flex flex-col">
+                    {/* Hero image */}
+                    <div className="w-full overflow-hidden mb-4">
+                      {spotlightPost ? (
+                        <Link href={`/posts/${spotlightPost.post_id}`}>
+                          <img
+                            src={spotlightPost.image_url || "https://placehold.co/600x400/FF5733/ffffff?text=Spotlight"}
+                            alt={spotlightPost.title}
+                            className="w-full h-52 lg:h-72 object-cover cursor-pointer transition-transform duration-500 group-hover:scale-[1.02]"
+                          />
+                        </Link>
+                      ) : (
+                        <div className="w-full h-52 lg:h-72 bg-[#423137]/10 flex items-center justify-center text-[#423137]/40 text-sm">
+                          Không có bài viết nổi bật
+                        </div>
+                      )}
+                    </div>
+                    {/* Metadata label */}
+                    <p className="text-[10px] font-semibold tracking-widest text-[#FF6E1A] uppercase mb-2">
+                      Artist Spotlight
+                    </p>
+                    {/* Title */}
                     {spotlightPost && (
                       <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <h3 className="text-2xl sm:text-3xl font-bold mb-3 text-black cursor-pointer line-clamp-2">
-                           {spotlightPost.title}
+                        <h3 className="text-xl font-bold text-[#423137] leading-snug mb-2.5 line-clamp-2 cursor-pointer hover:text-[#FF6E1A] transition-colors duration-200">
+                          {spotlightPost.title}
                         </h3>
                       </Link>
                     )}
-                    <div className="text-sm sm:text-base text-black leading-relaxed line-clamp-3">
+                    {/* Description */}
+                    <p className="text-xs text-[#423137]/60 leading-relaxed line-clamp-8">
                       {spotlightPost?.content || "Thông tin nghệ sĩ sẽ được cập nhật sớm."}
-                    </div>
+                    </p>
                   </div>
 
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
+                  {/* Thin divider */}
+                  <div className="hidden lg:block bg-[#423137]/20 self-stretch mx-8"></div>
 
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {[smallPosts[2], smallPosts[3]].map((post, i) => (
+                  {/* ── Right column: 2 small posts ── */}
+                  <div className="flex flex-col justify-between gap-8 pl-8">
+                    {[smallPosts[2], smallPosts[3]].map((post, i) =>
                       post ? (
                         <Link key={post.post_id} href={`/posts/${post.post_id}`}>
                           <NewsCardSmall
@@ -583,11 +626,14 @@ export default function Page() {
                           />
                         </Link>
                       ) : (
-                        <div key={i} className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4 min-h-[150px] justify-center text-center text-gray-400 text-xs">
+                        <div
+                          key={i}
+                          className="flex items-center justify-center aspect-video bg-[#423137]/5 text-[#423137]/35 text-xs"
+                        >
                           Bài viết mới sẽ sớm được cập nhật
                         </div>
                       )
-                    ))}
+                    )}
                   </div>
                 </>
               )}
@@ -629,19 +675,23 @@ export default function Page() {
                       </div>
                     ))}
                   </motion.div>
-                  {/* Indicators */}
+                  {/* Dot indicators */}
                   <div className="flex justify-center gap-1.5 mt-6">
                     {uniquePosts.map((_, idx) => (
-                      <button 
+                      <button
                         key={idx}
                         onClick={() => setCurrentPostIndex(idx)}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentPostIndex ? 'w-8 bg-[#FF6E1A]' : 'w-2 bg-black/20'}`}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          idx === currentPostIndex ? "w-8 bg-[#FF6E1A]" : "w-2 bg-black/20"
+                        }`}
                       />
                     ))}
                   </div>
                 </>
               ) : (
-                <div className="w-full text-center py-8 text-black opacity-50">Không có bài viết nào</div>
+                <div className="w-full text-center py-8 text-[#423137]/50 text-sm">
+                  Không có bài viết nào
+                </div>
               )}
             </div>
           </div>
@@ -655,8 +705,9 @@ export default function Page() {
           animation="animate-fade-in-right"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
+            {/* Section label — matches News section */}
             <AnimatedContainer
-              className="text-sm sm:text-base font-semibold mb-4 sm:mb-6 text-black"
+              className="text-xs font-semibold tracking-widest text-[#423137]/60 uppercase mb-5"
               animation="animate-fade-in-down"
             >
               Chiến dịch đang diễn ra
@@ -751,10 +802,10 @@ export default function Page() {
       )}
 
       {/* --- Footer --- */}
-      <footer className="relative bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
+      <footer className="relative bg-[#423137] text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6E0]/20 via-transparent to-[#EAE6E0]/20"></div>
         </div>
 
         <div className="relative py-12 sm:py-16 md:py-20">
@@ -773,26 +824,26 @@ export default function Page() {
                     ArtChain
                   </h3>
                 </div>
-                <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+                <p className="text-[#EAE6E0]/80 text-sm sm:text-base leading-relaxed mb-6">
                   Nơi nuôi dưỡng tài năng hội họa trẻ, kết nối cộng đồng nghệ sĩ
                   và lan tỏa giá trị nghệ thuật đến mọi nhà.
                 </p>
                 <div className="flex space-x-4">
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                   >
                     <Facebook className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                   >
                     <Instagram className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                   >
                     <Youtube className="w-5 h-5" />
                   </a>
@@ -806,7 +857,7 @@ export default function Page() {
                 </h5>
                 <ul className="space-y-3 text-sm sm:text-base">
                   {/* <li>
-                    <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group">
+                    <a href="#" className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group">
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nhiệm vụ
                     </a>
@@ -814,7 +865,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Đội ngũ
@@ -823,7 +874,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Liên hệ
@@ -841,7 +892,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       NÉT VẼ ƯỚC MƠ 2026
@@ -850,7 +901,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Thể lệ
@@ -859,7 +910,7 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
                       <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nộp bài
@@ -876,37 +927,37 @@ export default function Page() {
                 <ul className="space-y-3 text-sm sm:text-base">
                   <li className="flex items-start space-x-3">
                     <MapPin className="w-4 h-4 text-[#FF6E1A] mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-300">
+                    <span className="text-[#EAE6E0]/80">
                       123 Đường ABC, Quận 1<br />
                       TP.HCM, Việt Nam
                     </span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Phone className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">+84 123 456 789</span>
+                    <span className="text-[#EAE6E0]/80">+84 123 456 789</span>
                   </li>
                   <li className="flex items-center space-x-3">
                     <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">artchain999@gmail.com</span>
+                    <span className="text-[#EAE6E0]/80">artchain999@gmail.com</span>
                   </li>
                 </ul>
               </div>
             </div>
 
             {/* Newsletter Signup */}
-            <div className="border-t border-gray-800 pt-8 sm:pt-12">
+            {/* <div className="border-t border-[#EAE6E0]/10 pt-8 sm:pt-12">
               <div className="max-w-md mx-auto text-center">
                 <h4 className="text-lg sm:text-xl font-bold text-white mb-3">
                   Đăng ký nhận tin
                 </h4>
-                <p className="text-gray-300 text-sm sm:text-base mb-6">
+                <p className="text-[#EAE6E0]/80 text-sm sm:text-base mb-6">
                   Nhận thông tin mới nhất về cuộc thi và các sự kiện nghệ thuật
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="email"
                     placeholder="Nhập email của bạn"
-                    className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
+                    className="flex-1 px-4 py-3 bg-[#EAE6E0]/5 border border-[#EAE6E0]/10 rounded-lg text-white placeholder-[#EAE6E0]/40 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
                   />
                   <button className="px-6 py-3 bg-[#FF6E1A] hover:bg-[#FF833B] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
                     <Send className="w-4 h-4" />
@@ -914,33 +965,33 @@ export default function Page() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+        <div className="border-t border-[#EAE6E0]/10 bg-black/10 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-gray-400 text-xs sm:text-sm text-center md:text-left">
+              <p className="text-[#EAE6E0]/60 text-xs sm:text-sm text-center md:text-left">
                 &copy; 2026 ArtChain. Đã đăng ký bản quyền.
               </p>
               <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                 >
                   Điều khoản dịch vụ
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                 >
                   Chính sách bảo mật
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
                 >
                   Cookie Policy
                 </a>

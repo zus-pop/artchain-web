@@ -304,7 +304,7 @@ export function CreateRoundDialog({
         <DialogFooter className="flex gap-2">
           <button
             onClick={handleClose}
-            className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
+            className="px-4 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
             disabled={createMutation.isPending}
           >
             <IconX className="h-4 w-4 inline mr-2" />
@@ -312,7 +312,7 @@ export function CreateRoundDialog({
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-gradient-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50"
+            className="staff-btn-primary !px-4 !py-2 disabled:opacity-50"
             disabled={createMutation.isPending}
           >
             <IconPlus className="h-4 w-4 inline mr-2" />

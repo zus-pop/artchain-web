@@ -283,7 +283,7 @@ export const translations = {
     noPendingSubmissionsSelected:
       "Không có bài nộp đang chờ nào được chọn để chấp nhận.",
     acceptAllSelectedPending:
-      "Chấp nhận tất cả ${count} bài nộp đang chờ đã chọn?",
+      "Chấp nhận tất cả ${count} bài nộp đã chọn?",
 
     // Admin Dashboard
     totalUsersAdmin: "Tổng Người Dùng",
@@ -1360,7 +1360,7 @@ export const translations = {
     selectPaintingsToConfigure: "Chọn tranh để cấu hình giá",
     ceilPrice: "Giá Trần",
     bidStep: "Bước Giá",
-    auctionDuration: "Thời Lượng Đấu Giá (Phút)",
+    auctionDuration: "Thời Lượng (Phút)",
     auctionDurationPlaceholder: "15",
     minutes: "phút",
     openAuctionNow: "Mở Phiên Đấu Giá Ngay",

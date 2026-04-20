@@ -245,7 +245,7 @@ export function SubmissionDetailDialog({
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogTitle className="sr-only">{t.loading}</DialogTitle>
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--staff-primary)]"></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -281,7 +281,7 @@ export function SubmissionDetailDialog({
 
         <div className="space-y-6">
           {/* Image Slot - Integrated Upload */}
-          <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden border-2 border-[#e6e2da]">
+          <div className="relative w-full h-96 bg-gray-100 rounded-sm overflow-hidden border-2 border-[var(--staff-border)]">
             {submission.imageUrl && !isImageRemoved ? (
               <div className="relative w-full h-full">
                 <Image
@@ -297,7 +297,7 @@ export function SubmissionDetailDialog({
                     title="Xóa ảnh hiện tại để thay đổi"
                   >
                     <IconX className="h-5 w-5" />
-                    <span className="absolute right-full mr-2 bg-black/80 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                    <span className="absolute right-full mr-2 bg-black/80 text-white text-xs px-2 py-1 rounded-sm opacity-0 group-hover:opacity-100 whitespace-nowrap">
                       Xóa ảnh hiện tại
                     </span>
                   </button>
@@ -321,13 +321,13 @@ export function SubmissionDetailDialog({
                         >
                           <IconX className="h-5 w-5" />
                         </button>
-                        <div className="absolute bottom-4 left-4 right-4 bg-black/60 text-white p-2 rounded text-xs backdrop-blur-sm">
+                        <div className="absolute bottom-4 left-4 right-4 bg-black/60 text-white p-2 rounded-sm text-xs backdrop-blur-sm">
                           <p className="font-bold">Ảnh mới đã chọn:</p>
                           <p className="truncate">{(round2Image as File)?.name}</p>
                         </div>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all w-full h-full border-4 border-dashed border-gray-200 rounded-lg group bg-gray-50/50">
+                      <label className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all w-full h-full border-4 border-dashed border-gray-200 rounded-sm group bg-gray-50/50">
                         <div className="p-6 rounded-full bg-white text-gray-400 group-hover:text-gray-600 group-hover:scale-110 transition-all shadow-sm">
                           <IconPhoto className="h-16 w-16" />
                         </div>
@@ -364,16 +364,16 @@ export function SubmissionDetailDialog({
           {/* Title and Description - Editable */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium staff-text-primary mb-2">
+              <label className="staff-type-label staff-text-primary mb-2 block">
                 {t.titleLabel}
               </label>
               <input
                 {...form.register("title")}
                 readOnly={roundName === "ROUND_1"}
-                className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none transition-all duration-200 ${
+                className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none transition-all duration-200 ${
                   roundName === "ROUND_1"
                     ? "bg-gray-100 cursor-not-allowed"
-                    : "bg-white focus:ring-2 focus:ring-blue-500"
+                    : "bg-white focus:ring-2 focus:ring-[var(--staff-primary)]"
                 }`}
                 placeholder="Enter painting title"
               />
@@ -384,17 +384,17 @@ export function SubmissionDetailDialog({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium staff-text-primary mb-2">
+              <label className="staff-type-label staff-text-primary mb-2 block">
                 {t.descriptionLabel}
               </label>
               <textarea
                 {...form.register("description")}
                 rows={4}
                 readOnly={roundName === "ROUND_1"}
-                className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none transition-all duration-200 resize-none ${
+                className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none transition-all duration-200 resize-none ${
                   roundName === "ROUND_1"
                     ? "bg-gray-100 cursor-not-allowed"
-                    : "bg-white focus:ring-2 focus:ring-blue-500"
+                    : "bg-white focus:ring-2 focus:ring-[var(--staff-primary)]"
                 }`}
                 placeholder="Enter painting description"
               />
@@ -409,7 +409,7 @@ export function SubmissionDetailDialog({
 
           {/* Information Grid */}
           <div className="grid grid-cols-2 gap-4">
-            {/* <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconUser className="h-5 w-5 staff-text-secondary" />
               </div>
@@ -418,7 +418,7 @@ export function SubmissionDetailDialog({
               </p>
             </div> */}
 
-            {/* <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconTrophy className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
@@ -430,7 +430,7 @@ export function SubmissionDetailDialog({
               </p>
             </div> */}
 
-            {/* <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
@@ -441,7 +441,7 @@ export function SubmissionDetailDialog({
                 {submission.roundId}
               </p>
             </div> */}
-            {/* <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
               </div>
@@ -456,8 +456,8 @@ export function SubmissionDetailDialog({
 
 
           {/* Metadata - Hide for Round 2 */}
-          {!roundName.toUpperCase().includes("ROUND_2") && (
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#e6e2da]">
+          {/* {!roundName.toUpperCase().includes("ROUND_2") && (
+            <div className=" ">
               <div>
                 <p className="text-xs staff-text-secondary mb-1">{t.created}</p>
                 <p className="text-sm staff-text-primary">
@@ -471,7 +471,7 @@ export function SubmissionDetailDialog({
                 </p>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Reject Reason Input */}
           {showRejectInput && (
@@ -482,7 +482,7 @@ export function SubmissionDetailDialog({
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] transition-all duration-200"
                 rows={3}
                 placeholder="Provide a reason for rejection..."
               />
@@ -497,7 +497,7 @@ export function SubmissionDetailDialog({
               <>
                 <button
                   onClick={handleCancelReject}
-                  className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
+                  className="px-4 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
                   disabled={rejectMutation.isPending}
                 >
                   {t.cancel}
@@ -515,7 +515,7 @@ export function SubmissionDetailDialog({
               <>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
+                  className="px-4 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
                 >
                   {t.close}
                 </button>
@@ -546,7 +546,7 @@ export function SubmissionDetailDialog({
       {/* Nút Đóng - flex-1 để chiếm 1/2 chiều rộng */}
       <button
         onClick={onClose}
-        className="flex-1 px-4 py-2.5 border-2 border-[#e6e2da] staff-text-primary font-bold hover:bg-[#f7f7f7] transition-all rounded-md"
+        className="flex-1 px-4 py-2.5 border-2 border-[var(--staff-border)] staff-text-primary font-bold hover:bg-[#f7f7f7] transition-all rounded-sm"
       >
         {t.close}
       </button>
@@ -564,7 +564,7 @@ export function SubmissionDetailDialog({
             !!form.formState.errors.description ||
             !!form.formState.errors.round2Image
           }
-          className="flex-1 staff-btn-primary flex items-center justify-center gap-2 py-2.5 rounded-md shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 staff-btn-primary flex items-center justify-center gap-2 py-2.5 rounded-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <IconCheck className="h-5 w-5" />
           <span className="font-bold uppercase tracking-wider text-sm whitespace-nowrap">

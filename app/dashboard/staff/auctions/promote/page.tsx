@@ -144,7 +144,7 @@ function AuctionPromotionPage() {
       setAvailableTags((prev) => [...prev, newTag]);
       handleSelectTag(newTag);
     } catch (error) {
-      toast.error("Failed to create tag");
+      toast.error("Không thể tạo thẻ");
     } finally {
       setIsCreatingTag(false);
     }
@@ -229,12 +229,12 @@ function AuctionPromotionPage() {
         <div className="flex items-center gap-4">
           <Link
             href={`/dashboard/staff/auctions/detail?id=${auctionId}`}
-            className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+            className="border border-[var(--staff-border)] p-2 hover:bg-gray-50 transition-colors"
           >
             <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
           </Link>
           <div>
-            <h2 className="text-2xl font-bold staff-text-primary">
+            <h2 className="staff-type-page-title staff-text-primary">
               {t.createPromotionPost}
             </h2>
             <p className="text-sm staff-text-secondary mt-1">
@@ -248,11 +248,11 @@ function AuctionPromotionPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Image Upload */}
           <div className="staff-card p-6">
-            <label className="block text-sm font-medium staff-text-primary mb-2">
+            <label className="staff-type-label staff-text-primary mb-2 block">
               {t.featuredImageOptional}
             </label>
             <div
-              className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer"
+              className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-blue-500 transition-colors cursor-pointer"
               onClick={() => document.getElementById("image-upload")?.click()}
             >
               {selectedImage ? (
@@ -262,7 +262,7 @@ function AuctionPromotionPage() {
                       src={URL.createObjectURL(selectedImage)}
                       alt="Preview"
                       fill
-                      className="object-cover rounded-lg"
+                      className="object-cover rounded-sm"
                     />
                   </div>
                   <button
@@ -301,7 +301,7 @@ function AuctionPromotionPage() {
               <input
                 type="text"
                 {...form.register("title")}
-                className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:ring-2 focus:ring-[var(--staff-primary)] outline-none"
               />
             </div>
             <div>
@@ -332,11 +332,11 @@ function AuctionPromotionPage() {
                 value={tagSearch}
                 onChange={(e) => { setTagSearch(e.target.value); setShowTagDropdown(true); }}
                 placeholder={t.searchOrCreateTags}
-                className="w-full pl-8 pr-3 py-2 border border-[#e6e2da] rounded-lg text-sm outline-none"
+                className="w-full pl-8 pr-3 py-2 border border-[var(--staff-border)] rounded-sm text-sm outline-none"
               />
               <IconSearch className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
               {showTagDropdown && availableTags.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--staff-border)] rounded-sm shadow-lg max-h-48 overflow-y-auto">
                   {availableTags.map((tag) => (
                     <button
                       key={tag.tag_id}
@@ -352,7 +352,7 @@ function AuctionPromotionPage() {
           </div>
 
           {/* Auction Summary */}
-          <div className="staff-card p-6 space-y-4">
+          {/* <div className="staff-card p-6 space-y-4">
             <h3 className="font-semibold flex items-center gap-2">
               <IconCheck className="h-5 w-5 text-green-500" />
               {t.auctionSummary || "Auction Summary"}
@@ -367,11 +367,11 @@ function AuctionPromotionPage() {
                 <span className="font-bold">{auction.participantCount || 0}</span>
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
-      <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
+      <div className="flex justify-end gap-4 pt-6 border-t border-[var(--staff-border)]">
         <button
           onClick={handlePublish}
           disabled={isPublishing || createPostMutation.isPending}

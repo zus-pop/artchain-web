@@ -127,7 +127,7 @@ export function ContestDetailDialog({
                     status: contest.status,
                   });
                 }}
-                className="text-blue-600 hover:text-blue-800 p-2 rounded hover:bg-blue-50"
+                className="staff-btn-icon-primary p-2"
               >
                 <IconEdit className="h-5 w-5" />
               </button>
@@ -163,7 +163,7 @@ export function ContestDetailDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, bannerUrl: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-field border-gray-300"
                   />
                   {formData.bannerUrl && (
                     <div className="mt-2">
@@ -172,7 +172,7 @@ export function ContestDetailDialog({
                         alt="Banner preview"
                         width={400}
                         height={200}
-                        className="rounded object-cover"
+                        className="rounded-sm object-cover"
                       />
                     </div>
                   )}
@@ -190,7 +190,7 @@ export function ContestDetailDialog({
                       setFormData({ ...formData, title: e.target.value })
                     }
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-field border-gray-300"
                   />
                 </div>
 
@@ -206,7 +206,7 @@ export function ContestDetailDialog({
                     }
                     required
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-field border-gray-300"
                   />
                 </div>
 
@@ -226,7 +226,7 @@ export function ContestDetailDialog({
                     }
                     required
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-field border-gray-300"
                   />
                 </div>
 
@@ -243,7 +243,7 @@ export function ContestDetailDialog({
                         setFormData({ ...formData, startDate: e.target.value })
                       }
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="staff-field border-gray-300"
                     />
                   </div>
                   <div>
@@ -257,7 +257,7 @@ export function ContestDetailDialog({
                         setFormData({ ...formData, endDate: e.target.value })
                       }
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="staff-field border-gray-300"
                     />
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export function ContestDetailDialog({
                         status: e.target.value as ContestStatus,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select w-full border-gray-300"
                   >
                     <option value="DRAFT">DRAFT</option>
                     <option value="ACTIVE">ACTIVE</option>
@@ -289,14 +289,14 @@ export function ContestDetailDialog({
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                    className="staff-btn-secondary !px-4 !py-2"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={updateMutation.isPending}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="staff-btn-primary !px-4 !py-2 disabled:opacity-50"
                   >
                     {updateMutation.isPending ? "Saving..." : "Save Changes"}
                   </button>
@@ -312,7 +312,7 @@ export function ContestDetailDialog({
               <>
                 {/* Banner */}
                 {contest.bannerUrl && (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                  <div className="relative w-full h-48 rounded-sm overflow-hidden">
                     <Image
                       src={contest.bannerUrl}
                       alt={contest.title}
@@ -349,7 +349,7 @@ export function ContestDetailDialog({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded">
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-sm">
                     <div>
                       <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
                         <IconCalendar className="h-4 w-4" />
@@ -395,7 +395,7 @@ export function ContestDetailDialog({
                         }) => (
                           <div
                             key={round.roundId}
-                            className="border rounded-lg p-4 hover:bg-gray-50"
+                            className="border rounded-sm p-4 hover:bg-gray-50"
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -409,7 +409,7 @@ export function ContestDetailDialog({
                                     )}
                                   </h5>
                                   <span
-                                    className={`px-2 py-1 rounded text-xs font-medium ${getRoundStatusBadge(
+                                    className={`px-2 py-1 rounded-sm text-xs font-medium ${getRoundStatusBadge(
                                       round.status
                                     )}`}
                                   >

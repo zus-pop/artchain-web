@@ -175,7 +175,7 @@ export default function InviteExaminerPage() {
       <SidebarInset>
         <SiteHeader title="Invite Examiner" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -198,12 +198,12 @@ export default function InviteExaminerPage() {
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/contests/examiners"
-                    className=" border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className=" border border-[var(--staff-border)] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       Invite New Examiner
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
@@ -219,7 +219,7 @@ export default function InviteExaminerPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Basic Information */}
                   <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                       <IconUsers className="h-5 w-5 " />
                       Basic Information
                     </h3>
@@ -235,7 +235,7 @@ export default function InviteExaminerPage() {
                           onChange={(e) =>
                             handleInputChange("fullName", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                           placeholder="Enter full name"
                           required
                         />
@@ -253,7 +253,7 @@ export default function InviteExaminerPage() {
                             onChange={(e) =>
                               handleInputChange("email", e.target.value)
                             }
-                            className="w-full pl-10 pr-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-10 pr-3 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                             placeholder="examiner@example.com"
                             required
                           />
@@ -264,14 +264,14 @@ export default function InviteExaminerPage() {
 
                   {/* Professional Information */}
                   <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                       <IconBriefcase className="h-5 w-5 " />
                       Professional Information
                     </h3>
 
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           Areas of Specialization *
                         </label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -283,7 +283,7 @@ export default function InviteExaminerPage() {
                               className={`px-3 py-2 text-sm  border transition-colors ${
                                 formData.specialization.includes(spec)
                                   ? "bg-blue-100 border-blue-300 text-blue-800"
-                                  : "bg-gray-50 border-[#e6e2da] text-gray-700 hover:bg-gray-100"
+                                  : "bg-gray-50 border-[var(--staff-border)] text-gray-700 hover:bg-gray-100"
                               }`}
                             >
                               {spec}
@@ -306,7 +306,7 @@ export default function InviteExaminerPage() {
                           onChange={(e) =>
                             handleInputChange("experience", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)]  focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                           required
                         >
                           <option value="">Select experience level</option>
@@ -322,7 +322,7 @@ export default function InviteExaminerPage() {
 
                   {/* Personal Message */}
                   <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                       <IconMail className="h-5 w-5 " />
                       Personal Message
                     </h3>
@@ -337,7 +337,7 @@ export default function InviteExaminerPage() {
                           handleInputChange("message", e.target.value)
                         }
                         rows={4}
-                        className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                         placeholder="Add a personal message to accompany the invitation..."
                       />
                       <p className="text-xs staff-text-secondary mt-1">
@@ -347,10 +347,10 @@ export default function InviteExaminerPage() {
                   </div>
 
                   {/* Form Actions */}
-                  <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
+                  <div className="flex justify-end gap-4 pt-6 border-t border-[var(--staff-border)]">
                     <Link
                       href="/dashboard/staff/contests/examiners"
-                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-6 py-2 border border-[var(--staff-border)]  text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </Link>

@@ -132,7 +132,7 @@ export default function ExhibitionDetailPage({
       <SidebarInset>
         <SiteHeader title={t.exhibitionDetail} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -156,7 +156,7 @@ export default function ExhibitionDetailPage({
                         <div className="flex items-center gap-4 mb-4">
                           <Link
                             href="/dashboard/staff/exhibitions"
-                            className="p-2 hover:bg-white/80 rounded-lg transition-colors"
+                            className="p-2 hover:bg-white/80 rounded-sm transition-colors"
                             title={t.backToExhibitions}
                           >
                             <IconArrowLeft className="h-5 w-5 text-gray-600" />
@@ -254,7 +254,7 @@ export default function ExhibitionDetailPage({
                         <IconPhoto className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold staff-text-primary">
+                        <p className="staff-type-page-title staff-text-primary">
                           {exhibition.numberOfPaintings}
                         </p>
                         <p className="text-sm staff-text-secondary">
@@ -366,7 +366,7 @@ export default function ExhibitionDetailPage({
                                   <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
                                     <Link
                                       href={`/dashboard/staff/competitors/paintings/${exhibitionPainting.paintingId}`}
-                                      className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-white transition-all duration-200 flex items-center gap-2"
+                                      className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-sm font-medium hover:bg-white transition-all duration-200 flex items-center gap-2"
                                     >
                                       <IconEye className="h-4 w-4" />
                                       View Details
@@ -427,7 +427,7 @@ export default function ExhibitionDetailPage({
                         <div className="p-2 bg-blue-100">
                           <IconCalendar className="h-5 w-5 text-blue-600" />
                         </div>
-                        <h3 className="text-lg font-semibold staff-text-primary">
+                        <h3 className="staff-type-section-title staff-text-primary">
                           {t.exhibitionTimeline}
                         </h3>
                       </div>
@@ -497,7 +497,7 @@ export default function ExhibitionDetailPage({
                         <div className="p-2 bg-green-100">
                           <IconTrophy className="h-5 w-5 text-green-600" />
                         </div>
-                        <h3 className="text-lg font-semibold staff-text-primary">
+                        <h3 className="staff-type-section-title staff-text-primary">
                           {t.quickActions}
                         </h3>
                       </div>
@@ -535,7 +535,7 @@ export default function ExhibitionDetailPage({
                         <div className="p-2 bg-orange-100">
                           <IconUsers className="h-5 w-5 text-orange-600" />
                         </div>
-                        <h3 className="text-lg font-semibold staff-text-primary">
+                        <h3 className="staff-type-section-title staff-text-primary">
                           {t.exhibitionStatus}
                         </h3>
                       </div>

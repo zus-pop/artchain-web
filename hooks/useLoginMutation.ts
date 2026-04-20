@@ -26,10 +26,15 @@ export function useLoginMutation() {
 
       queryClient.invalidateQueries({ queryKey: ["user-me"] });
 
+      if (data.user?.role === "STAFF") {
+        router.push("/dashboard/staff/contests");
+        return;
+      }
+
       router.push("/");
     },
     onError: (error) => {
-      toast.error(error.message || "Login failed. Please try again.");
+      toast.error(error.message || "Đăng nhập thất bại. Vui lòng thử lại.");
 
       setAccessToken(null);
       setUser(null);
