@@ -19,6 +19,7 @@ interface UseAuctionSocketOptions {
   onBidPlaced?: (bid: BidPlacedEvent) => void;
   onStatusChanged?: (event: AuctionStatusChangedEvent) => void;
   onAuctionStatus?: (status: AuctionRealtimeStatus) => void;
+  onCeilPriceReached?: (data: any) => void;
 }
 
 export function useAuctionSocket({
@@ -26,6 +27,7 @@ export function useAuctionSocket({
   onBidPlaced,
   onStatusChanged,
   onAuctionStatus,
+  onCeilPriceReached,
 }: UseAuctionSocketOptions) {
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -35,13 +37,15 @@ export function useAuctionSocket({
     useState<AuctionRealtimeStatus | null>(null);
   const { accessToken } = useAuthStore();
 
-  // Stable callbacks via ref to avoid re-subscribing on every render
   const onBidPlacedRef = useRef(onBidPlaced);
   const onStatusChangedRef = useRef(onStatusChanged);
   const onAuctionStatusRef = useRef(onAuctionStatus);
+  const onCeilPriceReachedRef = useRef(onCeilPriceReached);
+
   useEffect(() => { onBidPlacedRef.current = onBidPlaced; }, [onBidPlaced]);
   useEffect(() => { onStatusChangedRef.current = onStatusChanged; }, [onStatusChanged]);
   useEffect(() => { onAuctionStatusRef.current = onAuctionStatus; }, [onAuctionStatus]);
+  useEffect(() => { onCeilPriceReachedRef.current = onCeilPriceReached; }, [onCeilPriceReached]);
 
   const updateServerTimeOffset = useCallback((serverTime?: string) => {
     if (!serverTime) return;
@@ -202,6 +206,11 @@ export function useAuctionSocket({
       }
     });
 
+    socket.on("ceilPriceReached", (data: any) => {
+      console.log("🚩 [Socket] ceilPriceReached:", data);
+      onCeilPriceReachedRef.current?.(data);
+    });
+
     socket.on("userLeft", (data: any) => {
       console.log("👤 [Socket] userLeft:", data);
       if (data?.participantCount !== undefined) {
@@ -240,6 +249,7 @@ export function useAuctionSocket({
       socket.off("newBid");
       socket.off("auction-status-changed");
       socket.off("auctionStatusChanged");
+      socket.off("ceilPriceReached");
       socket.off("userJoined");
       socket.off("userLeft");
       socket.off("joinedAuction");

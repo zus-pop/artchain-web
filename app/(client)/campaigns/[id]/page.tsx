@@ -214,7 +214,7 @@ const CampaignDetailPage = () => {
 
     const sponsorData: CreateSponsorRequest = {
       name: values.name.trim(),
-      contactInfo: (values.contactInfo || '').trim(),
+      contactInfo: values.contactInfo?.trim() || 'Không cung cấp',
       sponsorshipAmount: sponsorshipAmountValue,
       campaignId: parseInt(campaignId, 10),
       file: values.logo,

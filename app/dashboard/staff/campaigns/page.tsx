@@ -379,12 +379,12 @@ export default function CampaignsPage() {
                                             >
                                               <IconEdit className="h-4 w-4" />
                                             </Link>
-                                            <button
+                                            {/* <button
                                               className="staff-btn-icon-danger"
                                               title="Delete"
                                             >
                                               <IconTrash className="h-4 w-4" />
-                                            </button>
+                                            </button> */}
                                           </div>
                                         </td>
                                       </tr>

@@ -410,8 +410,11 @@ function RoundDetailContent() {
       (s: Submission) => s.status === "REJECTED"
     ).length;
     const flagged = submissions.filter((s: Submission) => s.isFlagged).length;
+    const unflaggedPending = submissions.filter(
+      (s: Submission) => !s.isFlagged && s.status === "PENDING"
+    ).length;
 
-    return { all, pending, accepted, rejected, flagged };
+    return { all, pending, accepted, rejected, flagged, unflaggedPending };
   };
 
   const counts = getStatusCounts();
@@ -643,9 +646,9 @@ function RoundDetailContent() {
                       }`}
                     />
                     {t.normalReview}
-                    {counts.pending > 0 && (
+                    {counts.unflaggedPending > 0 && (
                       <span className="bg-blue-100 text-blue-600 text-xs px-1.5 py-0.5 rounded-full border border-blue-200">
-                        {counts.pending}
+                        {counts.unflaggedPending}
                       </span>
                     )}
                   </button>

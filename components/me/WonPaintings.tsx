@@ -88,10 +88,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="mt-5 flex gap-2">
-              <button className="flex-1 bg-black text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-gray-800 transition shadow-sm active:scale-95">
-                Chi tiết
-              </button>
+            <div className="mt-5">
               <Link
                 href={{
                   pathname: "/mint-nft",
@@ -100,7 +97,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
                     competitorUserId: wp.painting.competitorId,
                   },
                 }}
-                className="flex-1 bg-[#FF6E1A] text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition shadow-sm active:scale-95 text-center"
+                className="block w-full bg-[#FF6E1A] text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition shadow-sm active:scale-95 text-center"
               >
                 Mint NFT
               </Link>

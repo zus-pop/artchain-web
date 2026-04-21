@@ -236,7 +236,7 @@ export default function CreateCampaignPage() {
       description: data.description,
       goalAmount: parseCurrencyInput(data.goalAmount),
       deadline: data.deadline,
-      status: data.status,
+      status: "DRAFT",
       image: data.image,
       tiers: tiersPayload,
     };
@@ -319,7 +319,7 @@ export default function CreateCampaignPage() {
                 </button>
                 <button
                   onClick={form.handleSubmit(handleSubmit)}
-                  disabled={!form.formState.isValid || isSubmitting}
+                  disabled={!form.formState.isValid || !form.watch("title") || !form.watch("goalAmount") || !form.watch("deadline") || !form.watch("image") || isSubmitting}
                   className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? t.creatingCampaign : t.createCampaignBtn}
@@ -378,41 +378,24 @@ export default function CreateCampaignPage() {
                       )}
                     </div>
 
-                    {/* Moved Goal and Status here */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="staff-type-label text-gray-700 mb-2 block">
-                          {t.goalAmountVND} *
-                        </label>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          {...form.register("goalAmount")}
-                          onChange={handleCurrencyInputChange("goalAmount")}
-                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
-                          required
-                        />
-                        {form.formState.errors.goalAmount && (
-                          <p className="mt-1 text-sm text-red-600">
-                            {form.formState.errors.goalAmount.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="staff-type-label text-gray-700 mb-2 block">
-                          {t.campaignStatus}
-                        </label>
-                        <select
-                          {...form.register("status")}
-                          className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
-                        >
-                          <option value="DRAFT">{t.draftOption}</option>
-                          <option value="ACTIVE">{t.activeOption}</option>
-                          <option value="PAUSED">{t.pausedOption}</option>
-                          <option value="COMPLETED">{t.completedOption}</option>
-                        </select>
-                      </div>
+                    {/* Moved Goal here */}
+                    <div>
+                      <label className="staff-type-label text-gray-700 mb-2 block">
+                        {t.goalAmountVND} *
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        {...form.register("goalAmount")}
+                        onChange={handleCurrencyInputChange("goalAmount")}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
+                        required
+                      />
+                      {form.formState.errors.goalAmount && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {form.formState.errors.goalAmount.message}
+                        </p>
+                      )}
                     </div>
 
                     <div>

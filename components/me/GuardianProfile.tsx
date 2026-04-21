@@ -500,21 +500,8 @@ export default function GuardianProfileScreen({
               </div>
             </div>
 
-            {/* Right side: Thông tin Ngày sinh / Phường */}
-            <div className="flex w-full justify-start gap-8 sm:w-auto sm:justify-end">
-              <div>
-                <p className="text-sm font-bold text-black">Ngày sinh</p>
-                <p className="mt-1 text-base font-regular text-black">
-                  {profile.dob}
-                </p>
-              </div>
-            </div>
-            <div className="mr-15">
-              <p className="text-sm font-bold text-black">Phường</p>
-              <p className="mt-1 text-base font-regular text-black">
-                {profile.ward}
-              </p>
-            </div>
+            {/* Right side: removed Date of Birth and Ward */}
+
 
             {/* Edit Button */}
             <div className="flex items-center pb-1">

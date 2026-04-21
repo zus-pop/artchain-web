@@ -414,6 +414,10 @@ export default function AuctionDetailPage() {
       }
     },
     onAuctionStatus: handleAuctionStatus,
+    onCeilPriceReached: (data) => {
+      const message = typeof data === "string" ? data : data?.message || "Tác phẩm này đã đạt giá trần!";
+      toast.warning(message, { duration: 5000 });
+    },
   });
 
   useEffect(() => {
