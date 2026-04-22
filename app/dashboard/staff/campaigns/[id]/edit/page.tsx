@@ -409,7 +409,7 @@ export default function EditCampaignPage({
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="staff-type-label staff-text-primary mb-2 block">
-                            {t.goalAmountRequiredEdit} (VND)
+                            {t.goalAmountRequiredEdit}
                           </label>
                           <input
                             type="text"

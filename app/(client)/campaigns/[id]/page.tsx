@@ -365,11 +365,12 @@ const CampaignDetailPage = () => {
                   {/* Contact Info */}
                   <div>
                     <label htmlFor="contactInfo" className="block text-xs font-bold text-gray-700 mb-2 uppercase tracking-widest">
-                      Thông Tin Liên Hệ
+                      Thông Tin Liên Hệ *
                     </label>
                     <input
                       type="text"
                       id="contactInfo"
+                      required
                       {...register('contactInfo')}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#FF6E1A] bg-white text-sm font-bold"
                       placeholder="Số điện thoại hoặc email"

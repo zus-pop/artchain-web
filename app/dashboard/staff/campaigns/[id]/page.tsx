@@ -443,9 +443,9 @@ export default function CampaignDetailPage({
                                       <div className="text-sm font-medium staff-text-primary">
                                         {sponsor.name}
                                       </div>
-                                      <div className="text-sm staff-text-secondary">
+                                      {/* <div className="text-sm staff-text-secondary">
                                         {t.sponsorId} {sponsor.sponsorId}
-                                      </div>
+                                      </div> */}
                                     </div>
                                   </div>
                                 </td>

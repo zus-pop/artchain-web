@@ -1382,7 +1382,7 @@ function AwardsManagementPage() {
                                                   </div>
 
                                                   {/* Assignment Status and Actions */}
-                                                  <div className="ml-4 flex flex-col items-end gap-1">
+                                                  {/* <div className="ml-4 flex flex-col items-end gap-1">
                                                     {isAssignedToThisAward ? (
                                                       <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                                         <IconTrophy className="h-3 w-3" />
@@ -1420,7 +1420,7 @@ function AwardsManagementPage() {
                                                         }
                                                       </div>
                                                     )}
-                                                  </div>
+                                                  </div> */}
                                                 </div>
                                               </div>
                                             </div>

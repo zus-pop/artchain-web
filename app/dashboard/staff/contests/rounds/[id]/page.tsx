@@ -295,8 +295,8 @@ function RoundDetailContent() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      // Only select submissions that are currently visible (filtered by status)
-      const visibleSubmissions = submissions.filter((s: Submission) => {
+      // Only select submissions that are currently visible (filtered by reviewTab and status)
+      const visibleSubmissions = displaySubmissions.filter((s: Submission) => {
         if (selectedStatus === "ALL") return true;
         return s.status === selectedStatus;
       });
