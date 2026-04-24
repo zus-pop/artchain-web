@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import HeroSection from "@/components/sections/HeroSection";
 import { ContestSection } from "@/components/sections/ContestSection";
+import { PostSection } from "@/components/sections/PostSection";
 import ParallaxBackground from "@/components/sections/ParallaxBackground";
 import { CampaignAPIResponse } from "../../types/campaign";
 
@@ -438,7 +439,7 @@ export default function Page() {
   }, [campaigns.length]);
 
   return (
-    <div className="min-h-screen bg-[var(--site-bg)] text-[var(--site-ink)] font-(family-name:--font-be-vietnam-pro) overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--site-bg)] text-[var(--site-ink)] font-(family-name:--font-be-vietnam-pro)">
 
 
       <main>
@@ -471,199 +472,9 @@ export default function Page() {
         {/* --- Contest Showcase Section --- */}
         <ContestSection />
 
-        {/* --- News Section with 3 Columns --- cream background continues --- */}
-        <AnimatedContainer
-          id="news"
-          className="bg-[var(--site-bg)] py-20 lg:py-28"
-          animation="animate-zoom-in"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            {/* Section header — asymmetric: label left, spacing right */}
-            <AnimatedContainer
-              className="flex items-baseline justify-between mb-10 lg:mb-12"
-              animation="animate-fade-in-down"
-            >
-              <div>
-                <p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--site-accent)] uppercase mb-2">Từ cộng đồng</p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--site-ink)]">Tin tức nổi bật</h2>
-              </div>
-              <Link href="/posts" className="hidden sm:inline-flex text-xs font-semibold text-[var(--site-ink-muted)] hover:text-[var(--site-accent)] transition-colors items-center gap-1.5">
-                Xem tất cả <ArrowRightIcon />
-              </Link>
-            </AnimatedContainer>
+        {/* --- Community News & Announcements Section --- */}
+        <PostSection />
 
-            {/* Desktop News Grid — 3 columns separated by thin dividers */}
-            <div className="hidden lg:grid lg:grid-cols-[1fr_1px_1.35fr_1px_1fr] gap-0">
-              {loadingPosts ? (
-                <>
-                  <div className="flex flex-col justify-between gap-8 pr-8">
-                    <SkeletonNewsCardSmall />
-                    <SkeletonNewsCardSmall />
-                  </div>
-                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch"></div>
-                  <SkeletonSpotlightPost />
-                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch"></div>
-                  <div className="flex flex-col justify-between gap-8 pl-8">
-                    <SkeletonNewsCardSmall />
-                    <SkeletonNewsCardSmall />
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* ── Left column: 2 small posts ── */}
-                  <div className="flex flex-col justify-between gap-8 pr-8">
-                    {[smallPosts[0], smallPosts[1]].map((post, i) =>
-                      post ? (
-                        <Link key={post.post_id} href={`/posts/${post.post_id}`}>
-                          <NewsCardSmall
-                            imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
-                            category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
-                            title={post.title || ""}
-                            content={post.content}
-                            darkBg={true}
-                          />
-                        </Link>
-                      ) : (
-                        <div
-                          key={i}
-                          className="flex items-center justify-center aspect-video bg-[var(--site-ink)]/5 text-[var(--site-ink-muted)] text-xs"
-                        >
-                          Bài viết mới sẽ sớm được cập nhật
-                        </div>
-                      )
-                    )}
-                  </div>
-
-                  {/* Thin divider */}
-                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch mx-8"></div>
-
-                  {/* ── Center column: spotlight post ── */}
-                  <div className="group flex flex-col">
-                    {/* Hero image */}
-                    <div className="w-full overflow-hidden mb-4">
-                      {spotlightPost ? (
-                        <Link href={`/posts/${spotlightPost.post_id}`}>
-                          <img
-                            src={spotlightPost.image_url || "https://placehold.co/600x400/FF5733/ffffff?text=Spotlight"}
-                            alt={spotlightPost.title}
-                            className="w-full h-52 lg:h-72 object-cover cursor-pointer transition-transform duration-500 group-hover:scale-[1.02]"
-                          />
-                        </Link>
-                      ) : (
-                        <div className="w-full h-52 lg:h-72 bg-[var(--site-ink)]/10 flex items-center justify-center text-[var(--site-ink-muted)] text-sm">
-                          Không có bài viết nổi bật
-                        </div>
-                      )}
-                    </div>
-                    {/* Metadata label */}
-                    <p className="text-[10px] font-semibold tracking-widest text-[var(--site-accent)] uppercase mb-2">
-                      Artist Spotlight
-                    </p>
-                    {/* Title */}
-                    {spotlightPost && (
-                      <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <h3 className="text-xl font-bold text-[var(--site-ink)] leading-snug mb-2.5 line-clamp-2 cursor-pointer hover:text-[var(--site-accent)] transition-colors duration-200">
-                          {spotlightPost.title}
-                        </h3>
-                      </Link>
-                    )}
-                    {/* Description */}
-                    <p className="text-xs text-[var(--site-ink-muted)] leading-relaxed line-clamp-8">
-                      {spotlightPost?.content || "Thông tin nghệ sĩ sẽ được cập nhật sớm."}
-                    </p>
-                  </div>
-
-                  {/* Thin divider */}
-                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch mx-8"></div>
-
-                  {/* ── Right column: 2 small posts ── */}
-                  <div className="flex flex-col justify-between gap-8 pl-8">
-                    {[smallPosts[2], smallPosts[3]].map((post, i) =>
-                      post ? (
-                        <Link key={post.post_id} href={`/posts/${post.post_id}`}>
-                          <NewsCardSmall
-                            imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
-                            category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
-                            title={post.title || ""}
-                            content={post.content}
-                            darkBg={true}
-                          />
-                        </Link>
-                      ) : (
-                        <div
-                          key={i}
-                          className="flex items-center justify-center aspect-video bg-[var(--site-ink)]/5 text-[var(--site-ink-muted)] text-xs"
-                        >
-                          Bài viết mới sẽ sớm được cập nhật
-                        </div>
-                      )
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Mobile News Slider - Auto + Swipeable */}
-            <div className="lg:hidden mt-4 overflow-hidden relative">
-              {loadingPosts ? (
-                <SkeletonNewsCardSmall />
-              ) : uniquePosts.length > 0 ? (
-                <>
-                  <motion.div
-                    className="flex cursor-grab active:cursor-grabbing"
-                    animate={{ x: `-${currentPostIndex * 100}%` }}
-                    transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.2}
-                    onDragEnd={(_, info) => {
-                      const threshold = 50;
-                      if (info.offset.x < -threshold) {
-                        setCurrentPostIndex((prev) => (prev + 1) % uniquePosts.length);
-                      } else if (info.offset.x > threshold) {
-                        setCurrentPostIndex((prev) => (prev - 1 + uniquePosts.length) % uniquePosts.length);
-                      }
-                    }}
-                  >
-                    {uniquePosts.map((post) => (
-                      <div key={post.post_id} className="min-w-full pr-4">
-                        <Link href={`/posts/${post.post_id}`}>
-                          <NewsCardSmall
-                            imgSrc={post.image_url || "https://placehold.co/300x160/7F00FF/ffffff?text=Art"}
-                            category={post.postTags?.[0]?.tag?.tag_name || "Digital Art"}
-                            title={post.title || ""}
-                            content={post.content}
-                            darkBg={true}
-                          />
-                        </Link>
-                      </div>
-                    ))}
-                  </motion.div>
-                  {/* Dot indicators */}
-                  <div className="flex justify-center gap-1.5 mt-6">
-                    {uniquePosts.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentPostIndex(idx)}
-                        aria-label={`Chuyển đến bài viết ${idx + 1}`}
-                        aria-current={idx === currentPostIndex ? "true" : undefined}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${
-                          idx === currentPostIndex
-                            ? "w-8 bg-[var(--site-accent)]"
-                            : "w-2 bg-[var(--site-ink)]/20"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="w-full text-center py-8 text-[var(--site-ink-muted)] text-sm">
-                  Không có bài viết nào
-                </div>
-              )}
-            </div>
-          </div>
-        </AnimatedContainer>
 
         {/* --- Campaigns Section --- white background for rhythm --- */}
         <AnimatedContainer
