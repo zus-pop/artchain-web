@@ -14,9 +14,9 @@ export const translations = {
     join: "Tham Gia",
 
     // Hero Section
-    heroTitle: "Thể Hiện",
-    heroTitleHighlight: "Tài Năng",
-    heroTitleSuffix: "Nghệ Thuật Của Bạn",
+    heroTitle: "CUỘC THI",
+    heroTitleHighlight: "NÉT VẼ ƯỚC MƠ",
+    heroTitleSuffix: "2026",
     heroDescription:
       "Tham gia ArtChain - Nền tảng cuộc thi vẽ tranh nghệ thuật hàng đầu. Khám phá tài năng, thể hiện sự sáng tạo và chinh phục những giải thưởng hấp dẫn. Hành trình nghệ thuật của bạn bắt đầu từ đây.",
     joinCompetition: "Tham Gia",
@@ -1384,9 +1384,9 @@ export const translations = {
     join: "Join Now",
 
     // Hero Section
-    heroTitle: "Express",
-    heroTitleHighlight: "Your Talent",
-    heroTitleSuffix: "Artistically",
+    heroTitle: "COMPETITION",
+    heroTitleHighlight: "NÉT VẼ ƯỚC MƠ",
+    heroTitleSuffix: "2026",
     heroDescription:
       "Join ArtChain - The premier art competition platform. Discover talent, express creativity and compete for attractive prizes. Your artistic journey starts here.",
     joinCompetition: "Join",

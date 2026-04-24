@@ -200,15 +200,34 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.58 0.15 15);
 
-  /* Staff design tokens (derived from reference page) */
-  --staff-bg: #eae6e0;
-  --staff-surface: #ffffff;
-  --staff-border: #e6e2da;
-  --staff-text-primary: #423137;
-  --staff-text-secondary: #777777;
-  --staff-primary: #ff6e1a;
-  --staff-primary-hover: #ff833b;
-  --staff-primary-soft: #fff3e9;
+  /* ─── Site-wide design tokens (shared by public landing + staff) ─── */
+  /* Background surfaces */
+  --site-bg: #eae6e0;          /* warm cream — main page background */
+  --site-surface: #ffffff;     /* white — alternate section / card background */
+  --site-surface-warm: #f0ece6; /* warm off-white — empty state, subtle fills */
+  --site-border: #e6e2da;      /* warm sand border */
+
+  /* Ink / text */
+  --site-ink: #423137;         /* near-black with warm undertone */
+  --site-ink-muted: #70585f;   /* muted secondary text (ink at ~55% lightness) */
+
+  /* Accent — amber/lacquer orange */
+  --site-accent: #ff6e1a;
+  --site-accent-hover: #ff833b;
+  --site-accent-soft: #fff3e9;  /* accent tint background */
+
+  /* Skeleton */
+  --site-skeleton: #d4cfc8;    /* warm greige — replaces cold gray-300 */
+
+  /* Staff design tokens (aliased from site-wide) */
+  --staff-bg: var(--site-bg);
+  --staff-surface: var(--site-surface);
+  --staff-border: var(--site-border);
+  --staff-text-primary: var(--site-ink);
+  --staff-text-secondary: var(--site-ink-muted);
+  --staff-primary: var(--site-accent);
+  --staff-primary-hover: var(--site-accent-hover);
+  --staff-primary-soft: var(--site-accent-soft);
 }
 
 .dark {
@@ -258,6 +277,14 @@
   /* Your default theme */
   --background: white;
   --foreground: black;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 [data-theme="dark"] {

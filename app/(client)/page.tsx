@@ -3,19 +3,13 @@
 import { getCampaigns } from "@/apis/campaign";
 import { useGetContestsPaginated } from "@/apis/contests";
 import { getPosts } from "@/apis/post";
-import GlassSurface from "@/components/GlassSurface";
 import { useAuth } from "@/hooks/useAuth";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { useMeQuery } from "@/hooks/useMeQuery";
 import { useAuthStore } from "@/store";
 import { Post } from "@/types/post";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronDown,
-  LogOut,
   Mail,
-  Settings,
-  User,
   MapPin,
   Phone,
   Facebook,
@@ -23,20 +17,85 @@ import {
   Youtube,
   Send,
 } from "lucide-react";
-// Avatar will be rendered as an initial-letter circle; no Next/Image needed here
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
+import HeroSection from "@/components/sections/HeroSection";
+import { ContestSection } from "@/components/sections/ContestSection";
+import ParallaxBackground from "@/components/sections/ParallaxBackground";
 import { CampaignAPIResponse } from "../../types/campaign";
 
-const ArrowRightIcon = () => <span>&rarr;</span>;
+const ArrowRightIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 14 14"
+    fill="none"
+    aria-hidden="true"
+    className="inline-block"
+  >
+    <path
+      d="M1 7h12M7 1l6 6-6 6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
-// Animated Container Component
+import { Variants } from "framer-motion";
+
+// Animation variants — ceremonial, confident, never bouncy
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      delay: delay * 0.12,
+      ease: [0.22, 1, 0.36, 1], // ease-out-quint
+    },
+  }),
+};
+
+const fadeLeft: Variants = {
+  hidden: { opacity: 0, x: -32 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const fadeRight: Variants = {
+  hidden: { opacity: 0, x: 32 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const scaleIn: Variants = {
+  hidden: { opacity: 0, scale: 0.94 },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.55,
+      delay: delay * 0.1,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
+
+// Viewport-triggered animated section wrapper (replaces CSS AnimatedContainer)
 const AnimatedContainer = ({
   children,
   className = "",
-  animation = "animate-fade-in-up",
+  animation = "fadeUp",
   delay = 0,
   ...props
 }: {
@@ -44,18 +103,31 @@ const AnimatedContainer = ({
   className?: string;
   animation?: string;
   delay?: number;
-} & React.HTMLAttributes<HTMLDivElement>) => {
-  const { ref, isIntersecting } = useIntersectionObserver<HTMLDivElement>();
+} & Omit<React.HTMLAttributes<HTMLDivElement>, "style">) => {
+  const variants = {
+    fadeUp,
+    "animate-fade-in-up": fadeUp,
+    "animate-fade-in-down": { hidden: { opacity: 0, y: -20 }, visible: fadeUp.visible },
+    "animate-fade-in-left": fadeLeft,
+    "animate-fade-in-right": fadeRight,
+    "animate-zoom-in": scaleIn,
+    "animate-fade-in": { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } },
+  } as Record<string, Variants>;
+
+  const chosen = variants[animation] ?? fadeUp;
 
   return (
-    <div
-      ref={ref}
-      className={`${className} ${isIntersecting ? animation : "opacity-0"}`}
-      style={{ animationDelay: `${delay}ms` }}
-      {...props}
+    <motion.div
+      className={className}
+      variants={chosen}
+      initial="hidden"
+      whileInView="visible"
+      custom={delay}
+      viewport={{ once: true, margin: "-60px" }}
+      {...(props as object)}
     >
       {children}
-    </div>
+    </motion.div>
   );
 };
 
@@ -68,12 +140,17 @@ const CampaignCard = ({
   title: string;
   description: string;
 }) => (
-  <div className="group flex flex-col h-full bg-white border border-[#e6e2da] shadow-sm rounded-md overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
+  <motion.div
+    className="group flex flex-col h-full bg-[var(--site-surface)] border border-[var(--site-border)] shadow-sm rounded-md overflow-hidden"
+    whileHover={{ y: -4, boxShadow: "0 12px 32px rgba(66,49,55,0.10)" }}
+    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+  >
     {/* Image — fixed 4:3 aspect ratio, subtle zoom on hover */}
-    <div className="w-full aspect-4/3 overflow-hidden border-b border-[#e6e2da]">
+    <div className="w-full aspect-4/3 overflow-hidden border-b border-[var(--site-border)]">
       <img
         src={imgSrc}
         alt={title}
+        loading="lazy"
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         onError={(e) => {
           (e.target as HTMLImageElement).src =
@@ -83,71 +160,76 @@ const CampaignCard = ({
     </div>
     {/* Card body */}
     <div className="flex flex-col flex-1 p-4">
-      <h3 className="text-sm font-bold text-[#423137] leading-snug mb-2 line-clamp-2">{title}</h3>
-      <div className="text-xs text-[#423137]/70 font-medium leading-relaxed mb-4 line-clamp-3 flex-1">
-        <ReactMarkdown>{description}</ReactMarkdown>
+      <h3 className="text-sm font-bold text-[var(--site-ink)] leading-snug mb-2 line-clamp-2">{title}</h3>
+      <div className="text-xs text-[var(--site-ink-muted)] font-medium leading-relaxed mb-4 line-clamp-3 flex-1">
+        {cleanMarkdown(description)}
       </div>
-      {/* CTA button — full-width, consistent with design tokens */}
-      <button className="w-full mt-auto cursor-pointer bg-[#FF6E1A] hover:bg-[#FF833B] transition-colors duration-200 rounded-sm text-white text-xs font-bold tracking-wide px-4 py-2.5 flex items-center justify-center gap-1.5 shadow-sm">
+      {/* CTA button */}
+      <motion.button
+        className="w-full mt-auto cursor-pointer bg-[var(--site-accent)] transition-colors duration-200 rounded-sm text-white text-xs font-bold tracking-wide px-4 py-2.5 flex items-center justify-center gap-1.5 shadow-sm"
+        whileHover={{ backgroundColor: "var(--site-accent-hover)" }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ duration: 0.15 }}
+      >
         Đăng kí tài trợ <ArrowRightIcon />
-      </button>
+      </motion.button>
     </div>
-  </div>
+  </motion.div>
 );
 
 // Skeleton component for CampaignCard
 const SkeletonCampaignCard = () => (
   <div className="flex flex-col h-full animate-pulse">
-    <div className="w-full aspect-4/3 bg-gray-300 mb-4"></div>
-    <div className="h-4 bg-gray-300 rounded mb-2 w-3/4"></div>
+    <div className="w-full aspect-4/3 bg-[var(--site-skeleton)] mb-4"></div>
+    <div className="h-4 bg-[var(--site-skeleton)] rounded mb-2 w-3/4"></div>
     <div className="space-y-2 mb-4">
-      <div className="h-3 bg-gray-300 rounded"></div>
-      <div className="h-3 bg-gray-300 rounded w-5/6"></div>
-      <div className="h-3 bg-gray-300 rounded w-2/3"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded w-5/6"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded w-2/3"></div>
     </div>
-    <div className="w-full h-9 mt-auto bg-gray-300 rounded-sm"></div>
+    <div className="w-full h-9 mt-auto bg-[var(--site-skeleton)] rounded-sm"></div>
   </div>
 );
 
 // Skeleton component for Contest Info
 const SkeletonContestInfo = () => (
   <div className="max-w-lg animate-pulse">
-    <div className="h-4 bg-gray-300 mb-2 rounded w-1/2"></div>
-    <div className="h-12 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
+    <div className="h-4 bg-[var(--site-skeleton)] mb-2 rounded w-1/2"></div>
+    <div className="h-12 bg-[var(--site-skeleton)] mb-4 sm:mb-6 rounded"></div>
     <div className="space-y-3 mb-4 sm:mb-6">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-5/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-4/6"></div>
     </div>
     <div className="space-y-2 sm:space-y-3">
-      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-      <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-3/4"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-2/3"></div>
     </div>
-    <div className="mt-6 sm:mt-10 h-12 bg-gray-300 rounded-sm"></div>
+    <div className="mt-6 sm:mt-10 h-12 bg-[var(--site-skeleton)] rounded-sm"></div>
   </div>
 );
 
 // Skeleton component for NewsCardSmall
 const SkeletonNewsCardSmall = () => (
   <div className="flex flex-col overflow-hidden animate-pulse">
-    <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
+    <div className="w-full h-32 sm:h-40 bg-[var(--site-skeleton)]"></div>
     <div className="p-3 sm:p-4">
-      <div className="h-3 bg-gray-300 rounded mb-1 w-1/2"></div>
-      <div className="h-4 bg-gray-300 rounded"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded mb-1 w-1/2"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded"></div>
     </div>
   </div>
 );
 
 // Skeleton component for Spotlight Post
 const SkeletonSpotlightPost = () => (
-  <div className="flex flex-col bg-[#EAE6E0] text-white animate-pulse">
-    <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-300 mb-4 sm:mb-6"></div>
-    <div className="h-4 bg-gray-300 rounded mb-2 w-1/3"></div>
-    <div className="h-8 bg-gray-300 rounded mb-3 sm:mb-4"></div>
+  <div className="flex flex-col bg-[var(--site-bg)] animate-pulse">
+    <div className="w-full h-48 sm:h-64 lg:h-80 bg-[var(--site-skeleton)] mb-4 sm:mb-6"></div>
+    <div className="h-4 bg-[var(--site-skeleton)] rounded mb-2 w-1/3"></div>
+    <div className="h-8 bg-[var(--site-skeleton)] rounded mb-3 sm:mb-4"></div>
     <div className="space-y-2">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-5/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-4/6"></div>
     </div>
   </div>
 );
@@ -203,15 +285,16 @@ const NewsCardSmall = ({
   darkBg?: boolean;
 }) => (
   <div
-    className={`group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01] border border-[#e6e2da] shadow-sm rounded-md ${
-      darkBg ? "bg-[#f5f2ed] text-black" : "bg-white text-black"
+    className={`group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01] border border-[var(--site-border)] shadow-sm rounded-md ${
+      darkBg ? "bg-[var(--site-surface-warm)] text-[var(--site-ink)]" : "bg-[var(--site-surface)] text-[var(--site-ink)]"
     }`}
   >
     {/* Image — fixed aspect ratio for consistency */}
-    <div className="w-full aspect-video overflow-hidden border-b border-[#e6e2da]">
+    <div className="w-full aspect-video overflow-hidden border-b border-[var(--site-border)]">
       <img
         src={imgSrc}
         alt={title}
+        loading="lazy"
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         onError={(e) => {
           (e.target as HTMLImageElement).src =
@@ -222,16 +305,16 @@ const NewsCardSmall = ({
     {/* Text block */}
     <div className="flex flex-col flex-1 p-4">
       {/* Category / Tag — small label */}
-      <p className="text-[10px] font-bold tracking-widest text-[#FF6E1A] uppercase mb-1.5 drop-shadow-sm">
+      <p className="text-[10px] font-bold tracking-widest text-[var(--site-accent)] uppercase mb-1.5">
         {category}
       </p>
       {/* Title — balanced weight */}
-      <div className="text-sm font-bold text-black leading-snug line-clamp-2">
-        <ReactMarkdown>{title}</ReactMarkdown>
+      <div className="text-sm font-bold text-[var(--site-ink)] leading-snug line-clamp-2">
+        {cleanMarkdown(title)}
       </div>
       {/* Description — muted, compact */}
       {content && (
-        <div className="text-xs text-[#423137]/70 font-medium mt-1.5 line-clamp-2 leading-relaxed">
+        <div className="text-xs text-[var(--site-ink-muted)] font-medium mt-1.5 line-clamp-2 leading-relaxed">
           {truncateAtWord(cleanMarkdown(content), 120)}
         </div>
       )}
@@ -283,7 +366,6 @@ export default function Page() {
       try {
         setLoadingPosts(true);
         const resp = await getPosts({ limit: 5 });
-        console.log("Fetched posts:", resp.data);
         if (mounted) setPosts(resp.data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
@@ -356,176 +438,58 @@ export default function Page() {
   }, [campaigns.length]);
 
   return (
-    <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro) overflow-x-hidden">
+    <div className="min-h-screen bg-[var(--site-bg)] text-[var(--site-ink)] font-(family-name:--font-be-vietnam-pro) overflow-x-hidden">
 
 
       <main>
         {/* --- Hero Section --- */}
         <section
           id="hero"
-          className="relative h-[80vh] min-h-[400px] lg:h-screen lg:min-h-[700px] flex items-center text-white pt-16"
+          className="relative h-[80vh] min-h-[480px] lg:h-screen lg:min-h-[700px] flex items-start pt-24 lg:pt-[22vh]"
         >
-          <div className="absolute inset-0">
-            <img
-              src="https://res.cloudinary.com/dbke1s5nm/image/upload/v1762177079/herosection_jznhnz.png"
-              alt="Nền bức tranh phong cảnh"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.backgroundColor =
-                  "#6c7a89";
-              }}
-            />
+          {/* 3D Parallax Background Experience */}
+          <ParallaxBackground />
+
+          {/* Vignette — soft edge darkening for exhibition-room depth */}
+          <div
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 100%)",
+            }}
+          />
+
+          {/* Hero content — rendered via HeroSection component */}
+          <div className="relative z-20 w-full">
+            <HeroSection />
           </div>
 
-          <div className="relative z-5 mt-8 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            <div className="max-w-xl mt-0 sm:mt-[-10vh] lg:mt-[-17vh]">
-              <AnimatedContainer
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight"
-                animation="animate-fade-in-down"
-              >
-                CUỘC THI <br />
-                NÉT VẼ ƯỚC MƠ <br />
-                2026
-              </AnimatedContainer>
-              <AnimatedContainer
-                className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-black leading-relaxed"
-                animation="animate-fade-in-up"
-                delay={200}
-              >
-                Gửi gắm những câu chuyện, ý tưởng và khát{" "}
-                <br className="hidden sm:inline" />
-                vọng qua màu sắc độc đáo của riêng mình. Nơi{" "}
-                <br className="hidden sm:inline" />
-                tài năng hội họa của bạn được tỏa sáng.
-              </AnimatedContainer>
-              <AnimatedContainer
-                className="mt-6 sm:mt-10"
-                animation="animate-zoom-in"
-                delay={400}
-              >
-                <button
-                  onClick={() => router.push("/gallery")}
-                  className="bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
-                >
-                  Xem Triển Lãm <ArrowRightIcon />
-                </button>
-              </AnimatedContainer>
-            </div>
-          </div>
+          {/* Scroll-cue fade at bottom */}
+          <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-[var(--site-bg)] to-transparent pointer-events-none" />
         </section>
 
-        {/* --- Contest Info Section --- */}
-        <AnimatedContainer
-          id="contest"
-          className="min-h-auto lg:min-h-screen bg-[#EAE6E0] flex items-center justify-center py-16 lg:py-32 overflow-x-hidden"
-          animation="animate-fade-in-left"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
-            {isLoadingContest ? (
-              // Combined skeleton wrapper so text + image animate in sync
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-pulse">
-                <div>
-                  {/* reuse existing skeleton for left column */}
-                  <SkeletonContestInfo />
-                </div>
-                <div className="h-64 rounded-xl sm:h-80 md:h-full bg-gray-300 md:-mr-[calc((100vw-72rem)/2+2rem)] overflow-hidden" />
-              </div>
-            ) : (
-              <>
-                <div className="max-w-lg">
-                  <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
-                    Cuộc thi đang diễn ra
-                  </h2>
-                  <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-                    {activeContest?.title || "Không có cuộc thi nào"}
-                  </h3>
-                  <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6 line-clamp-4">
-                    {activeContest?.description ||
-                      "Các cuộc thi sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những cơ hội tham gia thú vị."}
-                  </p>
-                  <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
-                    <p>
-                      <strong>Thời gian:</strong>{" "}
-                      {activeContest
-                        ? `${new Date(
-                            activeContest.startDate
-                          ).toLocaleDateString("vi-VN")} đến ${new Date(
-                            activeContest.endDate
-                          ).toLocaleDateString("vi-VN")}`
-                        : "Chưa có thông tin thời gian"}
-                    </p>
-                    <p>
-                      <strong>Lưu ý:</strong>
-                      <br />
-                      {activeContest?.rounds?.[0]?.sendOriginalDeadline
-                        ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${(() => {
-                            const deadline =
-                              activeContest.rounds[0].sendOriginalDeadline;
-                            const date = new Date(deadline);
-                            const day = date
-                              .getUTCDate()
-                              .toString()
-                              .padStart(2, "0");
-                            const month = (date.getUTCMonth() + 1)
-                              .toString()
-                              .padStart(2, "0");
-                            const year = date.getUTCFullYear();
-                            return `${day}/${month}/${year}`;
-                          })()}`
-                        : "Thông tin deadline sẽ được cập nhật sớm."}
-                    </p>
-                  </div>
-                  {activeContest && (
-                    <button
-                      onClick={() =>
-                        activeContest.contestId &&
-                        router.push(`/contests/${activeContest.contestId}`)
-                      }
-                      className="mt-6 sm:mt-10 bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
-                    >
-                      Tham gia ngay <ArrowRightIcon />
-                    </button>
-                  )}
-                </div>
+        {/* --- Contest Showcase Section --- */}
+        <ContestSection />
 
-                {activeContest ? (
-                  <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
-                    <img
-                      src={activeContest.bannerUrl}
-                      alt="Minh họa thành phố"
-                      className="h-full w-full object-cover md:w-[50vw] max-w-none "
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.backgroundColor =
-                          "#89c4f4";
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-64 rounded-xl sm:h-80 md:h-full bg-gray-100 md:-mr-[calc((100vw-72rem)/2+2rem)] flex items-center justify-center">
-                    <div className="text-center text-gray-500">
-                      <div className="text-6xl mb-4">🎨</div>
-                      <p className="text-lg font-medium">Chưa có hình ảnh</p>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </AnimatedContainer>
-
-        {/* --- News Section with 3 Columns --- */}
+        {/* --- News Section with 3 Columns --- cream background continues --- */}
         <AnimatedContainer
           id="news"
-          className="min-h-auto lg:min-h-screen bg-[#EAE6E0] flex items-center justify-center py-16 lg:py-32"
+          className="bg-[var(--site-bg)] py-20 lg:py-28"
           animation="animate-zoom-in"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            {/* Section label — matches other section headings on the page */}
+            {/* Section header — asymmetric: label left, spacing right */}
             <AnimatedContainer
-              className="text-xs font-semibold tracking-widest text-[#423137]/60 uppercase mb-5"
+              className="flex items-baseline justify-between mb-10 lg:mb-12"
               animation="animate-fade-in-down"
             >
-              Tin tức nổi bật
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--site-accent)] uppercase mb-2">Từ cộng đồng</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--site-ink)]">Tin tức nổi bật</h2>
+              </div>
+              <Link href="/posts" className="hidden sm:inline-flex text-xs font-semibold text-[var(--site-ink-muted)] hover:text-[var(--site-accent)] transition-colors items-center gap-1.5">
+                Xem tất cả <ArrowRightIcon />
+              </Link>
             </AnimatedContainer>
 
             {/* Desktop News Grid — 3 columns separated by thin dividers */}
@@ -536,9 +500,9 @@ export default function Page() {
                     <SkeletonNewsCardSmall />
                     <SkeletonNewsCardSmall />
                   </div>
-                  <div className="hidden lg:block bg-[#423137]/20 self-stretch"></div>
+                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch"></div>
                   <SkeletonSpotlightPost />
-                  <div className="hidden lg:block bg-[#423137]/20 self-stretch"></div>
+                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch"></div>
                   <div className="flex flex-col justify-between gap-8 pl-8">
                     <SkeletonNewsCardSmall />
                     <SkeletonNewsCardSmall />
@@ -562,7 +526,7 @@ export default function Page() {
                       ) : (
                         <div
                           key={i}
-                          className="flex items-center justify-center aspect-video bg-[#423137]/5 text-[#423137]/35 text-xs"
+                          className="flex items-center justify-center aspect-video bg-[var(--site-ink)]/5 text-[var(--site-ink-muted)] text-xs"
                         >
                           Bài viết mới sẽ sớm được cập nhật
                         </div>
@@ -571,7 +535,7 @@ export default function Page() {
                   </div>
 
                   {/* Thin divider */}
-                  <div className="hidden lg:block bg-[#423137]/20 self-stretch mx-8"></div>
+                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch mx-8"></div>
 
                   {/* ── Center column: spotlight post ── */}
                   <div className="group flex flex-col">
@@ -586,31 +550,31 @@ export default function Page() {
                           />
                         </Link>
                       ) : (
-                        <div className="w-full h-52 lg:h-72 bg-[#423137]/10 flex items-center justify-center text-[#423137]/40 text-sm">
+                        <div className="w-full h-52 lg:h-72 bg-[var(--site-ink)]/10 flex items-center justify-center text-[var(--site-ink-muted)] text-sm">
                           Không có bài viết nổi bật
                         </div>
                       )}
                     </div>
                     {/* Metadata label */}
-                    <p className="text-[10px] font-semibold tracking-widest text-[#FF6E1A] uppercase mb-2">
+                    <p className="text-[10px] font-semibold tracking-widest text-[var(--site-accent)] uppercase mb-2">
                       Artist Spotlight
                     </p>
                     {/* Title */}
                     {spotlightPost && (
                       <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <h3 className="text-xl font-bold text-[#423137] leading-snug mb-2.5 line-clamp-2 cursor-pointer hover:text-[#FF6E1A] transition-colors duration-200">
+                        <h3 className="text-xl font-bold text-[var(--site-ink)] leading-snug mb-2.5 line-clamp-2 cursor-pointer hover:text-[var(--site-accent)] transition-colors duration-200">
                           {spotlightPost.title}
                         </h3>
                       </Link>
                     )}
                     {/* Description */}
-                    <p className="text-xs text-[#423137]/60 leading-relaxed line-clamp-8">
+                    <p className="text-xs text-[var(--site-ink-muted)] leading-relaxed line-clamp-8">
                       {spotlightPost?.content || "Thông tin nghệ sĩ sẽ được cập nhật sớm."}
                     </p>
                   </div>
 
                   {/* Thin divider */}
-                  <div className="hidden lg:block bg-[#423137]/20 self-stretch mx-8"></div>
+                  <div className="hidden lg:block bg-[var(--site-ink)]/20 self-stretch mx-8"></div>
 
                   {/* ── Right column: 2 small posts ── */}
                   <div className="flex flex-col justify-between gap-8 pl-8">
@@ -628,7 +592,7 @@ export default function Page() {
                       ) : (
                         <div
                           key={i}
-                          className="flex items-center justify-center aspect-video bg-[#423137]/5 text-[#423137]/35 text-xs"
+                          className="flex items-center justify-center aspect-video bg-[var(--site-ink)]/5 text-[var(--site-ink-muted)] text-xs"
                         >
                           Bài viết mới sẽ sớm được cập nhật
                         </div>
@@ -648,7 +612,7 @@ export default function Page() {
                   <motion.div
                     className="flex cursor-grab active:cursor-grabbing"
                     animate={{ x: `-${currentPostIndex * 100}%` }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.2}
@@ -681,15 +645,19 @@ export default function Page() {
                       <button
                         key={idx}
                         onClick={() => setCurrentPostIndex(idx)}
+                        aria-label={`Chuyển đến bài viết ${idx + 1}`}
+                        aria-current={idx === currentPostIndex ? "true" : undefined}
                         className={`h-1.5 rounded-full transition-all duration-300 ${
-                          idx === currentPostIndex ? "w-8 bg-[#FF6E1A]" : "w-2 bg-black/20"
+                          idx === currentPostIndex
+                            ? "w-8 bg-[var(--site-accent)]"
+                            : "w-2 bg-[var(--site-ink)]/20"
                         }`}
                       />
                     ))}
                   </div>
                 </>
               ) : (
-                <div className="w-full text-center py-8 text-[#423137]/50 text-sm">
+                <div className="w-full text-center py-8 text-[var(--site-ink-muted)] text-sm">
                   Không có bài viết nào
                 </div>
               )}
@@ -697,33 +665,47 @@ export default function Page() {
           </div>
         </AnimatedContainer>
 
-
-        {/* --- Campaigns Section --- */}
+        {/* --- Campaigns Section --- white background for rhythm --- */}
         <AnimatedContainer
           id="campaigns"
-          className="min-h-auto lg:min-h-screen bg-[#EAE6E0] flex items-center justify-center py-16 lg:py-32"
+          className="bg-[var(--site-surface)] py-20 lg:py-28"
           animation="animate-fade-in-right"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
-            {/* Section label — matches News section */}
+            {/* Section header — matches News section style */}
             <AnimatedContainer
-              className="text-xs font-semibold tracking-widest text-[#423137]/60 uppercase mb-5"
+              className="flex items-baseline justify-between mb-10 lg:mb-12"
               animation="animate-fade-in-down"
             >
-              Chiến dịch đang diễn ra
+              <div>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--site-accent)] uppercase mb-2">Tài trợ & hợp tác</p>
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--site-ink)]">Chiến dịch đang diễn ra</h2>
+              </div>
+              <Link href="/campaigns" className="hidden sm:inline-flex text-xs font-semibold text-[var(--site-ink-muted)] hover:text-[var(--site-accent)] transition-colors items-center gap-1.5">
+                Xem tất cả <ArrowRightIcon />
+              </Link>
             </AnimatedContainer>
             {/* Desktop grid, Mobile auto-slider */}
             <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
               {loadingCampaigns
                 ? [0, 1, 2].map((i) => <SkeletonCampaignCard key={i} />)
                 : campaigns.map((c, idx) => (
-                    <Link key={c.campaignId ?? idx} href={`/campaigns/${c.campaignId}`} className="h-full">
-                      <CampaignCard
-                        imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
-                        title={c.title || "Không có tiêu đề"}
-                        description={c.description || ""}
-                      />
-                    </Link>
+                    <motion.div
+                      key={c.campaignId ?? idx}
+                      variants={scaleIn}
+                      initial="hidden"
+                      whileInView="visible"
+                      custom={idx}
+                      viewport={{ once: true, margin: "-40px" }}
+                    >
+                      <Link href={`/campaigns/${c.campaignId}`} className="h-full block">
+                        <CampaignCard
+                          imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
+                          title={c.title || "Không có tiêu đề"}
+                          description={c.description || ""}
+                        />
+                      </Link>
+                    </motion.div>
                   ))}
             </div>
 
@@ -735,7 +717,7 @@ export default function Page() {
                   <motion.div
                     className="flex cursor-grab active:cursor-grabbing"
                     animate={{ x: `-${currentCampaignIndex * 100}%` }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     dragElastic={0.2}
@@ -763,49 +745,55 @@ export default function Page() {
                   {/* Indicators */}
                   <div className="flex justify-center gap-1.5 mt-8">
                     {campaigns.map((_, idx) => (
-                      <button 
+                      <button
                         key={idx}
                         onClick={() => setCurrentCampaignIndex(idx)}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentCampaignIndex ? 'w-8 bg-[#FF6E1A]' : 'w-2 bg-black/20'}`}
+                        aria-label={`Chuyển đến chiến dịch ${idx + 1}`}
+                        aria-current={idx === currentCampaignIndex ? "true" : undefined}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          idx === currentCampaignIndex
+                            ? "w-8 bg-[var(--site-accent)]"
+                            : "w-2 bg-[var(--site-ink)]/20"
+                        }`}
                       />
                     ))}
                   </div>
                 </>
               ) : (
-                <div className="text-center py-12 text-gray-400 text-sm">Các chiến dịch sẽ được cập nhật sớm.</div>
+                <div className="text-center py-12 text-[var(--site-ink-muted)] text-sm">Các chiến dịch sẽ được cập nhật sớm.</div>
               )}
             </div>
           </div>
         </AnimatedContainer>
       </main>
 
-      {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed cursor-pointer bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
-        >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {/* Scroll to Top Button — animated pop-in/out */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            key="scroll-top"
+            aria-label="Cuộn lên đầu trang"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed cursor-pointer bottom-4 right-4 bg-[var(--site-accent)] text-white p-3 rounded-full shadow-lg z-50"
+            initial={{ opacity: 0, scale: 0.6, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.6, y: 12 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ scale: 1.1, backgroundColor: "var(--site-accent-hover)" }}
+            whileTap={{ scale: 0.92 }}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
-            />
-          </svg>
-        </button>
-      )}
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* --- Footer --- */}
-      <footer className="relative bg-[#423137] text-white overflow-hidden">
+      <footer className="relative bg-[var(--site-ink)] text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#EAE6E0]/20 via-transparent to-[#EAE6E0]/20"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--site-bg)]/20 via-transparent to-[var(--site-bg)]/20"></div>
         </div>
 
         <div className="relative py-12 sm:py-16 md:py-20">
@@ -824,26 +812,26 @@ export default function Page() {
                     ArtChain
                   </h3>
                 </div>
-                <p className="text-[#EAE6E0]/80 text-sm sm:text-base leading-relaxed mb-6">
+                <p className="text-white/80 text-sm sm:text-base leading-relaxed mb-6">
                   Nơi nuôi dưỡng tài năng hội họa trẻ, kết nối cộng đồng nghệ sĩ
                   và lan tỏa giá trị nghệ thuật đến mọi nhà.
                 </p>
                 <div className="flex space-x-4">
                   <a
                     href="#"
-                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
+                    className="text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <Facebook className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
+                    className="text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <Instagram className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
+                    className="text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <Youtube className="w-5 h-5" />
                   </a>
@@ -857,26 +845,26 @@ export default function Page() {
                 </h5>
                 <ul className="space-y-3 text-sm sm:text-base">
                   {/* <li>
-                    <a href="#" className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group">
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                    <a href="#" className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group">
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nhiệm vụ
                     </a>
                   </li> */}
                   <li>
                     <a
                       href="#"
-                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Đội ngũ
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Liên hệ
                     </a>
                   </li>
@@ -892,27 +880,27 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       NÉT VẼ ƯỚC MƠ 2026
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Thể lệ
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      className="text-[#EAE6E0]/80 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nộp bài
                     </a>
                   </li>
@@ -926,40 +914,40 @@ export default function Page() {
                 </h5>
                 <ul className="space-y-3 text-sm sm:text-base">
                   <li className="flex items-start space-x-3">
-                    <MapPin className="w-4 h-4 text-[#FF6E1A] mt-0.5 flex-shrink-0" />
-                    <span className="text-[#EAE6E0]/80">
+                    <MapPin className="w-4 h-4 text-[var(--site-accent)] mt-0.5 flex-shrink-0" />
+                    <span className="text-white/80">
                       123 Đường ABC, Quận 1<br />
                       TP.HCM, Việt Nam
                     </span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Phone className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-[#EAE6E0]/80">+84 123 456 789</span>
+                    <Phone className="w-4 h-4 text-[var(--site-accent)] flex-shrink-0" />
+                    <span className="text-white/80">+84 123 456 789</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-[#EAE6E0]/80">artchain999@gmail.com</span>
+                    <Mail className="w-4 h-4 text-[var(--site-accent)] flex-shrink-0" />
+                    <span className="text-white/80">artchain999@gmail.com</span>
                   </li>
                 </ul>
               </div>
             </div>
 
             {/* Newsletter Signup */}
-            {/* <div className="border-t border-[#EAE6E0]/10 pt-8 sm:pt-12">
+            {/* <div className="border-t border-white/10 pt-8 sm:pt-12">
               <div className="max-w-md mx-auto text-center">
                 <h4 className="text-lg sm:text-xl font-bold text-white mb-3">
                   Đăng ký nhận tin
                 </h4>
-                <p className="text-[#EAE6E0]/80 text-sm sm:text-base mb-6">
+                <p className="text-white/80 text-sm sm:text-base mb-6">
                   Nhận thông tin mới nhất về cuộc thi và các sự kiện nghệ thuật
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="email"
                     placeholder="Nhập email của bạn"
-                    className="flex-1 px-4 py-3 bg-[#EAE6E0]/5 border border-[#EAE6E0]/10 rounded-lg text-white placeholder-[#EAE6E0]/40 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
+                    className="flex-1 px-4 py-3 bg-[var(--site-bg)]/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[var(--site-accent)] focus:ring-1 focus:ring-[var(--site-accent)] transition-colors"
                   />
-                  <button className="px-6 py-3 bg-[#FF6E1A] hover:bg-[#FF833B] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
+                  <button className="px-6 py-3 bg-[var(--site-accent)] hover:bg-[var(--site-accent-hover)] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
                     <Send className="w-4 h-4" />
                     Đăng ký
                   </button>
@@ -970,28 +958,28 @@ export default function Page() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-[#EAE6E0]/10 bg-black/10 backdrop-blur-sm">
+        <div className="border-t border-white/10 bg-black/10 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-[#EAE6E0]/60 text-xs sm:text-sm text-center md:text-left">
+              <p className="text-white/60 text-xs sm:text-sm text-center md:text-left">
                 &copy; 2026 ArtChain. Đã đăng ký bản quyền.
               </p>
               <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
                 <a
                   href="#"
-                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
+                  className="text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Điều khoản dịch vụ
                 </a>
                 <a
                   href="#"
-                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
+                  className="text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Chính sách bảo mật
                 </a>
                 <a
                   href="#"
-                  className="text-[#EAE6E0]/60 hover:text-white transition-colors duration-300"
+                  className="text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Cookie Policy
                 </a>
