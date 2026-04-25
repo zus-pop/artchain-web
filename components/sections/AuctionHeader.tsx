@@ -123,8 +123,8 @@ const AuctionHeader: React.FC = () => {
           <GlassSurface
             width="auto"
             height="auto"
-            borderRadius={50}
-            backgroundOpacity={0.58}
+            borderRadius={15}
+            backgroundOpacity={0.08}
             blur={5}
             saturation={3}
             brightness={54}
@@ -274,12 +274,12 @@ const AuctionHeader: React.FC = () => {
                   <GlassSurface
                     width="100%"
                     height="100vh"
-                    borderRadius={50}
+                    borderRadius={15}
                     borderWidth={0.1}
                     brightness={54}
                     opacity={1}
                     blur={5}
-                    backgroundOpacity={0.58}
+                    backgroundOpacity={0.08}
                     saturation={3}
                     distortionScale={180}
                     displace={0.5}

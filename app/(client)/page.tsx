@@ -22,9 +22,10 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import HeroSection from "@/components/sections/HeroSection";
 import { ContestSection } from "@/components/sections/ContestSection";
+import { SponsorSection } from "@/components/sections/SponsorSection";
+import { CampaignSection } from "@/components/sections/CampaignSection";
 import { PostSection } from "@/components/sections/PostSection";
 import ParallaxBackground from "@/components/sections/ParallaxBackground";
-import { CampaignAPIResponse } from "../../types/campaign";
 
 const ArrowRightIcon = () => (
   <svg
@@ -358,8 +359,6 @@ export default function Page() {
   // News posts fetched to fill the NewsCardSmall components (do not change UI)
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
-  const [campaigns, setCampaigns] = useState<CampaignAPIResponse[]>([]);
-  const [loadingCampaigns, setLoadingCampaigns] = useState<boolean>(true);
 
   useEffect(() => {
     let mounted = true;
@@ -372,31 +371,6 @@ export default function Page() {
         console.error("Error fetching posts:", err);
       } finally {
         if (mounted) setLoadingPosts(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // fetch campaigns (limit = 3)
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoadingCampaigns(true);
-        // Only fetch campaigns with ACTIVE status
-        const resp = await getCampaigns({ limit: 3, status: "ACTIVE" });
-        // resp shape may vary; try common properties
-        const items = resp?.data ?? [];
-        if (mounted)
-          setCampaigns(Array.isArray(items) ? items.slice(0, 3) : []);
-      } catch (err) {
-        console.error("Error fetching campaigns:", err);
-        if (mounted) setCampaigns([]);
-      } finally {
-        if (mounted) setLoadingCampaigns(false);
       }
     })();
 
@@ -429,14 +403,6 @@ export default function Page() {
     }, 5000);
     return () => clearInterval(timer);
   }, [uniquePosts.length]);
-
-  useEffect(() => {
-    if (campaigns.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentCampaignIndex((prev) => (prev + 1) % campaigns.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [campaigns.length]);
 
   return (
     <div className="min-h-screen bg-[var(--site-bg)] text-[var(--site-ink)] font-(family-name:--font-be-vietnam-pro)">
@@ -472,110 +438,14 @@ export default function Page() {
         {/* --- Contest Showcase Section --- */}
         <ContestSection />
 
+        {/* --- Trusted Supporters Section --- */}
+        <SponsorSection />
+
+        {/* --- Campaign Section --- */}
+        <CampaignSection />
+
         {/* --- Community News & Announcements Section --- */}
         <PostSection />
-
-
-        {/* --- Campaigns Section --- white background for rhythm --- */}
-        <AnimatedContainer
-          id="campaigns"
-          className="bg-[var(--site-surface)] py-20 lg:py-28"
-          animation="animate-fade-in-right"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
-            {/* Section header — matches News section style */}
-            <AnimatedContainer
-              className="flex items-baseline justify-between mb-10 lg:mb-12"
-              animation="animate-fade-in-down"
-            >
-              <div>
-                <p className="text-[10px] font-semibold tracking-[0.18em] text-[var(--site-accent)] uppercase mb-2">Tài trợ & hợp tác</p>
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--site-ink)]">Chiến dịch đang diễn ra</h2>
-              </div>
-              <Link href="/campaigns" className="hidden sm:inline-flex text-xs font-semibold text-[var(--site-ink-muted)] hover:text-[var(--site-accent)] transition-colors items-center gap-1.5">
-                Xem tất cả <ArrowRightIcon />
-              </Link>
-            </AnimatedContainer>
-            {/* Desktop grid, Mobile auto-slider */}
-            <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
-              {loadingCampaigns
-                ? [0, 1, 2].map((i) => <SkeletonCampaignCard key={i} />)
-                : campaigns.map((c, idx) => (
-                    <motion.div
-                      key={c.campaignId ?? idx}
-                      variants={scaleIn}
-                      initial="hidden"
-                      whileInView="visible"
-                      custom={idx}
-                      viewport={{ once: true, margin: "-40px" }}
-                    >
-                      <Link href={`/campaigns/${c.campaignId}`} className="h-full block">
-                        <CampaignCard
-                          imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
-                          title={c.title || "Không có tiêu đề"}
-                          description={c.description || ""}
-                        />
-                      </Link>
-                    </motion.div>
-                  ))}
-            </div>
-
-            <div className="sm:hidden relative overflow-hidden">
-              {loadingCampaigns ? (
-                <SkeletonCampaignCard />
-              ) : campaigns.length > 0 ? (
-                <>
-                  <motion.div
-                    className="flex cursor-grab active:cursor-grabbing"
-                    animate={{ x: `-${currentCampaignIndex * 100}%` }}
-                    transition={{ type: "tween", ease: [0.25, 0.1, 0.25, 1], duration: 0.4 }}
-                    drag="x"
-                    dragConstraints={{ left: 0, right: 0 }}
-                    dragElastic={0.2}
-                    onDragEnd={(_, info) => {
-                      const threshold = 50;
-                      if (info.offset.x < -threshold) {
-                        setCurrentCampaignIndex((prev) => (prev + 1) % campaigns.length);
-                      } else if (info.offset.x > threshold) {
-                        setCurrentCampaignIndex((prev) => (prev - 1 + campaigns.length) % campaigns.length);
-                      }
-                    }}
-                  >
-                    {campaigns.map((c, idx) => (
-                      <div key={c.campaignId ?? idx} className="min-w-full pr-4">
-                        <Link href={`/campaigns/${c.campaignId}`} className="h-full block">
-                          <CampaignCard
-                            imgSrc={c.image || "https://placehold.co/400x300/cccccc/333333?text=No+Image"}
-                            title={c.title || "Không có tiêu đề"}
-                            description={c.description || ""}
-                          />
-                        </Link>
-                      </div>
-                    ))}
-                  </motion.div>
-                  {/* Indicators */}
-                  <div className="flex justify-center gap-1.5 mt-8">
-                    {campaigns.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentCampaignIndex(idx)}
-                        aria-label={`Chuyển đến chiến dịch ${idx + 1}`}
-                        aria-current={idx === currentCampaignIndex ? "true" : undefined}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${
-                          idx === currentCampaignIndex
-                            ? "w-8 bg-[var(--site-accent)]"
-                            : "w-2 bg-[var(--site-ink)]/20"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-12 text-[var(--site-ink-muted)] text-sm">Các chiến dịch sẽ được cập nhật sớm.</div>
-              )}
-            </div>
-          </div>
-        </AnimatedContainer>
       </main>
 
       {/* Scroll to Top Button — animated pop-in/out */}

@@ -267,8 +267,8 @@ export default function Page() {
         <GlassSurface
           width="100%"
           height="auto"
-          borderRadius={50}
-          backgroundOpacity={0.58}
+          borderRadius={15}
+          backgroundOpacity={0.08}
           blur={5}
           saturation={3}
           brightness={54}

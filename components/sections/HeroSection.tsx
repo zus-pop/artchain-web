@@ -49,9 +49,14 @@ const HeroSection = () => {
   const { accessToken } = useAuthStore();
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
+    <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
+      {/* Subtle Text Backdrop Overlay — enhances legibility against complex parallax backgrounds */}
+      <div 
+        className="absolute -inset-y-32 -left-32 w-[120%] lg:w-[150%] bg-gradient-to-r from-black/60 via-black/20 to-transparent blur-2xl pointer-events-none -z-10 opacity-60" 
+      />
+
       <motion.div 
-        className="max-w-2xl"
+        className="max-w-2xl relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
