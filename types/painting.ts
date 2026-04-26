@@ -103,7 +103,10 @@ export interface CompetitorSubmission {
   paintingId: string;
   title: string;
   contestId: number;
-  contestTitle: string;
+  contestTitle?: string;
+  contest?: {
+    title: string;
+  };
   roundId: string;
   submissionDate: string;
   status: string;

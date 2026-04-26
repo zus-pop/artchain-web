@@ -21,6 +21,7 @@ export interface Wallet {
   balance: number;
   currency: string;
   status: string;
+  withdrawalAvailableAt?: string;
 }
 
 export interface WhoAmI {
