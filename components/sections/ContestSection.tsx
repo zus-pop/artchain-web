@@ -9,6 +9,8 @@ import { Contest } from "@/types/contest";
 
 import { InteractiveContestCard } from "@/components/ui/InteractiveContestCard";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
+import SplitText from "@/components/SplitText";
+import BlurText from "@/components/BlurText";
 
 export const ContestSection = () => {
   // Fetch 2 Active contests and 1 Upcoming contest
@@ -31,16 +33,26 @@ export const ContestSection = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: "easeOut" }}
+              className="flex flex-col gap-4"
             >
-              <span className="inline-block px-4 py-1.5 rounded-full bg-[var(--site-accent)]/10 text-[10px] font-bold uppercase tracking-[0.25em] mb-8 text-[var(--site-accent)]">
-Cuộc thi
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
+                Cuộc thi
               </span>
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter leading-[1.05] text-[var(--site-ink)] mb-8">
-                Nổi Bật
-              </h2>
-              <p className="text-lg text-[var(--site-ink)]/60 leading-relaxed mb-12 max-w-md">
-                Cập nhật các cuộc thi đang diễn ra và sắp tới. Dù bạn đã sẵn sàng tham gia hay đang chuẩn bị cho bước tiếp theo, chúng tôi luôn có cơ hội phù hợp dành cho bạn.
-              </p>
+              <SplitText
+                text="Nổi Bật"
+                tag="h2"
+                className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter leading-[0.95] text-[var(--site-ink)] mb-4"
+                textAlign="left"
+                delay={40}
+                splitType="words"
+              />
+              <BlurText
+                text="Cập nhật các cuộc thi đang diễn ra và sắp tới. Dù bạn đã sẵn sàng tham gia hay đang chuẩn bị cho bước tiếp theo, chúng tôi luôn có cơ hội phù hợp dành cho bạn."
+                className="text-lg text-[var(--site-ink)]/50 leading-relaxed mb-12 max-w-md"
+                delay={20}
+                animateBy="words"
+                direction="bottom"
+              />
               <InteractiveHeroButton 
                 href="/contests"
                 label="Xem tất cả cuộc thi"
@@ -56,9 +68,9 @@ Cuộc thi
               <div className="flex flex-col gap-16">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="aspect-[16/10] bg-[var(--site-ink)]/5 rounded-2xl mb-6" />
-                    <div className="h-8 bg-[var(--site-ink)]/10 w-3/4 rounded mb-4" />
-                    <div className="h-4 bg-[var(--site-ink)]/5 w-1/2 rounded" />
+                    <div className="aspect-[16/10] bg-[var(--site-ink)]/5 rounded-sm mb-6" />
+                    <div className="h-8 bg-[var(--site-ink)]/10 w-3/4 rounded-sm mb-4" />
+                    <div className="h-4 bg-[var(--site-ink)]/5 w-1/2 rounded-sm" />
                   </div>
                 ))}
               </div>
@@ -75,7 +87,7 @@ Cuộc thi
                 />
               ))
             ) : (
-              <div className="text-center py-20 border-2 border-dashed border-[var(--site-ink)]/10 rounded-2xl">
+              <div className="text-center py-20 border-2 border-dashed border-[var(--site-ink)]/10 rounded-sm">
                 <p className="text-[var(--site-ink)]/40 italic font-medium">Hiện tại chưa có cuộc thi nào diễn ra...</p>
               </div>
             )}

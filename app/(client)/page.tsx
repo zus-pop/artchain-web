@@ -143,7 +143,7 @@ const CampaignCard = ({
   description: string;
 }) => (
   <motion.div
-    className="group flex flex-col h-full bg-[var(--site-surface)] border border-[var(--site-border)] shadow-sm rounded-md overflow-hidden"
+    className="group flex flex-col h-full bg-[var(--site-surface)] border border-[var(--site-border)] shadow-sm rounded-sm overflow-hidden"
     whileHover={{ y: -4, boxShadow: "0 12px 32px rgba(66,49,55,0.10)" }}
     transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
   >
@@ -287,7 +287,7 @@ const NewsCardSmall = ({
   darkBg?: boolean;
 }) => (
   <div
-    className={`group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01] border border-[var(--site-border)] shadow-sm rounded-md ${
+    className={`group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01] border border-[var(--site-border)] shadow-sm rounded-sm ${
       darkBg ? "bg-[var(--site-surface-warm)] text-[var(--site-ink)]" : "bg-[var(--site-surface)] text-[var(--site-ink)]"
     }`}
   >
@@ -455,7 +455,7 @@ export default function Page() {
             key="scroll-top"
             aria-label="Cuộn lên đầu trang"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed cursor-pointer bottom-4 right-4 bg-[var(--site-accent)] text-white p-3 rounded-full shadow-lg z-50"
+            className="fixed cursor-pointer bottom-4 right-4 bg-[var(--site-accent)] text-white p-3 rounded-sm shadow-lg z-50"
             initial={{ opacity: 0, scale: 0.6, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.6, y: 12 }}

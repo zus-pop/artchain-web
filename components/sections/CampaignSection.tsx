@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Transition } from "framer-motion";
 import { getCampaigns } from "@/apis/campaign";
 import { CampaignAPIResponse } from "@/types/campaign";
 import { formatNumber } from "@/lib/utils";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import SplitText from "@/components/SplitText";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ const zoomVariants = {
   },
 };
 
-const transition = {
+const transition: Transition = {
   duration: 1.5, // Slower transition as requested
   ease: [0.16, 1, 0.3, 1], // Smooth deceleration (slow down at the end)
 };
@@ -43,7 +44,7 @@ const CampaignPanel = ({ item }: { item: CampaignAPIResponse }) => {
   );
 
   return (
-    <div className="absolute inset-0 w-full h-full rounded-[2.5rem] overflow-hidden">
+    <div className="absolute inset-0 w-full h-full rounded-sm overflow-hidden">
       {/* Background Image - Full width/height */}
       <div className="absolute inset-0">
         <Image
@@ -66,24 +67,23 @@ const CampaignPanel = ({ item }: { item: CampaignAPIResponse }) => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="flex items-center gap-3"
+            className="flex items-center"
           >
-             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]" />
-             <span className="text-[10px] font-bold text-white uppercase tracking-[0.3em]">
+             <span className="px-4 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-md bg-white/20 text-white border border-white/30">
                {item.status === "ACTIVE" ? "Đang diễn ra" : "Đã kết thúc"}
              </span>
           </motion.div>
 
           {/* Stable Title Container */}
           <div className="min-h-[140px] sm:min-h-[160px] flex flex-col justify-start">
-            <motion.h3 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.8 }}
+            <SplitText
+              text={item.title}
+              tag="h3"
               className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.05]"
-            >
-              {item.title}
-            </motion.h3>
+              textAlign="left"
+              delay={40}
+              splitType="words"
+            />
           </div>
 
           <motion.div 
@@ -141,7 +141,7 @@ export const CampaignSection = () => {
 
   useEffect(() => {
     // Fetch only top 3, sorted by most recent
-    getCampaigns({ limit: 3, sortBy: "createdAt", order: "DESC" })
+    getCampaigns({ limit: 3 })
       .then((res) => setCampaigns(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -167,25 +167,33 @@ export const CampaignSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
 
         {/* ── Header ── */}
-        <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-16 gap-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col lg:flex-row lg:items-start justify-between mb-16 gap-10"
+        >
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
                 Chiến dịch
               </span>
             </div>
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] max-w-2xl leading-[0.95]">
-              Góp sức cho <br className="hidden sm:block" /> thế hệ nghệ thuật
-            </h2>
+            <SplitText
+              text="Góp sức cho thế hệ nghệ thuật"
+              tag="h2"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] max-w-2xl leading-[0.95]"
+              textAlign="left"
+              delay={40}
+              splitType="words"
+            />
           </div>
           
-          <div className="flex flex-col gap-6 lg:pt-8">
-            <p className="text-lg text-[var(--site-ink)]/50 max-w-md leading-relaxed lg:mb-2">
-              Mỗi sự đóng góp của bạn đều trực tiếp hỗ trợ các tài năng trẻ và duy trì những hoạt động nghệ thuật cộng đồng đầy ý nghĩa.
-            </p>
+          <div className="flex flex-col gap-6 lg:pt-10">
             <InteractiveHeroButton href="/campaigns" label="Xem tất cả" />
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Overlay Swap Container ── */}
         <div
@@ -226,7 +234,7 @@ export const CampaignSection = () => {
                       setDirection(i > currentIndex ? 1 : -1);
                       setCurrentIndex(i);
                     }}
-                    className={`relative w-24 h-12 sm:w-32 sm:h-16 rounded-xl border-2 transition-all duration-700 overflow-hidden shadow-2xl group/btn
+                    className={`relative w-24 h-12 sm:w-32 sm:h-16 rounded-sm border-2 transition-all duration-700 overflow-hidden shadow-2xl group/btn
                       ${i === currentIndex 
                         ? 'border-white scale-110 z-10 ring-4 ring-white/10' 
                         : 'border-white/20 opacity-40 hover:opacity-100 hover:border-white/50'}`}

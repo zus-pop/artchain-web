@@ -144,6 +144,13 @@ export default function WalletPage() {
   const formattedBalance = new Intl.NumberFormat("vi-VN").format(balance);
   const walletId = userData?.wallet?.walletId || "Chưa có ví";
 
+  // Check withdrawal availability
+  const withdrawalAvailableAt = userData?.wallet?.withdrawalAvailableAt;
+  const isWithdrawalDisabled = useMemo(() => {
+    if (!withdrawalAvailableAt) return false;
+    return new Date() < new Date(withdrawalAvailableAt);
+  }, [withdrawalAvailableAt]);
+
   const totalApprovedWithdrawals = useMemo(() => {
     return myWithdrawRequestsData?.data
       ?.filter((wd: any) => wd.status === "APPROVED")
@@ -450,17 +457,24 @@ export default function WalletPage() {
                   </DialogContent>
                 </Dialog>
 
-                <Dialog open={isWithdrawDialogOpen} onOpenChange={(open) => { 
-                  setIsWithdrawDialogOpen(open);
-                  if (!open) setWithdrawStep("bank"); 
-                }}>
-                  <DialogTrigger asChild>
-                    <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-all active:scale-95">
-                      <Banknote size={14} />
-                      Rút tiền
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md border-none bg-white p-0 overflow-hidden shadow-2xl rounded-3xl">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="w-full">
+                      <Dialog open={isWithdrawDialogOpen} onOpenChange={(open) => { 
+                        if (isWithdrawalDisabled && open) return;
+                        setIsWithdrawDialogOpen(open);
+                        if (!open) setWithdrawStep("bank"); 
+                      }}>
+                        <DialogTrigger asChild>
+                          <button 
+                            disabled={isWithdrawalDisabled}
+                            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-gray-700 transition-all hover:bg-gray-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Banknote size={14} />
+                            Rút tiền
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md overflow-hidden rounded-3xl border-none bg-white p-0 shadow-2xl">
                     <div className="bg-gray-50 p-6 border-b border-gray-100">
                       <DialogHeader>
                         <DialogTitle className="text-xl font-black text-gray-900 uppercase">
@@ -648,7 +662,20 @@ export default function WalletPage() {
                       )}
                     </div>
                   </DialogContent>
-                </Dialog>
+                      </Dialog>
+                    </div>
+                  </TooltipTrigger>
+                  {isWithdrawalDisabled && withdrawalAvailableAt && (
+                    <TooltipContent side="top" className="max-w-[200px] text-center">
+                      <p>
+                        Rút tiền khả dụng vào ngày{" "}
+                        {format(new Date(withdrawalAvailableAt), "dd/MM/yyyy HH:mm", {
+                          locale: vi,
+                        })}
+                      </p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
               </div>
 
               {/* Group 3: Statistics */}

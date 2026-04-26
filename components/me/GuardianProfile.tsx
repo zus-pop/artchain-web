@@ -201,7 +201,9 @@ export default function GuardianProfileScreen({
             <div>
               <p className="text-sm font-medium text-gray-600">Cuộc thi</p>
               <p className="text-black">
-                {selectedSubmission.contestTitle || "N/A"}
+                {selectedSubmission.contest?.title ||
+                  selectedSubmission.contestTitle ||
+                  "N/A"}
               </p>
             </div>
             <div>
@@ -387,7 +389,8 @@ export default function GuardianProfileScreen({
     submission: CompetitorSubmission;
     onClick?: () => void;
   }) {
-    const contestTitle = submission.contestTitle || "N/A";
+    const contestTitle =
+      submission.contest?.title || submission.contestTitle || "N/A";
 
     return (
       <div

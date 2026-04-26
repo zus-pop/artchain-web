@@ -9,6 +9,7 @@ import { Post } from "@/types/post";
 
 import { InteractivePostCard } from "@/components/ui/InteractivePostCard";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
+import SplitText from "@/components/SplitText";
 
 export const PostSection = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -49,24 +50,34 @@ export const PostSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
         
         {/* Section Header - Reformatted to match other sections */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col lg:flex-row lg:items-start justify-between mb-16 gap-10"
+        >
           <div className="flex flex-col gap-4">
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
               Cộng đồng
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter text-[var(--site-ink)]">
-              Tin tức & <br className="hidden sm:block lg:hidden" /> Thông báo
-            </h2>
-            <p className="text-base text-[var(--site-ink)]/50 max-w-xl leading-relaxed mt-2">
-              Cập nhật những hoạt động mới nhất, các buổi triển lãm và câu chuyện nghệ thuật từ cộng đồng ArtChain.
-            </p>
+            <SplitText
+              text="Tin tức & Thông báo"
+              tag="h2"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[0.95]"
+              textAlign="left"
+              delay={40}
+              splitType="words"
+            />
           </div>
           
-          <InteractiveHeroButton 
-            href="/posts" 
-            label="Xem tất cả tin tức"
-          />
-        </div>
+          <div className="flex flex-col gap-6 lg:pt-10">
+            <InteractiveHeroButton 
+              href="/posts" 
+              label="Xem tất cả tin tức"
+            />
+          </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-16 lg:gap-24">
           

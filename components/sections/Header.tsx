@@ -308,7 +308,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                       className="flex items-center space-x-1 sm:space-x-2 rounded-lg py-1 cursor-pointer"
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                        className={`w-8 h-8 rounded-sm flex items-center justify-center text-white font-semibold flex-shrink-0 ${
                           displayUser?.role === "GUARDIAN"
                             ? "bg-green-600"
                             : "bg-red-600"
@@ -325,7 +325,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 z-[60]"
+                          className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-sm bg-white shadow-2xl ring-1 ring-black/5 z-[60]"
                         >
                           <div className="p-4 bg-gray-50/50 border-b border-gray-100">
                             <p className="text-sm font-bold text-gray-900 truncate">{getDisplayName()}</p>
@@ -363,7 +363,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
 
                 <button 
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="lg:hidden p-1.5 text-black hover:bg-black/5 rounded-full transition-colors shrink-0"
+                  className="lg:hidden p-1.5 text-black hover:bg-black/5 rounded-sm transition-colors shrink-0"
                 >
                   {isMobileMenuOpen ? (
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -403,7 +403,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
               <GlassSurface
                 width="100%"
                 height="100vh"
-                borderRadius={15}
+                borderRadius={4}
                 borderWidth={0.1}
                 brightness={54}
                 opacity={1}
@@ -433,7 +433,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                             <span className="font-bold text-xl text-black">ArtChain</span>
                             <button 
                               onClick={() => setIsMobileMenuOpen(false)}
-                              className="p-2 rounded-full hover:bg-black/5 transition-colors"
+                              className="p-2 rounded-sm hover:bg-black/5 transition-colors"
                             >
                               <X className="h-6 w-6 text-black" />
                             </button>
@@ -465,7 +465,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                           {isAuthenticated ? (
                             <button 
                               onClick={() => setMenuView('account')}
-                              className="flex items-center justify-between w-full px-4 py-4 rounded-3xl bg-[#FF6E1A] border border-[#FF6E1A] hover:bg-[#FF833B] transition-all cursor-pointer group shadow-xl scale-[1.01]"
+                              className="flex items-center justify-between w-full px-4 py-4 rounded-sm bg-[#FF6E1A] border border-[#FF6E1A] hover:bg-[#FF833B] transition-all cursor-pointer group shadow-xl scale-[1.01]"
                             >
                               <div className="flex items-center space-x-4">
                                 <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white/20 text-white font-bold text-lg shadow-inner">

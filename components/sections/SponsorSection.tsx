@@ -4,6 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { getSponsors } from "@/apis/sponsor";
 import { SponsorData } from "@/types/campaign";
+import SplitText from "@/components/SplitText";
+import BlurText from "@/components/BlurText";
 
 export const SponsorSection = () => {
   const [sponsors, setSponsors] = useState<SponsorData[]>([]);
@@ -54,8 +56,8 @@ export const SponsorSection = () => {
     <section ref={targetRef} className={`relative bg-[var(--site-bg)] border-t border-[var(--site-ink)]/5 ${sponsors.length > 0 ? 'h-[600vh]' : 'h-auto py-12'}`}>
       {loading || sponsors.length === 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 flex items-center gap-3">
-           <div className="w-2.5 h-2.5 rounded-full bg-[var(--site-ink)]/10 animate-pulse" />
-           <div className="h-4 w-32 bg-[var(--site-ink)]/5 rounded animate-pulse" />
+           <div className="w-2.5 h-2.5 rounded-sm bg-[var(--site-ink)]/10 animate-pulse" />
+           <div className="h-4 w-32 bg-[var(--site-ink)]/5 rounded-sm animate-pulse" />
         </div>
       ) : (
         /* Sticky Container */
@@ -63,19 +65,36 @@ export const SponsorSection = () => {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full mb-24">
           {/* Section Header - Split Layout */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 lg:gap-32">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col lg:flex-row lg:items-start justify-between gap-10"
+          >
             <div className="flex flex-col gap-4">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
                 Đối tác & Tài trợ
               </span>
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)]">
-                Đồng hành <br className="hidden sm:block" /> cùng nghệ thuật
-              </h2>
+              <SplitText
+                text="Đồng hành cùng nghệ thuật"
+                tag="h2"
+                className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[0.95]"
+                textAlign="left"
+                delay={40}
+                splitType="words"
+              />
             </div>
-            <p className="text-lg text-[var(--site-ink)]/50 max-w-xl leading-relaxed lg:mb-2">
-              Sự hỗ trợ quý báu từ các tổ chức và cá nhân giúp ArtChain duy trì và phát triển cộng đồng nghệ thuật Việt Nam, mang những giá trị hội họa đến gần hơn với công chúng.
-            </p>
-          </div>
+            <div className="lg:pt-8">
+              <BlurText
+                text="Sự hỗ trợ quý báu từ các tổ chức và cá nhân giúp ArtChain duy trì và phát triển cộng đồng nghệ thuật Việt Nam, mang những giá trị hội họa đến gần hơn với công chúng."
+                className="text-lg text-[var(--site-ink)]/50 max-w-xl leading-relaxed lg:mb-2"
+                delay={20}
+                animateBy="words"
+                direction="bottom"
+              />
+            </div>
+          </motion.div>
         </div>
 
         {/* Horizontal Moving Track */}

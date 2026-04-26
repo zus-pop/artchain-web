@@ -33,7 +33,7 @@ export const InteractiveContestCard: React.FC<InteractiveContestCardProps> = ({
     >
       <Link href={`/contests/${contestId}`} className="block">
         {/* Main Card Container */}
-        <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-[var(--site-ink)]/5 shadow-xl transition-all duration-700 group-hover:scale-[1.01] group-hover:shadow-2xl">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-sm bg-[var(--site-ink)]/5 shadow-xl transition-all duration-700 group-hover:scale-[1.01] group-hover:shadow-2xl">
           
           {/* Background Image - Now with Blur on Hover */}
           <Image
@@ -45,11 +45,7 @@ export const InteractiveContestCard: React.FC<InteractiveContestCardProps> = ({
 
           {/* Status Badge */}
           <div className="absolute top-5 left-5 z-20">
-            <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-md ${
-              status === "active" 
-                ? "bg-emerald-500 text-white" 
-                : "bg-amber-500 text-white"
-            }`}>
+            <span className="px-4 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-md bg-white/20 border border-white/30 text-white">
               {status === "active" ? "Đang diễn ra" : "Sắp tới"}
             </span>
           </div>

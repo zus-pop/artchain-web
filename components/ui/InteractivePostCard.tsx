@@ -19,7 +19,7 @@ export const InteractivePostCard: React.FC<InteractivePostCardProps> = ({
   tagName,
 }) => {
   return (
-    <Link href={`/posts/${postId}`} className="group block overflow-hidden rounded-2xl bg-[var(--site-ink)]/5 shadow-xl transition-all duration-700 hover:scale-[1.01] hover:shadow-2xl">
+    <Link href={`/posts/${postId}`} className="group block overflow-hidden rounded-sm bg-[var(--site-ink)]/5 shadow-xl transition-all duration-700 hover:scale-[1.01] hover:shadow-2xl">
       <div className="relative aspect-[16/10] overflow-hidden">
         {/* Background Image - with Blur on Hover */}
         <Image
@@ -31,7 +31,7 @@ export const InteractivePostCard: React.FC<InteractivePostCardProps> = ({
 
         {/* Tag Badge */}
         <div className="absolute top-5 left-5 z-20">
-          <span className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-md bg-white/20 text-white border border-white/30">
+          <span className="px-4 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-md bg-white/20 text-white border border-white/30">
             {tagName || "Sự kiện"}
           </span>
         </div>
