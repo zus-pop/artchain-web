@@ -186,6 +186,12 @@ export const publishStaffContest = async (id: string) => {
   return response.data;
 };
 
+// PATCH /api/staff/contests/{id}/end - End a contest
+export const endStaffContest = async (id: string) => {
+  const response = await myAxios.patch(`/staff/contests/${id}/end`);
+  return response.data;
+};
+
 export function useGetQualifiedPaintingForRound2(contestId: string | null) {
   return useQuery({
     queryKey: ["qualified-paintings-round2", contestId],

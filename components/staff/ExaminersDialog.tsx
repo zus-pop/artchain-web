@@ -29,6 +29,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ExaminersDialogProps {
   isOpen: boolean;
@@ -60,6 +61,12 @@ export function ExaminersDialog({
   const [activeRoleTab, setActiveRoleTab] = useState<ExaminerRole>("ROUND_1");
   const [examinerSearch, setExaminerSearch] = useState("");
   const [showExaminerDropdown, setShowExaminerDropdown] = useState(false);
+
+  // State for delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [examinerToDelete, setExaminerToDelete] = useState<ExaminerDTO | null>(
+    null,
+  );
 
   // State for schedule management
   const [examinerSchedules, setExaminerSchedules] = useState<
@@ -295,16 +302,24 @@ export function ExaminersDialog({
   }, [contestExaminers]);
 
   const handleDeleteExaminer = (examiner: ExaminerDTO) => {
-    if (
-      window.confirm(
-        `Bạn có chắc chắn muốn xóa ${examiner.examinerName} khỏi cuộc thi này?`,
-      )
-    ) {
-      deleteExaminerMutation.mutate({
-        examinerId: examiner.examinerId,
-        role: examiner.role,
-      });
-    }
+    setExaminerToDelete(examiner);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteExaminer = () => {
+    if (!examinerToDelete) return;
+    deleteExaminerMutation.mutate(
+      {
+        examinerId: examinerToDelete.examinerId,
+        role: examinerToDelete.role,
+      },
+      {
+        onSuccess: () => {
+          setDeleteConfirmOpen(false);
+          setExaminerToDelete(null);
+        },
+      },
+    );
   };
 
   // Schedule management functions
@@ -985,6 +1000,25 @@ export function ExaminersDialog({
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setExaminerToDelete(null);
+        }}
+        onConfirm={confirmDeleteExaminer}
+        title="Xác nhận xóa giám khảo"
+        description={
+          <span>
+            Bạn có chắc chắn muốn xóa <b>{examinerToDelete?.examinerName}</b>{" "}
+            khỏi cuộc thi này?
+          </span>
+        }
+        confirmText="Xóa giám khảo"
+        variant="destructive"
+        isLoading={deleteExaminerMutation.isPending}
+      />
     </div>
   );
 }

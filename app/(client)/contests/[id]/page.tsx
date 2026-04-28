@@ -14,7 +14,7 @@ import { ArrowLeft, Trophy, ThumbsUp, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { VotedPaining } from "@/types/vote";
 import { Button } from "../../../../components/ui/button";
 
@@ -58,6 +58,19 @@ export default function ContestDetailPage() {
   const hasUploaded =
     uploadStatusData?.data?.find((status) => status.userId === user?.userId)
       ?.isUploaded || false;
+
+  // Check if submission deadline has passed
+  const round1 = contest?.rounds?.find((r: any) => r.name === "ROUND_1");
+  const isDeadlinePassed = useMemo(() => {
+    if (!round1?.submissionDeadline) return false;
+    return new Date() > new Date(round1.submissionDeadline);
+  }, [round1]);
+
+  // Check if contest has ended
+  const isContestEnded = useMemo(() => {
+    if (!contest?.endDate) return false;
+    return new Date() > new Date(contest.endDate);
+  }, [contest]);
 
   // Vote states
   const [selectedAwardId, setSelectedAwardId] = useState<string | null>(null);
@@ -343,12 +356,12 @@ export default function ContestDetailPage() {
                 ) : (
                   <Link
                     className={`flex-1 cursor-pointer rounded-none bg-[#FF6E1A] text-white text-center py-4 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm ${
-                      contest.status !== "ACTIVE"
+                      contest.status !== "ACTIVE" || isDeadlinePassed
                         ? "pointer-events-none opacity-50"
                         : ""
                     }`}
-                    aria-disabled={contest.status !== "ACTIVE"}
-                    tabIndex={contest.status !== "ACTIVE" ? -1 : undefined}
+                    aria-disabled={contest.status !== "ACTIVE" || isDeadlinePassed}
+                    tabIndex={contest.status !== "ACTIVE" || isDeadlinePassed ? -1 : undefined}
                     href={{
                       pathname: "/painting-upload",
                       query: {
@@ -360,7 +373,7 @@ export default function ContestDetailPage() {
                       },
                     }}
                   >
-                    Tham gia cuộc thi
+                    {isDeadlinePassed ? "Hết hạn nộp bài" : "Tham gia cuộc thi"}
                   </Link>
                 )
               ) : (
@@ -379,14 +392,14 @@ export default function ContestDetailPage() {
                       : "/auth"
                   }
                   className={`flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm ${
-                    contest.status !== "ACTIVE"
+                    contest.status !== "ACTIVE" || isDeadlinePassed
                       ? "pointer-events-none opacity-50"
                       : ""
                   }`}
-                  aria-disabled={contest.status !== "ACTIVE"}
-                  tabIndex={contest.status !== "ACTIVE" ? -1 : undefined}
+                  aria-disabled={contest.status !== "ACTIVE" || isDeadlinePassed}
+                  tabIndex={contest.status !== "ACTIVE" || isDeadlinePassed ? -1 : undefined}
                 >
-                  Tham gia cuộc thi
+                  {isDeadlinePassed ? "Hết hạn nộp bài" : "Tham gia cuộc thi"}
                 </Link>
               )}
             </div>
@@ -728,8 +741,8 @@ export default function ContestDetailPage() {
                               {painting.hasVoted ? (
                                 <button
                                   onClick={() => handleRemoveVote(painting)}
-                                  disabled={removeVoteMutation.isPending}
-                                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                                  disabled={removeVoteMutation.isPending || isContestEnded}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <ThumbsUp className="w-4 h-4 fill-current" />
                                   Bỏ bình chọn
@@ -739,7 +752,8 @@ export default function ContestDetailPage() {
                                   onClick={() => handleVoteClick(painting)}
                                   disabled={
                                     hasAlreadyVoted ||
-                                    submitVoteMutation.isPending
+                                    submitVoteMutation.isPending ||
+                                    isContestEnded
                                   }
                                   title={
                                     hasAlreadyVoted
