@@ -18,7 +18,7 @@ export const SponsorSection = () => {
 
   // Calculate the total horizontal movement needed
   // We'll move the list by (number of items * width of item + gaps) - container width
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-70%"]);
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
 
   useEffect(() => {
     const fetchSponsors = async () => {
@@ -53,7 +53,7 @@ export const SponsorSection = () => {
   // Only show section if not loading and we have sponsors
   // But we MUST render the container for the ref to avoid hydration errors with useScroll
   return (
-    <section ref={targetRef} className={`relative bg-[var(--site-bg)] border-t border-[var(--site-ink)]/5 ${sponsors.length > 0 ? 'h-[600vh]' : 'h-auto py-12'}`}>
+    <section ref={targetRef} className={`relative bg-[var(--site-bg)] border-t border-[var(--site-ink)]/5 ${sponsors.length > 0 ? 'h-[150vh]' : 'h-auto py-12'}`}>
       {loading || sponsors.length === 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 flex items-center gap-3">
            <div className="w-2.5 h-2.5 rounded-sm bg-[var(--site-ink)]/10 animate-pulse" />
@@ -99,18 +99,24 @@ export const SponsorSection = () => {
 
         {/* Horizontal Moving Track */}
         <div className="flex items-center">
-          <motion.div style={{ x }} className="flex gap-40 px-16 sm:px-32">
+          <motion.div style={{ x }} className="flex gap-16 px-16 sm:px-32">
             {sponsors.map((sponsor, idx) => (
               <div
                 key={`${sponsor.sponsorId}-${idx}`}
                 className="relative flex-shrink-0 flex items-center justify-center transition-all duration-500"
               >
-                <div className="relative w-56 h-28 sm:w-80 sm:h-40 flex items-center justify-center">
+                <div className="group relative w-48 h-24 sm:w-64 sm:h-32 rounded-sm border-[6px] border-white overflow-hidden flex items-center justify-center hover:scale-105 hover:border-[var(--site-accent)] transition-all duration-300 shadow-md">
                   <img
                     src={sponsor.logoUrl || ""}
                     alt={sponsor.name}
-                    className="max-w-full max-h-full object-contain filter drop-shadow-sm select-none"
+                    className="w-[80%] h-auto max-h-[80%] object-contain filter select-none transition-transform duration-300 group-hover:scale-90"
                   />
+                  {/* Hover Overlay for Name */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center">
+                    <span className="text-white text-xs sm:text-sm font-bold leading-tight">
+                      {sponsor.name}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

@@ -410,30 +410,7 @@ export default function Page() {
 
       <main>
         {/* --- Hero Section --- */}
-        <section
-          id="hero"
-          className="relative h-[80vh] min-h-[480px] lg:h-screen lg:min-h-[700px] flex items-start pt-24 lg:pt-[22vh]"
-        >
-          {/* 3D Parallax Background Experience */}
-          <ParallaxBackground />
-
-          {/* Vignette — soft edge darkening for exhibition-room depth */}
-          <div
-            className="absolute inset-0 pointer-events-none z-10"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.5) 100%)",
-            }}
-          />
-
-          {/* Hero content — rendered via HeroSection component */}
-          <div className="relative z-20 w-full">
-            <HeroSection />
-          </div>
-
-          {/* Scroll-cue fade at bottom */}
-          <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-[var(--site-bg)] to-transparent pointer-events-none" />
-        </section>
+        <HeroSection />
 
         {/* --- Contest Showcase Section --- */}
         <ContestSection />
