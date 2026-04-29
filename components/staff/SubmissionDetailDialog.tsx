@@ -36,12 +36,12 @@ import { z } from "zod";
 const paintingDetailsSchema = z.object({
   title: z
     .string()
-    .min(2, "Title must be at least 2 character")
-    .max(200, "Title must be less than 200 characters")
+    .min(2, "Tiêu đề phải có ít nhất 2 ký tự")
+    .max(200, "Tiêu đề phải ít hơn 200 ký tự")
     .optional(),
   description: z
     .string()
-    .max(1000, "Description must be less than 1000 characters")
+    .max(1000, "Mô tả phải ít hơn 1000 ký tự")
     .optional(),
   round2Image: z.any().optional(),
 });
@@ -185,14 +185,14 @@ export function SubmissionDetailDialog({
   };
 
   const handleAccept = () => {
-    if (confirm("Are you sure you want to accept this submission?")) {
+    if (confirm("Bạn có chắc chắn muốn chấp nhận bài nộp này không?")) {
       acceptMutation.mutate();
     }
   };
 
   const handleReject = () => {
     if (showRejectInput) {
-      if (confirm("Are you sure you want to reject this submission?")) {
+      if (confirm("Bạn có chắc chắn muốn từ chối bài nộp này không?")) {
         rejectMutation.mutate(rejectReason || undefined);
       }
     } else {
@@ -375,7 +375,7 @@ export function SubmissionDetailDialog({
                     ? "bg-gray-100 cursor-not-allowed"
                     : "bg-white focus:ring-2 focus:ring-[var(--staff-primary)]"
                 }`}
-                placeholder="Enter painting title"
+                placeholder="Nhập tiêu đề tranh"
               />
               {form.formState.errors.title && (
                 <p className="text-red-500 text-sm mt-1">
@@ -396,7 +396,7 @@ export function SubmissionDetailDialog({
                     ? "bg-gray-100 cursor-not-allowed"
                     : "bg-white focus:ring-2 focus:ring-[var(--staff-primary)]"
                 }`}
-                placeholder="Enter painting description"
+                placeholder="Nhập mô tả tranh"
               />
               {form.formState.errors.description && (
                 <p className="text-red-500 text-sm mt-1">
@@ -477,14 +477,14 @@ export function SubmissionDetailDialog({
           {showRejectInput && (
             <div className="border-2 border-red-300 bg-red-50 p-4">
               <label className="text-sm font-medium text-red-700 mb-2 block">
-                Rejection Reason (Optional)
+                Lý do từ chối (Tùy chọn)
               </label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] transition-all duration-200"
                 rows={3}
-                placeholder="Provide a reason for rejection..."
+                placeholder="Cung cấp lý do từ chối..."
               />
             </div>
           )}
@@ -508,7 +508,7 @@ export function SubmissionDetailDialog({
                   disabled={rejectMutation.isPending}
                 >
                   <IconX className="h-4 w-4 inline mr-2" />
-                  {rejectMutation.isPending ? "Rejecting..." : "Confirm Reject"}
+                  {rejectMutation.isPending ? "Đang từ chối..." : "Xác nhận từ chối"}
                 </button>
               </>
             ) : (

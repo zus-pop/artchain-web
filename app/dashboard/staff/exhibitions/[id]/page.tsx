@@ -23,7 +23,8 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function ExhibitionDetailPage({
   params,
@@ -41,10 +42,12 @@ export default function ExhibitionDetailPage({
   // Delete mutation
   const deleteExhibitionMutation = useDeleteExhibition();
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   const handleDeleteExhibition = async () => {
-    if (!confirm("Are you sure you want to delete this exhibition?")) return;
     deleteExhibitionMutation.mutate(id, {
       onSuccess: () => {
+        setIsDeleteDialogOpen(false);
         // Redirect to exhibitions list
         window.location.href = "/dashboard/staff/exhibitions";
       },
@@ -227,7 +230,7 @@ export default function ExhibitionDetailPage({
                           {t.editExhibition}
                         </Link>
                         <button
-                          onClick={handleDeleteExhibition}
+                          onClick={() => setIsDeleteDialogOpen(true)}
                           className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
                           disabled={deleteExhibitionMutation.isPending}
                         >
@@ -518,7 +521,7 @@ export default function ExhibitionDetailPage({
                           {t.managePaintings}
                         </Link>
                         <button
-                          onClick={handleDeleteExhibition}
+                          onClick={() => setIsDeleteDialogOpen(true)}
                           className="w-full bg-red-50 hover:bg-red-100 text-red-700 px-4 py-3 font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                           disabled={deleteExhibitionMutation.isPending}
                         >
@@ -585,6 +588,18 @@ export default function ExhibitionDetailPage({
           </div>
         </div>
       </SidebarInset>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteExhibition}
+        title="Xác nhận xóa"
+        description="Bạn có chắc chắn muốn xóa triển lãm này không? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="destructive"
+        isLoading={deleteExhibitionMutation.isPending}
+      />
     </SidebarProvider>
   );
 }

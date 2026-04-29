@@ -9,7 +9,6 @@ import { Post } from "@/types/post";
 
 import { InteractivePostCard } from "@/components/ui/InteractivePostCard";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
-import SplitText from "@/components/SplitText";
 
 export const PostSection = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -61,14 +60,9 @@ export const PostSection = () => {
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
               Cộng đồng
             </span>
-            <SplitText
-              text="Tin tức & Thông báo"
-              tag="h2"
-              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[1.1] py-1"
-              textAlign="left"
-              delay={40}
-              splitType="words"
-            />
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[1.1] py-1 text-left">
+              Tin tức & Thông báo
+            </h2>
           </div>
           
           <div className="flex flex-col gap-6 lg:pt-10">

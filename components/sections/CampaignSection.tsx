@@ -6,7 +6,6 @@ import { getCampaigns } from "@/apis/campaign";
 import { CampaignAPIResponse } from "@/types/campaign";
 import { formatNumber } from "@/lib/utils";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
-import SplitText from "@/components/SplitText";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,14 +47,9 @@ const CampaignPanel = ({ item }: { item: CampaignAPIResponse }) => {
 
           {/* Stable Title Container */}
           <div className="min-h-[140px] sm:min-h-[160px] flex flex-col justify-start">
-            <SplitText
-              text={item.title}
-              tag="h3"
-              className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.15] py-1"
-              textAlign="left"
-              delay={40}
-              splitType="words"
-            />
+            <h3 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.15] py-1 text-left">
+              {item.title}
+            </h3>
           </div>
 
           <div className="space-y-8">
@@ -139,14 +133,9 @@ export const CampaignSection = () => {
                 Chiến dịch
               </span>
             </div>
-            <SplitText
-              text="Góp sức cho thế hệ nghệ thuật"
-              tag="h2"
-              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] max-w-2xl leading-[1.1] py-1"
-              textAlign="left"
-              delay={40}
-              splitType="words"
-            />
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] max-w-2xl leading-[1.1] py-1 text-left">
+              Góp sức cho thế hệ nghệ thuật
+            </h2>
           </div>
           
           <div className="flex flex-col gap-6 lg:pt-10">

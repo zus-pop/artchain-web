@@ -75,7 +75,7 @@ export default function EditExhibitionPaintingsPage({
   const handleRemovePainting = async (paintingId: string) => {
     if (
       !confirm(
-        "Are you sure you want to remove this painting from the exhibition?",
+        "Bạn có chắc chắn muốn xóa bức tranh này khỏi triển lãm không?",
       )
     )
       return;
@@ -263,7 +263,7 @@ export default function EditExhibitionPaintingsPage({
                                       <div className="text-center">
                                         <IconPhoto className="h-16 w-16 mx-auto mb-4 opacity-50" />
                                         <p className="text-lg">
-                                          No image available
+                                          Không có hình ảnh
                                         </p>
                                       </div>
                                     </div>
@@ -276,7 +276,7 @@ export default function EditExhibitionPaintingsPage({
                                         )
                                       }
                                       className="staff-btn-danger !px-1.5 !py-1.5 shadow-lg"
-                                      title="Remove from exhibition"
+                                      title="Xóa khỏi triển lãm"
                                       disabled={
                                         deletePaintingMutation.isPending
                                       }
