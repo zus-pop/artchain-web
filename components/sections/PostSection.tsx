@@ -64,7 +64,7 @@ export const PostSection = () => {
             <SplitText
               text="Tin tức & Thông báo"
               tag="h2"
-              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[0.95]"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[1.1] py-1"
               textAlign="left"
               delay={40}
               splitType="words"

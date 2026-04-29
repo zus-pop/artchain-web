@@ -7,7 +7,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useAuthStore } from "@/store";
 import { Post } from "@/types/post";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   Mail,
   MapPin,
@@ -46,92 +45,6 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
-import { Variants } from "framer-motion";
-
-// Animation variants — ceremonial, confident, never bouncy
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (delay: number = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      delay: delay * 0.12,
-      ease: [0.22, 1, 0.36, 1], // ease-out-quint
-    },
-  }),
-};
-
-const fadeLeft: Variants = {
-  hidden: { opacity: 0, x: -32 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const fadeRight: Variants = {
-  hidden: { opacity: 0, x: 32 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
-  },
-};
-
-const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.94 },
-  visible: (delay: number = 0) => ({
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.55,
-      delay: delay * 0.1,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  }),
-};
-
-// Viewport-triggered animated section wrapper (replaces CSS AnimatedContainer)
-const AnimatedContainer = ({
-  children,
-  className = "",
-  animation = "fadeUp",
-  delay = 0,
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  animation?: string;
-  delay?: number;
-} & Omit<React.HTMLAttributes<HTMLDivElement>, "style">) => {
-  const variants = {
-    fadeUp,
-    "animate-fade-in-up": fadeUp,
-    "animate-fade-in-down": { hidden: { opacity: 0, y: -20 }, visible: fadeUp.visible },
-    "animate-fade-in-left": fadeLeft,
-    "animate-fade-in-right": fadeRight,
-    "animate-zoom-in": scaleIn,
-    "animate-fade-in": { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } },
-  } as Record<string, Variants>;
-
-  const chosen = variants[animation] ?? fadeUp;
-
-  return (
-    <motion.div
-      className={className}
-      variants={chosen}
-      initial="hidden"
-      whileInView="visible"
-      custom={delay}
-      viewport={{ once: true, margin: "-60px" }}
-      {...(props as object)}
-    >
-      {children}
-    </motion.div>
-  );
-};
 
 const CampaignCard = ({
   imgSrc,
@@ -142,11 +55,7 @@ const CampaignCard = ({
   title: string;
   description: string;
 }) => (
-  <motion.div
-    className="group flex flex-col h-full bg-[var(--site-surface)] border border-[var(--site-border)] shadow-sm rounded-sm overflow-hidden"
-    whileHover={{ y: -4, boxShadow: "0 12px 32px rgba(66,49,55,0.10)" }}
-    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-  >
+  <div className="group flex flex-col h-full bg-[var(--site-surface)] border border-[var(--site-border)] shadow-sm rounded-sm overflow-hidden">
     {/* Image — fixed 4:3 aspect ratio, subtle zoom on hover */}
     <div className="w-full aspect-4/3 overflow-hidden border-b border-[var(--site-border)]">
       <img
@@ -167,16 +76,11 @@ const CampaignCard = ({
         {cleanMarkdown(description)}
       </div>
       {/* CTA button */}
-      <motion.button
-        className="w-full mt-auto cursor-pointer bg-[var(--site-accent)] transition-colors duration-200 rounded-sm text-white text-xs font-bold tracking-wide px-4 py-2.5 flex items-center justify-center gap-1.5 shadow-sm"
-        whileHover={{ backgroundColor: "var(--site-accent-hover)" }}
-        whileTap={{ scale: 0.97 }}
-        transition={{ duration: 0.15 }}
-      >
+      <button className="w-full mt-auto cursor-pointer bg-[var(--site-accent)] transition-colors duration-200 rounded-sm text-white text-xs font-bold tracking-wide px-4 py-2.5 flex items-center justify-center gap-1.5 shadow-sm">
         Đăng kí tài trợ <ArrowRightIcon />
-      </motion.button>
+      </button>
     </div>
-  </motion.div>
+  </div>
 );
 
 // Skeleton component for CampaignCard
@@ -426,26 +330,17 @@ export default function Page() {
       </main>
 
       {/* Scroll to Top Button — animated pop-in/out */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            key="scroll-top"
-            aria-label="Cuộn lên đầu trang"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed cursor-pointer bottom-4 right-4 bg-[var(--site-accent)] text-white p-3 rounded-sm shadow-lg z-50"
-            initial={{ opacity: 0, scale: 0.6, y: 12 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.6, y: 12 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ scale: 1.1, backgroundColor: "var(--site-accent-hover)" }}
-            whileTap={{ scale: 0.92 }}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {showScrollTop && (
+        <button
+          aria-label="Cuộn lên đầu trang"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed cursor-pointer bottom-4 right-4 bg-[var(--site-accent)] text-white p-3 rounded-sm shadow-lg z-50"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
 
       {/* --- Footer --- */}
       <footer className="relative bg-[var(--site-ink)] text-white overflow-hidden">

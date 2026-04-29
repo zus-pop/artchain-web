@@ -156,7 +156,7 @@ export const ContestSection = () => {
               <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
                 Cuộc thi đang diễn ra
               </h2>
-              <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
+              <h3 className="text-3xl leading-tight py-1 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                 {activeContest?.title || "Không có cuộc thi nào"}
               </h3>
               <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6 line-clamp-4">

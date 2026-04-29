@@ -2,38 +2,15 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { motion, AnimatePresence, Transition } from "framer-motion";
 import { getCampaigns } from "@/apis/campaign";
 import { CampaignAPIResponse } from "@/types/campaign";
 import { formatNumber } from "@/lib/utils";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import SplitText from "@/components/SplitText";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type Direction = -1 | 1;
-
-// ─── Animation Variants (Cinematic Slow Zoom Out) ──────────────────────────
-const zoomVariants = {
-  enter: {
-    scale: 1.15, // Starts slightly zoomed in to "zoom out" into center
-    opacity: 0,
-  },
-  center: {
-    scale: 1,
-    opacity: 1,
-  },
-  exit: {
-    scale: 0.95,
-    opacity: 0,
-  },
-};
-
-const transition: Transition = {
-  duration: 1.5, // Slower transition as requested
-  ease: [0.16, 1, 0.3, 1], // Smooth deceleration (slow down at the end)
-};
 
 // ─── Campaign Panel (Cinematic Overlay Style) ───────────────────────────────
 
@@ -63,35 +40,25 @@ const CampaignPanel = ({ item }: { item: CampaignAPIResponse }) => {
       {/* Content Overlay - Positioned on the left */}
       <div className="relative h-full w-full lg:w-3/5 p-10 sm:p-16 flex flex-col">
         <div className="space-y-8 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="flex items-center"
-          >
+          <div className="flex items-center">
              <span className="px-4 py-1.5 rounded-sm text-[10px] font-bold uppercase tracking-[0.15em] shadow-lg backdrop-blur-md bg-white/20 text-white border border-white/30">
                {item.status === "ACTIVE" ? "Đang diễn ra" : "Đã kết thúc"}
              </span>
-          </motion.div>
+          </div>
 
           {/* Stable Title Container */}
           <div className="min-h-[140px] sm:min-h-[160px] flex flex-col justify-start">
             <SplitText
               text={item.title}
               tag="h3"
-              className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.05]"
+              className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.15] py-1"
               textAlign="left"
               delay={40}
               splitType="words"
             />
           </div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.8 }}
-            className="space-y-8"
-          >
+          <div className="space-y-8">
             {/* Progress Section */}
             <div className="space-y-4 max-w-lg">
               <div className="flex justify-between items-end text-white">
@@ -110,11 +77,9 @@ const CampaignPanel = ({ item }: { item: CampaignAPIResponse }) => {
               </div>
 
               <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1.5, delay: 1.5 }}
+                <div
                   className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full"
+                  style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
@@ -122,7 +87,7 @@ const CampaignPanel = ({ item }: { item: CampaignAPIResponse }) => {
             <div className="flex items-center gap-6">
                <InteractiveHeroButton href={`/campaigns/${item.campaignId}`} label="Đồng hành ngay" variant="primary" />
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>
@@ -167,13 +132,7 @@ export const CampaignSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
 
         {/* ── Header ── */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col lg:flex-row lg:items-start justify-between mb-16 gap-10"
-        >
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between mb-16 gap-10">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
@@ -183,7 +142,7 @@ export const CampaignSection = () => {
             <SplitText
               text="Góp sức cho thế hệ nghệ thuật"
               tag="h2"
-              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] max-w-2xl leading-[0.95]"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] max-w-2xl leading-[1.1] py-1"
               textAlign="left"
               delay={40}
               splitType="words"
@@ -193,7 +152,7 @@ export const CampaignSection = () => {
           <div className="flex flex-col gap-6 lg:pt-10">
             <InteractiveHeroButton href="/campaigns" label="Xem tất cả" />
           </div>
-        </motion.div>
+        </div>
 
         {/* ── Overlay Swap Container ── */}
         <div
@@ -208,20 +167,9 @@ export const CampaignSection = () => {
             }
           }}
         >
-          <AnimatePresence initial={false} mode="sync">
-            <motion.div
-              key={currentIndex}
-              variants={zoomVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={transition}
-              className="absolute inset-0"
-              style={{ willChange: "transform, opacity" }}
-            >
-              <CampaignPanel item={campaigns[currentIndex]} />
-            </motion.div>
-          </AnimatePresence>
+          <div className="absolute inset-0">
+            <CampaignPanel item={campaigns[currentIndex]} />
+          </div>
 
           {/* Navigation Controls Overlay - RECTANGULAR Thumbnails */}
           <div className="absolute bottom-10 left-10 sm:left-16 z-20 flex items-center gap-5">

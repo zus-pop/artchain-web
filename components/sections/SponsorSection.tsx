@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import React, { useEffect, useState } from "react";
 import { getSponsors } from "@/apis/sponsor";
 import { SponsorData } from "@/types/campaign";
 import SplitText from "@/components/SplitText";
@@ -11,15 +10,6 @@ export const SponsorSection = () => {
   const [sponsors, setSponsors] = useState<SponsorData[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const targetRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-  });
-
-  // Calculate the total horizontal movement needed
-  // We'll move the list by (number of items * width of item + gaps) - container width
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
-
   useEffect(() => {
     const fetchSponsors = async () => {
       try {
@@ -50,79 +40,86 @@ export const SponsorSection = () => {
     fetchSponsors();
   }, []);
 
+  const sponsorsLoop = sponsors.length ? [...sponsors, ...sponsors] : [];
+
   // Only show section if not loading and we have sponsors
-  // But we MUST render the container for the ref to avoid hydration errors with useScroll
   return (
-    <section ref={targetRef} className={`relative bg-[var(--site-bg)] border-t border-[var(--site-ink)]/5 ${sponsors.length > 0 ? 'h-[150vh]' : 'h-auto py-12'}`}>
+    <section className={`relative bg-[var(--site-bg)] border-t border-[var(--site-ink)]/5 ${sponsors.length > 0 ? 'py-20 sm:py-28' : 'h-auto py-12'}`}>
       {loading || sponsors.length === 0 ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 flex items-center gap-3">
            <div className="w-2.5 h-2.5 rounded-sm bg-[var(--site-ink)]/10 animate-pulse" />
            <div className="h-4 w-32 bg-[var(--site-ink)]/5 rounded-sm animate-pulse" />
         </div>
       ) : (
-        /* Sticky Container */
-        <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full mb-24">
-          {/* Section Header - Split Layout */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col lg:flex-row lg:items-start justify-between gap-10"
-          >
-            <div className="flex flex-col gap-4">
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
-                Đối tác & Tài trợ
-              </span>
-              <SplitText
-                text="Đồng hành cùng nghệ thuật"
-                tag="h2"
-                className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[0.95]"
-                textAlign="left"
-                delay={40}
-                splitType="words"
-              />
+        <div className="flex flex-col overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full mb-16">
+            {/* Section Header - Split Layout */}
+            <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-10">
+              <div className="flex flex-col gap-4">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
+                  Đối tác & Tài trợ
+                </span>
+                <SplitText
+                  text="Đồng hành cùng nghệ thuật"
+                  tag="h2"
+                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[1.1] py-1"
+                  textAlign="left"
+                  delay={40}
+                  splitType="words"
+                />
+              </div>
+              <div className="lg:pt-8">
+                <BlurText
+                  text="Sự hỗ trợ quý báu từ các tổ chức và cá nhân giúp ArtChain duy trì và phát triển cộng đồng nghệ thuật Việt Nam, mang những giá trị hội họa đến gần hơn với công chúng."
+                  className="text-lg text-[var(--site-ink)]/50 max-w-xl leading-relaxed lg:mb-2"
+                  delay={20}
+                  animateBy="words"
+                  direction="bottom"
+                />
+              </div>
             </div>
-            <div className="lg:pt-8">
-              <BlurText
-                text="Sự hỗ trợ quý báu từ các tổ chức và cá nhân giúp ArtChain duy trì và phát triển cộng đồng nghệ thuật Việt Nam, mang những giá trị hội họa đến gần hơn với công chúng."
-                className="text-lg text-[var(--site-ink)]/50 max-w-xl leading-relaxed lg:mb-2"
-                delay={20}
-                animateBy="words"
-                direction="bottom"
-              />
-            </div>
-          </motion.div>
-        </div>
+          </div>
 
-        {/* Horizontal Moving Track */}
-        <div className="flex items-center">
-          <motion.div style={{ x }} className="flex gap-16 px-16 sm:px-32">
-            {sponsors.map((sponsor, idx) => (
-              <div
-                key={`${sponsor.sponsorId}-${idx}`}
-                className="relative flex-shrink-0 flex items-center justify-center transition-all duration-500"
-              >
-                <div className="group relative w-48 h-24 sm:w-64 sm:h-32 rounded-sm border-[6px] border-white overflow-hidden flex items-center justify-center hover:scale-105 hover:border-[var(--site-accent)] transition-all duration-300 shadow-md">
-                  <img
-                    src={sponsor.logoUrl || ""}
-                    alt={sponsor.name}
-                    className="w-[80%] h-auto max-h-[80%] object-contain filter select-none transition-transform duration-300 group-hover:scale-90"
-                  />
-                  {/* Hover Overlay for Name */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center">
-                    <span className="text-white text-xs sm:text-sm font-bold leading-tight">
-                      {sponsor.name}
-                    </span>
+          {/* Auto Moving Track */}
+          <div className="relative overflow-hidden">
+            <div className="sponsor-marquee flex gap-16 px-16 sm:px-32">
+              {sponsorsLoop.map((sponsor, idx) => (
+                <div
+                  key={`${sponsor.sponsorId}-${idx}`}
+                  className="relative flex-shrink-0 flex items-center justify-center transition-all duration-500"
+                >
+                  <div className="group relative w-48 h-24 sm:w-64 sm:h-32 rounded-sm border-[6px] border-white overflow-hidden flex items-center justify-center hover:scale-105 hover:border-[var(--site-accent)] transition-all duration-300 shadow-md">
+                    <img
+                      src={sponsor.logoUrl || ""}
+                      alt={sponsor.name}
+                      className="w-[80%] h-auto max-h-[80%] object-contain filter select-none transition-transform duration-300 group-hover:scale-90"
+                    />
+                    {/* Hover Overlay for Name */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center">
+                      <span className="text-white text-xs sm:text-sm font-bold leading-tight">
+                        {sponsor.name}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </motion.div>
+              ))}
+            </div>
+          </div>
+          <style jsx>{`
+            .sponsor-marquee {
+              animation: sponsor-marquee 28s linear infinite;
+              width: max-content;
+            }
+            @keyframes sponsor-marquee {
+              from {
+                transform: translateX(0);
+              }
+              to {
+                transform: translateX(-50%);
+              }
+            }
+          `}</style>
         </div>
-      </div>
       )}
     </section>
   );
