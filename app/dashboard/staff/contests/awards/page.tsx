@@ -335,9 +335,42 @@ function AwardsManagementPage() {
     votedAwardsData?.data.awards?.some((award) => award.totalVotes === 0) ||
     false;
 
+  const parseContestEndDate = (value?: string) => {
+    if (!value) return null;
+    const trimmed = value.trim();
+    let parsed = new Date(trimmed);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+    const match = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const contestEndDate = parseContestEndDate(contest?.endDate);
+  const contestEndTimestamp = contestEndDate
+    ? new Date(
+        contestEndDate.getFullYear(),
+        contestEndDate.getMonth(),
+        contestEndDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime()
+    : null;
+  const isContestEnded = contestEndTimestamp
+    ? contestEndTimestamp <= Date.now()
+    : false;
+
   // Button disable states
   const isAnnounceDisabled =
-    !allAwardSlotsFilled || hasVoteResultMismatches || hasAwardsWithNoVotes;
+    !allAwardSlotsFilled ||
+    hasVoteResultMismatches ||
+    hasAwardsWithNoVotes ||
+    !isContestEnded;
   const isEmailDisabled =
     !allAwardSlotsFilled ||
     hasVoteResultMismatches ||
@@ -422,15 +455,19 @@ function AwardsManagementPage() {
                   </button>
                   <div className="flex gap-2">
                     <button
-                      onClick={() =>
+                      type="button"
+                      onClick={() => {
+                        if (isAnnounceDisabled) return;
                         router.push(
                           `/dashboard/staff/contests/awards/announce?id=${contestId}`
-                        )
-                      }
+                        );
+                      }}
                       disabled={isAnnounceDisabled}
                       className="staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       title={
-                        hasAwardsWithNoVotes
+                        !isContestEnded
+                          ? "Contest must end before announcing results"
+                          : hasAwardsWithNoVotes
                           ? "Cannot announce results when awards have no votes"
                           : !allAwardSlotsFilled
                           ? "All award slots must be filled before announcing results"
@@ -522,6 +559,19 @@ function AwardsManagementPage() {
                               (p) => p.paintingId === topPainting.paintingId
                             )
                           );
+                          const assignedAwardInTable = awards.find((award) =>
+                            award.paintings.some((p) =>
+                              tableData.paintings.some(
+                                (tablePainting) =>
+                                  tablePainting.paintingId === p.paintingId
+                              )
+                            )
+                          );
+                          const headerAward =
+                            assignedAward ?? assignedAwardInTable ?? null;
+                          const headerAwardLabel = headerAward
+                            ? headerAward.name
+                            : t.unassigned;
 
                           return (
                             <div
@@ -592,19 +642,19 @@ function AwardsManagementPage() {
                                     </div>
                                   )}
 
-                                  {/* Award Status - Only for Top Painting */}
+                                  {/* Award Status - Table Header */}
                                   <div className="shrink-0 flex flex-col items-end gap-3">
-                                    {assignedAward ? (
+                                    {headerAward ? (
                                       <div className="flex flex-col items-center gap-2">
                                         <div className="flex flex-col items-center gap-1">
                                           <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-sm">
                                             <IconTrophy className="h-4 w-4" />
-                                            {assignedAward.name}
+                                            {headerAwardLabel}
                                           </div>
                                           <div className="text-xs text-green-600">
                                             {(() => {
                                               const prizeValue = parseFloat(
-                                                assignedAward.prize
+                                                headerAward.prize
                                               );
                                               return isNaN(prizeValue)
                                                 ? "Invalid prize"
@@ -616,7 +666,7 @@ function AwardsManagementPage() {
                                     ) : (
                                       <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-sm">
                                         <IconTrophy className="h-4 w-4" />
-                                        {t.unassigned}
+                                        {headerAwardLabel}
                                       </div>
                                     )}
                                   </div>
@@ -904,6 +954,11 @@ function AwardsManagementPage() {
                                           <h3 className="min-w-0 text-lg leading-tight font-bold text-yellow-900 break-words">
                                             {award.name}
                                           </h3>
+                                          {currentlyAssignedPainting && (
+                                            <div className="shrink-0 whitespace-nowrap rounded-sm border border-green-300 bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
+                                              {t.assignedStatus}
+                                            </div>
+                                          )}
                                           <div className="shrink-0 whitespace-nowrap bg-yellow-100 px-2 py-1 text-sm font-semibold text-yellow-800">
                                             {(() => {
                                               const prizeValue = parseFloat(
@@ -926,23 +981,6 @@ function AwardsManagementPage() {
                                     <div className="flex items-center justify-end gap-2 lg:ml-4 lg:gap-3">
                                       {currentlyAssignedPainting ? (
                                         <div className="flex flex-wrap items-center justify-end gap-2">
-                                          {award.totalVotes > 0 &&
-                                            topVotedPainting && (
-                                              <div
-                                                className={`flex items-center gap-2 whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ${
-                                                  currentlyAssignedPainting.paintingId ===
-                                                  topVotedPainting.paintingId
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-red-100 text-red-800"
-                                                }`}
-                                              >
-                                                <IconTrophy className="h-4 w-4" />
-                                                {currentlyAssignedPainting.paintingId ===
-                                                topVotedPainting.paintingId
-                                                  ? t.correctStatus
-                                                  : t.mismatchStatus}
-                                              </div>
-                                            )}
                                           <button
                                             onClick={() =>
                                               handleRemoveAward(
@@ -951,23 +989,10 @@ function AwardsManagementPage() {
                                             }
                                             disabled={
                                               assignMutation.isPending ||
-                                              removeMutation.isPending ||
-                                              !!(
-                                                award.totalVotes > 0 &&
-                                                topVotedPainting &&
-                                                currentlyAssignedPainting.paintingId ===
-                                                  topVotedPainting.paintingId
-                                              )
+                                              removeMutation.isPending
                                             }
                                             className="flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium staff-btn-outline transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                            title={
-                                              award.totalVotes > 0 &&
-                                              topVotedPainting &&
-                                              currentlyAssignedPainting.paintingId ===
-                                                topVotedPainting.paintingId
-                                                ? t.cannotRemoveTopVotedTitle
-                                                : t.removeAwardTitle
-                                            }
+                                            title={t.removeAwardTitle}
                                           >
                                             <IconX className="h-3 w-3" />
                                             {t.remove}
@@ -1004,7 +1029,13 @@ function AwardsManagementPage() {
                                                   }
                                                   disabled={
                                                     assignMutation.isPending ||
-                                                    removeMutation.isPending
+                                                    removeMutation.isPending ||
+                                                    !isContestEnded
+                                                  }
+                                                  title={
+                                                    !isContestEnded
+                                                      ? "Contest must end before awarding"
+                                                      : undefined
                                                   }
                                                   className="rounded-sm border border-[var(--staff-border)] bg-white px-3 py-1.5 text-sm whitespace-nowrap staff-text-primary transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
@@ -1463,11 +1494,14 @@ function AwardsManagementPage() {
                           disabled={
                             !hasUnassignedTopPaintings ||
                             assignMutation.isPending ||
-                            removeMutation.isPending
+                            removeMutation.isPending ||
+                            !isContestEnded
                           }
                           className="flex-1 staff-btn-primary flex items-center justify-center px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                           title={
-                            hasUnassignedTopPaintings
+                            !isContestEnded
+                              ? "Contest must end before awarding"
+                              : hasUnassignedTopPaintings
                               ? "Assign all available awards to top paintings"
                               : "All top paintings are already assigned"
                           }

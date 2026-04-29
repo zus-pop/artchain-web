@@ -114,6 +114,36 @@ function AnnounceResultsPage() {
     award.paintings.map((painting) => ({ ...painting, award }))
   );
 
+  const parseContestEndDate = (value?: string) => {
+    if (!value) return null;
+    const trimmed = value.trim();
+    let parsed = new Date(trimmed);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+    const match = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const contestEndDate = parseContestEndDate(contest?.endDate);
+  const contestEndTimestamp = contestEndDate
+    ? new Date(
+        contestEndDate.getFullYear(),
+        contestEndDate.getMonth(),
+        contestEndDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime()
+    : null;
+  const isContestEnded = contestEndTimestamp
+    ? contestEndTimestamp <= Date.now()
+    : false;
+
   // Create announcement post mutation
   const createPostMutation = createStaffPost();
 
@@ -251,6 +281,10 @@ function AnnounceResultsPage() {
   }, [selectedTags, form]);
 
   const handlePublish = form.handleSubmit(async (data) => {
+    if (!isContestEnded) {
+      toast.error("Contest must end before announcing results");
+      return;
+    }
     const currentContent = editorRef.current?.getMarkdown() || "";
 
     setIsPublishing(true);
@@ -783,7 +817,16 @@ function AnnounceResultsPage() {
                 </button>
                 <button
                   onClick={handlePublish}
-                  disabled={isPublishing || createPostMutation.isPending}
+                  disabled={
+                    isPublishing ||
+                    createPostMutation.isPending ||
+                    !isContestEnded
+                  }
+                  title={
+                    !isContestEnded
+                      ? "Contest must end before announcing results"
+                      : undefined
+                  }
                   className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isPublishing ? (
