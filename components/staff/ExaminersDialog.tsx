@@ -25,6 +25,7 @@ import {
   IconTrash,
   IconUser,
   IconX,
+  IconCheck,
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -347,8 +348,13 @@ export function ExaminersDialog({
   };
 
   const getContestScheduleForExaminer = (examiner: ExaminerDTO) => {
-    const schedules = examinerSchedules[examiner.examinerId] || [];
-    return schedules.find(
+    const fetchedSchedules = examinerSchedules[examiner.examinerId] || [];
+    const embeddedSchedules = (examiner as any).schedules || [];
+    
+    // Prefer fetchedSchedules as they are reloaded after updates
+    const allSchedules = [...fetchedSchedules, ...embeddedSchedules];
+
+    return allSchedules.find(
       (schedule) =>
         schedule.contestId === contestId &&
         schedule.task === getTaskByRole(examiner.role),
@@ -390,11 +396,8 @@ export function ExaminersDialog({
     setScheduleDrafts((prev) => ({
       ...prev,
       [assignmentKey]: {
-        date:
-          prev[assignmentKey]?.date ||
-          formatDateForInput(currentSchedule?.date),
+        date: currentSchedule?.date ? formatDateForInput(currentSchedule.date) : "",
         round2Table:
-          prev[assignmentKey]?.round2Table ||
           currentSchedule?.round2Table ||
           (examiner.role === "ROUND_2" && round2Tables.length === 1
             ? round2Tables[0]
@@ -438,8 +441,9 @@ export function ExaminersDialog({
         await createStaffSchedule(schedulePayload);
       }
 
-      // Reload schedules
+      // Reload schedules and invalidate examiners query to get updated totalCount
       await loadExaminerSchedules(examiner.examinerId);
+      queryClient.invalidateQueries({ queryKey: ["contest-examiners", contestId] });
       toast.success(t.scheduleUpdateSuccess);
       return true;
     } catch (error) {
@@ -812,6 +816,15 @@ export function ExaminersDialog({
                                 </span>
                               </div>
                             )}
+
+                            {(examiner.role === "ROUND_1" || (examiner.role === "ROUND_2" && currentSchedule)) && (
+                              <div className="flex items-center gap-2 mt-1.5 text-[var(--staff-primary)] font-medium">
+                                <IconCheck className="h-4 w-4" />
+                                <span>
+                                  Đã chấm: {(examiner as any).evaluatedCount || 0}/{(examiner as any).totalCount || 0} bài
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -972,14 +985,16 @@ export function ExaminersDialog({
 
                         {/* Column 3: Delete Icon */}
                         <div className="flex justify-end">
-                          <button
-                            onClick={() => handleDeleteExaminer(examiner)}
-                            disabled={deleteExaminerMutation.isPending}
-                            className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Remove examiner"
-                          >
-                            <IconTrash className="h-4 w-4" />
-                          </button>
+                          {((examiner as any).evaluatedCount !== (examiner as any).totalCount || (examiner as any).totalCount === 0) && (
+                            <button
+                              onClick={() => handleDeleteExaminer(examiner)}
+                              disabled={deleteExaminerMutation.isPending}
+                              className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Remove examiner"
+                            >
+                              <IconTrash className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>

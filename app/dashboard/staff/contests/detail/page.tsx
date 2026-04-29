@@ -13,6 +13,7 @@ import {
   toggleIgnoreAICheck,
   useGetQualifiedPaintingForRound2,
   useUpdateOriginalSubmissionStatus,
+  getStaffContestExaminers,
 } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
@@ -99,6 +100,13 @@ function ContestDetailContent() {
     queryFn: () => getStaffRounds(Number(contestId)),
     enabled: !!contestId,
     staleTime: 1 * 60 * 1000,
+  });
+
+  // Fetch examiners to check evaluation status
+  const { data: examinersData } = useQuery({
+    queryKey: ["contest-examiners", contestId],
+    queryFn: () => getStaffContestExaminers(Number(contestId)),
+    enabled: !!contestId,
   });
 
   const { data: qualifiedPaintingsData } =
@@ -841,26 +849,32 @@ function ContestDetailContent() {
                           <div className="space-y-4">
                             {/* Action Buttons - Moved to top for better visibility */}
                             <div className="flex flex-col sm:flex-row gap-3 p-4 rounded-sm">
-                              <button
+                              {(() => {
+                                const round1Examiners = examinersData?.data?.filter((e: any) => e.role === "ROUND_1") || [];
+                                const canCheckOriginals = round1Examiners.length > 0 && round1Examiners.every((e: any) => e.evaluatedCount === e.totalCount && e.totalCount > 0);
                                 
-                                onClick={() =>
-                                  setShowQualifiedPaintingsDialog(true)
-                                }
-                                className="flex-1 cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <IconUsers className="h-4 w-4" />
-                                {t.qualifiedPaintings} (
-                                {qualifiedPaintingsData?.data?.summary
-                                  ?.submitted || 0}
-                                /{contest.round2Quantity})
-                              </button>
-                              <Link
-                                href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
-                                className="flex-1 bg-linear-to-r from-gray-500 to-gray-600 text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
-                              >
-                                <Palette className="h-4 w-4" />
-                                {t.reviewPaintings}
-                              </Link>
+                                return (
+                                  <>
+                                    <button
+                                      disabled={!canCheckOriginals}
+                                      onClick={() => setShowQualifiedPaintingsDialog(true)}
+                                      className={`flex-1 ${canCheckOriginals ? 'cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 hover:shadow-lg transition-shadow' : 'bg-linear-to-r from-blue-300 to-blue-400 opacity-50 cursor-not-allowed'} text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2`}
+                                    >
+                                      <IconUsers className="h-4 w-4" />
+                                      {t.qualifiedPaintings} (
+                                      {qualifiedPaintingsData?.data?.summary?.submitted || 0}
+                                      /{contest.round2Quantity})
+                                    </button>
+                                    <Link
+                                      href={`/dashboard/staff/contests/rounds/${round.roundId}?contestId=${contest.contestId}`}
+                                      className="flex-1 bg-linear-to-r from-gray-500 to-gray-600 text-white px-4 py-2 font-semibold shadow-md flex items-center justify-center gap-2 hover:shadow-lg transition-shadow"
+                                    >
+                                      <Palette className="h-4 w-4" />
+                                      {t.reviewPaintings}
+                                    </Link>
+                                  </>
+                                );
+                              })()}
                             </div>
 
                             {/* Key Dates */}

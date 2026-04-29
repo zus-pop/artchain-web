@@ -58,7 +58,7 @@ const HeroSection = () => {
           </div>
           <div className="mt-6 sm:mt-10">
             <button
-              onClick={() => router.push("/gallery")}
+              onClick={() => router.push("/exhibition")}
               className="bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
             >
               Xem Triển Lãm <ArrowRightIcon />

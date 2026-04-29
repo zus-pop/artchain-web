@@ -70,6 +70,7 @@ function AnnounceResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const contestId = searchParams.get("id") as string;
+  const announceType = searchParams.get("type") as string;
 
   const editorRef = useRef<MDXEditorMethods>(null);
 
@@ -156,8 +157,18 @@ function AnnounceResultsPage() {
     content += `${t.thrilledToAnnounceWinners} **${contest.title}**!\n\n`;
     content += `## 🏆 ${t.winnersSection}\n\n`;
 
+    // Filter by type
+    const filteredAwards = awards.filter((award) => {
+      if (announceType === "vote") {
+        return award.rank > 3 || !award.rank;
+      } else if (announceType === "top") {
+        return award.rank <= 3;
+      }
+      return true; // Default to all if no type
+    });
+
     // Sort by award rank
-    const sortedAwards = [...awards].sort((a, b) => {
+    const sortedAwards = [...filteredAwards].sort((a, b) => {
       if (!a.rank || !b.rank) return 0;
       return a.rank - b.rank;
     });
@@ -224,13 +235,14 @@ function AnnounceResultsPage() {
   // Auto-generate content when contest and paintings data is loaded
   useEffect(() => {
     if (contest && awards.length > 0) {
-      const generatedTitle = `${contest.title} - Thông báo kết quả cuộc thi!`;
+      const titleSuffix = announceType === "vote" ? "Kết Quả Bình Chọn!" : (announceType === "top" ? "Kết Quả Tranh Đầu Bảng!" : "Thông Báo Kết Quả Cuộc Thi!");
+      const generatedTitle = `${contest.title} - ${titleSuffix}`;
       const generatedContent = generateAnnouncementContent();
 
       form.setValue("title", generatedTitle);
       editorRef.current?.setMarkdown(generatedContent);
     }
-  }, [contest, awards, generateAnnouncementContent, form]);
+  }, [contest, awards, generateAnnouncementContent, form, announceType]);
 
   // Fetch tags based on search query
   useEffect(() => {
@@ -281,10 +293,6 @@ function AnnounceResultsPage() {
   }, [selectedTags, form]);
 
   const handlePublish = form.handleSubmit(async (data) => {
-    if (!isContestEnded) {
-      toast.error("Contest must end before announcing results");
-      return;
-    }
     const currentContent = editorRef.current?.getMarkdown() || "";
 
     setIsPublishing(true);

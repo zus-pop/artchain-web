@@ -105,7 +105,7 @@ const ArtistNavigation: React.FC<ArtistNavigationProps> = ({
   const navItems = [
     { label: t.home, href: "/", active: true },
     { label: t.contests, href: "/contests" },
-    { label: t.gallery, href: "/gallery" },
+    { label: t.gallery, href: "/exhibition" },
     { label: t.posts, href: "/posts" },
   ];
   // Trong ứng dụng thực tế, bạn sẽ lấy giá trị này từ state hoặc context.

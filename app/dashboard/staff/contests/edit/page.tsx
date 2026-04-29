@@ -45,7 +45,7 @@ const editContestSchema = (t: Lang) =>
         .max(2000, t.descriptionTooLong),
       round2Quantity: z
         .number()
-        .min(1, t.topCompetitorsMin)
+        .min(6, t.topCompetitorsMin)
         .max(100, t.topCompetitorsMax),
       numberOfTablesRound2: z.number().min(3, t.tablesMin).max(6, t.tablesMax),
       startDate: z.string().min(1, t.startDateRequired),
@@ -981,7 +981,7 @@ function EditContestContent() {
                               const value = parseInt(e.target.value) || 0;
                               field.onChange(value);
                             }}
-                            min="0"
+                            min="6"
                             className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field`}
                           />
                         )}

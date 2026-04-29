@@ -179,7 +179,7 @@ const CampaignPage = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <Link 
-              href="/gallery" 
+              href="/exhibition" 
               className="group flex items-center gap-2 text-sm font-bold text-[#423137] hover:text-[#FF6E1A] transition-colors"
             >
               Khám phá bộ sưu tập

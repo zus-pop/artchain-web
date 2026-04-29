@@ -7,7 +7,7 @@ import {
 } from "@/apis/award";
 import { useAnnounceWinners } from "@/apis/email";
 import { useGetRound2TopByContestId } from "@/apis/paintings";
-import { getStaffContestById } from "@/apis/staff";
+import { getStaffContestById, getStaffContestExaminers } from "@/apis/staff";
 import { getVotedAward, getVotedPaintings } from "@/apis/vote";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
@@ -98,6 +98,20 @@ function AwardsManagementPage() {
 
   const awards = awardsData?.data || [];
   const contest = contestData?.data as Contest;
+
+  // Fetch examiners to check evaluation status
+  const { data: examinersData } = useQuery({
+    queryKey: ["contest-examiners", contestId],
+    queryFn: () => getStaffContestExaminers(Number(contestId)),
+    enabled: !!contestId,
+  });
+
+  const isRound2Completed = (() => {
+    if (!examinersData?.data) return true;
+    const round2Examiners = examinersData.data.filter((e: any) => e.role === "ROUND_2");
+    if (round2Examiners.length === 0) return true;
+    return round2Examiners.every((e: any) => e.evaluatedCount === e.totalCount && e.totalCount > 0);
+  })();
 
   const assignMutation = useAssignAward();
   const removeMutation = useRemoveAward();
@@ -365,12 +379,21 @@ function AwardsManagementPage() {
     ? contestEndTimestamp <= Date.now()
     : false;
 
+  const topAwards = awards.filter((award) => award.rank <= 3);
+  const votedAwardsList = awards.filter((award) => award.rank > 3 || !award.rank);
+
+  const topTotalSlots = topAwards.reduce((acc, curr) => acc + curr.quantity, 0);
+  const topAssignedSlots = topAwards.reduce((acc, curr) => acc + curr.paintings.length, 0);
+  const isTopAwardsFullyAssigned = topTotalSlots > 0 && topAssignedSlots >= topTotalSlots;
+
+  const voteTotalSlots = votedAwardsList.reduce((acc, curr) => acc + curr.quantity, 0);
+  const voteAssignedSlots = votedAwardsList.reduce((acc, curr) => acc + curr.paintings.length, 0);
+  const isVoteAwardsFullyAssigned = voteTotalSlots > 0 && voteAssignedSlots >= voteTotalSlots;
+
   // Button disable states
-  const isAnnounceDisabled =
-    !allAwardSlotsFilled ||
-    hasVoteResultMismatches ||
-    hasAwardsWithNoVotes ||
-    !isContestEnded;
+  const isTopAnnounceDisabled = !isTopAwardsFullyAssigned;
+  const isVoteAnnounceDisabled = !isVoteAwardsFullyAssigned || hasVoteResultMismatches || hasAwardsWithNoVotes;
+
   const isEmailDisabled =
     !allAwardSlotsFilled ||
     hasVoteResultMismatches ||
@@ -454,31 +477,6 @@ function AwardsManagementPage() {
                     <span className="ml-2">{t.manageAwards}</span>
                   </button>
                   <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (isAnnounceDisabled) return;
-                        router.push(
-                          `/dashboard/staff/contests/awards/announce?id=${contestId}`
-                        );
-                      }}
-                      disabled={isAnnounceDisabled}
-                      className="staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={
-                        !isContestEnded
-                          ? "Contest must end before announcing results"
-                          : hasAwardsWithNoVotes
-                          ? "Cannot announce results when awards have no votes"
-                          : !allAwardSlotsFilled
-                          ? "All award slots must be filled before announcing results"
-                          : hasVoteResultMismatches
-                          ? t.allAwardSlotsMustBeFilledMismatchTooltip
-                          : t.announceContestResults
-                      }
-                    >
-                      <IconSpeakerphone className="h-4 w-4" />
-                      <span className="ml-2">{t.announceResults}</span>
-                    </button>
                     <button
                       onClick={handleSendEmailAnnouncement}
                       disabled={isEmailDisabled}
@@ -1495,12 +1493,12 @@ function AwardsManagementPage() {
                             !hasUnassignedTopPaintings ||
                             assignMutation.isPending ||
                             removeMutation.isPending ||
-                            !isContestEnded
+                            !isRound2Completed
                           }
                           className="flex-1 staff-btn-primary flex items-center justify-center px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                           title={
-                            !isContestEnded
-                              ? "Contest must end before awarding"
+                            !isRound2Completed
+                              ? "All Round 2 evaluations must be completed first"
                               : hasUnassignedTopPaintings
                               ? "Assign all available awards to top paintings"
                               : "All top paintings are already assigned"
@@ -1700,8 +1698,8 @@ function AwardsManagementPage() {
                     </div>
 
                     {/* Overall Progress */}
-                    <div className="mt-6 pt-4 border-t border-[var(--staff-border)]">
-                      <div className="flex justify-between text-sm mb-2">
+                    <div className="mt-6 pt-4]">
+                      {/* <div className="flex justify-between text-sm mb-2">
                         <span className="staff-text-primary font-medium">
                           {t.overallProgress}
                         </span>
@@ -1725,7 +1723,7 @@ function AwardsManagementPage() {
                                 : "0%",
                           }}
                         ></div>
-                      </div>
+                      </div> */}
                       {activeTab === "vote-results" && mismatchCount > 0 && (
                         <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-sm">
                           {mismatchCount} {t.mismatchesFound}
@@ -1741,6 +1739,59 @@ function AwardsManagementPage() {
                             </div>
                           </div>
                         )}
+                        
+                      {/* Announce Buttons - Specific to active tab */}
+                      {activeTab === "top-paintings" && (
+                        <div className="mt-4 border-t border-[var(--staff-border)] pt-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isTopAnnounceDisabled) return;
+                              router.push(
+                                `/dashboard/staff/contests/awards/announce?id=${contestId}&type=top`
+                              );
+                            }}
+                            disabled={isTopAnnounceDisabled}
+                            className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                              !isTopAwardsFullyAssigned
+                                ? "All top awards must be assigned before announcing"
+                                : "Công Bố Giải Thưởng"
+                            }
+                          >
+                            <IconSpeakerphone className="h-4 w-4" />
+                            <span className="ml-2">Công Bố Giải Thưởng</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {activeTab === "vote-results" && (
+                        <div className="mt-4 border-t border-[var(--staff-border)] pt-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isVoteAnnounceDisabled) return;
+                              router.push(
+                                `/dashboard/staff/contests/awards/announce?id=${contestId}&type=vote`
+                              );
+                            }}
+                            disabled={isVoteAnnounceDisabled}
+                            className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                              hasAwardsWithNoVotes
+                                ? "Cannot announce results when awards have no votes"
+                                : !isVoteAwardsFullyAssigned
+                                ? "All vote awards must be assigned before announcing"
+                                : hasVoteResultMismatches
+                                ? t.allAwardSlotsMustBeFilledMismatchTooltip
+                                : "Công Bố Giải Thưởng"
+                            }
+                          >
+                            <IconSpeakerphone className="h-4 w-4" />
+                            <span className="ml-2">Công Bố Giải Thưởng</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
