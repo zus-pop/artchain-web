@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { getSponsors } from "@/apis/sponsor";
 import { SponsorData } from "@/types/campaign";
-import SplitText from "@/components/SplitText";
-import BlurText from "@/components/BlurText";
 
 export const SponsorSection = () => {
   const [sponsors, setSponsors] = useState<SponsorData[]>([]);
@@ -59,29 +57,24 @@ export const SponsorSection = () => {
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--site-accent)]">
                   Đối tác & Tài trợ
                 </span>
-                <SplitText
-                  text="Đồng hành cùng nghệ thuật"
-                  tag="h2"
-                  className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[1.1] py-1"
-                  textAlign="left"
-                  delay={40}
-                  splitType="words"
-                />
+                <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-[var(--site-ink)] leading-[1.1] py-1 animate-fade-in-up">
+                  Đồng hành cùng nghệ thuật
+                </h2>
               </div>
               <div className="lg:pt-8">
-                <BlurText
-                  text="Sự hỗ trợ quý báu từ các tổ chức và cá nhân giúp ArtChain duy trì và phát triển cộng đồng nghệ thuật Việt Nam, mang những giá trị hội họa đến gần hơn với công chúng."
-                  className="text-lg text-[var(--site-ink)]/50 max-w-xl leading-relaxed lg:mb-2"
-                  delay={20}
-                  animateBy="words"
-                  direction="bottom"
-                />
+                <p className="text-lg text-[var(--site-ink)]/50 max-w-xl leading-relaxed lg:mb-2 animate-fade-in-up animate-delay-200">
+                  Sự hỗ trợ quý báu từ các tổ chức và cá nhân giúp ArtChain duy trì và phát triển cộng đồng nghệ thuật Việt Nam, mang những giá trị hội họa đến gần hơn với công chúng.
+                </p>
               </div>
             </div>
           </div>
 
           {/* Auto Moving Track */}
           <div className="relative overflow-hidden">
+            {/* Side Overlays */}
+            <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-48 z-10 pointer-events-none bg-gradient-to-r from-[var(--site-bg)] to-transparent" />
+            <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-48 z-10 pointer-events-none bg-gradient-to-l from-[var(--site-bg)] to-transparent" />
+            
             <div className="sponsor-marquee flex gap-16 px-16 sm:px-32">
               {sponsorsLoop.map((sponsor, idx) => (
                 <div

@@ -528,11 +528,15 @@ export default function ContestDetailPage() {
                 Công bố kết quả
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.endDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
-                  year: "numeric",
-                })}
+                {(() => {
+                  const date = new Date(contest.endDate);
+                  date.setDate(date.getDate() + 3);
+                  return date.toLocaleDateString("vi-VN", {
+                    day: "numeric",
+                    month: "numeric",
+                    year: "numeric",
+                  });
+                })()}
               </p>
             </div>
 
@@ -588,13 +592,24 @@ export default function ContestDetailPage() {
               </p>
               <p className="text-black font-light text-sm sm:text-base">
                 {(() => {
-                  const date = new Date(contest.startDate);
-                  date.setDate(date.getDate() + 2);
-                  return date.toLocaleDateString("vi-VN", {
+                  const resultDate = new Date(contest.endDate);
+                  resultDate.setDate(resultDate.getDate() + 3);
+                  
+                  const examStart = new Date(resultDate);
+                  examStart.setDate(resultDate.getDate() + 3);
+                  
+                  const examEnd = new Date(examStart);
+                  examEnd.setDate(examStart.getDate() + 7);
+                  
+                  return `${examStart.toLocaleDateString("vi-VN", {
                     day: "numeric",
                     month: "numeric",
                     year: "numeric",
-                  });
+                  })} - ${examEnd.toLocaleDateString("vi-VN", {
+                    day: "numeric",
+                    month: "numeric",
+                    year: "numeric",
+                  })} (Thường sẽ diễn ra vào cuối tuần)`;
                 })()}
               </p>
             </div>
