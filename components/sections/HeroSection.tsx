@@ -1,74 +1,167 @@
 "use client";
 
-import Link from "next/link";
-import { useLanguageStore } from "@/store/language-store";
-import { useTranslation } from "@/lib/i18n";
-import { useAuthStore } from "@/store/auth-store";
+import { motion, Variants } from "framer-motion";
+import { useRouter } from "next/navigation";
+import React from "react";
+
+const ArrowRightIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 14 14"
+    fill="none"
+    aria-hidden="true"
+    className="inline-block"
+  >
+    <path
+      d="M1 7h12M7 1l6 6-6 6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      delay: delay * 0.12,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
+
+const fadeLeft: Variants = {
+  hidden: { opacity: 0, x: -32 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const fadeRight: Variants = {
+  hidden: { opacity: 0, x: 32 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
+const scaleIn: Variants = {
+  hidden: { opacity: 0, scale: 0.94 },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    scale: 1,
+    transition: {
+      duration: 0.55,
+      delay: delay * 0.1,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
+
+const AnimatedContainer = ({
+  children,
+  className = "",
+  animation = "fadeUp",
+  delay = 0,
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  animation?: string;
+  delay?: number;
+} & Omit<React.HTMLAttributes<HTMLDivElement>, "style">) => {
+  const variants = {
+    fadeUp,
+    "animate-fade-in-up": fadeUp,
+    "animate-fade-in-down": { hidden: { opacity: 0, y: -20 }, visible: fadeUp.visible },
+    "animate-fade-in-left": fadeLeft,
+    "animate-fade-in-right": fadeRight,
+    "animate-zoom-in": scaleIn,
+    "animate-fade-in": { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } },
+  } as Record<string, Variants>;
+
+  const chosen = variants[animation] ?? fadeUp;
+
+  return (
+    <motion.div
+      className={className}
+      variants={chosen}
+      initial="hidden"
+      whileInView="visible"
+      custom={delay}
+      viewport={{ once: true, margin: "-60px" }}
+      {...(props as object)}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const HeroSection = () => {
-  const { currentLanguage } = useLanguageStore();
-  const t = useTranslation(currentLanguage);
-  const { accessToken } = useAuthStore();
-  
+  const router = useRouter();
+
   return (
-    <div className="w-full flex flex-col items-center text-center px-4 py-20 sm:py-28">
-      {/* Tiêu đề chính */}
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white">
-        {t.heroTitle} <span className="text-black shine">{t.heroTitleHighlight}</span>{" "}
-        {t.heroTitleSuffix}
-      </h1>
-
-      {/* Mô tả ngắn */}
-      <p className="max-w-2xl mt-4 text-lg sm:text-xl text-gray-200">
-        {t.heroDescription}
-      </p>
-
-      {/* Các nút tham gia cuộc thi */}
-      <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 items-center mt-8">
-        <Link href="/contests" className="cursor-pointer">
-          <div className="flex max-w-60 h-12 px-4 gap-2 rounded-xl items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 text-white sm:h-14">
-            <svg viewBox="0 0 24 24" className="w-5 sm:w-7" fill="currentColor">
-              <path d="M12 2L3.09 8.26L12 22L20.91 8.26L12 2ZM12 4.44L18.18 9L12 19.56L5.82 9L12 4.44Z"/>
-            </svg>
-            <div>
-              <div className="text-xs sm:text-sm text-left">{t.joinCompetition}</div>
-              <div className="text-sm font-semibold font-sans -mt-1 sm:text-lg">{t.competitionPainting}</div>
-            </div>
-          </div>
-        </Link>
-        <a href="/gallery" className="cursor-pointer">
-          <div className="flex max-w-60 h-12 px-4 gap-2 rounded-xl items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 text-white sm:gap-3 sm:h-14">
-            <svg viewBox="0 0 24 24" className="w-5 sm:w-7" fill="currentColor">
-              <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19ZM8.5 13.5L11 16.51L14.5 12L19 18H5L8.5 13.5Z"/>
-            </svg>
-            <div>
-              <div className="text-xs sm:text-sm text-left">{t.exploreGallery}</div>
-              <div className="text-sm font-semibold font-sans -mt-1 sm:text-lg">{t.exhibition}</div>
-            </div>
-          </div>
-        </a>
+    <section
+      id="hero"
+      className="relative w-full h-[80vh] min-h-[400px] lg:h-screen lg:min-h-[700px] flex items-center text-white pt-16"
+    >
+      <div className="absolute inset-0">
+        <img
+          src="https://res.cloudinary.com/dbke1s5nm/image/upload/v1762177079/herosection_jznhnz.png"
+          alt="Nền bức tranh phong cảnh"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.backgroundColor =
+              "#6c7a89";
+          }}
+        />
       </div>
-      {!accessToken ? (
-        <div className="relative inline-flex items-center justify-center gap-4 group mt-6">
-          <div className="absolute inset-0 duration-1000 opacity-60 transitiona-all bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 rounded-xl blur-lg filter group-hover:opacity-100 group-hover:duration-200"></div>
-          <a role="button" className="group relative inline-flex items-center justify-center text-base rounded-xl bg-gray-900 px-8 py-3 font-semibold text-white transition-all duration-200 hover:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 hover:shadow-gray-600/30" title="register" href="/auth">
-            {t.registerArtistFree}
-            <svg aria-hidden="true" viewBox="0 0 10 10" height="10" width="10" fill="none" className="mt-0.5 ml-2 -mr-1 stroke-white stroke-2">
-              <path d="M0 5h7" className="transition opacity-0 group-hover:opacity-100"></path>
-              <path d="M1 1l4 4-4 4" className="transition group-hover:translate-x-[3px]"></path>
-            </svg>
-          </a>
+
+      <div className="relative z-5 mt-8 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
+        <div className="max-w-xl mt-0 sm:mt-[-10vh] lg:mt-[-17vh]">
+          <AnimatedContainer
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight"
+            animation="animate-fade-in-down"
+          >
+            CUỘC THI <br />
+            NÉT VẼ ƯỚC MƠ <br />
+            2026
+          </AnimatedContainer>
+          <AnimatedContainer
+            className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-black leading-relaxed"
+            animation="animate-fade-in-up"
+            delay={200}
+          >
+            Gửi gắm những câu chuyện, ý tưởng và khát{" "}
+            <br className="hidden sm:inline" />
+            vọng qua màu sắc độc đáo của riêng mình. Nơi{" "}
+            <br className="hidden sm:inline" />
+            tài năng hội họa của bạn được tỏa sáng.
+          </AnimatedContainer>
+          <AnimatedContainer
+            className="mt-6 sm:mt-10"
+            animation="animate-zoom-in"
+            delay={400}
+          >
+            <button
+              onClick={() => router.push("/gallery")}
+              className="bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
+            >
+              Xem Triển Lãm <ArrowRightIcon />
+            </button>
+          </AnimatedContainer>
         </div>
-      ) : (
-        <div className="mt-8 flex items-center justify-center w-full max-w-md">
-          <div className="h-px bg-gradient-to-r from-transparent via-white/30 to-transparent w-full"></div>
-          <div className="mx-4 text-white/60 text-sm font-medium whitespace-nowrap">
-            ✨
-          </div>
-          <div className="h-px bg-gradient-to-r from-transparent via-white/30 to-transparent w-full"></div>
-        </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 

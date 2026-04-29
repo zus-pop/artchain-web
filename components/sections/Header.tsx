@@ -137,7 +137,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
       { label: t.contests, href: "/contests" },
       { label: t.posts, href: "/posts" },
       { label: t.campaignTitle, href: "/campaigns" },
-      { label: t.gallery, href: "/gallery" },
+      { label: "Triển Lãm", href: "/exhibition" },
     ],
     [t]
   );

@@ -1,9 +1,17 @@
 import myAxios from "@/lib/custom-axios";
-import { SponsorResponse, CreateSponsorRequest } from "@/types/campaign";
+import { SponsorResponse, CreateSponsorRequest, SponsorData } from "@/types/campaign";
 
 /**
  * Public Sponsor APIs
  */
+
+// GET /api/sponsors - Get all sponsors
+export const getSponsors = async (status?: string): Promise<SponsorData[]> => {
+  const response = await myAxios.get("/sponsors", {
+    params: { status }
+  });
+  return response.data;
+};
 
 // POST /api/sponsors - Create a new sponsor
 export const createSponsor = async (data: CreateSponsorRequest): Promise<SponsorResponse> => {
