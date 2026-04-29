@@ -29,13 +29,37 @@ import { Lang, useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";
 
+const normalizeCurrencyDigits = (value: string) => {
+  const trimmed = value.trim();
+  const hasComma = trimmed.includes(",");
+  const hasDot = trimmed.includes(".");
+
+  if (hasComma && hasDot) {
+    const lastSeparatorIndex = Math.max(
+      trimmed.lastIndexOf(","),
+      trimmed.lastIndexOf(".")
+    );
+    return trimmed.slice(0, lastSeparatorIndex).replace(/\D/g, "");
+  }
+
+  if (hasComma) {
+    return trimmed.split(",")[0].replace(/\D/g, "");
+  }
+
+  if (hasDot && /\.\d{1,2}$/.test(trimmed)) {
+    return trimmed.split(".")[0].replace(/\D/g, "");
+  }
+
+  return trimmed.replace(/\D/g, "");
+};
+
 const parseCurrencyInput = (value: string) => {
-  const digitsOnly = value.replace(/\D/g, "");
+  const digitsOnly = normalizeCurrencyDigits(value);
   return digitsOnly ? Number(digitsOnly) : NaN;
 };
 
 const formatCurrencyInput = (value: string) => {
-  const digitsOnly = value.replace(/\D/g, "");
+  const digitsOnly = normalizeCurrencyDigits(value);
   if (!digitsOnly) return "";
   return new Intl.NumberFormat("vi-VN").format(Number(digitsOnly));
 };

@@ -67,6 +67,18 @@ export default function CampaignsPage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const { data: activeCampaignsResponse } = useQuery({
+    queryKey: ["campaign", "ACTIVE", 1, 1],
+    queryFn: () =>
+      getStaffCampaigns({
+        page: 1,
+        limit: 1,
+        status: "ACTIVE",
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const hasActiveCampaign = (activeCampaignsResponse?.meta?.total || 0) > 0;
   const campaigns = campaignsResponse?.data || [];
 
   const getStatusBadgeColor = (status: string) => {
@@ -167,13 +179,25 @@ export default function CampaignsPage() {
                         {t.manageCampaigns}
                       </p> */}
                     </div>
-                    <Link
-                      href="/dashboard/staff/campaigns/create"
-                      className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
-                    >
-                      <IconPlus className="h-4 w-4" />
-                      {t.createCampaign}
-                    </Link>
+                    {hasActiveCampaign ? (
+                      <button
+                        type="button"
+                        disabled
+                        title="Chỉ được tạo một chiến dịch đang hoạt động"
+                        className="staff-btn-primary transition-colors duration-200 flex items-center gap-2 opacity-50 cursor-not-allowed"
+                      >
+                        <IconPlus className="h-4 w-4" />
+                        {t.createCampaign}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/dashboard/staff/campaigns/create"
+                        className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
+                      >
+                        <IconPlus className="h-4 w-4" />
+                        {t.createCampaign}
+                      </Link>
+                    )}
                   </div>
 
                   {/* Statistics Cards */}
