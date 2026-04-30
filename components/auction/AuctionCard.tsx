@@ -81,7 +81,7 @@ function timeLabel(auction: Auction) {
 function getThumb(auction: Auction) {
   return (
     auction.auctionPaintings?.[0]?.painting?.imageUrl ||
-    "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"
+    " "
   );
 }
 

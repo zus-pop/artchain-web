@@ -546,57 +546,18 @@ export default function CompetitorProfileScreen({
                             evaluation.colorScore ||
                             evaluation.technicalScore ||
                             evaluation.aestheticScore) && (
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
-                              {evaluation.creativityScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Sáng tạo
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.creativityScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.compositionScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Bố cục
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.compositionScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.colorScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Màu sắc
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.colorScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.technicalScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Kỹ thuật
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.technicalScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.aestheticScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Thẩm mỹ
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.aestheticScore}/10
-                                  </p>
-                                </div>
-                              )}
+                            <div className="mb-3 flex items-center justify-between bg-gray-50 p-3 rounded border border-gray-100">
+                              <span className="text-sm font-medium text-gray-600">
+                                Tổng điểm:
+                              </span>
+                              <span className="font-bold text-[#FF6E1A] text-lg">
+                                {(evaluation.creativityScore || 0) +
+                                  (evaluation.compositionScore || 0) +
+                                  (evaluation.colorScore || 0) +
+                                  (evaluation.technicalScore || 0) +
+                                  (evaluation.aestheticScore || 0)}
+                                /100
+                              </span>
                             </div>
                           )}
 

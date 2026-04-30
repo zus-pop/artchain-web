@@ -6,6 +6,7 @@ import { getCampaigns } from "@/apis/campaign";
 import { CampaignAPIResponse } from "@/types/campaign";
 import { formatNumber } from "@/lib/utils";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
+import { motion, AnimatePresence } from "framer-motion";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -119,10 +120,20 @@ export const CampaignSection = () => {
     [campaigns.length]
   );
 
+  // Auto-play interval
+  useEffect(() => {
+    if (campaigns.length <= 1) return;
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % campaigns.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [campaigns.length, currentIndex]);
+
   if (loading || campaigns.length === 0) return null;
 
   return (
-    <section className="bg-[var(--site-bg)] py-24 sm:py-32">
+    <section className="bg-[var(--site-bg)] py-24 sm:py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
 
         {/* ── Header ── */}
@@ -145,7 +156,7 @@ export const CampaignSection = () => {
 
         {/* ── Overlay Swap Container ── */}
         <div
-          className="relative h-[800px] md:h-[700px] w-full"
+          className="relative h-[800px] md:h-[700px] w-full rounded-sm overflow-hidden"
           onTouchStart={(e) => { touchStartX.current = e.changedTouches[0].clientX; }}
           onTouchEnd={(e) => {
             const diff = touchStartX.current - e.changedTouches[0].clientX;
@@ -156,9 +167,28 @@ export const CampaignSection = () => {
             }
           }}
         >
-          <div className="absolute inset-0">
-            <CampaignPanel item={campaigns[currentIndex]} />
-          </div>
+          {campaigns.map((c, i) => {
+            const isActive = i === currentIndex;
+            return (
+              <motion.div
+                key={c.campaignId}
+                initial={false}
+                animate={{
+                  opacity: isActive ? 1 : 0,
+                  scale: isActive ? 1 : 1.1,
+                  zIndex: isActive ? 10 : 0,
+                  pointerEvents: isActive ? "auto" : "none",
+                }}
+                transition={{
+                  duration: 0.8,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                className="absolute inset-0"
+              >
+                <CampaignPanel item={c} />
+              </motion.div>
+            );
+          })}
 
           {/* Navigation Controls Overlay - RECTANGULAR Thumbnails */}
           <div className="absolute bottom-10 left-10 sm:left-16 z-20 flex items-center gap-5">
@@ -179,7 +209,7 @@ export const CampaignSection = () => {
                     <img
                       src={c.image || `https://i.pravatar.cc/100?u=${c.campaignId}`}
                       alt="nav"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover/btn:scale-110"
+                      className="w-full h-full object-cover"
                     />
                   </button>
                 ))}
@@ -190,3 +220,4 @@ export const CampaignSection = () => {
     </section>
   );
 };
+

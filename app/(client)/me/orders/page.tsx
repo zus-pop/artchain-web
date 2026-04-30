@@ -36,7 +36,7 @@ const items = [
     price: 1500000,
     qty: 1,
     image:
-      "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800",
+      " ",
   },
 ];
 

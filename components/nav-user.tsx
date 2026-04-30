@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/store";
 import { useRouter } from "next/navigation";
+import { useLogoutMutation } from "@/hooks/useLogoutMutation";
 
 export function NavUser({
   user,
@@ -37,8 +38,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const logout = useAuthStore((state) => state.logout);
-  const router = useRouter();
+  const { mutate: performLogout } = useLogoutMutation();
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -99,8 +99,7 @@ export function NavUser({
             {/* <DropdownMenuSeparator /> */}
             <DropdownMenuItem
               onClick={() => {
-                logout();
-                router.replace("/auth");
+                performLogout();
               }}
             >
               <IconLogout />

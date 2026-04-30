@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMeQuery } from "@/hooks/useMeQuery";
 import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
+import { useLogoutMutation } from "@/hooks/useLogoutMutation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -52,7 +53,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
   // Auth hooks
   const { isAuthenticated, user } = useAuth();
   const { data: userData } = useMeQuery();
-  const logout = useAuthStore((state) => state.logout);
+  const { mutate: performLogout } = useLogoutMutation();
 
   // Use userData from API if available, fallback to store user
   const displayUser = userData || user;
@@ -117,8 +118,8 @@ const Header: React.FC<ArtistNavigationProps> = ({
   };
 
   const confirmLogout = () => {
-    logout();
-    router.push("/auth");
+    performLogout();
+    setShowLogoutConfirm(false);
   };
 
   const handleNavClick = (

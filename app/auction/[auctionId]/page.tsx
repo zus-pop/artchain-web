@@ -671,7 +671,7 @@ export default function AuctionDetailPage() {
               <div className="space-y-6">
                 <div className="relative overflow-hidden rounded-sm shadow-2xl bg-gray-100">
                   <img
-                    src={selectedPainting.painting.imageUrl || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"}
+                    src={selectedPainting.painting.imageUrl || ""}
                     alt={selectedPainting.painting.title}
                     className="w-full h-auto block"
                   />
