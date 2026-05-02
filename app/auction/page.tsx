@@ -383,7 +383,7 @@ export default function ModernArtAuction() {
                     <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">Đấu giá trực tiếp</h2>
                     <p className="text-sm opacity-60 mt-4 max-w-sm uppercase tracking-widest font-bold">Tham gia đặt giá ngay cho các tác phẩm đang diễn ra</p>
                   </motion.div>
-                  <motion.div variants={itemVariants} className="flex gap-4">
+                  {/* <motion.div variants={itemVariants} className="flex gap-4">
                     <div className="flex gap-2">
                        <button 
                           onClick={() => {
@@ -406,7 +406,7 @@ export default function ModernArtAuction() {
                           <ArrowRight size={20} />
                        </button>
                     </div>
-                  </motion.div>
+                  </motion.div> */}
                 </motion.div>
 
                 <div className="relative">
@@ -510,7 +510,7 @@ export default function ModernArtAuction() {
                                   alt={featuredItem?.paintingTitle}
                                 />
                                 <div className="absolute top-6 left-6 flex gap-2">
-                                  <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div>
+                                  {/* <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div> */}
                                   <div className="bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold flex items-center gap-1 shadow-sm text-black">
                                       <Timer size={12} /> {featuredItem?.time}
                                   </div>

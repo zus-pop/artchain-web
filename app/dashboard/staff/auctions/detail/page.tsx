@@ -316,7 +316,7 @@ function AuctionDetailContent() {
                     {auction.description}
                   </p>
 
-                  <div className="flex flex-wrap gap-2 pt-1">
+                  {/* <div className="flex flex-wrap gap-2 pt-1">
                     {compactStats.map((stat) => (
                       <div
                         key={stat.key}
@@ -329,7 +329,7 @@ function AuctionDetailContent() {
                         <span className="text-sm font-semibold staff-text-primary">{stat.value}</span>
                       </div>
                     ))}
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="w-full lg:w-64">

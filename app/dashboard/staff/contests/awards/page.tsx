@@ -476,7 +476,7 @@ function AwardsManagementPage() {
                     <IconTrophy className="h-4 w-4" />
                     <span className="ml-2">{t.manageAwards}</span>
                   </button>
-                  <div className="flex gap-2">
+                  {/* <div className="flex gap-2">
                     <button
                       onClick={handleSendEmailAnnouncement}
                       disabled={isEmailDisabled}
@@ -505,7 +505,7 @@ function AwardsManagementPage() {
                         </>
                       )}
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

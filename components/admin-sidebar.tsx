@@ -95,6 +95,11 @@ export function AdminSidebar({
           },
         ],
       },
+      {
+        title: "Quản Lý Tiêu Chí",
+        url: "/dashboard/admin/criteria",
+        icon: IconReport,
+      },
     ],
     navSecondary: [],
   }), [t, user]);
