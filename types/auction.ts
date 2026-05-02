@@ -74,6 +74,19 @@ export interface PlaceBidRequest {
   bidAmount: number;
 }
 
+export interface UpdateAuctionPaintingRequest {
+  auctionDurationMinutes?: number;
+  auctionStartTime?: string;
+  auctionEndTime?: string;
+  basePrice?: number;
+  ceilPrice?: number;
+  bidStep?: number;
+  status?: string;
+  isSold?: boolean;
+  revoked?: number;
+  currentBidderId?: string;
+}
+
 export interface Bid {
   bidId: string;
   auctionId: string;

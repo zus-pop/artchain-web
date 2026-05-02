@@ -6,6 +6,8 @@ import {
   useGetAuctionById,
   useUpdateAuctionStatus,
   useEndAuction,
+  useUpdateAuctionPainting,
+  useRemovePaintingFromAuction,
 } from "@/apis/auction";
 import { getAllStaffContests } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -28,6 +30,7 @@ import {
   IconUsers,
   IconCircleCheck,
   IconSend,
+  IconEdit,
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
@@ -50,6 +53,13 @@ function AuctionDetailContent() {
     useState<AuctionPainting | null>(null);
   const [showPaintingDetailDialog, setShowPaintingDetailDialog] =
     useState(false);
+  const [isEditingPainting, setIsEditingPainting] = useState(false);
+  const [editForm, setEditForm] = useState({
+    basePrice: 0,
+    ceilPrice: 0,
+    bidStep: 0,
+    auctionDurationMinutes: 15,
+  });
   
   // Pricing state for each selected painting
   const [paintingPrices, setPaintingPrices] = useState<Record<string, { basePrice: number; ceilPrice: number; bidStep: number; auctionDurationMinutes: number }>>({});
@@ -87,6 +97,12 @@ function AuctionDetailContent() {
 
   // Mutation for updating auction status
   const updateStatusMutation = useUpdateAuctionStatus();
+
+  // Mutation for updating painting in auction
+  const updatePaintingMutation = useUpdateAuctionPainting(auctionId || "");
+
+  // Mutation for removing painting from auction
+  const removePaintingMutation = useRemovePaintingFromAuction(auctionId || "");
 
   const handleUpdateStatus = async (newStatus: string, title: string, description: string, variant: "primary" | "destructive" | "warning" = "warning") => {
     setConfirmConfig({
@@ -192,6 +208,53 @@ function AuctionDetailContent() {
   const handleClosePaintingDetail = () => {
     setShowPaintingDetailDialog(false);
     setSelectedAuctionPainting(null);
+    setIsEditingPainting(false);
+  };
+
+  const handleRemovePainting = (auctionPaintingId: string | number, title: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Gỡ tranh khỏi phiên",
+      description: `Bạn có chắc chắn muốn gỡ bức tranh "${title}" khỏi phiên đấu giá này?`,
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await removePaintingMutation.mutateAsync(auctionPaintingId);
+        } catch (error) {
+          console.error("Failed to remove painting:", error);
+        }
+      },
+    });
+  };
+
+  const handleEditPainting = (auctionPainting: AuctionPainting) => {
+    setSelectedAuctionPainting(auctionPainting);
+    setEditForm({
+      basePrice: auctionPainting.basePrice,
+      ceilPrice: auctionPainting.ceilPrice || 0,
+      bidStep: auctionPainting.bidStep || 0,
+      auctionDurationMinutes: auctionPainting.auctionDurationMinutes || 15,
+    });
+    setIsEditingPainting(true);
+    setShowPaintingDetailDialog(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedAuctionPainting) return;
+    try {
+      await updatePaintingMutation.mutateAsync({
+        auctionPaintingId: selectedAuctionPainting.auctionPaintingId,
+        data: {
+          basePrice: editForm.basePrice,
+          ceilPrice: editForm.ceilPrice,
+          bidStep: editForm.bidStep,
+          auctionDurationMinutes: editForm.auctionDurationMinutes,
+        },
+      });
+      handleClosePaintingDetail();
+    } catch (error) {
+      console.error("Failed to update painting:", error);
+    }
   };
 
   if (auctionLoading) {
@@ -439,21 +502,30 @@ function AuctionDetailContent() {
                                 <IconPhoto className="h-12 w-12 text-gray-200" />
                               </div>
                             )}
-                            <div className="absolute top-2 right-2 flex gap-1">
-                              <button className="staff-btn-danger !px-1.5 !py-1.5 shadow-md transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                                <IconTrash className="h-4 w-4" />
-                              </button>
+                            <div className="absolute top-2 right-2 flex gap-1 z-20">
+                              {canAddPainting && (
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemovePainting(auctionPainting.auctionPaintingId, painting.title);
+                                  }}
+                                  className="staff-btn-danger !px-1.5 !py-1.5 shadow-md transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all"
+                                >
+                                  <IconTrash className="h-4 w-4" />
+                                </button>
+                              )}
                             </div>
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <button
                                 type="button"
                                 onClick={(event) => {
                                   event.stopPropagation();
-                                  handleOpenPaintingDetail(auctionPainting);
+                                  handleEditPainting(auctionPainting);
                                 }}
-                                className="bg-white text-gray-900 px-4 py-2 text-xs font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors"
+                                className="bg-white text-gray-900 px-6 py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-2 shadow-2xl"
                               >
-                                {t.viewDetails}
+                                <IconEdit className="h-4 w-4" />
+                                {t.edit || "Sửa cấu hình"}
                               </button>
                             </div>
                           </div>
@@ -469,9 +541,9 @@ function AuctionDetailContent() {
                                 </span>
                               </div>
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t.auctionDuration || "Duration"}</span>
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t.auctionDuration || "Thời lượng"}</span>
                                 <span className="text-xs font-black text-gray-600">
-                                  {auctionPainting.auctionDurationMinutes || "--"} {t.minutes || "Min"}
+                                  {auctionPainting.auctionDurationMinutes || "--"} {t.minutes || "phút"}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between border-t border-dashed border-[var(--staff-border)] pt-2">
@@ -522,19 +594,35 @@ function AuctionDetailContent() {
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--staff-border)] bg-[#fcfbf9] px-6 py-4">
               <div>
                 <h3 className="text-lg font-black uppercase tracking-wide staff-text-primary">
-                  Chi tiet tranh dau gia
+                  {isEditingPainting ? "Cập nhật thông tin đấu giá" : "Chi tiết tranh đấu giá"}
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
                   {auction.title} - ID #{selectedAuctionPainting.auctionPaintingId}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleClosePaintingDetail}
-                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
-              >
-                <IconX className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-3">
+                {isEditingPainting && (
+                  <button
+                    onClick={handleSaveEdit}
+                    disabled={updatePaintingMutation.isPending}
+                    className="staff-btn-primary flex items-center gap-2"
+                  >
+                    {updatePaintingMutation.isPending ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white" />
+                    ) : (
+                      <IconCircleCheck className="h-4 w-4" />
+                    )}
+                    Lưu thay đổi
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleClosePaintingDetail}
+                  className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                >
+                  <IconX className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-5">
@@ -561,10 +649,13 @@ function AuctionDetailContent() {
                     <span
                       className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-black uppercase tracking-wider ${getPaintingStatusBadge(selectedAuctionPainting.status)}`}
                     >
-                      {selectedAuctionPainting.status || "UNKNOWN"}
+                      {selectedAuctionPainting.status === "WAITING" ? "Đang chờ" : 
+                       selectedAuctionPainting.status === "LIVE" ? "Trực tiếp" : 
+                       selectedAuctionPainting.status === "ENDED" || selectedAuctionPainting.status === "END" ? "Đã kết thúc" : 
+                       selectedAuctionPainting.status || "Không xác định"}
                     </span>
                     <span className="inline-flex items-center rounded-full border border-[var(--staff-border)] bg-white px-2.5 py-1 text-xs font-black uppercase tracking-wider text-gray-600">
-                      {selectedAuctionPainting.isSold ? "Sold" : "Not Sold"}
+                      {selectedAuctionPainting.isSold ? "Đã bán" : "Chưa bán"}
                     </span>
                   </div>
 
@@ -572,66 +663,96 @@ function AuctionDetailContent() {
                     {selectedAuctionPainting.painting?.title || "-"}
                   </h4>
                   <p className="mt-2 text-sm text-gray-600">
-                    {selectedAuctionPainting.painting?.description || "Khong co mo ta"}
+                    {selectedAuctionPainting.painting?.description || "Không có mô tả"}
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-sm border border-[var(--staff-border)] p-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400">
-                      Base Price
-                    </p>
-                    <p className="mt-1 text-lg font-black text-blue-700">
-                      {(selectedAuctionPainting.basePrice || 0).toLocaleString("vi-VN")} VND
-                    </p>
+                {isEditingPainting ? (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Giá khởi điểm (VND)</label>
+                      <input
+                        type="text"
+                        value={formatVND(editForm.basePrice)}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          setEditForm(prev => ({ ...prev, basePrice: parseInt(val) || 0 }));
+                        }}
+                        className="w-full rounded-sm border border-[var(--staff-border)] px-3 py-2 text-sm font-bold focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Giá trần (VND)</label>
+                      <input
+                        type="text"
+                        value={formatVND(editForm.ceilPrice)}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          setEditForm(prev => ({ ...prev, ceilPrice: parseInt(val) || 0 }));
+                        }}
+                        className="w-full rounded-sm border border-[var(--staff-border)] px-3 py-2 text-sm font-bold focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Bước giá (VND)</label>
+                      <input
+                        type="text"
+                        value={formatVND(editForm.bidStep)}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          setEditForm(prev => ({ ...prev, bidStep: parseInt(val) || 0 }));
+                        }}
+                        className="w-full rounded-sm border border-[var(--staff-border)] px-3 py-2 text-sm font-bold focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-black uppercase tracking-widest text-gray-400">Thời lượng (Phút)</label>
+                      <input
+                        type="number"
+                        value={editForm.auctionDurationMinutes}
+                        onChange={(e) => setEditForm(prev => ({ ...prev, auctionDurationMinutes: parseInt(e.target.value) || 0 }))}
+                        className="w-full rounded-sm border border-[var(--staff-border)] px-3 py-2 text-sm font-bold focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
                   </div>
-                  <div className="rounded-sm border border-[var(--staff-border)] p-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400">
-                      Current Bid
-                    </p>
-                    <p className="mt-1 text-lg font-black text-red-600">
-                      {(selectedAuctionPainting.currentBid || 0).toLocaleString("vi-VN")} VND
-                    </p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="rounded-sm border border-[var(--staff-border)] p-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                        Giá khởi điểm
+                      </p>
+                      <p className="mt-1 text-lg font-black text-blue-700">
+                        {(selectedAuctionPainting.basePrice || 0).toLocaleString("vi-VN")} VND
+                      </p>
+                    </div>
+                    <div className="rounded-sm border border-[var(--staff-border)] p-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                        Giá hiện tại
+                      </p>
+                      <p className="mt-1 text-lg font-black text-red-600">
+                        {(selectedAuctionPainting.currentBid || 0).toLocaleString("vi-VN")} VND
+                      </p>
+                    </div>
+                    <div className="rounded-sm border border-[var(--staff-border)] p-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                        Giá trần
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-gray-800">
+                        {(selectedAuctionPainting.ceilPrice || 0).toLocaleString("vi-VN")} VND
+                      </p>
+                    </div>
+                    <div className="rounded-sm border border-[var(--staff-border)] p-4">
+                      <p className="text-xs font-black uppercase tracking-widest text-gray-400">
+                        Bước giá
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-gray-800">
+                        {(selectedAuctionPainting.bidStep || 0).toLocaleString("vi-VN")} VND
+                      </p>
+                    </div>
                   </div>
-                  <div className="rounded-sm border border-[var(--staff-border)] p-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400">
-                      Ceil Price
-                    </p>
-                    <p className="mt-1 text-sm font-bold text-gray-800">
-                      {(selectedAuctionPainting.ceilPrice || 0).toLocaleString("vi-VN")} VND
-                    </p>
-                  </div>
-                  <div className="rounded-sm border border-[var(--staff-border)] p-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-gray-400">
-                      Bid Step
-                    </p>
-                    <p className="mt-1 text-sm font-bold text-gray-800">
-                      {(selectedAuctionPainting.bidStep || 0).toLocaleString("vi-VN")} VND
-                    </p>
-                  </div>
-                </div>
+                )}
 
-                <div className="rounded-sm border border-[var(--staff-border)] p-4">
-                  <h5 className="mb-3 text-xs font-black uppercase tracking-widest text-gray-500">
-                    Thong tin phien dau gia
-                  </h5>
-                  <div className="grid grid-cols-1 gap-3 text-sm text-gray-700 md:grid-cols-2">
-                    <p><span className="font-bold">Auction ID:</span> {selectedAuctionPainting.auctionId}</p>
-                    <p><span className="font-bold">Painting ID:</span> {selectedAuctionPainting.paintingId}</p>
-                    <p><span className="font-bold">Current Bidder ID:</span> {selectedAuctionPainting.currentBidderId || "-"}</p>
-                    <p><span className="font-bold">Revoked:</span> {selectedAuctionPainting.revoked ?? 0}</p>
-                    <p><span className="font-bold">Duration:</span> {selectedAuctionPainting.auctionDurationMinutes || 0} minutes</p>
-                    <p><span className="font-bold">Painting Status:</span> {selectedAuctionPainting.painting?.status || "-"}</p>
-                    <p><span className="font-bold">Auction Start:</span> {formatDateTime(selectedAuctionPainting.auctionStartTime)}</p>
-                    <p><span className="font-bold">Auction End:</span> {formatDateTime(selectedAuctionPainting.auctionEndTime)}</p>
-                    <p><span className="font-bold">Created At:</span> {formatDateTime(selectedAuctionPainting.createdAt)}</p>
-                    <p><span className="font-bold">Updated At:</span> {formatDateTime(selectedAuctionPainting.updatedAt)}</p>
-                    <p><span className="font-bold">Contest ID:</span> {selectedAuctionPainting.painting?.contestId ?? "-"}</p>
-                    <p><span className="font-bold">Round ID:</span> {selectedAuctionPainting.painting?.roundId ?? "-"}</p>
-                    <p><span className="font-bold">Competitor ID:</span> {selectedAuctionPainting.painting?.competitorId || "-"}</p>
-                    <p><span className="font-bold">Award ID:</span> {selectedAuctionPainting.painting?.awardId ?? "-"}</p>
-                  </div>
-                </div>
+
               </div>
             </div>
           </div>
@@ -798,14 +919,14 @@ function AuctionDetailContent() {
                    <div className="p-1.5 bg-blue-100 rounded-sm">
                       <IconGavel className="h-4 w-4 text-blue-600" />
                    </div>
-                   <h4 className="text-xs font-black uppercase tracking-widest staff-text-primary">{t.pricingConfiguration || "Pricing Config"}</h4>
+                    <h4 className="text-xs font-black uppercase tracking-widest staff-text-primary">{t.pricingConfiguration || "Cấu hình giá"}</h4>
                 </div>
                 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {selectedPaintingIds.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40 py-12">
                       <IconPhoto className="h-10 w-10 text-gray-300 mb-2" />
-                      <p className="text-xs font-bold staff-text-secondary uppercase">{t.selectPaintingsToConfigure || "Select paintings to configure prices"}</p>
+                      <p className="text-xs font-bold staff-text-secondary uppercase">{t.selectPaintingsToConfigure || "Chọn tranh để cấu hình giá"}</p>
                     </div>
                   ) : (
                      <div className="space-y-4">
@@ -843,7 +964,7 @@ function AuctionDetailContent() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                        <div>
-                                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.auctionDuration || "Duration"}</label>
+                                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.auctionDuration || "Thời lượng (phút)"}</label>
                                           <input 
                                              type="number"
                                              value={prices.auctionDurationMinutes || ""}
@@ -853,7 +974,7 @@ function AuctionDetailContent() {
                                           />
                                        </div>
                                        <div>
-                                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.bidStep || "Bid Step"}</label>
+                                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.bidStep || "Bước giá"}</label>
                                           <input 
                                              type="text"
                                              value={formatVND(prices.bidStep)}
@@ -864,7 +985,7 @@ function AuctionDetailContent() {
                                        </div>
                                     </div>
                                     <div>
-                                       <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.ceilPrice || "Ceil Price"}</label>
+                                          <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.ceilPrice || "Giá trần"}</label>
                                        <input 
                                           type="text"
                                           value={formatVND(prices.ceilPrice)}

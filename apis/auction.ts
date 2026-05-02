@@ -8,6 +8,7 @@ import {
   AddPaintingToAuctionRequest,
   PlaceBidRequest,
   Bid,
+  UpdateAuctionPaintingRequest,
 } from "@/types/auction";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -182,5 +183,41 @@ export function useGetBidHistory(auctionId: string | number, paintingId: string)
     },
     enabled: !!auctionId && !!paintingId,
     staleTime: 5 * 1000, // Frequent updates
+  });
+}
+
+// ─── PATCH /auctions/:auctionId/paintings/:auctionPaintingId ───────────────
+export function useUpdateAuctionPainting(auctionId: string | number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, { auctionPaintingId: string | number; data: UpdateAuctionPaintingRequest }>({
+    mutationFn: async ({ auctionPaintingId, data }) => {
+      const res = await myAxios.patch(`/auctions/${auctionId}/paintings/${auctionPaintingId}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Cập nhật tranh thành công!");
+      queryClient.invalidateQueries({ queryKey: ["auction", String(auctionId)] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Cập nhật tranh thất bại");
+    },
+  });
+}
+
+// ─── DELETE /auctions/:auctionId/paintings/:auctionPaintingId ─────────────
+export function useRemovePaintingFromAuction(auctionId: string | number) {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, string | number>({
+    mutationFn: async (auctionPaintingId) => {
+      const res = await myAxios.delete(`/auctions/${auctionId}/paintings/${auctionPaintingId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Gỡ tranh thành công!");
+      queryClient.invalidateQueries({ queryKey: ["auction", String(auctionId)] });
+    },
+    onError: (err: any) => {
+      toast.error(err?.message ?? "Gỡ tranh thất bại");
+    },
   });
 }
