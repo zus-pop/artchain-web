@@ -9,15 +9,15 @@ import { useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-    ArrowLeft,
-    ArrowRight,
-    ChevronDown,
-    ChevronRight,
-    Gavel,
-    LogOut,
-    User,
-    Wallet,
-    X,
+  ArrowLeft,
+  ArrowRight,
+  ChevronDown,
+  ChevronRight,
+  Gavel,
+  LogOut,
+  User,
+  Wallet,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -317,7 +317,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                       className="flex items-center space-x-1 sm:space-x-2 rounded-lg py-1 cursor-pointer"
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold shrink-0 ${
                           displayUser?.role === "GUARDIAN"
                             ? "bg-green-600"
                             : "bg-red-600"
@@ -336,7 +336,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                           initial={{ opacity: 0, y: 10, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 z-[60]"
+                          className="absolute right-0 top-full mt-2 w-56 overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-black/5 z-60"
                         >
                           <div className="p-4 bg-gray-50/50 border-b border-gray-100">
                             <p className="text-sm font-bold text-gray-900 truncate">
@@ -474,7 +474,7 @@ const Header: React.FC<ArtistNavigationProps> = ({
                             transition={{ duration: 0.2 }}
                             className="flex flex-col h-full w-full"
                           >
-                            <div className="flex-grow flex flex-col">
+                            <div className="grow flex flex-col">
                               <div className="flex justify-between items-center mt-5 mb-10 pb-4 border-b border-black/10 shrink-0">
                                 <span className="font-bold text-xl text-black">
                                   ArtChain
