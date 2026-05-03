@@ -392,7 +392,7 @@ function AwardsManagementPage() {
 
   // Button disable states
   const isTopAnnounceDisabled = !isTopAwardsFullyAssigned;
-  const isVoteAnnounceDisabled = !isVoteAwardsFullyAssigned || hasVoteResultMismatches || hasAwardsWithNoVotes;
+  const isVoteAnnounceDisabled = !isVoteAwardsFullyAssigned;
 
   const isEmailDisabled =
     !allAwardSlotsFilled ||
@@ -1778,12 +1778,8 @@ function AwardsManagementPage() {
                             disabled={isVoteAnnounceDisabled}
                             className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={
-                              hasAwardsWithNoVotes
-                                ? "Cannot announce results when awards have no votes"
-                                : !isVoteAwardsFullyAssigned
+                              !isVoteAwardsFullyAssigned
                                 ? "All vote awards must be assigned before announcing"
-                                : hasVoteResultMismatches
-                                ? t.allAwardSlotsMustBeFilledMismatchTooltip
                                 : "Công Bố Giải Thưởng"
                             }
                           >

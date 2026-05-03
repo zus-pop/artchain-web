@@ -825,16 +825,7 @@ function AnnounceResultsPage() {
                 </button>
                 <button
                   onClick={handlePublish}
-                  disabled={
-                    isPublishing ||
-                    createPostMutation.isPending ||
-                    !isContestEnded
-                  }
-                  title={
-                    !isContestEnded
-                      ? "Contest must end before announcing results"
-                      : undefined
-                  }
+                  disabled={isPublishing || createPostMutation.isPending}
                   className="px-6 py-2 staff-btn-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isPublishing ? (

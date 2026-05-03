@@ -369,19 +369,30 @@ export function ExaminersDialog({
     const assignmentKey = getExaminerAssignmentKey(examiner);
     const currentSchedule = getContestScheduleForExaminer(examiner);
 
-    setScheduleDrafts((prev) => ({
-      ...prev,
-      [assignmentKey]: {
-        date:
-          prev[assignmentKey]?.date ||
-          formatDateForInput(currentSchedule?.date),
-        round2Table:
-          prev[assignmentKey]?.round2Table ||
-          currentSchedule?.round2Table ||
-          "",
+    setScheduleDrafts((prev) => {
+      const currentDraft = prev[assignmentKey] || {
+        date: formatDateForInput(currentSchedule?.date),
+        round2Table: currentSchedule?.round2Table || "",
+      };
+
+      const updatedDraft = {
+        ...currentDraft,
         [field]: value,
-      },
-    }));
+      };
+
+      // Auto-fill date if table is selected for ROUND_2
+      if (examiner.role === "ROUND_2" && field === "round2Table" && value) {
+        const tableInfo = round2Round?.tables?.find((t) => t.table === value);
+        if (tableInfo?.startDate) {
+          updatedDraft.date = formatDateForInput(tableInfo.startDate);
+        }
+      }
+
+      return {
+        ...prev,
+        [assignmentKey]: updatedDraft,
+      };
+    });
   };
 
   const handleToggleScheduleDropdown = (examiner: ExaminerDTO) => {
@@ -393,15 +404,22 @@ export function ExaminersDialog({
     }
 
     const currentSchedule = getContestScheduleForExaminer(examiner);
+    const initialTable = currentSchedule?.round2Table || (examiner.role === "ROUND_2" && round2Tables.length === 1 ? round2Tables[0] : "");
+    let initialDate = currentSchedule?.date ? formatDateForInput(currentSchedule.date) : "";
+
+    // If we have a table but no date, try to fetch the date from the table info
+    if (examiner.role === "ROUND_2" && initialTable && !initialDate) {
+      const tableInfo = round2Round?.tables?.find((t) => t.table === initialTable);
+      if (tableInfo?.startDate) {
+        initialDate = formatDateForInput(tableInfo.startDate);
+      }
+    }
+
     setScheduleDrafts((prev) => ({
       ...prev,
       [assignmentKey]: {
-        date: currentSchedule?.date ? formatDateForInput(currentSchedule.date) : "",
-        round2Table:
-          currentSchedule?.round2Table ||
-          (examiner.role === "ROUND_2" && round2Tables.length === 1
-            ? round2Tables[0]
-            : ""),
+        date: initialDate,
+        round2Table: initialTable,
       },
     }));
     setShowScheduleDropdown(assignmentKey);
@@ -857,24 +875,40 @@ export function ExaminersDialog({
                           </div>
                         </div>
 
+                        {/* Column 3: Delete Icon */}
+                        <div className="flex justify-end">
+                          {((examiner as any).evaluatedCount !== (examiner as any).totalCount || (examiner as any).totalCount === 0) && (
+                            <button
+                              onClick={() => handleDeleteExaminer(examiner)}
+                              disabled={deleteExaminerMutation.isPending}
+                              className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Remove examiner"
+                            >
+                              <IconTrash className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+
                         {/* Column 2: Schedule Management */}
                         <div className="flex justify-center">
                           <div className="relative">
                             <div className="flex items-center gap-2">
-                              <button
-                                onClick={() =>
-                                  handleToggleScheduleDropdown(examiner)
-                                }
-                                className="staff-btn-outline !px-4 !py-2 text-sm text-green-700 border-green-300 hover:bg-green-50 flex items-center gap-2 whitespace-nowrap"
-                              >
-                                <IconCalendar className="h-4 w-4" />
-                                {currentSchedule
-                                  ? `${t.scheduled}: ${formatDate({
-                                      dateString: currentSchedule.date,
-                                      language: currentLanguage,
-                                    })}`
-                                  : `+ ${t.schedule}`}
-                              </button>
+                              {examiner.role === "ROUND_1" && (
+                                <button
+                                  onClick={() =>
+                                    handleToggleScheduleDropdown(examiner)
+                                  }
+                                  className="staff-btn-outline !px-4 !py-2 text-sm text-green-700 border-green-300 hover:bg-green-50 flex items-center gap-2 whitespace-nowrap"
+                                >
+                                  <IconCalendar className="h-4 w-4" />
+                                  {currentSchedule
+                                    ? `${t.scheduled}: ${formatDate({
+                                        dateString: currentSchedule.date,
+                                        language: currentLanguage,
+                                      })}`
+                                    : `+ ${t.schedule}`}
+                                </button>
+                              )}
 
                               {examiner.role === "ROUND_2" && (
                                 <button
@@ -924,66 +958,77 @@ export function ExaminersDialog({
                                   </div>
                                 )}
 
-                                <input
-                                  type="date"
-                                  value={scheduleDraft.date}
-                                  min={formatDateForInput(minDate)}
-                                  max={
-                                    maxDate
-                                      ? formatDateForInput(maxDate)
-                                      : undefined
-                                  }
-                                  disabled={isRound2WithoutTable}
-                                  onChange={(e) =>
-                                    updateScheduleDraft(
-                                      examiner,
-                                      "date",
-                                      e.target.value,
-                                    )
-                                  }
-                                  className="staff-field border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                                />
+                                {examiner.role === "ROUND_1" ? (
+                                  <input
+                                    type="date"
+                                    value={scheduleDraft.date}
+                                    min={formatDateForInput(minDate)}
+                                    max={
+                                      maxDate
+                                        ? formatDateForInput(maxDate)
+                                        : undefined
+                                    }
+                                    onChange={(e) =>
+                                      updateScheduleDraft(
+                                        examiner,
+                                        "date",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="staff-field border-gray-300"
+                                  />
+                                ) : (
+                                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm text-gray-600 italic">
+                                    {scheduleDraft.date ? (
+                                      <div className="flex items-center gap-2">
+                                        <IconCalendar className="h-4 w-4 text-[var(--staff-primary)]" />
+                                        <span>
+                                          {t.date}:{" "}
+                                          {formatDate({
+                                            dateString: scheduleDraft.date,
+                                            language: currentLanguage,
+                                          })}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      "Chọn bảng để xem ngày thi"
+                                    )}
+                                  </div>
+                                )}
 
-                                {(roundStartDate || roundEndDate) && (
-                                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-sm text-xs text-blue-700">
-                                    <div className="font-medium mb-1">
-                                      {t.availableDatesForRound}{" "}
-                                      {examiner.role === "ROUND_1"
-                                        ? t.round1
-                                        : t.round2}
-                                      {examiner.role === "ROUND_2" &&
-                                      scheduleDraft.round2Table
-                                        ? ` - ${scheduleDraft.round2Table}`
-                                        : ""}
-                                      :
-                                    </div>
-                                    <div className="text-xs">
-                                      {roundStartDate && roundEndDate
-                                        ? `${t.fromDate} ${formatDate({
-                                            dateString:
-                                              roundStartDate.toISOString(),
-                                            language: currentLanguage,
-                                          })} - ${t.untilDate} ${formatDate({
-                                            dateString:
-                                              roundEndDate.toISOString(),
-                                            language: currentLanguage,
-                                          })}`
-                                        : roundStartDate
+                                {examiner.role === "ROUND_1" &&
+                                  (roundStartDate || roundEndDate) && (
+                                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-sm text-xs text-blue-700">
+                                      <div className="font-medium mb-1">
+                                        {t.availableDatesForRound} {t.round1}:
+                                      </div>
+                                      <div className="text-xs">
+                                        {roundStartDate && roundEndDate
                                           ? `${t.fromDate} ${formatDate({
                                               dateString:
                                                 roundStartDate.toISOString(),
                                               language: currentLanguage,
+                                            })} - ${t.untilDate} ${formatDate({
+                                              dateString:
+                                                roundEndDate.toISOString(),
+                                              language: currentLanguage,
                                             })}`
-                                          : roundEndDate
-                                            ? `${t.untilDate} ${formatDate({
+                                          : roundStartDate
+                                            ? `${t.fromDate} ${formatDate({
                                                 dateString:
-                                                  roundEndDate.toISOString(),
+                                                  roundStartDate.toISOString(),
                                                 language: currentLanguage,
                                               })}`
-                                            : null}
+                                            : roundEndDate
+                                              ? `${t.untilDate} ${formatDate({
+                                                  dateString:
+                                                    roundEndDate.toISOString(),
+                                                  language: currentLanguage,
+                                                })}`
+                                              : null}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
                                 <div className="mt-3 flex items-center justify-end gap-2">
                                   <button
@@ -1012,19 +1057,7 @@ export function ExaminersDialog({
                           </div>
                         </div>
 
-                        {/* Column 3: Delete Icon */}
-                        <div className="flex justify-end">
-                          {((examiner as any).evaluatedCount !== (examiner as any).totalCount || (examiner as any).totalCount === 0) && (
-                            <button
-                              onClick={() => handleDeleteExaminer(examiner)}
-                              disabled={deleteExaminerMutation.isPending}
-                              className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Remove examiner"
-                            >
-                              <IconTrash className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
+                        
                       </div>
                     </div>
                   );
