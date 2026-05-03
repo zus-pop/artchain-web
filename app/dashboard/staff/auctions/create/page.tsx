@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import React from "react";
 import { toast } from "sonner";
 
 // Validation schema
@@ -80,6 +81,7 @@ export default function CreateAuctionPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
     watch,
   } = useForm<AuctionFormData>({
     resolver: zodResolver(auctionSchema),
@@ -93,6 +95,18 @@ export default function CreateAuctionPage() {
   });
 
   const watchedStartTime = watch("startTime");
+
+  // Automatically set endTime to 23:59 of the same day as startTime
+  React.useEffect(() => {
+    if (watchedStartTime) {
+      const date = new Date(watchedStartTime);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const formattedEndTime = `${year}-${month}-${day}T23:59`;
+      setValue("endTime", formattedEndTime, { shouldValidate: true });
+    }
+  }, [watchedStartTime, setValue]);
 
   // Mutation
   const createAuctionMutation = useCreateAuction();
@@ -231,7 +245,7 @@ export default function CreateAuctionPage() {
                           )}
                         </div>
 
-                        <div>
+                        <div className="md:col-span-2">
                           <label className="staff-type-label staff-text-primary mb-2 block">
                             {t.auctionStartTime}
                           </label>
@@ -246,33 +260,13 @@ export default function CreateAuctionPage() {
                                   : "border-[var(--staff-border)] bg-white"
                               }`}
                             />
+                            <p className="mt-2 text-xs text-blue-600 font-medium italic">
+                              * Cuộc đấu giá sẽ tự động kết thúc vào 23:59 cùng ngày.
+                            </p>
                           </div>
                           {errors.startTime && (
                             <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
                               {errors.startTime.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="staff-type-label staff-text-primary mb-2 block">
-                            {t.auctionEndTime}
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="datetime-local"
-                              {...register("endTime")}
-                              min={watchedStartTime || minDateTime}
-                              className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all ${
-                                errors.endTime
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-[var(--staff-border)] bg-white"
-                              }`}
-                            />
-                          </div>
-                          {errors.endTime && (
-                            <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
-                              {errors.endTime.message}
                             </p>
                           )}
                         </div>
