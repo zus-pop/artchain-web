@@ -61,6 +61,7 @@ export default function ContestDetailPage() {
 
   // Check if submission deadline has passed
   const round1 = contest?.rounds?.find((r: any) => r.name === "ROUND_1");
+  const round2 = contest?.rounds?.find((r: any) => r.name === "ROUND_2");
   const isDeadlinePassed = useMemo(() => {
     if (!round1?.submissionDeadline) return false;
     return new Date() > new Date(round1.submissionDeadline);
@@ -500,11 +501,13 @@ export default function ContestDetailPage() {
                 Bắt đầu
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.startDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
-                  year: "numeric",
-                })}
+                {round1?.startDate
+                  ? new Date(round1.startDate).toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })
+                  : "Chưa xác định"}
               </p>
             </div>
 
@@ -514,29 +517,16 @@ export default function ContestDetailPage() {
                 Hạn nộp bài
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.endDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-
-            {/* Công bố kết quả */}
-            <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-sm sm:text-base">
-                Công bố kết quả
-              </p>
-              <p className="text-black font-semibold text-base sm:text-lg">
-                {(() => {
-                  const date = new Date(contest.endDate);
-                  date.setDate(date.getDate() + 3);
-                  return date.toLocaleDateString("vi-VN", {
-                    day: "numeric",
-                    month: "numeric",
-                    year: "numeric",
-                  });
-                })()}
+                {round1?.submissionDeadline
+                  ? new Date(round1.submissionDeadline).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
+                  : "Chưa xác định"}
               </p>
             </div>
 
@@ -546,17 +536,34 @@ export default function ContestDetailPage() {
                 Gửi bản gốc
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {contest.rounds?.[0]?.sendOriginalDeadline
-                  ? (() => {
-                      const deadline = contest.rounds[0].sendOriginalDeadline;
-                      const date = new Date(deadline);
-                      const day = date.getUTCDate().toString().padStart(2, "0");
-                      const month = (date.getUTCMonth() + 1)
-                        .toString()
-                        .padStart(2, "0");
-                      const year = date.getUTCFullYear();
-                      return `${day}/${month}/${year}`;
-                    })()
+                {round1?.sendOriginalDeadline
+                  ? new Date(round1.sendOriginalDeadline).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
+                  : "Chưa xác định"}
+              </p>
+            </div>
+
+            {/* Công bố kết quả */}
+            <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
+              <p className="text-black font-light text-sm sm:text-base">
+                Công bố kết quả
+              </p>
+              <p className="text-black font-semibold text-base sm:text-lg">
+                {round1?.resultAnnounceDate
+                  ? new Date(round1.resultAnnounceDate).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
                   : "Chưa xác định"}
               </p>
             </div>
@@ -585,32 +592,67 @@ export default function ContestDetailPage() {
               </p>
             </div>
 
-            {/* Ngày thi dự kiến */}
+            {/* Ngày thi chính thức / dự kiến */}
             <div className="space-y-1">
               <p className="text-black font-semibold text-sm sm:text-base">
-                Ngày thi dự kiến
+                {round2 && round2.startDate && round2.endDate && 
+                 new Date(round2.startDate).getTime() === new Date(round2.endDate).getTime()
+                  ? "Ngày thi chính thức"
+                  : "Ngày thi dự kiến"}
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                {(() => {
-                  const resultDate = new Date(contest.endDate);
-                  resultDate.setDate(resultDate.getDate() + 3);
-                  
-                  const examStart = new Date(resultDate);
-                  examStart.setDate(resultDate.getDate() + 3);
-                  
-                  const examEnd = new Date(examStart);
-                  examEnd.setDate(examStart.getDate() + 7);
-                  
-                  return `${examStart.toLocaleDateString("vi-VN", {
-                    day: "numeric",
-                    month: "numeric",
-                    year: "numeric",
-                  })} - ${examEnd.toLocaleDateString("vi-VN", {
-                    day: "numeric",
-                    month: "numeric",
-                    year: "numeric",
-                  })} (Thường sẽ diễn ra vào cuối tuần)`;
-                })()}
+                {round2 ? (
+                  (() => {
+                    const examStart = new Date(round2.startDate);
+                    const examEnd = round2.endDate ? new Date(round2.endDate) : null;
+                    
+                    if (examEnd && examEnd.getTime() === examStart.getTime()) {
+                      return examStart.toLocaleDateString("vi-VN", {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      });
+                    }
+
+                    const finalEnd = (examEnd && examEnd.getTime() > examStart.getTime())
+                      ? examEnd
+                      : (() => {
+                          const end = new Date(examStart);
+                          end.setDate(examStart.getDate() + 7);
+                          return end;
+                        })();
+
+                    return `${examStart.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} - ${finalEnd.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} (Thường sẽ diễn ra vào cuối tuần)`;
+                  })()
+                ) : (
+                  (() => {
+                    // Fallback: Start 3 days after Round 1 ends (or contest ends if round 1 is missing), range of 7 days
+                    const anchorDate = round1?.endDate ? new Date(round1.endDate) : new Date(contest.endDate);
+                    const examStart = new Date(anchorDate);
+                    examStart.setDate(examStart.getDate() + 3);
+
+                    const examEnd = new Date(examStart);
+                    examEnd.setDate(examStart.getDate() + 7);
+
+                    return `${examStart.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} - ${examEnd.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} (Thường sẽ diễn ra vào cuối tuần)`;
+                  })()
+                )}
               </p>
             </div>
           </div>

@@ -208,13 +208,16 @@ const createContestSchema = (t: Lang) =>
       (data) => {
         if (!data.roundSendOriginalDeadline || !data.roundSubmissionDeadline)
           return true;
-        return (
-          new Date(data.roundSendOriginalDeadline) >
-          new Date(data.roundSubmissionDeadline)
-        );
+        const subDate = new Date(data.roundSubmissionDeadline);
+        const originalDate = new Date(data.roundSendOriginalDeadline);
+        subDate.setHours(0, 0, 0, 0);
+        originalDate.setHours(0, 0, 0, 0);
+        const diffTime = originalDate.getTime() - subDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+        return diffDays >= 3 && diffDays <= 7;
       },
       {
-        message: t.originalDeadlineWithinContest,
+        message: "Hạn gửi bản gốc phải sau hạn nộp bài từ 3 đến 7 ngày",
         path: ["roundSendOriginalDeadline"],
       },
     )
@@ -755,23 +758,13 @@ export default function CreateContestPage() {
                             }
                             min={
                               watchedRoundSubmissionDeadline
-                                ? addDays(watchedRoundSubmissionDeadline, 1)
-                                : watchedRoundStartDate
-                                  ? formatDateForInput(
-                                      new Date(watchedRoundStartDate),
-                                    )
-                                  : watchedStartDate
-                                    ? formatDateForInput(
-                                        new Date(watchedStartDate),
-                                      )
-                                    : todayString
+                                ? addDays(watchedRoundSubmissionDeadline, 3)
+                                : todayString
                             }
                             max={
-                              watchedRoundEndDate
-                                ? addDays(watchedRoundEndDate, -1)
-                                : watchedEndDate
-                                  ? formatDateForInput(new Date(watchedEndDate))
-                                  : undefined
+                              watchedRoundSubmissionDeadline
+                                ? addDays(watchedRoundSubmissionDeadline, 7)
+                                : undefined
                             }
                             className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               !watchedRoundSubmissionDeadline ||

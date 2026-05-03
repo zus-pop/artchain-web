@@ -424,6 +424,27 @@ export function ExaminersDialog({
         return false;
       }
 
+      if (examiner.role === "ROUND_1") {
+        const round1 = rounds.find((r) => r.name === "ROUND_1" || !r.isRound2);
+        if (round1?.submissionDeadline) {
+          const deadline = new Date(round1.submissionDeadline);
+          const chosenDate = new Date(newDate);
+
+          deadline.setHours(0, 0, 0, 0);
+          chosenDate.setHours(0, 0, 0, 0);
+
+          if (chosenDate <= deadline) {
+            toast.error(
+              `Ngày chấm bài phải sau ngày hạn nộp bài (${formatDate({
+                dateString: round1.submissionDeadline,
+                language: currentLanguage,
+              })})`,
+            );
+            return false;
+          }
+        }
+      }
+
       const schedulePayload = {
         contestId,
         examinerId: examiner.examinerId,
@@ -754,9 +775,17 @@ export function ExaminersDialog({
                       ? new Date(selectedTable.endDate)
                       : null;
                   } else if (examiner.role === "ROUND_1") {
-                    roundStartDate = round?.startDate
-                      ? new Date(round.startDate)
-                      : null;
+                    // Use submissionDeadline as the starting point for grading if available
+                    if (round?.submissionDeadline) {
+                      const deadlineDate = new Date(round.submissionDeadline);
+                      // Schedule must be AFTER the submission deadline
+                      deadlineDate.setDate(deadlineDate.getDate() + 1);
+                      roundStartDate = deadlineDate;
+                    } else {
+                      roundStartDate = round?.startDate
+                        ? new Date(round.startDate)
+                        : null;
+                    }
                     roundEndDate = round?.endDate
                       ? new Date(round.endDate)
                       : null;

@@ -338,11 +338,16 @@ function AwardManagementPage() {
                                 step={100_000}
                                 min={0}
                                 max={getPrizeMaxLimit(award.rank)}
+                                onKeyDown={(e) => {
+                                  if (["-", "e", "E"].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
                                 onChange={(e) => {
                                   let val =
                                     e.target.value === ""
                                       ? 0
-                                      : Number(e.target.value);
+                                      : Math.max(0, Number(e.target.value));
                                   const maxLimit = getPrizeMaxLimit(award.rank);
                                   if (
                                     maxLimit !== undefined &&
@@ -456,11 +461,16 @@ function AwardManagementPage() {
                                         : editFormData?.prize
                                     }
                                     placeholder="0"
+                                    onKeyDown={(e) => {
+                                      if (["-", "e", "E"].includes(e.key)) {
+                                        e.preventDefault();
+                                      }
+                                    }}
                                     onChange={(e) => {
                                       let val =
                                         e.target.value === ""
                                           ? 0
-                                          : Number(e.target.value);
+                                          : Math.max(0, Number(e.target.value));
                                       const maxLimit = getPrizeMaxLimit(
                                         editFormData?.rank || award.rank,
                                         award.awardId,
