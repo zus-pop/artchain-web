@@ -516,6 +516,35 @@ function AwardManagementPage() {
                                 rows={2}
                               />
                             </div>
+                            {award.rank <= 3 && (
+                              <div>
+                                <label className="block text-sm font-medium staff-text-primary mb-1">
+                                  Số lượng giải
+                                </label>
+                                <input
+                                  type="number"
+                                  value={editFormData?.quantity || 0}
+                                  min={1}
+                                  onKeyDown={(e) => {
+                                    if (["-", "e", "E"].includes(e.key)) {
+                                      e.preventDefault();
+                                    }
+                                  }}
+                                  onChange={(e) => {
+                                    const val =
+                                      e.target.value === ""
+                                        ? 0
+                                        : Math.max(0, Number(e.target.value));
+                                    setEditFormData({
+                                      ...editFormData!,
+                                      quantity: val,
+                                    });
+                                  }}
+                                  className="staff-input w-full"
+                                  placeholder="0"
+                                />
+                              </div>
+                            )}
                             <div className="flex gap-2">
                               <button
                                 onClick={() =>
