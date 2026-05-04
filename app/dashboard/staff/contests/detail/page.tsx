@@ -1279,7 +1279,7 @@ function ContestDetailContent() {
                               <span className="font-bold text-gray-700">{t.reviewsLabel}:</span> {item.evaluationCount}
                             </span>
                           </div>
-                          <div className="mb-3 flex justify-center">
+                          {/* <div className="mb-3 flex justify-center">
                             <span
                               className={`inline-flex items-center px-2 py-1 text-xs font-medium ${
                                 item.painting.status === "ACCEPTED"
@@ -1308,7 +1308,7 @@ function ContestDetailContent() {
                                         ? t.pendingReviewStatus
                                         : item.painting.status}
                             </span>
-                          </div>
+                          </div> */}
                         </div>
                         {item.painting.status !== "ORIGINAL_SUBMITTED" &&
                           item.painting.status !== "NOT_SUBMITTED_ORIGINAL" && (

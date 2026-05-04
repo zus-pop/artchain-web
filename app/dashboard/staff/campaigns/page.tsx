@@ -27,6 +27,7 @@ import {
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 // API Response Types
@@ -34,6 +35,7 @@ import { useState } from "react";
 export default function CampaignsPage() {
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+  const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState<CampaignStatus | "ALL">(
     "ALL"
   );
@@ -275,16 +277,13 @@ export default function CampaignsPage() {
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                                   {t.deadline}
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  {t.actions}
-                                </th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                               {campaigns.length === 0 ? (
                                 <tr>
                                   <td
-                                    colSpan={6}
+                                    colSpan={5}
                                     className="px-6 py-12 text-center staff-text-secondary"
                                   >
                                     {t.noCampaignsFound}
@@ -307,7 +306,12 @@ export default function CampaignsPage() {
                                     return (
                                       <tr
                                         key={campaign.campaignId}
-                                        className="hover:bg-gray-50"
+                                        className="hover:bg-gray-50 cursor-pointer"
+                                        onClick={() =>
+                                          router.push(
+                                            `/dashboard/staff/campaigns/${campaign.campaignId}`
+                                          )
+                                        }
                                       >
                                         <td className="px-6 py-4 whitespace-nowrap">
                                           <div className="w-16 h-16 bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
@@ -385,30 +389,6 @@ export default function CampaignsPage() {
                                                 campaign.deadline
                                               ).toLocaleDateString()}
                                             </div>
-                                          </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                          <div className="flex items-center justify-end gap-2">
-                                            <Link
-                                              href={`/dashboard/staff/campaigns/${campaign.campaignId}`}
-                                              className="staff-btn-icon-primary"
-                                              title="View Details"
-                                            >
-                                              <IconEye className="h-4 w-4" />
-                                            </Link>
-                                            <Link
-                                              href={`/dashboard/staff/campaigns/${campaign.campaignId}/edit`}
-                                              className="staff-btn-icon-neutral"
-                                              title="Edit"
-                                            >
-                                              <IconEdit className="h-4 w-4" />
-                                            </Link>
-                                            {/* <button
-                                              className="staff-btn-icon-danger"
-                                              title="Delete"
-                                            >
-                                              <IconTrash className="h-4 w-4" />
-                                            </button> */}
                                           </div>
                                         </td>
                                       </tr>
