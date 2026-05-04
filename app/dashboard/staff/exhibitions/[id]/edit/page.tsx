@@ -35,13 +35,6 @@ const exhibitionSchema = z
       .string()
       .min(1, "Description is required")
       .max(500, "Description must be less than 500 characters"),
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().min(1, "End date is required"),
-    status: z.enum(["DRAFT", "ACTIVE", "COMPLETED", "CANCEL"]),
-  })
-  .refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
-    message: "End date must be after start date",
-    path: ["endDate"],
   });
 
 type ExhibitionFormData = z.infer<typeof exhibitionSchema>;
@@ -68,13 +61,10 @@ export default function EditExhibitionPage({
     defaultValues: {
       name: "",
       description: "",
-      startDate: "",
-      endDate: "",
-      status: "DRAFT",
     },
   });
 
-  const watchedStartDate = watch("startDate");
+
 
   // Fetch exhibition details
   const { data: exhibitionResponse, isLoading } = useGetExhibitionById(id);
@@ -89,9 +79,6 @@ export default function EditExhibitionPage({
       reset({
         name: exhibition.name,
         description: exhibition.description,
-        startDate: formatDateForInput(exhibition.startDate),
-        endDate: formatDateForInput(exhibition.endDate),
-        status: exhibition.status,
       });
     }
   }, [exhibition, reset]);
@@ -109,12 +96,6 @@ export default function EditExhibitionPage({
     }
   };
 
-  const statusOptions: ExhibitionStatus[] = [
-    "DRAFT",
-    "ACTIVE",
-    "COMPLETED",
-    "CANCEL",
-  ];
 
   if (isLoading) {
     return (
@@ -184,7 +165,7 @@ export default function EditExhibitionPage({
       <SidebarInset>
         <SiteHeader title={t.editExhibitionTitle} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -208,7 +189,7 @@ export default function EditExhibitionPage({
                   <div className="flex items-center gap-4">
                     <Link
                       href={`/dashboard/staff/exhibitions/${id}`}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 hover:bg-gray-100 rounded-sm transition-colors"
                       title={t.backToExhibitionDetails}
                     >
                       <IconArrowLeft className="h-5 w-5" />
@@ -217,9 +198,9 @@ export default function EditExhibitionPage({
                       <h1 className="text-3xl font-bold staff-text-primary">
                         {t.editExhibitionDetails}
                       </h1>
-                      <p className="text-sm staff-text-secondary mt-1">
+                      {/* <p className="text-sm staff-text-secondary mt-1">
                         {t.updateExhibitionInfo}
-                      </p>
+                      </p> */}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -239,16 +220,16 @@ export default function EditExhibitionPage({
                     {/* Exhibition Details */}
                     <div className="staff-card p-6">
                       <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-blue-100 rounded-lg">
+                        <div className="p-2 bg-blue-100 rounded-sm">
                           <IconCalendar className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
                           <h2 className="text-xl font-semibold staff-text-primary">
                             {t.exhibitionDetails}
                           </h2>
-                          <p className="text-sm staff-text-secondary">
+                          {/* <p className="text-sm staff-text-secondary">
                             {t.basicExhibitionInfo}
-                          </p>
+                          </p> */}
                         </div>
                       </div>
 
@@ -258,16 +239,16 @@ export default function EditExhibitionPage({
                       >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
+                            <label className="staff-type-label staff-text-primary mb-2 block">
                               {t.exhibitionNameLabel}
                             </label>
                             <input
                               type="text"
                               {...register("name")}
-                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                              className={`w-full px-3 py-2 border rounded-sm focus:outline-none staff-field transition-colors ${
                                 errors.name
                                   ? "border-red-300"
-                                  : "border-[#e6e2da]"
+                                  : "border-[var(--staff-border)]"
                               }`}
                               placeholder={t.enterExhibitionName}
                             />
@@ -279,16 +260,16 @@ export default function EditExhibitionPage({
                           </div>
 
                           <div className="md:col-span-2">
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
+                            <label className="staff-type-label staff-text-primary mb-2 block">
                               {t.descriptionLabel}
                             </label>
                             <textarea
                               {...register("description")}
                               rows={4}
-                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors resize-none ${
+                              className={`w-full px-3 py-2 border rounded-sm focus:outline-none staff-field transition-colors resize-none ${
                                 errors.description
                                   ? "border-red-300"
-                                  : "border-[#e6e2da]"
+                                  : "border-[var(--staff-border)]"
                               }`}
                               placeholder={t.describeExhibition}
                             />
@@ -299,66 +280,12 @@ export default function EditExhibitionPage({
                             )}
                           </div>
 
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.startDateLabel}
-                            </label>
-                            <input
-                              type="date"
-                              {...register("startDate")}
-                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                                errors.startDate
-                                  ? "border-red-300"
-                                  : "border-[#e6e2da]"
-                              }`}
-                            />
-                            {errors.startDate && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {errors.startDate.message}
-                              </p>
-                            )}
-                          </div>
 
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.endDateLabel}
-                            </label>
-                            <input
-                              type="date"
-                              {...register("endDate")}
-                              min={watchedStartDate}
-                              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
-                                errors.endDate
-                                  ? "border-red-300"
-                                  : "border-[#e6e2da]"
-                              }`}
-                            />
-                            {errors.endDate && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {errors.endDate.message}
-                              </p>
-                            )}
-                          </div>
 
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.statusLabel}
-                            </label>
-                            <select
-                              {...register("status")}
-                              className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-                            >
-                              {statusOptions.map((status) => (
-                                <option key={status} value={status}>
-                                  {status}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
                         </div>
 
                         {/* Form Actions */}
-                        <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#e6e2da]">
+                        <div className="flex items-center justify-end gap-3 pt-6 border-t border-[var(--staff-border)]">
                           <Link
                             href={`/dashboard/staff/exhibitions/${id}`}
                             className="staff-btn-secondary flex items-center gap-2"
@@ -382,7 +309,7 @@ export default function EditExhibitionPage({
                   {/* Sidebar Column */}
                   {/* <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <div className="staff-card p-6">
-                      <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                      <h3 className="staff-type-section-title staff-text-primary mb-4">
                         {t.exhibitionStats}
                       </h3>
                       <div className="space-y-4">

@@ -3,19 +3,12 @@
 import { getCampaigns } from "@/apis/campaign";
 import { useGetContestsPaginated } from "@/apis/contests";
 import { getPosts } from "@/apis/post";
-import GlassSurface from "@/components/GlassSurface";
 import { useAuth } from "@/hooks/useAuth";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { useMeQuery } from "@/hooks/useMeQuery";
 import { useAuthStore } from "@/store";
 import { Post } from "@/types/post";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  ChevronDown,
-  LogOut,
   Mail,
-  Settings,
-  User,
   MapPin,
   Phone,
   Facebook,
@@ -23,41 +16,35 @@ import {
   Youtube,
   Send,
 } from "lucide-react";
-// Avatar will be rendered as an initial-letter circle; no Next/Image needed here
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import { CampaignAPIResponse } from "../../types/campaign";
+import HeroSection from "@/components/sections/HeroSection";
+import { ContestSection } from "@/components/sections/ContestSection";
+import { SponsorSection } from "@/components/sections/SponsorSection";
+import { CampaignSection } from "@/components/sections/CampaignSection";
+import { PostSection } from "@/components/sections/PostSection";
+import ParallaxBackground from "@/components/sections/ParallaxBackground";
 
-const ArrowRightIcon = () => <span>&rarr;</span>;
+const ArrowRightIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 14 14"
+    fill="none"
+    aria-hidden="true"
+    className="inline-block"
+  >
+    <path
+      d="M1 7h12M7 1l6 6-6 6"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
-// Animated Container Component
-const AnimatedContainer = ({
-  children,
-  className = "",
-  animation = "animate-fade-in-up",
-  delay = 0,
-  ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  animation?: string;
-  delay?: number;
-} & React.HTMLAttributes<HTMLDivElement>) => {
-  const { ref, isIntersecting } = useIntersectionObserver<HTMLDivElement>();
-
-  return (
-    <div
-      ref={ref}
-      className={`${className} ${isIntersecting ? animation : "opacity-0"}`}
-      style={{ animationDelay: `${delay}ms` }}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
 
 const CampaignCard = ({
   imgSrc,
@@ -68,79 +55,87 @@ const CampaignCard = ({
   title: string;
   description: string;
 }) => (
-  <div className="flex flex-col">
-    <img
-      src={imgSrc}
-      alt={title}
-      className="w-full aspect-4/3 object-cover mb-4 sm:mb-6"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src =
-          "https://placehold.co/400x300/cccccc/333333?text=Image+Failed";
-      }}
-    />
-    <h3 className="text-lg font-semibold mb-2 text-center">{title}</h3>
-    <div className="text-black text-sm leading-relaxed mb-6 text-center">
-      <ReactMarkdown>{description}</ReactMarkdown>
+  <div className="group flex flex-col h-full bg-[var(--site-surface)] border border-[var(--site-border)] shadow-sm rounded-sm overflow-hidden">
+    {/* Image — fixed 4:3 aspect ratio, subtle zoom on hover */}
+    <div className="w-full aspect-4/3 overflow-hidden border-b border-[var(--site-border)]">
+      <img
+        src={imgSrc}
+        alt={title}
+        loading="lazy"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src =
+            "https://placehold.co/400x300/cccccc/333333?text=Image+Failed";
+        }}
+      />
     </div>
-    <button className="w-full cursor-pointer bg-[#FF6E1A] rounded-sm text-white px-4 py-2.5 font-medium text-sm hover:bg-[#FF833B] transition-colors flex items-center justify-center gap-2">
-      Đăng kí tài trợ <ArrowRightIcon />
-    </button>
+    {/* Card body */}
+    <div className="flex flex-col flex-1 p-4">
+      <h3 className="text-sm font-bold text-[var(--site-ink)] leading-snug mb-2 line-clamp-2">{title}</h3>
+      <div className="text-xs text-[var(--site-ink-muted)] font-medium leading-relaxed mb-4 line-clamp-3 flex-1">
+        {cleanMarkdown(description)}
+      </div>
+      {/* CTA button */}
+      <button className="w-full mt-auto cursor-pointer bg-[var(--site-accent)] transition-colors duration-200 rounded-sm text-white text-xs font-bold tracking-wide px-4 py-2.5 flex items-center justify-center gap-1.5 shadow-sm">
+        Đăng kí tài trợ <ArrowRightIcon />
+      </button>
+    </div>
   </div>
 );
 
 // Skeleton component for CampaignCard
 const SkeletonCampaignCard = () => (
-  <div className="flex flex-col animate-pulse">
-    <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
-    <div className="h-6 bg-gray-300 mb-2 rounded text-center"></div>
-    <div className="space-y-2 mb-6">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-      <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+  <div className="flex flex-col h-full animate-pulse">
+    <div className="w-full aspect-4/3 bg-[var(--site-skeleton)] mb-4"></div>
+    <div className="h-4 bg-[var(--site-skeleton)] rounded mb-2 w-3/4"></div>
+    <div className="space-y-2 mb-4">
+      <div className="h-3 bg-[var(--site-skeleton)] rounded"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded w-5/6"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded w-2/3"></div>
     </div>
-    <div className="w-full h-10 bg-gray-300 rounded-sm"></div>
+    <div className="w-full h-9 mt-auto bg-[var(--site-skeleton)] rounded-sm"></div>
   </div>
 );
 
 // Skeleton component for Contest Info
 const SkeletonContestInfo = () => (
   <div className="max-w-lg animate-pulse">
-    <div className="h-4 bg-gray-300 mb-2 rounded w-1/2"></div>
-    <div className="h-12 bg-gray-300 mb-4 sm:mb-6 rounded"></div>
+    <div className="h-4 bg-[var(--site-skeleton)] mb-2 rounded w-1/2"></div>
+    <div className="h-12 bg-[var(--site-skeleton)] mb-4 sm:mb-6 rounded"></div>
     <div className="space-y-3 mb-4 sm:mb-6">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-5/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-4/6"></div>
     </div>
     <div className="space-y-2 sm:space-y-3">
-      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-      <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-3/4"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-2/3"></div>
     </div>
-    <div className="mt-6 sm:mt-10 h-12 bg-gray-300 rounded-sm"></div>
+    <div className="mt-6 sm:mt-10 h-12 bg-[var(--site-skeleton)] rounded-sm"></div>
   </div>
 );
 
 // Skeleton component for NewsCardSmall
 const SkeletonNewsCardSmall = () => (
   <div className="flex flex-col overflow-hidden animate-pulse">
-    <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
+    <div className="w-full h-32 sm:h-40 bg-[var(--site-skeleton)]"></div>
     <div className="p-3 sm:p-4">
-      <div className="h-3 bg-gray-300 rounded mb-1 w-1/2"></div>
-      <div className="h-4 bg-gray-300 rounded"></div>
+      <div className="h-3 bg-[var(--site-skeleton)] rounded mb-1 w-1/2"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded"></div>
     </div>
   </div>
 );
 
 // Skeleton component for Spotlight Post
 const SkeletonSpotlightPost = () => (
-  <div className="flex flex-col bg-[#EAE6E0] text-white animate-pulse">
-    <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-300 mb-4 sm:mb-6"></div>
-    <div className="h-4 bg-gray-300 rounded mb-2 w-1/3"></div>
-    <div className="h-8 bg-gray-300 rounded mb-3 sm:mb-4"></div>
+  <div className="flex flex-col bg-[var(--site-bg)] animate-pulse">
+    <div className="w-full h-48 sm:h-64 lg:h-80 bg-[var(--site-skeleton)] mb-4 sm:mb-6"></div>
+    <div className="h-4 bg-[var(--site-skeleton)] rounded mb-2 w-1/3"></div>
+    <div className="h-8 bg-[var(--site-skeleton)] rounded mb-3 sm:mb-4"></div>
     <div className="space-y-2">
-      <div className="h-4 bg-gray-300 rounded"></div>
-      <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-      <div className="h-4 bg-gray-300 rounded w-4/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-5/6"></div>
+      <div className="h-4 bg-[var(--site-skeleton)] rounded w-4/6"></div>
     </div>
   </div>
 );
@@ -159,6 +154,28 @@ const truncateAtWord = (text: string | undefined, maxChars: number) => {
   return text;
 };
 
+// Helper to strip markdown and HTML entities for clean plain-text excerpts
+const cleanMarkdown = (text: string | undefined) => {
+  if (!text) return "";
+  return text
+    // Remove images
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    // Remove links
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    // Remove headings
+    .replace(/#{1,6}\s/g, "")
+    // Remove bold/italics
+    .replace(/(\*\*|\*|__|_)(.*?)\1/g, "$2")
+    // Remove lists and blockquotes
+    .replace(/^\s*[->*+]\s/gm, "")
+    // Remove HTML entities like &#x20;
+    .replace(/&#x[0-9a-fA-F]+;/g, " ")
+    .replace(/&nbsp;/g, " ")
+    // Replace multiple spaces/newlines with a single space
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
 // Component Card cho Tin tức nhỏ
 const NewsCardSmall = ({
   imgSrc,
@@ -174,29 +191,37 @@ const NewsCardSmall = ({
   darkBg?: boolean;
 }) => (
   <div
-    className={`flex flex-col overflow-hidden hover:scale-105 transition-transform duration-300 ${
-      darkBg ? "bg-[#EAE6E0] text-black" : "bg-white text-black"
+    className={`group flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01] border border-[var(--site-border)] shadow-sm rounded-sm ${
+      darkBg ? "bg-[var(--site-surface-warm)] text-[var(--site-ink)]" : "bg-[var(--site-surface)] text-[var(--site-ink)]"
     }`}
   >
-    <img
-      src={imgSrc}
-      alt={title}
-      className="w-full h-32 sm:h-40 object-cover"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src =
-          "https://placehold.co/300x160/cccccc/333333?text=Image";
-      }}
-    />
-    <div className="pt-2">
-      <p className="text-3xl sm:text-sm font-semibold text-black uppercase mb-1">
+    {/* Image — fixed aspect ratio for consistency */}
+    <div className="w-full aspect-video overflow-hidden border-b border-[var(--site-border)]">
+      <img
+        src={imgSrc}
+        alt={title}
+        loading="lazy"
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src =
+            "https://placehold.co/300x160/cccccc/333333?text=Image";
+        }}
+      />
+    </div>
+    {/* Text block */}
+    <div className="flex flex-col flex-1 p-4">
+      {/* Category / Tag — small label */}
+      <p className="text-[10px] font-bold tracking-widest text-[var(--site-accent)] uppercase mb-1.5">
         {category}
       </p>
-      <div className="text-sm sm:text-base font-semibold">
-        <ReactMarkdown>{title}</ReactMarkdown>
+      {/* Title — balanced weight */}
+      <div className="text-sm font-bold text-[var(--site-ink)] leading-snug line-clamp-2">
+        {cleanMarkdown(title)}
       </div>
+      {/* Description — muted, compact */}
       {content && (
-        <div className="text-base text-gray-600 mt-2 line-clamp-2">
-          <ReactMarkdown>{truncateAtWord(content, 100)}</ReactMarkdown>
+        <div className="text-xs text-[var(--site-ink-muted)] font-medium mt-1.5 line-clamp-2 leading-relaxed">
+          {truncateAtWord(cleanMarkdown(content), 120)}
         </div>
       )}
     </div>
@@ -205,8 +230,11 @@ const NewsCardSmall = ({
 
 // --- Component Chính Của Trang ---
 export default function Page() {
-
   const router = useRouter();
+
+  // Slider states for mobile
+  const [currentPostIndex, setCurrentPostIndex] = useState(0);
+  const [currentCampaignIndex, setCurrentCampaignIndex] = useState(0);
 
   // Scroll to top state and function
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -235,8 +263,6 @@ export default function Page() {
   // News posts fetched to fill the NewsCardSmall components (do not change UI)
   const [posts, setPosts] = useState<Post[]>([]);
   const [loadingPosts, setLoadingPosts] = useState<boolean>(true);
-  const [campaigns, setCampaigns] = useState<CampaignAPIResponse[]>([]);
-  const [loadingCampaigns, setLoadingCampaigns] = useState<boolean>(true);
 
   useEffect(() => {
     let mounted = true;
@@ -244,37 +270,11 @@ export default function Page() {
       try {
         setLoadingPosts(true);
         const resp = await getPosts({ limit: 5 });
-        console.log("Fetched posts:", resp.data);
         if (mounted) setPosts(resp.data || []);
       } catch (err) {
         console.error("Error fetching posts:", err);
       } finally {
         if (mounted) setLoadingPosts(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // fetch campaigns (limit = 3)
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoadingCampaigns(true);
-        // Only fetch campaigns with ACTIVE status
-        const resp = await getCampaigns({ limit: 3, status: "ACTIVE" });
-        // resp shape may vary; try common properties
-        const items = resp?.data ?? [];
-        if (mounted)
-          setCampaigns(Array.isArray(items) ? items.slice(0, 3) : []);
-      } catch (err) {
-        console.error("Error fetching campaigns:", err);
-        if (mounted) setCampaigns([]);
-      } finally {
-        if (mounted) setLoadingCampaigns(false);
       }
     })();
 
@@ -299,504 +299,54 @@ export default function Page() {
     (_, i) => remainingUnique[i] ?? null
   );
 
+  // Auto-slide logic
+  useEffect(() => {
+    if (uniquePosts.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentPostIndex((prev) => (prev + 1) % uniquePosts.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [uniquePosts.length]);
+
   return (
-    <div className="min-h-screen bg-[#EAE6E0] text-black font-(family-name:--font-be-vietnam-pro)">
+    <div className="min-h-screen bg-[var(--site-bg)] text-[var(--site-ink)] font-(family-name:--font-be-vietnam-pro)">
 
 
       <main>
         {/* --- Hero Section --- */}
-        <section
-          id="hero"
-          className="relative h-screen min-h-[500px] sm:min-h-[600px] lg:min-h-[700px] flex items-center text-white pt-16 sm:pt-20"
-        >
-          <div className="absolute inset-0">
-            <img
-              src="https://res.cloudinary.com/dbke1s5nm/image/upload/v1762177079/herosection_jznhnz.png"
-              alt="Nền bức tranh phong cảnh"
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.backgroundColor =
-                  "#6c7a89";
-              }}
-            />
-          </div>
+        <HeroSection />
 
-          <div className="relative z-5 mt-8 max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            <div className="max-w-xl mt-0 sm:mt-[-10vh] lg:mt-[-17vh]">
-              <AnimatedContainer
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#423137] font-semibold tracking-tighter leading-tight sm:leading-tight"
-                animation="animate-fade-in-down"
-              >
-                CUỘC THI <br />
-                NÉT VẼ XANH <br />
-                2026
-              </AnimatedContainer>
-              <AnimatedContainer
-                className="mt-4 sm:mt-6 text-sm sm:text-base lg:text-lg text-black leading-relaxed"
-                animation="animate-fade-in-up"
-                delay={200}
-              >
-                Gửi gắm những câu chuyện, ý tưởng và khát{" "}
-                <br className="hidden sm:inline" />
-                vọng qua màu sắc độc đáo của riêng mình. Nơi{" "}
-                <br className="hidden sm:inline" />
-                tài năng hội họa của bạn được tỏa sáng.
-              </AnimatedContainer>
-              <AnimatedContainer
-                className="mt-6 sm:mt-10"
-                animation="animate-zoom-in"
-                delay={400}
-              >
-                <button
-                  onClick={() => router.push("/gallery")}
-                  className="bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
-                >
-                  Xem Triển Lãm <ArrowRightIcon />
-                </button>
-              </AnimatedContainer>
-            </div>
-          </div>
-        </section>
+        {/* --- Contest Showcase Section --- */}
+        <ContestSection />
 
-        {/* --- Contest Info Section --- */}
-        <AnimatedContainer
-          id="contest"
-          className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32 overflow-x-hidden"
-          animation="animate-fade-in-left"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 md:gap-16 items-center">
-            {isLoadingContest ? (
-              // Combined skeleton wrapper so text + image animate in sync
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center animate-pulse">
-                <div>
-                  {/* reuse existing skeleton for left column */}
-                  <SkeletonContestInfo />
-                </div>
-                <div className="h-64 rounded-xl sm:h-80 md:h-full bg-gray-300 md:-mr-[calc((100vw-72rem)/2+2rem)] overflow-hidden" />
-              </div>
-            ) : (
-              <>
-                <div className="max-w-lg">
-                  <h2 className="text-sm sm:text-base font-semibold text-black mb-2">
-                    Cuộc thi đang diễn ra
-                  </h2>
-                  <h3 className="text-3xl leading-17 text-[#423137] sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
-                    {activeContest?.title || "Không có cuộc thi nào"}
-                  </h3>
-                  <p className="text-sm sm:text-base text-black leading-relaxed mb-4 sm:mb-6">
-                    {activeContest?.description ||
-                      "Các cuộc thi sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những cơ hội tham gia thú vị."}
-                  </p>
-                  <div className="space-y-2 sm:space-y-3 text-sm sm:text-base text-black">
-                    <p>
-                      <strong>Thời gian:</strong>{" "}
-                      {activeContest
-                        ? `${new Date(
-                            activeContest.startDate
-                          ).toLocaleDateString("vi-VN")} đến ${new Date(
-                            activeContest.endDate
-                          ).toLocaleDateString("vi-VN")}`
-                        : "Chưa có thông tin thời gian"}
-                    </p>
-                    <p>
-                      <strong>Lưu ý:</strong>
-                      <br />
-                      {activeContest?.rounds?.[0]?.sendOriginalDeadline
-                        ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${(() => {
-                            const deadline =
-                              activeContest.rounds[0].sendOriginalDeadline;
-                            const date = new Date(deadline);
-                            const day = date
-                              .getUTCDate()
-                              .toString()
-                              .padStart(2, "0");
-                            const month = (date.getUTCMonth() + 1)
-                              .toString()
-                              .padStart(2, "0");
-                            const year = date.getUTCFullYear();
-                            return `${day}/${month}/${year}`;
-                          })()}`
-                        : "Thông tin deadline sẽ được cập nhật sớm."}
-                    </p>
-                  </div>
-                  {activeContest && (
-                    <button
-                      onClick={() =>
-                        activeContest.contestId &&
-                        router.push(`/contests/${activeContest.contestId}`)
-                      }
-                      className="mt-6 sm:mt-10 bg-[#FF6E1A] cursor-pointer text-white px-6 sm:px-8 py-3 sm:py-4 font-medium text-sm sm:text-base hover:bg-[#FF833B] rounded-sm transition-colors flex items-center gap-2"
-                    >
-                      Tham gia ngay <ArrowRightIcon />
-                    </button>
-                  )}
-                </div>
+        {/* --- Trusted Supporters Section --- */}
+        <SponsorSection />
 
-                {activeContest ? (
-                  <div className="h-64 rounded-xl sm:h-80 md:h-full  overflow-hidden md:-mr-[calc((100vw-72rem)/2+2rem)]">
-                    <img
-                      src={activeContest.bannerUrl}
-                      alt="Minh họa thành phố"
-                      className="h-full w-full object-cover md:w-[50vw] max-w-none "
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.backgroundColor =
-                          "#89c4f4";
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="h-64 rounded-xl sm:h-80 md:h-full bg-gray-100 md:-mr-[calc((100vw-72rem)/2+2rem)] flex items-center justify-center">
-                    <div className="text-center text-gray-500">
-                      <div className="text-6xl mb-4">🎨</div>
-                      <p className="text-lg font-medium">Chưa có hình ảnh</p>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </AnimatedContainer>
+        {/* --- Campaign Section --- */}
+        <CampaignSection />
 
-        {/* --- News Section with 3 Columns --- */}
-        <AnimatedContainer
-          id="news"
-          className="min-h-screen bg-[#EAE6E0] text-white flex items-center justify-center py-12 sm:py-20 md:py-32"
-          animation="animate-zoom-in"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full">
-            <AnimatedContainer
-              className="text-sm text-black sm:text-base font-semibold mb-4 sm:mb-6"
-              animation="animate-fade-in-down"
-            >
-              Tin tức nổi bật
-            </AnimatedContainer>
-
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_2px_1.2fr_2px_1fr] gap-6 sm:gap-8">
-              {loadingPosts ? (
-                // Combined news skeleton: left column, spotlight, right column
-                <>
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    <SkeletonNewsCardSmall />
-                    {/* make the second small card slightly shorter */}
-                    <div className="flex flex-col overflow-hidden animate-pulse">
-                      <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
-                      <div className="p-3 sm:p-4">
-                        <div className="h-3 bg-gray-300 rounded mb-1 w-2/3"></div>
-                        <div className="h-4 bg-gray-300 rounded w-5/6"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
-                  <SkeletonSpotlightPost />
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {/* mirror with slight variation */}
-                    <div className="flex flex-col overflow-hidden animate-pulse">
-                      <div className="w-full h-32 sm:h-40 bg-gray-300"></div>
-                      <div className="p-3 sm:p-4">
-                        <div className="h-3 bg-gray-300 rounded mb-1 w-1/3"></div>
-                        <div className="h-4 bg-gray-300 rounded w-4/6"></div>
-                      </div>
-                    </div>
-                    <SkeletonNewsCardSmall />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {smallPosts[0] ? (
-                      <Link href={`/posts/${smallPosts[0].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[0].image_url ||
-                            "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                          }
-                          category={
-                            smallPosts[0].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[0].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[0].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
-                    {smallPosts[1] ? (
-                      <Link href={`/posts/${smallPosts[1].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[1].image_url ||
-                            "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                          }
-                          category={
-                            smallPosts[1].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[1].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[1].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
-
-                  <div className="flex flex-col bg-[#EAE6E0] text-white hover:scale-105 transition-transform duration-300">
-                    {spotlightPost ? (
-                      <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <img
-                          src={
-                            spotlightPost.image_url ||
-                            "https://placehold.co/600x400/FF5733/ffffff?text=Paint+Brushes"
-                          }
-                          alt={
-                            spotlightPost.title ||
-                            "Spotlight To Emerging Artist"
-                          }
-                          className="w-full h-48 sm:h-64 lg:h-80 object-cover mb-4 sm:mb-6 cursor-pointer"
-                          onError={(e) => {
-                            (
-                              e.target as HTMLImageElement
-                            ).style.backgroundColor = "#FF5733";
-                          }}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="w-full h-48 sm:h-64 lg:h-80 bg-gray-200 flex items-center justify-center mb-4 sm:mb-6">
-                        <div className="text-center text-gray-500">
-                          <div className="text-lg mb-2">Không có bài viết nổi bật</div>
-                          <p className="text-sm">Các bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
-                    <AnimatedContainer
-                      className="text-xs sm:text-sm font-semibold text-black uppercase mb-2"
-                      animation="animate-fade-in-left"
-                    >
-                      Artist Spotlight
-                    </AnimatedContainer>
-                    {spotlightPost ? (
-                      <Link href={`/posts/${spotlightPost.post_id}`}>
-                        <AnimatedContainer
-                          className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4 cursor-pointer"
-                          animation="animate-fade-in-right"
-                          delay={200}
-                        >
-                          <ReactMarkdown>{spotlightPost.title}</ReactMarkdown>
-                        </AnimatedContainer>
-                      </Link>
-                    ) : (
-                      <AnimatedContainer
-                        className="text-2xl sm:text-3xl font-bold mb-3 text-black sm:mb-4"
-                        animation="animate-fade-in-right"
-                        delay={200}
-                      >
-                        Không có bài viết nổi bật
-                      </AnimatedContainer>
-                    )}
-                    <AnimatedContainer
-                      className="text-sm sm:text-base text-black leading-relaxed"
-                      animation="animate-fade-in-up"
-                      delay={400}
-                    >
-                      {spotlightPost?.content ? (
-                        <div>
-                          <ReactMarkdown>
-                            {spotlightPost.content.length > 250
-                              ? spotlightPost.content.slice(0, 250) + "..."
-                              : spotlightPost.content}
-                          </ReactMarkdown>
-                        </div>
-                      ) : (
-                        <div className="text-gray-500 italic">
-                          Các bài viết nổi bật sẽ được cập nhật sớm. Hãy theo dõi để không bỏ lỡ những nội dung thú vị về nghệ thuật và cuộc thi.
-                        </div>
-                      )}
-                    </AnimatedContainer>
-                  </div>
-
-                  <div className="hidden lg:block w-0.5 bg-neutral-700 h-full"></div>
-
-                  <div className="flex flex-col justify-between gap-6 sm:gap-8">
-                    {smallPosts[2] ? (
-                      <Link href={`/posts/${smallPosts[2].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[2].image_url ||
-                            "https://placehold.co/300x160/7F00FF/ffffff?text=Cactus+Art"
-                          }
-                          category={
-                            smallPosts[2].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[2].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[2].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
-                    {smallPosts[3] ? (
-                      <Link href={`/posts/${smallPosts[3].post_id}`}>
-                        <NewsCardSmall
-                          imgSrc={
-                            smallPosts[3].image_url ||
-                            "https://placehold.co/300x160/5C7C3B/ffffff?text=Painting"
-                          }
-                          category={
-                            smallPosts[3].postTags?.[0]?.tag?.tag_name ||
-                            "Digital & Contemparary Art"
-                          }
-                          title={
-                            smallPosts[3].title ||
-                            "How Art Fairs Are Adapting to the<br />Digital Age"
-                          }
-                          content={smallPosts[3].content}
-                          darkBg={true}
-                        />
-                      </Link>
-                    ) : (
-                      <div className="flex flex-col overflow-hidden bg-gray-100 p-3 sm:p-4">
-                        <div className="text-center text-gray-500 py-8">
-                          <div className="text-sm mb-1">Không có bài viết</div>
-                          <p className="text-xs">Bài viết sẽ được cập nhật sớm.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </AnimatedContainer>
-
-        {/* --- Campaigns Section --- */}
-        <AnimatedContainer
-          id="campaigns"
-          className="min-h-screen bg-[#EAE6E0] flex items-center justify-center py-12 sm:py-20 md:py-32"
-          animation="animate-fade-in-right"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
-            <AnimatedContainer
-              className="text-sm sm:text-base font-semibold mb-4 sm:mb-6 text-black"
-              animation="animate-fade-in-down"
-            >
-              Chiến dịch đang diễn ra
-            </AnimatedContainer>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 md:gap-10">
-              {loadingCampaigns
-                ? // show varied skeletons while loading
-                  [0, 1, 2].map((i) => (
-                    <div key={i} className="p-2">
-                      <div className="flex flex-col animate-pulse">
-                        <div className="w-full aspect-4/3 bg-gray-300 mb-4 sm:mb-6 rounded" />
-                        <div
-                          className={`h-6 bg-gray-300 mb-2 rounded ${
-                            i === 0 ? "w-3/4" : i === 1 ? "w-2/3" : "w-1/2"
-                          }`}
-                        />
-                        <div className="space-y-2 mb-6">
-                          <div
-                            className={`h-4 bg-gray-300 rounded ${
-                              i === 2 ? "w-4/6" : "w-full"
-                            }`}
-                          ></div>
-                          <div
-                            className={`h-4 bg-gray-300 rounded ${
-                              i === 1 ? "w-3/4" : "w-5/6"
-                            }`}
-                          ></div>
-                        </div>
-                        <div
-                          className={`w-full h-10 bg-gray-300 rounded-sm ${
-                            i === 0 ? "" : "w-11/12"
-                          }`}
-                        />
-                      </div>
-                    </div>
-                  ))
-                : campaigns.length > 0
-                ? campaigns.map((c, idx) => (
-                    <Link
-                      key={c.campaignId ?? idx}
-                      href={`/campaigns/${c.campaignId}`}
-                    >
-                      <CampaignCard
-                        imgSrc={
-                          c.image ||
-                          "https://placehold.co/400x300/cccccc/333333?text=No+Image"
-                        }
-                        title={c.title || "Không có tiêu đề"}
-                        description={c.description || ""}
-                      />
-                    </Link>
-                  ))
-                : // Show no data message instead of mock data
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-400 text-sm">Các chiến dịch sẽ được cập nhật sớm.</p>
-                  </div>}
-            </div>
-          </div>
-        </AnimatedContainer>
+        {/* --- Community News & Announcements Section --- */}
+        <PostSection />
       </main>
 
-      {/* Scroll to Top Button */}
+      {/* Scroll to Top Button — animated pop-in/out */}
       {showScrollTop && (
         <button
+          aria-label="Cuộn lên đầu trang"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed cursor-pointer bottom-4 right-4 bg-[#FF6E1A] text-white p-3 rounded-full shadow-lg hover:bg-[#FF833B] transition-colors z-50"
+          className="fixed cursor-pointer bottom-4 right-4 bg-[var(--site-accent)] text-white p-3 rounded-sm shadow-lg z-50"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 10l7-7m0 0l7 7m-7-7v18"
-            />
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
           </svg>
         </button>
       )}
 
       {/* --- Footer --- */}
-      <footer className="relative bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-hidden">
+      <footer className="relative bg-[var(--site-ink)] text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-[var(--site-bg)]/20 via-transparent to-[var(--site-bg)]/20"></div>
         </div>
 
         <div className="relative py-12 sm:py-16 md:py-20">
@@ -812,29 +362,29 @@ export default function Page() {
                     className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
                   />
                   <h3 className="text-xl sm:text-2xl font-bold text-white">
-                    Nét Vẽ Xanh
+                    ArtChain
                   </h3>
                 </div>
-                <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6">
+                <p className="text-white/80 text-sm sm:text-base leading-relaxed mb-6">
                   Nơi nuôi dưỡng tài năng hội họa trẻ, kết nối cộng đồng nghệ sĩ
                   và lan tỏa giá trị nghệ thuật đến mọi nhà.
                 </p>
                 <div className="flex space-x-4">
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <Facebook className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <Instagram className="w-5 h-5" />
                   </a>
                   <a
                     href="#"
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    className="text-white/60 hover:text-white transition-colors duration-300"
                   >
                     <Youtube className="w-5 h-5" />
                   </a>
@@ -848,26 +398,26 @@ export default function Page() {
                 </h5>
                 <ul className="space-y-3 text-sm sm:text-base">
                   {/* <li>
-                    <a href="#" className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group">
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                    <a href="#" className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group">
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nhiệm vụ
                     </a>
                   </li> */}
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Đội ngũ
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Liên hệ
                     </a>
                   </li>
@@ -883,27 +433,27 @@ export default function Page() {
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
-                      Nét Vẽ Xanh 2026
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      NÉT VẼ ƯỚC MƠ 2026
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Thể lệ
                     </a>
                   </li>
                   <li>
                     <a
                       href="#"
-                      className="text-gray-300 hover:text-white transition-colors duration-300 flex items-center group"
+                      className="text-white/80 hover:text-white transition-colors duration-300 flex items-center group"
                     >
-                      <span className="w-1.5 h-1.5 bg-[#FF6E1A] rounded-full mr-3 opacity-100 transition-opacity"></span>
+                      <span className="w-1.5 h-1.5 bg-[var(--site-accent)] rounded-full mr-3 opacity-100 transition-opacity"></span>
                       Nộp bài
                     </a>
                   </li>
@@ -917,72 +467,72 @@ export default function Page() {
                 </h5>
                 <ul className="space-y-3 text-sm sm:text-base">
                   <li className="flex items-start space-x-3">
-                    <MapPin className="w-4 h-4 text-[#FF6E1A] mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-300">
+                    <MapPin className="w-4 h-4 text-[var(--site-accent)] mt-0.5 flex-shrink-0" />
+                    <span className="text-white/80">
                       123 Đường ABC, Quận 1<br />
                       TP.HCM, Việt Nam
                     </span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Phone className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">+84 123 456 789</span>
+                    <Phone className="w-4 h-4 text-[var(--site-accent)] flex-shrink-0" />
+                    <span className="text-white/80">+84 123 456 789</span>
                   </li>
                   <li className="flex items-center space-x-3">
-                    <Mail className="w-4 h-4 text-[#FF6E1A] flex-shrink-0" />
-                    <span className="text-gray-300">artchain999@gmail.com</span>
+                    <Mail className="w-4 h-4 text-[var(--site-accent)] flex-shrink-0" />
+                    <span className="text-white/80">artchain999@gmail.com</span>
                   </li>
                 </ul>
               </div>
             </div>
 
             {/* Newsletter Signup */}
-            <div className="border-t border-gray-800 pt-8 sm:pt-12">
+            {/* <div className="border-t border-white/10 pt-8 sm:pt-12">
               <div className="max-w-md mx-auto text-center">
                 <h4 className="text-lg sm:text-xl font-bold text-white mb-3">
                   Đăng ký nhận tin
                 </h4>
-                <p className="text-gray-300 text-sm sm:text-base mb-6">
+                <p className="text-white/80 text-sm sm:text-base mb-6">
                   Nhận thông tin mới nhất về cuộc thi và các sự kiện nghệ thuật
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="email"
                     placeholder="Nhập email của bạn"
-                    className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-[#FF6E1A] focus:ring-1 focus:ring-[#FF6E1A] transition-colors"
+                    className="flex-1 px-4 py-3 bg-[var(--site-bg)]/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[var(--site-accent)] focus:ring-1 focus:ring-[var(--site-accent)] transition-colors"
                   />
-                  <button className="px-6 py-3 bg-[#FF6E1A] hover:bg-[#FF833B] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
+                  <button className="px-6 py-3 bg-[var(--site-accent)] hover:bg-[var(--site-accent-hover)] text-white font-medium rounded-lg transition-colors duration-300 flex items-center justify-center gap-2 whitespace-nowrap">
                     <Send className="w-4 h-4" />
                     Đăng ký
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-800 bg-black/50 backdrop-blur-sm">
+        <div className="border-t border-white/10 bg-black/10 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-gray-400 text-xs sm:text-sm text-center md:text-left">
-                &copy; 2026 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.
+              <p className="text-white/60 text-xs sm:text-sm text-center md:text-left">
+                &copy; 2026 ArtChain. Đã đăng ký bản quyền.
               </p>
               <div className="flex flex-wrap justify-center md:justify-end space-x-6 text-xs sm:text-sm">
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Điều khoản dịch vụ
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Chính sách bảo mật
                 </a>
                 <a
                   href="#"
-                  className="text-gray-400 hover:text-white transition-colors duration-300"
+                  className="text-white/60 hover:text-white transition-colors duration-300"
                 >
                   Cookie Policy
                 </a>

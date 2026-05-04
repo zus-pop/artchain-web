@@ -112,7 +112,7 @@ export default function ActiveContestsPage() {
       <SidebarInset>
         <SiteHeader title="Active Contests" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -129,7 +129,7 @@ export default function ActiveContestsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     Active Contests ({filteredContests.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
@@ -155,7 +155,7 @@ export default function ActiveContestsPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Active Contests
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">
+                      <p className="staff-type-page-title staff-text-primary">
                         {totalActiveContests}
                       </p>
                     </div>
@@ -171,7 +171,7 @@ export default function ActiveContestsPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Total Participants
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">
+                      <p className="staff-type-page-title staff-text-primary">
                         {totalParticipants}
                       </p>
                     </div>
@@ -187,7 +187,7 @@ export default function ActiveContestsPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Submissions Received
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">
+                      <p className="staff-type-page-title staff-text-primary">
                         {totalSubmissions}
                       </p>
                     </div>
@@ -203,7 +203,7 @@ export default function ActiveContestsPage() {
                       <p className="text-sm font-medium staff-text-secondary">
                         Avg. Progress
                       </p>
-                      <p className="text-2xl font-bold staff-text-primary">
+                      <p className="staff-type-page-title staff-text-primary">
                         {averageProgress}%
                       </p>
                     </div>
@@ -214,13 +214,12 @@ export default function ActiveContestsPage() {
               {/* Search */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder="Search active contests..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
               </div>
@@ -247,7 +246,7 @@ export default function ActiveContestsPage() {
                       {/* Contest Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold staff-text-primary mb-1">
+                          <h3 className="staff-type-section-title staff-text-primary mb-1">
                             {contest.title}
                           </h3>
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -282,7 +281,7 @@ export default function ActiveContestsPage() {
                       {/* Stats Grid */}
                       <div className="grid grid-cols-2 gap-4 mb-4">
                         <div className="text-center">
-                          <div className="text-lg font-semibold staff-text-primary">
+                          <div className="staff-type-section-title staff-text-primary">
                             {contest.submissionsReceived}
                           </div>
                           <div className="text-xs staff-text-secondary">
@@ -290,7 +289,7 @@ export default function ActiveContestsPage() {
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-lg font-semibold staff-text-primary">
+                          <div className="staff-type-section-title staff-text-primary">
                             {contest.examinersCount}
                           </div>
                           <div className="text-xs staff-text-secondary">Examiners</div>
@@ -328,7 +327,7 @@ export default function ActiveContestsPage() {
                         <button className="flex-1 staff-btn-primary transition-colors">
                           View Details
                         </button>
-                        <button className="flex-1 border border-[#e6e2da] text-gray-700 px-3 py-2  text-sm font-medium hover:bg-gray-50 transition-colors">
+                        <button className="flex-1 border border-[var(--staff-border)] text-gray-700 px-3 py-2  text-sm font-medium hover:bg-gray-50 transition-colors">
                           Manage
                         </button>
                       </div>

@@ -18,7 +18,7 @@ export function useRegisterMutation(
       }
     },
     onError: (error) => {
-      toast.error(error.message || "Registration failed. Please try again.");
+      toast.error(error.message || "Đăng ký thất bại. Vui lòng thử lại.");
     },
   });
 }

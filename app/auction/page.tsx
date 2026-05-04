@@ -1,10 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Timer, Hammer, ArrowRight } from 'lucide-react';
+import { ArrowUpRight, Timer, Gavel, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useGetAuctions } from '@/apis/auction';
 import { HeaderWrapper } from '@/components/sections/HeaderWrapper';
 import { motion, AnimatePresence } from 'framer-motion';
+
+import { useAuth } from '@/hooks/useAuth';
+import { useMeQuery } from '@/hooks/useMeQuery';
+import { createWallet } from '@/apis/wallet';
+import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,6 +35,14 @@ const itemVariants = {
 export default function ModernArtAuction() {
   const [activeSection, setActiveSection] = useState('section-01');
   const [mounted, setMounted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [activeLiveId, setActiveLiveId] = useState<string | number | null>(null);
+  const { user } = useAuth();
+  const { data: userData, refetch: refetchUser } = useMeQuery();
+  const displayUser = userData || user;
+  const hasWallet = !!displayUser?.wallet;
+
   const { data: allAuctions = [], isLoading } = useGetAuctions({
     page: 1,
     limit: 10,
@@ -37,6 +51,18 @@ export default function ModernArtAuction() {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  // Initialize activeLiveId when auctions load
+  useEffect(() => {
+    if (allAuctions.length > 0 && !activeLiveId) {
+      setActiveLiveId(allAuctions[0].auctionId);
+    }
+  }, [allAuctions, activeLiveId]);
+
+  useEffect(() => {
+    if (!mounted || !hasWallet) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -45,14 +71,37 @@ export default function ModernArtAuction() {
           }
         });
       },
-      { threshold: 0.3 } 
+      { 
+        threshold: 0.1,
+        rootMargin: "-15% 0px -15% 0px"
+      } 
     );
 
     const sections = document.querySelectorAll('section[id^="section-"]');
     sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
-  }, []);
+  }, [mounted, hasWallet, isLoading, allAuctions]);
+
+  const handleBecomeBidder = async () => {
+    if (!displayUser?.userId) {
+      toast.error("Vui lòng đăng nhập để tiếp tục");
+      return;
+    }
+
+    try {
+      setIsCreatingWallet(true);
+      await createWallet(displayUser.userId);
+      await refetchUser();
+      setShowTerms(false);
+      toast.success("Chúc mừng! Bạn đã trở thành người đấu giá");
+    } catch (error) {
+      console.error("Failed to create wallet:", error);
+      toast.error("Có lỗi xảy ra khi kích hoạt tài khoản đấu giá");
+    } finally {
+      setIsCreatingWallet(false);
+    }
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -118,11 +167,144 @@ export default function ModernArtAuction() {
 
   if (!mounted) return null;
 
+  // Render Become Bidder Landing Page if NO wallet
+  if (!hasWallet) {
+    return (
+      <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
+        <HeaderWrapper />
+        
+        <main className="pt-40 pb-20 px-[5%] max-w-4xl mx-auto flex flex-col items-center text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-20 h-20 bg-[#f07d44]/10 rounded-full flex items-center justify-center mb-8 mx-auto">
+              <Gavel className="text-[#f07d44] w-10 h-10" />
+            </div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-6 leading-none">
+              Sẵn sàng sở hữu <br />
+              <span className="text-[#f07d44]">Kiệt tác</span> nghệ thuật?
+            </h1>
+            <p className="text-lg text-black/60 mb-12 max-w-2xl mx-auto">
+              Tham gia cộng đồng đấu giá nghệ thuật tại ArtChain. Chỉ với một tài khoản đấu giá, bạn có thể tham gia đấu giá trực tiếp các tác phẩm từ những nghệ sĩ tài năng nhất.
+            </p>
+            
+            <button 
+              onClick={() => setShowTerms(true)}
+              className="bg-[#1a1a1a] text-white px-10 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-[#f07d44] transition-all flex items-center gap-3 mx-auto shadow-2xl"
+            >
+              Trở thành người đấu giá <ArrowRight size={20} />
+            </button>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 text-left">
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-sm border border-white/20">
+              <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">1</div>
+              <h3 className="font-bold uppercase tracking-wider mb-2">Đăng ký ví</h3>
+              <p className="text-sm opacity-60">Tạo ví ArtChain để quản lý số dư và tham gia đấu giá an toàn.</p>
+            </div>
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-sm border border-white/20">
+              <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">2</div>
+              <h3 className="font-bold uppercase tracking-wider mb-2">Nạp tiền</h3>
+              <p className="text-sm opacity-60">Nạp tiền vào ví để có thể đặt giá cho những tác phẩm bạn yêu thích.</p>
+            </div>
+            <div className="bg-white/50 backdrop-blur-sm p-8 rounded-sm border border-white/20">
+              <div className="w-10 h-10 bg-[#f07d44] text-white rounded-full flex items-center justify-center font-bold mb-4">3</div>
+              <h3 className="font-bold uppercase tracking-wider mb-2">Đấu giá & Sở hữu</h3>
+              <p className="text-sm opacity-60">Tham gia phiên đấu giá trực tiếp và nhận tác phẩm nghệ thuật tận nơi.</p>
+            </div>
+          </div>
+        </main>
+
+        <AnimatePresence>
+          {showTerms && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowTerms(false)}
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl relative z-10 flex flex-col max-h-[90vh]"
+              >
+                <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-[#1a1a1a] text-white text-center">
+                  <div>
+                    <h2 className="text-2xl font-black uppercase tracking-tighter">Điều khoản & Điều kiện</h2>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 mt-1">Vui lòng đọc kỹ trước khi bắt đầu</p>
+                  </div>
+                  <button onClick={() => setShowTerms(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white">
+                    <X size={24} />
+                  </button>
+                </div>
+                
+                <div className="p-8 overflow-y-auto flex-1 text-sm leading-relaxed space-y-6">
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">1. Quy định chung</h4>
+                    <p>Bằng việc đăng ký tài khoản đấu giá, bạn đồng ý tuân thủ tất cả các quy định về đấu giá tại ArtChain. Các giao dịch đấu giá là thỏa thuận ràng buộc về mặt pháp lý.</p>
+                  </section>
+                  
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">2. Quy tắc đặt giá</h4>
+                    <ul className="list-disc pl-5 space-y-2">
+                      <li>Mỗi bước giá phải lớn hơn giá hiện tại ít nhất bằng mức quy định (Bước giá).</li>
+                      <li>Sau khi xác nhận đặt giá, bạn không thể hủy hoặc rút lại giá đã đặt.</li>
+                      <li>Người đặt giá cao nhất tại thời điểm kết thúc phiên đấu giá sẽ là người thắng cuộc.</li>
+                    </ul>
+                  </section>
+                  
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">3. Thanh toán & Nhận tác phẩm</h4>
+                    <p>Người thắng cuộc có trách nhiệm thanh toán toàn bộ số tiền trúng đấu giá trong vòng 48 giờ. Tác phẩm sẽ được vận chuyển sau khi ArtChain xác nhận đã nhận đủ thanh toán.</p>
+                  </section>
+
+                  <section>
+                    <h4 className="font-bold text-[#f07d44] uppercase mb-2">4. Trách nhiệm người dùng</h4>
+                    <p>Bạn chịu trách nhiệm bảo mật thông tin tài khoản và mọi hoạt động diễn ra dưới tài khoản của mình. ArtChain có quyền đình chỉ tài khoản nếu phát hiện hành vi gian lận hoặc vi phạm quy định.</p>
+                  </section>
+                </div>
+
+                <div className="p-8 border-t border-gray-100 flex flex-col md:flex-row gap-4">
+                  <button 
+                    onClick={() => setShowTerms(false)}
+                    className="flex-1 px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest border border-gray-200 hover:bg-gray-50 transition-all text-center"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button 
+                    onClick={handleBecomeBidder}
+                    disabled={isCreatingWallet}
+                    className="flex-1 bg-[#1a1a1a] text-white px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#f07d44] transition-all flex items-center justify-center gap-2 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isCreatingWallet ? (
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    ) : (
+                      <>Tôi đã đọc và đồng ý <Check size={18} /></>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
+          <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ ƯỚC MƠ — BỘ SƯU TẬP TÁC PHẨM</p>
+        </footer>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#eae6e0] text-[#1a1a1a] font-sans selection:bg-[#f07d44] selection:text-white relative">
+
       <HeaderWrapper />
       
-      {/* Quick Action Navigation Sidebar */}
       <div className="fixed left-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4 hidden lg:flex">
         {['section-01', 'section-02', 'section-03'].map((section, index) => (
           <button
@@ -138,7 +320,7 @@ export default function ModernArtAuction() {
         ))}
       </div>
 
-      {/* ================= SECTION 01: HERO ================= */}
+      {/* Hero Section */}
       <section id="section-01" className="relative pt-40 pb-20 px-[5%] max-w-[1600px] mx-auto grid grid-cols-12 gap-6 min-h-[90vh]">
         <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
            <p className={getNumberStyle('section-01')}>01</p>
@@ -178,18 +360,118 @@ export default function ModernArtAuction() {
               className="w-full h-full object-cover"
               alt="Main Art"
             />
-            <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 shadow-lg">
-                <span className="text-[10px] font-black uppercase tracking-widest">Tác phẩm tiêu biểu</span>
-            </div>
           </div>
         </motion.div>
       </section>
 
-      {/* ================= SECTION 02: COLLECTION ================= */}
+      {/* Live Bidding Section (Section 02) */}
       <section id="section-02" className="py-24 px-[5%] max-w-[1600px] mx-auto mb-20 relative min-h-[90vh]">
         <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
                 <p className={getNumberStyle('section-02')}>02</p>
+            </div>
+
+            <div className="col-span-12 lg:col-span-11">
+                <motion.div 
+                  className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6"
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={containerVariants}
+                >
+                  <motion.div variants={itemVariants}>
+                    <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">Đấu giá trực tiếp</h2>
+                    <p className="text-sm opacity-60 mt-4 max-w-sm uppercase tracking-widest font-bold">Tham gia đặt giá ngay cho các tác phẩm đang diễn ra</p>
+                  </motion.div>
+                  {/* <motion.div variants={itemVariants} className="flex gap-4">
+                    <div className="flex gap-2">
+                       <button 
+                          onClick={() => {
+                             const idx = liveItems.findIndex(i => i.id === (activeLiveId || liveItems[0]?.id));
+                             const newIdx = (liveItems.length + idx - 1) % liveItems.length;
+                             setActiveLiveId(liveItems[newIdx].id);
+                          }}
+                          className="p-2 border border-black/10 hover:bg-black/5 transition-colors rounded-full"
+                       >
+                          <ArrowLeft size={20} />
+                       </button>
+                       <button 
+                          onClick={() => {
+                             const idx = liveItems.findIndex(i => i.id === (activeLiveId || liveItems[0]?.id));
+                             const newIdx = (idx + 1) % liveItems.length;
+                             setActiveLiveId(liveItems[newIdx].id);
+                          }}
+                          className="p-2 border border-black/10 hover:bg-black/5 transition-colors rounded-full"
+                       >
+                          <ArrowRight size={20} />
+                       </button>
+                    </div>
+                  </motion.div> */}
+                </motion.div>
+
+                <div className="relative">
+                {isLoading ? (
+                  <div className="bg-white h-[400px] animate-pulse shadow-sm" />
+                ) : liveItems.length === 0 ? (
+                  <div className="py-20 text-center border-2 border-dashed border-gray-200">
+                    <p className="text-sm font-bold uppercase text-gray-400">Hiện chưa có phiên đấu giá</p>
+                  </div>
+                ) : (
+                  <AnimatePresence mode="wait">
+                    {liveItems.filter(item => item.id === (activeLiveId || liveItems[0].id)).map((item) => (
+                      <motion.div 
+                        key={item.id} 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.4 }}
+                        className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
+                      >
+                        <div className="lg:col-span-7 relative group">
+                            <div className="aspect-video overflow-hidden shadow-md bg-gray-100">
+                              <img src={item.img} className="w-full h-full object-cover" alt={item.title} />
+                            </div>
+                            <div className="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse">LIVE</div>
+                        </div>
+
+                        <div className="lg:col-span-5">
+                            <h3 className="text-4xl font-black uppercase italic leading-none mb-4">{item.title}</h3>
+                            <p className="text-[#f07d44] font-bold uppercase tracking-widest text-xs mb-10">{item.artist}</p>
+
+                            <div className="grid grid-cols-2 gap-10 mb-12">
+                              <div>
+                                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-2">Giá hiện tại</p>
+                                  <p className="text-3xl font-black">{item.bid}</p>
+                              </div>
+                              <div>
+                                  <p className="text-[10px] uppercase font-bold opacity-40 tracking-[0.2em] mb-2">Thời gian</p>
+                                  <p className="text-3xl font-black flex items-center gap-2"><Timer size={24} className="opacity-20" /> {item.time}</p>
+                              </div>
+                            </div>
+
+                            <Link href={`/auction/${item.id}`}>
+                              <button className="w-full bg-[#1a1a1a] text-white py-5 font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3">
+                                  Đấu giá ngay <Gavel size={16} />
+                              </button>
+                            </Link>
+                            <p className="mt-6 text-[11px] opacity-40 font-bold uppercase tracking-wider">
+                              {item.watchers} người đang theo dõi lô tranh này
+                            </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                )}
+                </div>
+            </div>
+        </div>
+      </section>
+
+      {/* Collection Section (Section 03) */}
+      <section id="section-03" className="py-24 px-[5%] max-w-[1600px] mx-auto mb-20 relative min-h-[90vh]">
+        <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
+                <p className={getNumberStyle('section-03')}>03</p>
             </div>
 
             <motion.div 
@@ -203,7 +485,7 @@ export default function ModernArtAuction() {
                   <motion.div variants={itemVariants} className="max-w-xl">
                       <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-[#f07d44] mb-4 block">Phiên đấu giá được đề xuất</span>
                       <h2 className="text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-none">
-                        {featuredItem?.title || "Không có phiên đấu giá"}
+                        {featuredItem?.title || "Sàn Đấu Giá"}
                       </h2>
                   </motion.div>
                   <motion.div variants={itemVariants}>
@@ -228,7 +510,7 @@ export default function ModernArtAuction() {
                                   alt={featuredItem?.paintingTitle}
                                 />
                                 <div className="absolute top-6 left-6 flex gap-2">
-                                  <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div>
+                                  {/* <div className="bg-red-500 text-white text-[10px] font-bold px-3 py-1 animate-pulse shadow-lg">LIVE</div> */}
                                   <div className="bg-white/90 backdrop-blur px-3 py-1 text-[10px] font-bold flex items-center gap-1 shadow-sm text-black">
                                       <Timer size={12} /> {featuredItem?.time}
                                   </div>
@@ -237,7 +519,7 @@ export default function ModernArtAuction() {
                           </Link>
                           <div className="mt-8">
                               <h3 className="text-4xl font-black uppercase italic leading-none mb-3 line-clamp-1">{featuredItem?.paintingTitle}</h3>
-                              <p className="text-sm opacity-60 leading-relaxed font-medium uppercase tracking-widest text-[#f07d44]">{featuredItem?.artist}</p>
+                              <p className="text-sm opacity-60 leading-relaxed font-black uppercase tracking-widest text-[#f07d44]">{featuredItem?.artist}</p>
                           </div>
                           </div>
 
@@ -273,9 +555,9 @@ export default function ModernArtAuction() {
                                     <div className="px-2">
                                       <div className="flex justify-between items-start mb-2">
                                           <h4 className="text-lg font-black uppercase tracking-tight line-clamp-1">{ap.painting?.title}</h4>
-                                          <span className="font-bold text-[#f07d44]">{new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(ap.currentBid || ap.basePrice)}</span>
                                       </div>
-                                      <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] line-clamp-1">Lô #{String(i+2).padStart(3, '0')} — {ap.painting?.competitorName || "Nghệ sĩ"}</p>
+                                      <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-1 text-black">Giá hiện tại</p>
+                                      <p className="text-2xl font-black text-[#f07d44]">{formatVnd(ap.currentBid || ap.basePrice)}</p>
                                     </div>
                                 </Link>
                               </motion.div>
@@ -293,102 +575,8 @@ export default function ModernArtAuction() {
         </div>
       </section>
 
-      {/* ================= SECTION 03: LIVE BIDDING ================= */}
-      <section id="section-03" className="py-32 px-[5%] max-w-[1600px] mx-auto relative min-h-[90vh]">
-        <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12 lg:col-span-1 hidden lg:block relative">
-                <p className={getNumberStyle('section-03')}>03</p>
-            </div>
-
-            <div className="col-span-12 lg:col-span-11">
-                <motion.div 
-                  className="mb-20 pl-4 lg:pl-0 flex flex-col md:flex-row md:items-end justify-between gap-6"
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={containerVariants}
-                >
-                  <motion.div variants={itemVariants}>
-                    <h2 className="text-6xl font-serif font-bold text-slate-900 leading-tight">Đấu giá trực tiếp</h2>
-                    <p className="text-slate-400 mt-4 max-w-sm">Các tác phẩm nghệ thuật đang được đấu giá trực tuyến. Tham gia ngay để sở hữu những kiệt tác độc đáo cho bộ sưu tập của bạn.</p>
-                  </motion.div>
-                  <motion.div variants={itemVariants}>
-                    <Link href="/auction/list">
-                      <button className="bg-white border-2 border-[#FF6E1A] text-[#FF6E1A] px-8 py-4 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#FF6E1A] hover:text-white transition-all whitespace-nowrap flex items-center gap-3">
-                        Xem tất cả <ArrowRight size={16} />
-                      </button>
-                    </Link>
-                  </motion.div>
-                </motion.div>
-
-                <div className="flex flex-col gap-20">
-                {isLoading ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {Array.from({ length: 2 }).map((_, i) => (
-                      <div key={i} className="bg-white h-[360px] animate-pulse rounded-md" />
-                    ))}
-                  </div>
-                ) : liveItems.length === 0 ? (
-                  <div className="py-20 text-center border border-slate-200 bg-white/60">
-                    <p className="text-lg font-bold uppercase tracking-wider text-slate-500">Hiện chưa có phiên đấu giá ongoing</p>
-                  </div>
-                ) : (
-                  liveItems.map((item) => (
-                    <motion.div 
-                      key={item.id} 
-                      className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center border-b border-slate-200 pb-20 last:border-0 px-4 lg:px-0"
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true, margin: "-50px" }}
-                      variants={itemVariants}
-                    >
-                      <div className="lg:col-span-7 relative group">
-                          <div className="aspect-video overflow-hidden shadow-xl bg-gray-100">
-                            <img src={item.img} className="w-full h-full object-cover" alt={item.title} />
-                          </div>
-                          {item.status && (
-                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 text-[9px] font-bold text-[#FF6E1A] uppercase tracking-widest shadow-sm">
-                                {item.status}
-                            </div>
-                          )}
-                      </div>
-
-                      <div className="lg:col-span-5">
-                          <h3 className="text-4xl font-serif font-bold text-slate-900 mb-2 leading-snug">{item.title}</h3>
-                          <p className="text-slate-400 italic text-lg mb-10">{item.artist}</p>
-
-                          <div className="grid grid-cols-2 gap-10 mb-12">
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-[0.2em] mb-2">Giá hiện tại</p>
-                                <p className="text-3xl font-bold text-slate-900">{item.bid}</p>
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-slate-400 tracking-[0.2em] mb-2">Thời gian còn lại</p>
-                                <p className="text-3xl font-bold flex items-center gap-2"><Timer size={24} className="opacity-20" /> {item.time}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-4">
-                            <Link href={`/auction/${item.id}`} className="flex-1">
-                              <button className="w-full bg-[#FF6E1A] text-white py-5 rounded-md font-bold text-xs uppercase tracking-[0.3em] hover:bg-[#f07d44] transition-all flex items-center justify-center gap-3 shadow-lg">
-                                  Đặt giá thầu <Hammer size={16} />
-                              </button>
-                            </Link>
-                          </div>
-                          <p className="mt-6 text-[11px] text-slate-400 font-medium flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> {item.watchers} người đang theo dõi lô tranh này
-                          </p>
-                      </div>
-                    </motion.div>
-                  ))
-                )}
-                </div>
-            </div>
-        </div>
-      </section>
-
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
-         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — BỘ SƯU TẬP TÁC PHẨM</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ ƯỚC MƠ — BỘ SƯU TẬP TÁC PHẨM</p>
       </footer>
     </div>
   );

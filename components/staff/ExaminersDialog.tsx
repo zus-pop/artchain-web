@@ -1,39 +1,49 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  IconX,
-  IconUser,
-  IconMail,
-  IconCalendar,
-  IconTag,
-  IconSearch,
-  IconPlus,
-  IconTrash,
-} from "@tabler/icons-react";
-import { toast } from "sonner";
-import { ExaminerDTO, AvailableExaminerDTO } from "@/types/staff/examiner-dto";
-import { ScheduleDTO } from "@/types/staff/schedule-dto";
-import { RoundResponseItem } from "@/types/staff/contest-dto";
-import { useTranslation } from "@/lib/i18n";
-import { useLanguageStore } from "@/store/language-store";
-import { formatDate, formatDateForInput } from "@/lib/utils";
-import {
-  getStaffContestExaminers,
-  getAllStaffExaminers,
   addStaffContestExaminer,
-  deleteStaffContestExaminer,
-  getStaffSchedulesByExaminer,
   createStaffSchedule,
+  deleteStaffContestExaminer,
+  deleteStaffSchedule,
+  getAllStaffExaminers,
+  getStaffContestExaminers,
+  getStaffSchedulesByExaminer,
   updateStaffSchedule,
 } from "@/apis/staff";
+import { useTranslation } from "@/lib/i18n";
+import { formatDate, formatDateForInput } from "@/lib/utils";
+import { useLanguageStore } from "@/store/language-store";
+import { RoundResponseItem } from "@/types/staff/contest-dto";
+import { AvailableExaminerDTO, ExaminerDTO } from "@/types/staff/examiner-dto";
+import { ScheduleDTO } from "@/types/staff/schedule-dto";
+import {
+  IconCalendar,
+  IconMail,
+  IconPlus,
+  IconSearch,
+  IconTag,
+  IconTrash,
+  IconUser,
+  IconX,
+  IconCheck,
+} from "@tabler/icons-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ExaminersDialogProps {
   isOpen: boolean;
   onClose: () => void;
   contestId: number;
   rounds?: RoundResponseItem[];
+}
+
+type ExaminerRole = "ROUND_1" | "ROUND_2";
+
+interface ScheduleDraft {
+  date: string;
+  round2Table: string;
 }
 
 export function ExaminersDialog({
@@ -48,13 +58,23 @@ export function ExaminersDialog({
 
   // State for adding new examiner
   const [selectedExaminerId, setSelectedExaminerId] = useState<string>("");
-  const [selectedRole, setSelectedRole] = useState<string>("ROUND_1");
+  const [selectedRole, setSelectedRole] = useState<ExaminerRole>("ROUND_1");
+  const [activeRoleTab, setActiveRoleTab] = useState<ExaminerRole>("ROUND_1");
   const [examinerSearch, setExaminerSearch] = useState("");
   const [showExaminerDropdown, setShowExaminerDropdown] = useState(false);
+
+  // State for delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [examinerToDelete, setExaminerToDelete] = useState<ExaminerDTO | null>(
+    null,
+  );
 
   // State for schedule management
   const [examinerSchedules, setExaminerSchedules] = useState<
     Record<string, ScheduleDTO[]>
+  >({});
+  const [scheduleDrafts, setScheduleDrafts] = useState<
+    Record<string, ScheduleDraft>
   >({});
   const [showScheduleDropdown, setShowScheduleDropdown] = useState<
     string | null
@@ -78,15 +98,59 @@ export function ExaminersDialog({
     enabled: isOpen,
   });
 
-  const contestExaminers = useMemo(
+  const contestExaminers = useMemo<ExaminerDTO[]>(
     () => examinersData?.data || [],
-    [examinersData?.data]
+    [examinersData?.data],
   );
-  const availableExaminers = availableExaminersData?.data || [];
+
+  const availableExaminers = useMemo<AvailableExaminerDTO[]>(
+    () => availableExaminersData?.data || [],
+    [availableExaminersData?.data],
+  );
+
+  const hasRound2 = useMemo(
+    () => rounds.some((round) => round.name === "ROUND_2" || round.isRound2),
+    [rounds],
+  );
+
+  const round2Round = useMemo(
+    () => rounds.find((round) => round.name === "ROUND_2" || round.isRound2),
+    [rounds],
+  );
+
+  const round2Tables = useMemo(() => {
+    const tables =
+      round2Round?.tables
+        ?.map((table) => table.table)
+        .filter((table): table is string => Boolean(table)) || [];
+    return Array.from(new Set(tables));
+  }, [round2Round]);
+
+  const round1Examiners = useMemo(
+    () =>
+      contestExaminers.filter(
+        (examiner: ExaminerDTO) => examiner.role === "ROUND_1",
+      ),
+    [contestExaminers],
+  );
+
+  const round2Examiners = useMemo(
+    () =>
+      contestExaminers.filter(
+        (examiner: ExaminerDTO) => examiner.role === "ROUND_2",
+      ),
+    [contestExaminers],
+  );
+
+  const filteredContestExaminers =
+    activeRoleTab === "ROUND_1" ? round1Examiners : round2Examiners;
+
+  const getExaminerAssignmentKey = (examiner: ExaminerDTO) =>
+    `${examiner.examinerId}-${examiner.role}`;
 
   // Add examiner mutation
   const addExaminerMutation = useMutation({
-    mutationFn: (data: { examinerId: string; role: string }) =>
+    mutationFn: (data: { examinerId: string; role: ExaminerRole }) =>
       addStaffContestExaminer(contestId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -96,32 +160,79 @@ export function ExaminersDialog({
         queryKey: ["contest-detail", contestId.toString()],
       });
       setSelectedExaminerId("");
-      setSelectedRole("ROUND_1");
+      setSelectedRole(activeRoleTab);
       setExaminerSearch("");
-      toast.success("Examiner added successfully");
+      toast.success("Thêm giám khảo thành công");
     },
     onError: (error) => {
       console.error("Error adding examiner:", error);
-      toast.error("Error adding examiner");
+      toast.error("Lỗi khi thêm giám khảo");
     },
   });
 
   // Delete examiner mutation
   const deleteExaminerMutation = useMutation({
-    mutationFn: (examinerId: string) =>
-      deleteStaffContestExaminer(contestId, examinerId),
-    onSuccess: () => {
+    mutationFn: async (data: { examinerId: string; role: ExaminerRole }) => {
+      const assignmentTask = getTaskByRole(data.role);
+      const currentSchedules = examinerSchedules[data.examinerId] || [];
+      const currentAssignmentSchedule = currentSchedules.find(
+        (schedule) =>
+          schedule.contestId === contestId && schedule.task === assignmentTask,
+      );
+
+      if (currentAssignmentSchedule) {
+        try {
+          await deleteStaffSchedule(currentAssignmentSchedule.scheduleId);
+        } catch (error) {
+          // Continue removing assignment even if schedule is already missing.
+          console.error("Error removing schedule:", error);
+        }
+      }
+
+      return deleteStaffContestExaminer(contestId, data.examinerId);
+    },
+    onSuccess: (_, variables) => {
+      const assignmentKey = `${variables.examinerId}-${variables.role}`;
+
+      setExaminerSchedules((prev) => {
+        const examinerSchedule = prev[variables.examinerId] || [];
+        const filteredSchedule = examinerSchedule.filter(
+          (schedule) =>
+            !(
+              schedule.contestId === contestId &&
+              schedule.task === getTaskByRole(variables.role)
+            ),
+        );
+
+        const nextSchedules = { ...prev };
+        if (filteredSchedule.length > 0) {
+          nextSchedules[variables.examinerId] = filteredSchedule;
+        } else {
+          delete nextSchedules[variables.examinerId];
+        }
+
+        return nextSchedules;
+      });
+
+      setScheduleDrafts((prev) => {
+        const nextDrafts = { ...prev };
+        delete nextDrafts[assignmentKey];
+        return nextDrafts;
+      });
+
+      setShowScheduleDropdown((prev) => (prev === assignmentKey ? null : prev));
+
       queryClient.invalidateQueries({
         queryKey: ["contest-examiners", contestId],
       });
       queryClient.invalidateQueries({
         queryKey: ["contest-detail", contestId.toString()],
       });
-      toast.success("Examiner removed successfully");
+      toast.success("Gỡ giám khảo thành công");
     },
     onError: (error) => {
       console.error("Error removing examiner:", error);
-      toast.error("Error removing examiner");
+      toast.error("Lỗi khi xóa giám khảo");
     },
   });
 
@@ -130,40 +241,97 @@ export function ExaminersDialog({
     if (!isOpen) {
       setSelectedExaminerId("");
       setSelectedRole("ROUND_1");
+      setActiveRoleTab("ROUND_1");
       setExaminerSearch("");
       setShowExaminerDropdown(false);
       setShowScheduleDropdown(null);
+      setExaminerSchedules({});
+      setScheduleDrafts({});
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!hasRound2) {
+      if (selectedRole === "ROUND_2") {
+        setSelectedRole("ROUND_1");
+      }
+      if (activeRoleTab === "ROUND_2") {
+        setActiveRoleTab("ROUND_1");
+      }
+    }
+  }, [hasRound2, selectedRole, activeRoleTab]);
+
   // Load schedules when examiners are loaded
   useEffect(() => {
-    if (contestExaminers.length > 0) {
-      contestExaminers.forEach((examiner: ExaminerDTO) => {
-        loadExaminerSchedules(examiner.examinerId);
-      });
-    }
+    const uniqueExaminerIds: string[] = Array.from(
+      new Set(
+        contestExaminers.map(
+          (examiner: ExaminerDTO) => examiner.examinerId as string,
+        ),
+      ),
+    );
+    const uniqueExaminerIdSet = new Set(uniqueExaminerIds);
+    const activeAssignmentKeys = new Set(
+      contestExaminers.map((examiner) => getExaminerAssignmentKey(examiner)),
+    );
+
+    setExaminerSchedules((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([examinerId]) =>
+          uniqueExaminerIdSet.has(examinerId),
+        ),
+      );
+      return next as Record<string, ScheduleDTO[]>;
+    });
+
+    setScheduleDrafts((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([assignmentKey]) =>
+          activeAssignmentKeys.has(assignmentKey),
+        ),
+      );
+      return next as Record<string, ScheduleDraft>;
+    });
+
+    setShowScheduleDropdown((prev) =>
+      prev && !activeAssignmentKeys.has(prev) ? null : prev,
+    );
+
+    uniqueExaminerIds.forEach((examinerId) => {
+      loadExaminerSchedules(examinerId);
+    });
   }, [contestExaminers]);
 
-  const handleDeleteExaminer = (examinerId: string, examinerName: string) => {
-    if (
-      window.confirm(
-        `Are you sure you want to remove ${examinerName} from this contest?`
-      )
-    ) {
-      deleteExaminerMutation.mutate(examinerId);
-    }
+  const handleDeleteExaminer = (examiner: ExaminerDTO) => {
+    setExaminerToDelete(examiner);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteExaminer = () => {
+    if (!examinerToDelete) return;
+    deleteExaminerMutation.mutate(
+      {
+        examinerId: examinerToDelete.examinerId,
+        role: examinerToDelete.role,
+      },
+      {
+        onSuccess: () => {
+          setDeleteConfirmOpen(false);
+          setExaminerToDelete(null);
+        },
+      },
+    );
   };
 
   // Schedule management functions
-  const getTaskByRole = (role: string) => {
+  const getTaskByRole = (role: ExaminerRole) => {
     switch (role) {
       case "ROUND_1":
-        return "Round 1 Evaluation";
+        return "Chấm Vòng Sơ Khảo";
       case "ROUND_2":
-        return "Round 2 Evaluation";
+        return "Chấm Vòng Chung Khảo";
       default:
-        return "Evaluation";
+        return "Chấm Bài";
     }
   };
 
@@ -179,42 +347,168 @@ export function ExaminersDialog({
     }
   };
 
+  const getContestScheduleForExaminer = (examiner: ExaminerDTO) => {
+    const fetchedSchedules = examinerSchedules[examiner.examinerId] || [];
+    const embeddedSchedules = (examiner as any).schedules || [];
+    
+    // Prefer fetchedSchedules as they are reloaded after updates
+    const allSchedules = [...fetchedSchedules, ...embeddedSchedules];
+
+    return allSchedules.find(
+      (schedule) =>
+        schedule.contestId === contestId &&
+        schedule.task === getTaskByRole(examiner.role),
+    );
+  };
+
+  const updateScheduleDraft = (
+    examiner: ExaminerDTO,
+    field: keyof ScheduleDraft,
+    value: string,
+  ) => {
+    const assignmentKey = getExaminerAssignmentKey(examiner);
+    const currentSchedule = getContestScheduleForExaminer(examiner);
+
+    setScheduleDrafts((prev) => {
+      const currentDraft = prev[assignmentKey] || {
+        date: formatDateForInput(currentSchedule?.date),
+        round2Table: currentSchedule?.round2Table || "",
+      };
+
+      const updatedDraft = {
+        ...currentDraft,
+        [field]: value,
+      };
+
+      // Auto-fill date if table is selected for ROUND_2
+      if (examiner.role === "ROUND_2" && field === "round2Table" && value) {
+        const tableInfo = round2Round?.tables?.find((t) => t.table === value);
+        if (tableInfo?.startDate) {
+          updatedDraft.date = formatDateForInput(tableInfo.startDate);
+        }
+      }
+
+      return {
+        ...prev,
+        [assignmentKey]: updatedDraft,
+      };
+    });
+  };
+
+  const handleToggleScheduleDropdown = (examiner: ExaminerDTO) => {
+    const assignmentKey = getExaminerAssignmentKey(examiner);
+
+    if (showScheduleDropdown === assignmentKey) {
+      setShowScheduleDropdown(null);
+      return;
+    }
+
+    const currentSchedule = getContestScheduleForExaminer(examiner);
+    const initialTable = currentSchedule?.round2Table || (examiner.role === "ROUND_2" && round2Tables.length === 1 ? round2Tables[0] : "");
+    let initialDate = currentSchedule?.date ? formatDateForInput(currentSchedule.date) : "";
+
+    // If we have a table but no date, try to fetch the date from the table info
+    if (examiner.role === "ROUND_2" && initialTable && !initialDate) {
+      const tableInfo = round2Round?.tables?.find((t) => t.table === initialTable);
+      if (tableInfo?.startDate) {
+        initialDate = formatDateForInput(tableInfo.startDate);
+      }
+    }
+
+    setScheduleDrafts((prev) => ({
+      ...prev,
+      [assignmentKey]: {
+        date: initialDate,
+        round2Table: initialTable,
+      },
+    }));
+    setShowScheduleDropdown(assignmentKey);
+  };
+
   const handleScheduleDateChange = async (
     examiner: ExaminerDTO,
-    newDate: string
+    newDate: string,
+    round2Table?: string,
   ) => {
     try {
       const existingSchedules = examinerSchedules[examiner.examinerId] || [];
       const existingSchedule = existingSchedules.find(
-        (s) => s.contestId === contestId
+        (s) =>
+          s.contestId === contestId && s.task === getTaskByRole(examiner.role),
       );
+
+      if (examiner.role === "ROUND_2" && !round2Table) {
+        toast.error("Vui lòng chọn bảng cho vòng chung khảo");
+        return false;
+      }
+
+      if (examiner.role === "ROUND_1") {
+        const round1 = rounds.find((r) => r.name === "ROUND_1" || !r.isRound2);
+        if (round1?.submissionDeadline) {
+          const deadline = new Date(round1.submissionDeadline);
+          const chosenDate = new Date(newDate);
+
+          deadline.setHours(0, 0, 0, 0);
+          chosenDate.setHours(0, 0, 0, 0);
+
+          if (chosenDate <= deadline) {
+            toast.error(
+              `Ngày chấm bài phải sau ngày hạn nộp bài (${formatDate({
+                dateString: round1.submissionDeadline,
+                language: currentLanguage,
+              })})`,
+            );
+            return false;
+          }
+        }
+      }
+
+      const schedulePayload = {
+        contestId,
+        examinerId: examiner.examinerId,
+        task: getTaskByRole(examiner.role),
+        date: newDate,
+        status: "ACTIVE",
+        ...(examiner.role === "ROUND_2" && round2Table ? { round2Table } : {}),
+      };
 
       if (existingSchedule) {
         // Update existing schedule
-        await updateStaffSchedule(existingSchedule.scheduleId, {
-          contestId,
-          examinerId: examiner.examinerId,
-          task: getTaskByRole(examiner.role),
-          date: newDate,
-          status: "ACTIVE",
-        });
+        await updateStaffSchedule(existingSchedule.scheduleId, schedulePayload);
       } else {
         // Create new schedule
-        await createStaffSchedule({
-          contestId,
-          examinerId: examiner.examinerId,
-          task: getTaskByRole(examiner.role),
-          date: newDate,
-          status: "ACTIVE",
-        });
+        await createStaffSchedule(schedulePayload);
       }
 
-      // Reload schedules
+      // Reload schedules and invalidate examiners query to get updated totalCount
       await loadExaminerSchedules(examiner.examinerId);
+      queryClient.invalidateQueries({ queryKey: ["contest-examiners", contestId] });
       toast.success(t.scheduleUpdateSuccess);
+      return true;
     } catch (error) {
       console.error("Error updating schedule:", error);
       toast.error(t.scheduleUpdateError);
+      return false;
+    }
+  };
+
+  const handleSaveSchedule = async (examiner: ExaminerDTO) => {
+    const assignmentKey = getExaminerAssignmentKey(examiner);
+    const scheduleDraft = scheduleDrafts[assignmentKey];
+
+    if (!scheduleDraft?.date) {
+      toast.error(t.selectDateFromCalendar);
+      return;
+    }
+
+    const success = await handleScheduleDateChange(
+      examiner,
+      scheduleDraft.date,
+      scheduleDraft.round2Table,
+    );
+
+    if (success) {
+      setShowScheduleDropdown(null);
     }
   };
 
@@ -240,6 +534,23 @@ export function ExaminersDialog({
       toast.error(t.selectExaminerAndRole);
       return;
     }
+
+    if (
+      contestExaminers.some(
+        (examiner) => examiner.examinerId === selectedExaminerId,
+      )
+    ) {
+      toast.error("Giám khảo này đã được thêm vào cuộc thi");
+      return;
+    }
+
+    if (selectedRole === "ROUND_2" && !hasRound2) {
+      toast.error(
+        "Vui lòng tạo vòng chung khảo trước khi thêm giám khảo cho vòng này",
+      );
+      return;
+    }
+
     addExaminerMutation.mutate({
       examinerId: selectedExaminerId,
       role: selectedRole,
@@ -250,7 +561,7 @@ export function ExaminersDialog({
 
   return (
     <div className="fixed inset-0 bg-white/60 flex items-center justify-center z-50">
-      <div className="bg-white shadow-xl max-w-4xl w-full mx-4 max-h-[120vh] overflow-hidden">
+      <div className="bg-white shadow-xl max-w-5xl w-full mx-4 max-h-[120vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
@@ -275,7 +586,7 @@ export function ExaminersDialog({
               <button
                 onClick={handleAddExaminer}
                 disabled={addExaminerMutation.isPending || !selectedExaminerId}
-                className="px-6 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium rounded hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="px-6 py-2 bg-linear-to-r from-green-500 to-green-600 text-white font-medium hover:shadow-md transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <IconPlus className="h-5 w-5" />
                 {addExaminerMutation.isPending ? t.adding : t.add}
@@ -289,7 +600,7 @@ export function ExaminersDialog({
                 <div className="flex gap-4">
                   {/* Examiner Search */}
                   <div className="flex-1 relative">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="staff-type-label text-gray-700 mb-2 block">
                       {t.selectExaminer}
                     </label>
                     <div className="relative">
@@ -319,8 +630,8 @@ export function ExaminersDialog({
                               (examiner: AvailableExaminerDTO) =>
                                 !contestExaminers.some(
                                   (e: ExaminerDTO) =>
-                                    e.examinerId === examiner.examinerId
-                                )
+                                    e.examinerId === examiner.examinerId,
+                                ),
                             )
                             .map((examiner: AvailableExaminerDTO) => (
                               <button
@@ -353,16 +664,22 @@ export function ExaminersDialog({
 
                   {/* Role Selection */}
                   <div className="w-48">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="staff-type-label text-gray-700 mb-2 block">
                       {t.role}
                     </label>
                     <select
                       value={selectedRole}
-                      onChange={(e) => setSelectedRole(e.target.value)}
+                      onChange={(e) =>
+                        setSelectedRole(e.target.value as ExaminerRole)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     >
                       <option value="ROUND_1">{t.round1}</option>
-                      <option value="ROUND_2">{t.round2}</option>
+                      <option value="ROUND_2" disabled={!hasRound2}>
+                        {hasRound2
+                          ? t.round2
+                          : `${t.round2}`}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -372,226 +689,379 @@ export function ExaminersDialog({
 
           {/* Current Examiners */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              {t.currentExaminers} ({contestExaminers.length})
-            </h3>
+            <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t.currentExaminers} ({filteredContestExaminers.length})
+              </h3>
+
+              <div className="inline-flex border border-gray-200 rounded-sm overflow-hidden self-start md:self-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveRoleTab("ROUND_1");
+                    setSelectedRole("ROUND_1");
+                    setShowScheduleDropdown(null);
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                    activeRoleTab === "ROUND_1"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {t.round1} ({round1Examiners.length})
+                </button>
+                <button
+                  type="button"
+                  disabled={!hasRound2}
+                  onClick={() => {
+                    setActiveRoleTab("ROUND_2");
+                    setSelectedRole("ROUND_2");
+                    setShowScheduleDropdown(null);
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                    activeRoleTab === "ROUND_2"
+                      ? "bg-purple-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  } ${!hasRound2 ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {t.round2} ({round2Examiners.length})
+                </button>
+              </div>
+            </div>
 
             {isLoadingContestExaminers ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
                 <span className="ml-2 text-gray-600">{t.loadingExaminers}</span>
               </div>
-            ) : contestExaminers.length === 0 ? (
+            ) : filteredContestExaminers.length === 0 ? (
               <div className="text-center py-8">
                 <IconUser className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">{t.noExaminersAssigned}</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {contestExaminers.map((examiner: ExaminerDTO) => (
-                  <div
-                    key={examiner.examinerId}
-                    className="border border-gray-200 p-4 hover:shadow-md transition-shadow"
-                  >
-                    <div className="grid grid-cols-3 gap-4 items-center">
-                      {/* Column 1: Name and Email */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {examiner.examinerName}
-                          </h3>
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(
-                              examiner.role
-                            )}`}
-                          >
-                            {examiner.role === "ROUND_1"
-                              ? `${t.round1}`
-                              : `${t.round2}`}
-                          </span>
-                        </div>
+                {filteredContestExaminers.map((examiner: ExaminerDTO) => {
+                  const assignmentKey = getExaminerAssignmentKey(examiner);
+                  const currentSchedule =
+                    getContestScheduleForExaminer(examiner);
+                  const scheduleDraft = scheduleDrafts[assignmentKey] || {
+                    date: formatDateForInput(currentSchedule?.date),
+                    round2Table:
+                      examiner.role === "ROUND_2"
+                        ? currentSchedule?.round2Table ||
+                          (round2Tables.length === 1 ? round2Tables[0] : "")
+                        : "",
+                  };
 
-                        <div className="text-sm text-gray-600">
-                          <div className="flex items-center gap-2 mb-1">
-                            <IconMail className="h-4 w-4" />
-                            <span>{examiner.examinerEmail}</span>
+                  const round =
+                    examiner.role === "ROUND_2"
+                      ? round2Round
+                      : rounds.find((r) => r.name === "ROUND_1" || !r.isRound2);
+
+                  const availableTables =
+                    examiner.role === "ROUND_2"
+                      ? Array.from(
+                          new Set(
+                            (round?.tables || [])
+                              .map((table) => table.table)
+                              .filter((table): table is string =>
+                                Boolean(table),
+                              ),
+                          ),
+                        )
+                      : [];
+
+                  const selectedTable =
+                    examiner.role === "ROUND_2"
+                      ? round?.tables?.find(
+                          (table) => table.table === scheduleDraft.round2Table,
+                        )
+                      : undefined;
+
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+
+                  let roundStartDate: Date | null = null;
+                  let roundEndDate: Date | null = null;
+
+                  if (examiner.role === "ROUND_2" && selectedTable) {
+                    roundStartDate = selectedTable.startDate
+                      ? new Date(selectedTable.startDate)
+                      : null;
+                    roundEndDate = selectedTable.endDate
+                      ? new Date(selectedTable.endDate)
+                      : null;
+                  } else if (examiner.role === "ROUND_1") {
+                    // Use submissionDeadline as the starting point for grading if available
+                    if (round?.submissionDeadline) {
+                      const deadlineDate = new Date(round.submissionDeadline);
+                      // Schedule must be AFTER the submission deadline
+                      deadlineDate.setDate(deadlineDate.getDate() + 1);
+                      roundStartDate = deadlineDate;
+                    } else {
+                      roundStartDate = round?.startDate
+                        ? new Date(round.startDate)
+                        : null;
+                    }
+                    roundEndDate = round?.endDate
+                      ? new Date(round.endDate)
+                      : null;
+                  }
+
+                  if (roundStartDate) roundStartDate.setHours(0, 0, 0, 0);
+                  if (roundEndDate) roundEndDate.setHours(23, 59, 59, 999);
+
+                  const minDate =
+                    roundStartDate && roundStartDate > today
+                      ? roundStartDate
+                      : today;
+                  const maxDate = roundEndDate;
+                  const isRound2WithoutTable =
+                    examiner.role === "ROUND_2" && !scheduleDraft.round2Table;
+                  const displayedRound2Table =
+                    examiner.role === "ROUND_2"
+                      ? currentSchedule?.round2Table ||
+                        scheduleDraft.round2Table
+                      : "";
+
+                  return (
+                    <div
+                      key={assignmentKey}
+                      className="border border-gray-200 p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] gap-4 items-center">
+                        {/* Column 1: Name and Email */}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              {examiner.examinerName}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadgeColor(
+                                examiner.role,
+                              )}`}
+                            >
+                              {examiner.role === "ROUND_1"
+                                ? `${t.round1}`
+                                : `${t.round2}`}
+                            </span>
                           </div>
 
-                          {examiner.examiner.specialization && (
-                            <div className="flex items-center gap-2">
-                              <IconTag className="h-4 w-4" />
-                              <span>
-                                Specialization:{" "}
-                                {examiner.examiner.specialization}
-                              </span>
+                          <div className="text-sm text-gray-600">
+                            <div className="flex items-center gap-2 mb-1">
+                              <IconMail className="h-4 w-4" />
+                              <span>{examiner.examinerEmail}</span>
                             </div>
+
+                            {examiner.examiner.specialization && (
+                              <div className="flex items-center gap-2">
+                                <IconTag className="h-4 w-4" />
+                                <span>
+                                  Specialization:{" "}
+                                  {examiner.examiner.specialization}
+                                </span>
+                              </div>
+                            )}
+
+                            {(examiner.role === "ROUND_1" || (examiner.role === "ROUND_2" && currentSchedule)) && (
+                              <div className="flex items-center gap-2 mt-1.5 text-[var(--staff-primary)] font-medium">
+                                <IconCheck className="h-4 w-4" />
+                                <span>
+                                  Đã chấm: {(examiner as any).evaluatedCount || 0}/{(examiner as any).totalCount || 0} bài
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Column 3: Delete Icon */}
+                        <div className="flex justify-end">
+                          {((examiner as any).evaluatedCount !== (examiner as any).totalCount || (examiner as any).totalCount === 0) && (
+                            <button
+                              onClick={() => handleDeleteExaminer(examiner)}
+                              disabled={deleteExaminerMutation.isPending}
+                              className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Remove examiner"
+                            >
+                              <IconTrash className="h-4 w-4" />
+                            </button>
                           )}
                         </div>
-                      </div>
 
-                      {/* Column 2: Schedule Management */}
-                      <div className="flex justify-center">
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setShowScheduleDropdown(
-                                showScheduleDropdown === examiner.examinerId
-                                  ? null
-                                  : examiner.examinerId
-                              )
-                            }
-                            className="px-4 py-2 bg-green-500/10 text-green-700 border border-green-500/20 rounded hover:bg-green-500/20 transition-colors text-sm font-medium flex items-center gap-2"
-                          >
-                            <IconCalendar className="h-4 w-4" />
-                            {examinerSchedules[examiner.examinerId]?.find(
-                              (s) => s.contestId === contestId
-                            )
-                              ? `${t.scheduled}: ${formatDate({
-                                  dateString:
-                                    examinerSchedules[
-                                      examiner.examinerId
-                                    ]?.find((s) => s.contestId === contestId)
-                                      ?.date || "",
-                                  language: currentLanguage,
-                                })}`
-                              : `+ ${t.schedule}`}
-                          </button>
+                        {/* Column 2: Schedule Management */}
+                        <div className="flex justify-center">
+                          <div className="relative">
+                            <div className="flex items-center gap-2">
+                              {examiner.role === "ROUND_1" && (
+                                <button
+                                  onClick={() =>
+                                    handleToggleScheduleDropdown(examiner)
+                                  }
+                                  className="staff-btn-outline !px-4 !py-2 text-sm text-green-700 border-green-300 hover:bg-green-50 flex items-center gap-2 whitespace-nowrap"
+                                >
+                                  <IconCalendar className="h-4 w-4" />
+                                  {currentSchedule
+                                    ? `${t.scheduled}: ${formatDate({
+                                        dateString: currentSchedule.date,
+                                        language: currentLanguage,
+                                      })}`
+                                    : `+ ${t.schedule}`}
+                                </button>
+                              )}
 
-                          {showScheduleDropdown === examiner.examinerId && (
-                            <div className="absolute bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[250px]">
-                              {(() => {
-                                const round = rounds.find(
-                                  (r) => r.name === examiner.role
-                                );
-                                const today = new Date();
-                                today.setHours(0, 0, 0, 0);
-                                let roundStartDate: Date | null = null;
-                                let roundEndDate: Date | null = null;
+                              {examiner.role === "ROUND_2" && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleToggleScheduleDropdown(examiner)
+                                  }
+                                  className="staff-btn-outline !px-3 !py-2 text-sm text-blue-700 border-blue-300 hover:bg-blue-50 flex items-center gap-2 whitespace-nowrap"
+                                >
+                                  <IconTag className="h-4 w-4" />
+                                  {displayedRound2Table
+                                    ? `${t.table}: ${displayedRound2Table}`
+                                    : "Chọn bảng"}
+                                </button>
+                              )}
+                            </div>
 
-                                if (
-                                  examiner.role === "ROUND_2" &&
-                                  round?.tables &&
-                                  round.tables.length > 0
-                                ) {
-                                  // For ROUND_2, use the first table's dates
-                                  const table = round.tables[0];
-                                  roundStartDate = table.startDate
-                                    ? new Date(table.startDate)
-                                    : null;
-                                  roundEndDate = table.endDate
-                                    ? new Date(table.endDate)
-                                    : null;
-                                } else {
-                                  // For ROUND_1, use round dates
-                                  roundStartDate = round?.startDate
-                                    ? new Date(round.startDate)
-                                    : null;
-                                  roundEndDate = round?.endDate
-                                    ? new Date(round.endDate)
-                                    : null;
-                                }
-
-                                if (roundStartDate)
-                                  roundStartDate.setHours(0, 0, 0, 0);
-                                if (roundEndDate)
-                                  roundEndDate.setHours(23, 59, 59, 999);
-                                const minDate =
-                                  roundStartDate && roundStartDate > today
-                                    ? roundStartDate
-                                    : today;
-                                const maxDate = roundEndDate;
-                                const currentSchedule = examinerSchedules[
-                                  examiner.examinerId
-                                ]?.find((s) => s.contestId === contestId);
-                                const currentDate = currentSchedule?.date || "";
-
-                                return (
-                                  <>
-                                    <input
-                                      type="date"
-                                      value={currentDate}
-                                      min={formatDateForInput(minDate)}
-                                      max={
-                                        maxDate
-                                          ? formatDateForInput(maxDate)
-                                          : undefined
+                            {showScheduleDropdown === assignmentKey && (
+                              <div className="absolute right-0 bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-sm shadow-lg p-3 min-w-[280px]">
+                                {examiner.role === "ROUND_2" && (
+                                  <div className="mb-3">
+                                    <label className="staff-type-label text-gray-700 mb-2 block">
+                                      {t.table}
+                                    </label>
+                                    <select
+                                      value={scheduleDraft.round2Table}
+                                      onChange={(e) =>
+                                        updateScheduleDraft(
+                                          examiner,
+                                          "round2Table",
+                                          e.target.value,
+                                        )
                                       }
-                                      onChange={(e) => {
-                                        if (e.target.value) {
-                                          handleScheduleDateChange(
-                                            examiner,
-                                            e.target.value
-                                          );
-                                          setShowScheduleDropdown(null);
-                                        }
-                                      }}
-                                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-                                    />
-                                    {(roundStartDate || roundEndDate) && (
-                                      <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
-                                        <div className="font-medium mb-1">
-                                          {t.availableDatesForRound}{" "}
-                                          {examiner.role === "ROUND_1"
-                                            ? t.round1
-                                            : t.round2}
-                                          :
-                                        </div>
-                                        <div className="text-xs">
-                                          {roundStartDate && roundEndDate
-                                            ? `${t.fromDate} ${formatDate({
-                                                dateString:
-                                                  roundStartDate.toISOString(),
-                                                language: currentLanguage,
-                                              })} - ${t.untilDate} ${formatDate(
-                                                {
-                                                  dateString:
-                                                    roundEndDate.toISOString(),
-                                                  language: currentLanguage,
-                                                }
-                                              )}`
-                                            : roundStartDate
+                                      className="staff-select w-full border-gray-300"
+                                    >
+                                      <option value="">
+                                        {availableTables.length > 0
+                                          ? "Select table"
+                                          : "No tables available"}
+                                      </option>
+                                      {availableTables.map((table) => (
+                                        <option key={table} value={table}>
+                                          {table}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                )}
+
+                                {examiner.role === "ROUND_1" ? (
+                                  <input
+                                    type="date"
+                                    value={scheduleDraft.date}
+                                    min={formatDateForInput(minDate)}
+                                    max={
+                                      maxDate
+                                        ? formatDateForInput(maxDate)
+                                        : undefined
+                                    }
+                                    onChange={(e) =>
+                                      updateScheduleDraft(
+                                        examiner,
+                                        "date",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="staff-field border-gray-300"
+                                  />
+                                ) : (
+                                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-sm text-sm text-gray-600 italic">
+                                    {scheduleDraft.date ? (
+                                      <div className="flex items-center gap-2">
+                                        <IconCalendar className="h-4 w-4 text-[var(--staff-primary)]" />
+                                        <span>
+                                          {t.date}:{" "}
+                                          {formatDate({
+                                            dateString: scheduleDraft.date,
+                                            language: currentLanguage,
+                                          })}
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      "Chọn bảng để xem ngày thi"
+                                    )}
+                                  </div>
+                                )}
+
+                                {examiner.role === "ROUND_1" &&
+                                  (roundStartDate || roundEndDate) && (
+                                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-sm text-xs text-blue-700">
+                                      <div className="font-medium mb-1">
+                                        {t.availableDatesForRound} {t.round1}:
+                                      </div>
+                                      <div className="text-xs">
+                                        {roundStartDate && roundEndDate
+                                          ? `${t.fromDate} ${formatDate({
+                                              dateString:
+                                                roundStartDate.toISOString(),
+                                              language: currentLanguage,
+                                            })} - ${t.untilDate} ${formatDate({
+                                              dateString:
+                                                roundEndDate.toISOString(),
+                                              language: currentLanguage,
+                                            })}`
+                                          : roundStartDate
                                             ? `${t.fromDate} ${formatDate({
                                                 dateString:
                                                   roundStartDate.toISOString(),
                                                 language: currentLanguage,
                                               })}`
                                             : roundEndDate
-                                            ? `${t.untilDate} ${formatDate({
-                                                dateString:
-                                                  roundEndDate.toISOString(),
-                                                language: currentLanguage,
-                                              })}`
-                                            : null}
-                                        </div>
+                                              ? `${t.untilDate} ${formatDate({
+                                                  dateString:
+                                                    roundEndDate.toISOString(),
+                                                  language: currentLanguage,
+                                                })}`
+                                              : null}
                                       </div>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                                    </div>
+                                  )}
 
-                      {/* Column 3: Delete Icon */}
-                      <div className="flex justify-end">
-                        <button
-                          onClick={() =>
-                            handleDeleteExaminer(
-                              examiner.examinerId,
-                              examiner.examinerName
-                            )
-                          }
-                          disabled={deleteExaminerMutation.isPending}
-                          className="p-2 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Remove examiner"
-                        >
-                          <IconTrash className="h-4 w-4" />
-                        </button>
+                                <div className="mt-3 flex items-center justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowScheduleDropdown(null)
+                                    }
+                                    className="staff-btn-secondary !px-3 !py-1.5"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveSchedule(examiner)}
+                                    disabled={
+                                      !scheduleDraft.date ||
+                                      isRound2WithoutTable
+                                    }
+                                    className="px-3 py-1.5 text-sm text-white bg-green-600 hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {t.schedule}
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -607,6 +1077,25 @@ export function ExaminersDialog({
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        onClose={() => {
+          setDeleteConfirmOpen(false);
+          setExaminerToDelete(null);
+        }}
+        onConfirm={confirmDeleteExaminer}
+        title="Xác nhận xóa giám khảo"
+        description={
+          <span>
+            Bạn có chắc chắn muốn xóa <b>{examinerToDelete?.examinerName}</b>{" "}
+            khỏi cuộc thi này?
+          </span>
+        }
+        confirmText="Xóa giám khảo"
+        variant="destructive"
+        isLoading={deleteExaminerMutation.isPending}
+      />
     </div>
   );
 }

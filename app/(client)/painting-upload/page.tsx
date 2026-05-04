@@ -4,6 +4,7 @@ import { ErrorModal } from "@/components/ErrorModal";
 import Loader from "@/components/Loaders";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -60,7 +61,11 @@ const paintingUploadSchema = z.object({
         (t) => `.${t.substring(t.indexOf("/") + 1)}`,
       ).join(", ")}`,
     )
-    .optional(),
+    .optional()
+    .refine((file) => file instanceof File, "Vui lòng chọn ảnh tranh vẽ"),
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "Bạn cần đồng ý với điều khoản để tiếp tục",
+  }),
 });
 
 type PaintingUploadForm = z.infer<typeof paintingUploadSchema>;
@@ -73,6 +78,7 @@ interface UploadRetryPayload {
   roundId: string;
   competitorId: string;
   ignoreAiCheck: boolean;
+  isFlagged: boolean;
 }
 
 export default function PaintingUploadSuspense() {
@@ -96,6 +102,7 @@ function PaintingUpload() {
       resolver: zodResolver(paintingUploadSchema),
       defaultValues: {
         title: "",
+        termsAccepted: false,
       },
     });
   const { isAuthenticated } = useAuth();
@@ -130,11 +137,6 @@ function PaintingUpload() {
   };
 
   const onSubmit = async (data: PaintingUploadForm) => {
-    if (!data.image) {
-      toast.error("Vui lòng chọn ảnh tranh vẽ để gửi bài thi");
-      return;
-    }
-
     if (!contestId) {
       toast.error("Thiếu thông tin cuộc thi");
       return;
@@ -148,11 +150,12 @@ function PaintingUpload() {
     const payload: UploadRetryPayload = {
       title: data.title,
       description: data.description,
-      file: data.image,
+      file: data.image!,
       contestId: contestId,
       roundId: roundId!,
       competitorId: currentUser.userId.toString(),
       ignoreAiCheck: false,
+      isFlagged: false,
     };
 
     setLastPayload(payload);
@@ -165,7 +168,7 @@ function PaintingUpload() {
     }
 
     setErrorModalOpen(false);
-    mutate({ ...lastPayload, ignoreAiCheck: true });
+    mutate({ ...lastPayload, ignoreAiCheck: true, isFlagged: true });
   };
 
   const handleResubmitNewPainting = () => {
@@ -332,11 +335,45 @@ function PaintingUpload() {
                 </CardContent>
               </Card>
 
+              {/* Terms and Conditions Checkbox */}
+              <div className="mt-6 space-y-4">
+                <div className="flex items-start space-x-3 bg-[#fffdf9] border border-[#e6e2da] p-4 shadow-sm">
+                  <Controller
+                    control={control}
+                    name="termsAccepted"
+                    render={({ field }) => (
+                      <Checkbox
+                        id="termsAccepted"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="mt-1 border-[#FF6E1A] data-[state=checked]:bg-[#FF6E1A] data-[state=checked]:border-[#FF6E1A]"
+                      />
+                    )}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label
+                      htmlFor="termsAccepted"
+                      className="text-sm font-medium leading-relaxed text-gray-700 cursor-pointer select-none"
+                    >
+                      Tôi xác nhận và đồng ý rằng sau khi nộp bài dự thi, tác
+                      phẩm này sẽ thuộc quyền sở hữu của ArtChain. ArtChain có
+                      toàn quyền sử dụng, trưng bày và tổ chức đấu giá tác phẩm
+                      cho các mục đích thiện nguyện hoặc phát triển cộng đồng.
+                    </Label>
+                    {formState.errors.termsAccepted && (
+                      <p className="text-xs text-[#FF6E1A] font-bold mt-1">
+                        * {formState.errors.termsAccepted.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Submit Section */}
-              <div className="flex flex-col space-y-4 mt-6">
+              <div className="flex flex-col space-y-4 mt-4">
                 <Button
                   type="submit"
-                  disabled={isPending || !formState.isValid || !watchedImage}
+                  disabled={isPending}
                   className="w-full h-14 text-lg font-bold bg-linear-to-r from-[#FF6E1A] to-[#FF6E1A] hover:from-[#FF6E1A] hover:to-[#FF6E1A] text-white shadow-sm rounded-none transition-all duration-200"
                 >
                   {isPending ? (

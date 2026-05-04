@@ -12,6 +12,9 @@ export interface AuctionPainting {
   currentBidderId?: string | null;
   isSold?: boolean;
   revoked?: number;
+  status?: string | "LIVE" | "WAITING" | "ENDED";
+  auctionStartTime?: string;
+  auctionEndTime?: string;
   createdAt?: string;
   updatedAt?: string;
   painting: {
@@ -19,6 +22,7 @@ export interface AuctionPainting {
     roundId?: number;
     contestId?: number;
     competitorId: string;
+    competitorName?: string;
     description?: string;
     title: string;
     imageUrl: string | null;
@@ -70,6 +74,19 @@ export interface PlaceBidRequest {
   bidAmount: number;
 }
 
+export interface UpdateAuctionPaintingRequest {
+  auctionDurationMinutes?: number;
+  auctionStartTime?: string;
+  auctionEndTime?: string;
+  basePrice?: number;
+  ceilPrice?: number;
+  bidStep?: number;
+  status?: string;
+  isSold?: boolean;
+  revoked?: number;
+  currentBidderId?: string;
+}
+
 export interface Bid {
   bidId: string;
   auctionId: string;
@@ -99,11 +116,40 @@ export interface BidPlacedEvent {
   userName?: string;
   amount: number;
   createdAt: string;
+  currentBid?: number | null;
+  currentBidderId?: string | null;
+  paintingAuctionEndTime?: string | null;
 }
 
 export interface AuctionStatusChangedEvent {
   auctionId: string;
   status: AuctionStatus;
+}
+
+export interface AuctionRealtimePaintingStatus {
+  auctionPaintingId: string | number;
+  paintingId?: string;
+  status?: string;
+  currentBid?: number | null;
+  currentBidderId?: string | null;
+  auctionStartTime?: string | null;
+  auctionEndTime?: string | null;
+}
+
+export interface AuctionRealtimeStatus {
+  auctionId: string | number;
+  status?: AuctionStatus | string;
+  serverTime?: string;
+  paintings?: AuctionRealtimePaintingStatus[];
+}
+
+export interface JoinedAuctionEvent {
+  success: boolean;
+  auctionId: string | number;
+  message?: string;
+  participant?: unknown;
+  participantCount?: number;
+  auctionStatus?: AuctionRealtimeStatus;
 }
 
 export interface WonPainting {

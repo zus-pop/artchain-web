@@ -43,10 +43,10 @@ export function DeleteUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete User</DialogTitle>
+          <DialogTitle>Xóa Người Dùng</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this user account? This action
-            cannot be undone.
+            Bạn có chắc chắn muốn xóa tài khoản người dùng này không? Hành động
+            này không thể hoàn tác.
           </DialogDescription>
         </DialogHeader>
         {user && (
@@ -66,13 +66,13 @@ export function DeleteUserDialog({
         )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Hủy
           </Button>
           <Button
             onClick={handleConfirm}
             className="bg-red-600 hover:bg-red-700"
           >
-            Delete User
+            Xóa Người Dùng
           </Button>
         </DialogFooter>
       </DialogContent>

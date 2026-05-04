@@ -1,5 +1,6 @@
 import myAxios from "@/lib/custom-axios";
 import { AuthResponse, LoginRequest, RegisterRequest, WhoAmI } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export const loginApi = async (
   loginRequest: LoginRequest
@@ -26,4 +27,12 @@ export const getMeApi = async (): Promise<WhoAmI> => {
 export const logoutApi = async (): Promise<void> => {
   const response = await myAxios.post("/auth/logout");
   return response.data;
+};
+
+export const useGetMe = (enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["whoami"],
+    queryFn: getMeApi,
+    enabled,
+  });
 };

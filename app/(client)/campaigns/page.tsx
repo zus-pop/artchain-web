@@ -1,86 +1,188 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Calendar, Target, ArrowRight } from 'lucide-react';
-import Loader from '@/components/Loaders';
-import { getCampaigns } from '@/apis/campaign';
-import { CampaignAPIResponse } from '@/types/campaign';
+import { getCampaigns } from "@/apis/campaign";
+import GlassSurface from "@/components/GlassSurface";
+import Loader from "@/components/Loaders";
+import { CampaignAPIResponse, CampaignStatus } from "@/types/campaign";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, CircleDollarSign, Clock, Target } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-const CampaignCard = ({ campaign }: { campaign: CampaignAPIResponse }) => {
-  return (
-    <div className="border border-[#b8aaaa] dark:bg-gray-800 transition-all duration-300 hover:shadow-md hover:border-[#FF6E1A]/50 overflow-hidden flex flex-col h-full dark:border-gray-700">
+const getCampaignStatusConfig = (status: CampaignStatus) => {
+  switch (status) {
+    case "ACTIVE":
+      return {
+        label: "Đang diễn ra",
+        className: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      };
+    case "COMPLETED":
+      return {
+        label: "Đã kết thúc",
+        className: "bg-gray-100 text-gray-700 border-gray-200",
+      };
+    case "DRAFT":
+      return {
+        label: "Bản Nháp",
+        className: "bg-amber-100 text-amber-700 border-amber-200",
+      };
+    case "CANCELLED":
+      return {
+        label: "Đã Hủy",
+        className: "bg-red-100 text-red-700 border-red-200",
+      };
+    case "CLOSED":
+    default:
+      return {
+        label: "Đã Đóng",
+        className: "bg-gray-100 text-gray-700 border-gray-200",
+      };
+  }
+};
 
-      {/* Header with Status Badge */}
-      <div className="p-4 pb-2">
-        {/* <div className="flex justify-between items-start mb-2">
-          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-            isCompleted ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-            isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-          }`}>
-            {campaign.status}
-          </span>
-        </div> */}
-
-        {/* Title */}
-        <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-2 line-clamp-2">
-          {campaign.title}
-        </h3>
-
-        {/* Description */}
-        <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-          {campaign.description}
-        </p>
-      </div>
-
-      {/* Progress Section
-      <div className="px-4 pb-4">
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              ${parseFloat(campaign.currentAmount).toLocaleString()} raised
-            </span>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              ${parseFloat(campaign.goalAmount).toLocaleString()} goal
-            </span>
+// ── Interactive Overlay (from InteractivePostCard) ────────────────
+const InteractiveOverlay = () => (
+  <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none overflow-hidden z-40">
+    <div className="absolute -top-16 -right-16 w-32 h-32 origin-center transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] rotate-[-90deg] group-hover:rotate-0">
+      <div className="absolute bottom-4 left-4 pointer-events-auto">
+        <GlassSurface
+          width={48}
+          height={48}
+          borderRadius={24}
+          brightness={120}
+          opacity={0.9}
+          blur={8}
+          className="items-center justify-center shadow-2xl border border-white/60"
+        >
+          <div className="flex items-center justify-center w-full h-full text-[var(--site-ink)]">
+            <svg
+              className="w-5 h-5 transition-transform duration-500 group-hover:rotate-12"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 4V20M12 4L18 10M12 4L6 10"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="rotate-45 origin-center"
+              />
+            </svg>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div
-              className={`h-2 rounded-full transition-all duration-500 ${
-                progress >= 100 ? 'bg-green-500' :
-                progress >= 75 ? 'bg-blue-500' :
-                progress >= 50 ? 'bg-yellow-500' : 'bg-[#FF6E1A]0'
-              }`}
-              style={{ width: `${Math.min(progress, 100)}%` }}
-            ></div>
-          </div>
-          <div className="text-right mt-1">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              {progress.toFixed(1)}% funded
-            </span>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Footer */}
-      <div className="px-4 pb-4 mt-auto">
-        <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-3">
-          <span className="flex items-center">
-            <Calendar className="w-4 h-4 mr-1 text-[#FF6E1A]0" />
-            Deadline: {new Date(campaign.deadline).toLocaleDateString('vi-VN')}
-          </span>
-        </div>
-
-        {/* Action Button */}
-        <Link href={`/campaigns/${campaign.campaignId}`}>
-          <button className="w-full flex items-center justify-center bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
-            Ủng Hộ Chiến Dịch
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </button>
-        </Link>
+        </GlassSurface>
       </div>
     </div>
+  </div>
+);
+
+const CampaignCard = ({
+  campaign,
+  index,
+}: {
+  campaign: CampaignAPIResponse;
+  index: number;
+}) => {
+  // Calculate remaining days
+  const deadlineDate = new Date(campaign.deadline);
+  const now = new Date();
+
+  const d1 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const d2 = new Date(
+    deadlineDate.getFullYear(),
+    deadlineDate.getMonth(),
+    deadlineDate.getDate(),
+  );
+
+  const diffTime = d2.getTime() - d1.getTime();
+  const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+  const formattedAmount = Number(campaign.goalAmount).toLocaleString("vi-VN");
+  const campaignStatusConfig = getCampaignStatusConfig(campaign.status);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="h-full"
+    >
+      <Link
+        href={`/campaigns/${campaign.campaignId}`}
+        className="group flex flex-col h-full bg-white rounded-sm overflow-hidden border border-[#e6e2da] shadow-sm transition-all duration-300 hover:shadow-xl hover:scale-[1.01]"
+      >
+        {/* Image Section */}
+        <div className="relative aspect-[16/11] overflow-hidden m-4 rounded-sm flex-shrink-0">
+          <motion.div
+            initial={{ scale: 1.2 }}
+            whileInView={{ scale: 1 }}
+            transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true }}
+            className="w-full h-full"
+          >
+            <Image
+              src={
+                campaign.image ||
+                "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=800&auto=format&fit=crop"
+              }
+              alt={campaign.title}
+              fill
+              className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:blur-[2px]"
+            />
+          </motion.div>
+
+          <InteractiveOverlay />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none z-30" />
+        </div>
+
+        {/* Content Section */}
+        <div className="flex flex-col px-6 pb-8 pt-2 flex-1">
+          <div className="mb-3 flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest ${campaignStatusConfig.className}`}
+            >
+              {campaign.status === "ACTIVE" && (
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+              )}
+              {campaignStatusConfig.label}
+            </span>
+          </div>
+
+          <h3 className="text-[22px] font-bold text-[#423137] leading-tight mb-3 group-hover:text-[#FF6E1A] transition-colors line-clamp-2">
+            {campaign.title}
+          </h3>
+
+          <p className="text-[14px] text-[#423137]/60 font-medium leading-relaxed mb-10 line-clamp-2">
+            {campaign.description}
+          </p>
+
+          {/* Footer Stats (EXACTLY AS ZOOMED IMAGE) */}
+          <div className="mt-auto flex items-center text-[#423137] border-t border-gray-100 pt-6">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-[#423137]/40 stroke-[2]" />
+              <span className="text-lg font-bold tracking-tight whitespace-nowrap">
+                {diffDays} Ngày
+              </span>
+            </div>
+
+            <div className="mx-5 h-5 w-[1px] bg-gray-200 flex-shrink-0" />
+
+            <div className="flex items-center gap-3">
+              <CircleDollarSign className="w-5 h-5 text-[#423137]/40 stroke-[2]" />
+              <span className="text-lg font-bold tracking-tight whitespace-nowrap">
+                {formattedAmount} VND
+              </span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 };
 
@@ -94,12 +196,14 @@ const CampaignPage = () => {
       try {
         setLoading(true);
         const response = await getCampaigns({
-          limit: 12
+          limit: 12,
         });
-        setCampaigns(response.data);
+        setCampaigns(
+          response.data.filter((campaign) => campaign.status !== "DRAFT"),
+        );
       } catch (err) {
-        console.error('Error fetching campaigns:', err);
-        setError('Failed to load campaigns');
+        console.error("Error fetching campaigns:", err);
+        setError("Failed to load campaigns");
       } finally {
         setLoading(false);
       }
@@ -110,79 +214,66 @@ const CampaignPage = () => {
 
   if (loading) {
     return (
-      <section className="py-16 px-4 min-h-screen bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto">
-          <Loader />
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="py-16 px-4 min-h-screen bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <div className="bg-[#FF6E1A] dark:bg-[#FF6E1A]/20 border border-[#FF6E1A] dark:border-[#FF6E1A] rounded-lg p-6 max-w-md mx-auto">
-              <p className="text-[#FF6E1A] dark:text-[#FF6E1A] font-medium">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-4 bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <div className="w-full pt-32 px-4 sm:px-8 lg:px-16 min-h-screen bg-[#EAE6E0] flex flex-col items-center justify-center">
+        <Loader />
+      </div>
     );
   }
 
   return (
-    <section className="min-h-screen pt-25 w-full bg-[#EAE6E0] dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen pt-32 pb-24 w-full bg-[#EAE6E0] px-4 sm:px-8 lg:px-16">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        {/* <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Supporting Art & Culture
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Discover amazing campaigns that bring art and culture to life. Support creative projects and make a difference in our creative community.
-          </p>
-        </div> */}
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#423137] leading-[1.1] tracking-tight">
+              Gây quỹ nghệ thuật, <br />
+              lan tỏa những ước mơ.
+            </h1>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <Link
+              href="/exhibition"
+              className="group flex items-center gap-2 text-sm font-bold text-[#423137] hover:text-[#FF6E1A] transition-colors"
+            >
+              Khám phá bộ sưu tập
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+        </div>
 
         {/* Campaigns Grid */}
-        {campaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {campaigns.map((campaign) => (
-              <CampaignCard key={campaign.campaignId} campaign={campaign} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Không Có Chiến Dịch Hoạt Động
-            </h3>
-            <p className="text-gray-500 dark:text-gray-500">
-              Hãy kiểm tra lại sau để xem các chiến dịch mới cần hỗ trợ.
-            </p>
-          </div>
-        )}
-
-        {/* View All Button - Hidden since this is the full campaigns page */}
-        {/* {campaigns.length > 0 && (
-          <div className="text-center">
-            <Link href="/campaigns">
-              <button className="inline-flex items-center bg-[#FF6E1A] hover:bg-[#FF6E1A] text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200">
-                View All Campaigns
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </button>
-            </Link>
-          </div>
-        )} */}
+        <AnimatePresence>
+          {campaigns.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
+              {campaigns.map((campaign, index) => (
+                <CampaignCard
+                  key={campaign.campaignId}
+                  campaign={campaign}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-32 bg-white/10 rounded-3xl border border-dashed border-[#423137]/10">
+              <Target className="h-12 w-12 text-[#423137]/10 mx-auto mb-6" />
+              <p className="text-base font-semibold text-[#423137]/30">
+                Hiện tại chưa có chiến dịch nào
+              </p>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
-    </section>
+    </div>
   );
 };
 

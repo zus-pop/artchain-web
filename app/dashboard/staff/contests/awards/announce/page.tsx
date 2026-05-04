@@ -70,6 +70,7 @@ function AnnounceResultsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const contestId = searchParams.get("id") as string;
+  const announceType = searchParams.get("type") as string;
 
   const editorRef = useRef<MDXEditorMethods>(null);
 
@@ -114,6 +115,36 @@ function AnnounceResultsPage() {
     award.paintings.map((painting) => ({ ...painting, award }))
   );
 
+  const parseContestEndDate = (value?: string) => {
+    if (!value) return null;
+    const trimmed = value.trim();
+    let parsed = new Date(trimmed);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+    const match = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const contestEndDate = parseContestEndDate(contest?.endDate);
+  const contestEndTimestamp = contestEndDate
+    ? new Date(
+        contestEndDate.getFullYear(),
+        contestEndDate.getMonth(),
+        contestEndDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime()
+    : null;
+  const isContestEnded = contestEndTimestamp
+    ? contestEndTimestamp <= Date.now()
+    : false;
+
   // Create announcement post mutation
   const createPostMutation = createStaffPost();
 
@@ -126,8 +157,18 @@ function AnnounceResultsPage() {
     content += `${t.thrilledToAnnounceWinners} **${contest.title}**!\n\n`;
     content += `## 🏆 ${t.winnersSection}\n\n`;
 
+    // Filter by type
+    const filteredAwards = awards.filter((award) => {
+      if (announceType === "vote") {
+        return award.rank > 3 || !award.rank;
+      } else if (announceType === "top") {
+        return award.rank <= 3;
+      }
+      return true; // Default to all if no type
+    });
+
     // Sort by award rank
-    const sortedAwards = [...awards].sort((a, b) => {
+    const sortedAwards = [...filteredAwards].sort((a, b) => {
       if (!a.rank || !b.rank) return 0;
       return a.rank - b.rank;
     });
@@ -194,13 +235,14 @@ function AnnounceResultsPage() {
   // Auto-generate content when contest and paintings data is loaded
   useEffect(() => {
     if (contest && awards.length > 0) {
-      const generatedTitle = `${contest.title} - Thông báo kết quả cuộc thi!`;
+      const titleSuffix = announceType === "vote" ? "Kết Quả Bình Chọn!" : (announceType === "top" ? "Kết Quả Tranh Đầu Bảng!" : "Thông Báo Kết Quả Cuộc Thi!");
+      const generatedTitle = `${contest.title} - ${titleSuffix}`;
       const generatedContent = generateAnnouncementContent();
 
       form.setValue("title", generatedTitle);
       editorRef.current?.setMarkdown(generatedContent);
     }
-  }, [contest, awards, generateAnnouncementContent, form]);
+  }, [contest, awards, generateAnnouncementContent, form, announceType]);
 
   // Fetch tags based on search query
   useEffect(() => {
@@ -368,7 +410,7 @@ function AnnounceResultsPage() {
       <SidebarInset>
         <SiteHeader title="Announce Results" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -395,12 +437,12 @@ function AnnounceResultsPage() {
                 <div className="flex items-center gap-4">
                   <Link
                     href={`/dashboard/staff/contests/awards?id=${contestId}`}
-                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className="border border-[var(--staff-border)] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       {t.createContestResultsAnnouncement}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
@@ -415,14 +457,14 @@ function AnnounceResultsPage() {
                 <div className="lg:col-span-2 space-y-6">
                   {/* Image Upload - Moved to top */}
                   <div className="staff-card p-6">
-                    <label className="block text-sm font-medium staff-text-primary mb-2">
+                    <label className="staff-type-label staff-text-primary mb-2 block">
                       {t.featuredImageOptional}
                     </label>
 
                     {/* Upload Area */}
                     <div className="space-y-4">
                       <div
-                        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#d9534f] transition-colors cursor-pointer"
+                        className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-[var(--staff-primary)] transition-colors cursor-pointer"
                         onClick={() =>
                           document.getElementById("image-upload")?.click()
                         }
@@ -434,7 +476,7 @@ function AnnounceResultsPage() {
                                 src={URL.createObjectURL(selectedImage)}
                                 alt="Preview"
                                 fill
-                                className="object-cover rounded-lg border border-gray-200"
+                                className="object-cover rounded-sm border border-gray-200"
                                 onError={() => {
                                   // Handle error silently
                                 }}
@@ -503,12 +545,12 @@ function AnnounceResultsPage() {
                           if (file) {
                             // Validate file size (10MB limit)
                             if (file.size > 10 * 1024 * 1024) {
-                              toast.error("File size must be less than 10MB");
+                              toast.error("Kích thước tệp phải nhỏ hơn 10MB");
                               return;
                             }
                             // Validate file type
                             if (!file.type.startsWith("image/")) {
-                              toast.error("Please select a valid image file");
+                              toast.error("Vui lòng chọn tệp ảnh hợp lệ");
                               return;
                             }
                             setSelectedImage(file);
@@ -526,7 +568,7 @@ function AnnounceResultsPage() {
 
                   {/* Post Creation Form */}
                   <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                       <IconFileText className="h-5 w-5" />
                       {t.announcementPost}
                     </h3>
@@ -534,13 +576,13 @@ function AnnounceResultsPage() {
                     <div className="space-y-4">
                       {/* Title */}
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.postTitleRequired}
                         </label>
                         <input
                           type="text"
                           {...form.register("title")}
-                          className="w-full px-3 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f]"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                           placeholder={t.enterAnnouncementTitle}
                         />
                         {form.formState.errors.title && (
@@ -552,7 +594,7 @@ function AnnounceResultsPage() {
 
                       {/* Content */}
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.postContentRequired}
                         </label>
                         <MDXEditorWrapper
@@ -571,7 +613,7 @@ function AnnounceResultsPage() {
                 <div className="space-y-6">
                   {/* Tags - Moved to sidebar */}
                   <div className="staff-card p-6">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                       <IconTag className="h-5 w-5" />
                       {t.tagsLabel}
                     </h3>
@@ -612,13 +654,13 @@ function AnnounceResultsPage() {
                             }}
                             onFocus={() => setShowTagDropdown(true)}
                             placeholder={t.searchOrCreateTags}
-                            className="w-full pl-10 pr-4 py-2 border border-[#e6e2da] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#d9534f] text-sm"
+                            className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                           />
                         </div>
 
                         {/* Tag Dropdown */}
                         {showTagDropdown && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da] shadow-lg max-h-60 overflow-y-auto rounded-lg">
+                          <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--staff-border)] shadow-lg max-h-60 overflow-y-auto rounded-sm">
                             {isLoadingTags ? (
                               <div className="px-4 py-3 text-sm text-gray-500 text-center">
                                 {t.loadingTags}
@@ -665,7 +707,7 @@ function AnnounceResultsPage() {
                                       type="button"
                                       onClick={handleCreateTag}
                                       disabled={isCreatingTag}
-                                      className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
+                                      className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[var(--staff-border)] text-blue-700 font-medium disabled:opacity-50"
                                     >
                                       <IconPlus className="h-4 w-4" />
                                       {isCreatingTag
@@ -687,7 +729,7 @@ function AnnounceResultsPage() {
 
                   {/* Winners List */}
                   <div className="staff-card p-4">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                       <IconUsers className="h-5 w-5" />
                       {t.winners} ({paintings.length})
                     </h3>
@@ -706,7 +748,7 @@ function AnnounceResultsPage() {
                           .map((painting, index) => (
                             <div
                               key={painting.paintingId}
-                              className="border border-[#e6e2da] rounded-lg p-3"
+                              className="border border-[var(--staff-border)] rounded-sm p-3"
                             >
                               <div className="flex items-start gap-3">
                                 <div className="shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -746,7 +788,7 @@ function AnnounceResultsPage() {
                   </div>
 
                   {/* Preview Info */}
-                  <div className="staff-card p-4">
+                  {/* <div className="staff-card p-4">
                     <h4 className="font-semibold staff-text-primary mb-3">
                       {t.whatHappensWhenPublish}
                     </h4>
@@ -768,16 +810,16 @@ function AnnounceResultsPage() {
                         <span>{t.communityEngagementIncreases}</span>
                       </li>
                     </ul>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
               {/* Action Buttons - Moved outside grid */}
-              <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
+              <div className="flex justify-end gap-4 pt-6 border-t border-[var(--staff-border)]">
                 <button
                   onClick={handleSaveDraft}
                   disabled={createPostMutation.isPending}
-                  className="px-6 py-2 border border-[#e6e2da] staff-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="px-6 py-2 border border-[var(--staff-border)] staff-text-primary hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   {t.saveAsDraft}
                 </button>

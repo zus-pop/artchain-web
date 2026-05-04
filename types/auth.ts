@@ -16,17 +16,26 @@ export interface RegisterRequest {
   grade?: string;
 }
 
+export interface Wallet {
+  walletId: string;
+  balance: number;
+  currency: string;
+  status: string;
+  withdrawalAvailableAt?: string;
+}
+
 export interface WhoAmI {
   userId: string;
   fullName: string;
   email: string;
   role: UserRole;
   avatarUrl?: string;
-  phone?: string;
+  phone?: string | null;
   birthday?: string;
   schoolName?: string;
   ward?: string;
   grade?: string;
+  wallet?: Wallet;
 }
 
 export interface AuthResponse {

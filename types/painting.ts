@@ -103,7 +103,10 @@ export interface CompetitorSubmission {
   paintingId: string;
   title: string;
   contestId: number;
-  contestTitle: string;
+  contestTitle?: string;
+  contest?: {
+    title: string;
+  };
   roundId: string;
   submissionDate: string;
   status: string;
@@ -130,6 +133,7 @@ export interface Submission {
   title: string;
   imageUrl: string;
   submissionDate: string;
+  isFlagged?: boolean;
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdAt: string;
   updatedAt: string;

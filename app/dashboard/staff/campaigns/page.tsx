@@ -4,6 +4,7 @@ import { getStaffCampaigns } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
+import { StatsCards } from "@/components/staff/StatsCards";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { formatCurrency } from "@/lib/utils";
 import { CampaignStatus } from "@/types/dashboard";
@@ -26,6 +27,7 @@ import {
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 // API Response Types
@@ -33,6 +35,7 @@ import { useState } from "react";
 export default function CampaignsPage() {
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+  const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState<CampaignStatus | "ALL">(
     "ALL"
   );
@@ -54,7 +57,7 @@ export default function CampaignsPage() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["staff-campaigns", selectedStatus, currentPage, pageSize],
+    queryKey: ["campaign", selectedStatus, currentPage, pageSize],
     queryFn: () =>
       getStaffCampaigns({
         page: currentPage,
@@ -66,6 +69,18 @@ export default function CampaignsPage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  const { data: activeCampaignsResponse } = useQuery({
+    queryKey: ["campaign", "ACTIVE", 1, 1],
+    queryFn: () =>
+      getStaffCampaigns({
+        page: 1,
+        limit: 1,
+        status: "ACTIVE",
+      }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const hasActiveCampaign = (activeCampaignsResponse?.meta?.total || 0) > 0;
   const campaigns = campaignsResponse?.data || [];
 
   const getStatusBadgeColor = (status: string) => {
@@ -121,7 +136,7 @@ export default function CampaignsPage() {
       <SidebarInset>
         <SiteHeader title={t.campaignManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.campaignManagement }]}
               homeHref="/dashboard/staff"
@@ -131,7 +146,7 @@ export default function CampaignsPage() {
             <div className="flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
               {/* Error State */}
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <div className="bg-red-50 border border-red-200 rounded-sm p-4">
                   <div className="flex">
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-red-800">
@@ -143,7 +158,7 @@ export default function CampaignsPage() {
                       <div className="mt-4">
                         <button
                           onClick={() => refetch()}
-                          className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium"
+                          className="staff-btn-outline text-red-700 hover:text-red-800 !px-3 !py-2"
                         >
                           {t.tryAgain}
                         </button>
@@ -158,59 +173,54 @@ export default function CampaignsPage() {
                 <>
                   <div className="flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-bold staff-text-primary">
+                      <h2 className="staff-type-page-title staff-text-primary">
                         {t.campaignsManagement} (
                         {campaignsResponse?.meta?.total || campaigns.length})
                       </h2>
-                      <p className="text-sm staff-text-secondary mt-1">
+                      {/* <p className="text-sm staff-text-secondary mt-1">
                         {t.manageCampaigns}
-                      </p>
+                      </p> */}
                     </div>
-                    <Link
-                      href="/dashboard/staff/campaigns/create"
-                      className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
-                    >
-                      <IconPlus className="h-4 w-4" />
-                      {t.createCampaign}
-                    </Link>
+                    {hasActiveCampaign ? (
+                      <button
+                        type="button"
+                        disabled
+                        title="Chỉ được tạo một chiến dịch đang hoạt động"
+                        className="staff-btn-primary transition-colors duration-200 flex items-center gap-2 opacity-50 cursor-not-allowed"
+                      >
+                        <IconPlus className="h-4 w-4" />
+                        {t.createCampaign}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/dashboard/staff/campaigns/create"
+                        className="staff-btn-primary transition-colors duration-200 flex items-center gap-2"
+                      >
+                        <IconPlus className="h-4 w-4" />
+                        {t.createCampaign}
+                      </Link>
+                    )}
                   </div>
 
                   {/* Statistics Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Card 1: Total Raised */}
-                    <div className="staff-card p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="stat-icon p-2">
-                          <IconMoneybag className="h-5 w-5 " />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium staff-text-secondary">
-                            {t.totalRaised}
-                          </p>
-                          <p className="text-2xl font-bold staff-text-primary">
-                            {formatCurrency(totalRaised)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Card 3: Active Campaigns */}
-                    <div className="staff-card p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="stat-icon p-2">
-                          <IconTrendingUp className="h-5 w-5 " />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium staff-text-secondary">
-                            {t.active}
-                          </p>
-                          <p className="text-2xl font-bold staff-text-primary">
-                            {activeCampaigns}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <StatsCards
+                    layout="mini"
+                    className="grid-cols-1 md:grid-cols-2"
+                    stats={[
+                      {
+                        title: t.totalRaised,
+                        value: formatCurrency(totalRaised),
+                        icon: <IconMoneybag className="h-5 w-5" />,
+                        variant: "primary",
+                      },
+                      {
+                        title: t.active,
+                        value: activeCampaigns,
+                        icon: <IconTrendingUp className="h-5 w-5" />,
+                        variant: "success",
+                      },
+                    ]}
+                  />
 
                   {/* Status Filter */}
                   <div className="flex items-center gap-4">
@@ -224,7 +234,7 @@ export default function CampaignsPage() {
                           );
                           setCurrentPage(1); // Reset to first page when changing status filter
                         }}
-                        className="px-4 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="staff-select"
                       >
                         {statusOptions.map((status) => (
                           <option key={status} value={status}>
@@ -267,16 +277,13 @@ export default function CampaignsPage() {
                                 <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                                   {t.deadline}
                                 </th>
-                                <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                                  {t.actions}
-                                </th>
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                               {campaigns.length === 0 ? (
                                 <tr>
                                   <td
-                                    colSpan={6}
+                                    colSpan={5}
                                     className="px-6 py-12 text-center staff-text-secondary"
                                   >
                                     {t.noCampaignsFound}
@@ -299,10 +306,15 @@ export default function CampaignsPage() {
                                     return (
                                       <tr
                                         key={campaign.campaignId}
-                                        className="hover:bg-gray-50"
+                                        className="hover:bg-gray-50 cursor-pointer"
+                                        onClick={() =>
+                                          router.push(
+                                            `/dashboard/staff/campaigns/${campaign.campaignId}`
+                                          )
+                                        }
                                       >
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                          <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                          <div className="w-16 h-16 bg-gray-100 rounded-sm overflow-hidden border border-gray-200">
                                             {campaign.image ? (
                                               <img
                                                 src={campaign.image}
@@ -321,9 +333,9 @@ export default function CampaignsPage() {
                                             <div className="text-sm font-medium staff-text-primary">
                                               {campaign.title}
                                             </div>
-                                            <div className="text-sm staff-text-secondary line-clamp-2">
+                                            {/* <div className="text-sm staff-text-secondary line-clamp-2">
                                               {campaign.description}
-                                            </div>
+                                            </div> */}
                                           </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -379,30 +391,6 @@ export default function CampaignsPage() {
                                             </div>
                                           </div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                          <div className="flex items-center justify-end gap-2">
-                                            <Link
-                                              href={`/dashboard/staff/campaigns/${campaign.campaignId}`}
-                                              className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                                              title="View Details"
-                                            >
-                                              <IconEye className="h-4 w-4" />
-                                            </Link>
-                                            <Link
-                                              href={`/dashboard/staff/campaigns/${campaign.campaignId}/edit`}
-                                              className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
-                                              title="Edit"
-                                            >
-                                              <IconEdit className="h-4 w-4" />
-                                            </Link>
-                                            <button
-                                              className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                                              title="Delete"
-                                            >
-                                              <IconTrash className="h-4 w-4" />
-                                            </button>
-                                          </div>
-                                        </td>
                                       </tr>
                                     );
                                   }
@@ -427,7 +415,7 @@ export default function CampaignsPage() {
                                   setPageSize(Number(e.target.value));
                                   setCurrentPage(1); // Reset to first page when changing page size
                                 }}
-                                className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                className="px-2 py-1 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                               >
                                 <option value={5}>5</option>
                                 <option value={10}>10</option>
@@ -454,7 +442,7 @@ export default function CampaignsPage() {
                             <button
                               onClick={() => setCurrentPage(1)}
                               disabled={currentPage === 1}
-                              className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="staff-pagination-btn"
                               title="First page"
                             >
                               <IconChevronsLeft className="h-4 w-4" />
@@ -464,7 +452,7 @@ export default function CampaignsPage() {
                                 setCurrentPage((prev) => Math.max(1, prev - 1))
                               }
                               disabled={currentPage === 1}
-                              className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="staff-pagination-btn"
                               title="Previous page"
                             >
                               <IconChevronLeft className="h-4 w-4" />
@@ -488,7 +476,7 @@ export default function CampaignsPage() {
                                 currentPage ===
                                 campaignsResponse.meta.totalPages
                               }
-                              className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="staff-pagination-btn"
                               title="Next page"
                             >
                               <IconChevronRight className="h-4 w-4" />
@@ -503,7 +491,7 @@ export default function CampaignsPage() {
                                 currentPage ===
                                 campaignsResponse.meta.totalPages
                               }
-                              className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="staff-pagination-btn"
                               title="Last page"
                             >
                               <IconChevronsRight className="h-4 w-4" />

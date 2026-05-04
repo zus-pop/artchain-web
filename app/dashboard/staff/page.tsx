@@ -23,7 +23,7 @@ export default function StaffDashboardPage() {
       <SidebarInset>
         <SiteHeader title={t.staffDashboard} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb items={[]} homeHref="/dashboard/staff" />
           </div>
           <div className="@container/main flex flex-1 flex-col gap-2">
@@ -36,7 +36,7 @@ export default function StaffDashboardPage() {
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <Link
                     href="/dashboard/staff/exhibitions/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                   >
                     <div className=" bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
@@ -65,7 +65,7 @@ export default function StaffDashboardPage() {
 
                   <Link
                     href="/dashboard/staff/campaigns/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                   >
                     <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
@@ -94,9 +94,9 @@ export default function StaffDashboardPage() {
 
                   <Link
                     href="/dashboard/staff/contests/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-red-50 hover:to-pink-50 hover:border-red-200 transition-all duration-300 group"
                   >
-                    <div className=" bg-linear-to-br from-[#d9534f] to-[#e67e73] p-2.5 shadow-md group-hover:scale-110 transition-transform">
+                    <div className=" bg-linear-to-br from-[var(--staff-primary)] to-[var(--staff-primary-hover)] p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg
                         className="h-5 w-5 text-white"
                         fill="none"
@@ -123,7 +123,7 @@ export default function StaffDashboardPage() {
 
                   <Link
                     href="/dashboard/staff/posts/create"
-                    className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-200 transition-all duration-300 group"
+                    className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-purple-50 hover:to-violet-50 hover:border-purple-200 transition-all duration-300 group"
                   >
                     <div className="bg-linear-to-br from-purple-500 to-violet-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                       <svg

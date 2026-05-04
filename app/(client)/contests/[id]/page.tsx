@@ -14,7 +14,7 @@ import { ArrowLeft, Trophy, ThumbsUp, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { VotedPaining } from "@/types/vote";
 import { Button } from "../../../../components/ui/button";
 
@@ -58,6 +58,20 @@ export default function ContestDetailPage() {
   const hasUploaded =
     uploadStatusData?.data?.find((status) => status.userId === user?.userId)
       ?.isUploaded || false;
+
+  // Check if submission deadline has passed
+  const round1 = contest?.rounds?.find((r: any) => r.name === "ROUND_1");
+  const round2 = contest?.rounds?.find((r: any) => r.name === "ROUND_2");
+  const isDeadlinePassed = useMemo(() => {
+    if (!round1?.submissionDeadline) return false;
+    return new Date() > new Date(round1.submissionDeadline);
+  }, [round1]);
+
+  // Check if contest has ended
+  const isContestEnded = useMemo(() => {
+    if (!contest?.endDate) return false;
+    return new Date() > new Date(contest.endDate);
+  }, [contest]);
 
   // Vote states
   const [selectedAwardId, setSelectedAwardId] = useState<string | null>(null);
@@ -271,9 +285,11 @@ export default function ContestDetailPage() {
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-3 sm:mb-4 leading-tight">
                   {contest.title}
                 </h1>
-                <p className="text-sm sm:text-base text-black">
-                  {contest.description}
-                </p>
+                <div className="max-h-[120px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
+                  <p className="text-sm sm:text-base text-black whitespace-pre-line">
+                    {contest.description}
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
@@ -341,12 +357,12 @@ export default function ContestDetailPage() {
                 ) : (
                   <Link
                     className={`flex-1 cursor-pointer rounded-none bg-[#FF6E1A] text-white text-center py-4 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm ${
-                      contest.status !== "ACTIVE"
+                      contest.status !== "ACTIVE" || isDeadlinePassed
                         ? "pointer-events-none opacity-50"
                         : ""
                     }`}
-                    aria-disabled={contest.status !== "ACTIVE"}
-                    tabIndex={contest.status !== "ACTIVE" ? -1 : undefined}
+                    aria-disabled={contest.status !== "ACTIVE" || isDeadlinePassed}
+                    tabIndex={contest.status !== "ACTIVE" || isDeadlinePassed ? -1 : undefined}
                     href={{
                       pathname: "/painting-upload",
                       query: {
@@ -358,7 +374,7 @@ export default function ContestDetailPage() {
                       },
                     }}
                   >
-                    Tham gia cuộc thi
+                    {isDeadlinePassed ? "Hết hạn nộp bài" : "Tham gia cuộc thi"}
                   </Link>
                 )
               ) : (
@@ -377,14 +393,14 @@ export default function ContestDetailPage() {
                       : "/auth"
                   }
                   className={`flex-1 bg-[#FF6E1A] text-white text-center py-3 px-6 font-medium hover:bg-orange-400 transition-all duration-200 shadow-sm ${
-                    contest.status !== "ACTIVE"
+                    contest.status !== "ACTIVE" || isDeadlinePassed
                       ? "pointer-events-none opacity-50"
                       : ""
                   }`}
-                  aria-disabled={contest.status !== "ACTIVE"}
-                  tabIndex={contest.status !== "ACTIVE" ? -1 : undefined}
+                  aria-disabled={contest.status !== "ACTIVE" || isDeadlinePassed}
+                  tabIndex={contest.status !== "ACTIVE" || isDeadlinePassed ? -1 : undefined}
                 >
-                  Tham gia cuộc thi
+                  {isDeadlinePassed ? "Hết hạn nộp bài" : "Tham gia cuộc thi"}
                 </Link>
               )}
             </div>
@@ -475,7 +491,7 @@ export default function ContestDetailPage() {
           className="mt-8 sm:mt-12"
         >
           <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-            Lịch trình vòng 1
+            Lịch trình vòng sơ khảo
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -485,11 +501,13 @@ export default function ContestDetailPage() {
                 Bắt đầu
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.startDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
-                  year: "numeric",
-                })}
+                {round1?.startDate
+                  ? new Date(round1.startDate).toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })
+                  : "Chưa xác định"}
               </p>
             </div>
 
@@ -499,25 +517,16 @@ export default function ContestDetailPage() {
                 Hạn nộp bài
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.endDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-
-            {/* Công bố kết quả */}
-            <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
-              <p className="text-black font-light text-sm sm:text-base">
-                Công bố kết quả
-              </p>
-              <p className="text-black font-semibold text-base sm:text-lg">
-                {new Date(contest.endDate).toLocaleDateString("vi-VN", {
-                  day: "numeric",
-                  month: "numeric",
-                  year: "numeric",
-                })}
+                {round1?.submissionDeadline
+                  ? new Date(round1.submissionDeadline).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
+                  : "Chưa xác định"}
               </p>
             </div>
 
@@ -527,17 +536,34 @@ export default function ContestDetailPage() {
                 Gửi bản gốc
               </p>
               <p className="text-black font-semibold text-base sm:text-lg">
-                {contest.rounds?.[0]?.sendOriginalDeadline
-                  ? (() => {
-                      const deadline = contest.rounds[0].sendOriginalDeadline;
-                      const date = new Date(deadline);
-                      const day = date.getUTCDate().toString().padStart(2, "0");
-                      const month = (date.getUTCMonth() + 1)
-                        .toString()
-                        .padStart(2, "0");
-                      const year = date.getUTCFullYear();
-                      return `${day}/${month}/${year}`;
-                    })()
+                {round1?.sendOriginalDeadline
+                  ? new Date(round1.sendOriginalDeadline).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
+                  : "Chưa xác định"}
+              </p>
+            </div>
+
+            {/* Công bố kết quả */}
+            <div className="space-y-1 lg:pr-6 lg:border-r lg:border-[#B8AAAA] lg:last:border-r-0">
+              <p className="text-black font-light text-sm sm:text-base">
+                Công bố kết quả
+              </p>
+              <p className="text-black font-semibold text-base sm:text-lg">
+                {round1?.resultAnnounceDate
+                  ? new Date(round1.resultAnnounceDate).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
                   : "Chưa xác định"}
               </p>
             </div>
@@ -552,7 +578,7 @@ export default function ContestDetailPage() {
           className="mt-8 sm:mt-12"
         >
           <h2 className="text-xl sm:text-2xl font-bold text-black mb-4 sm:mb-6">
-            Lịch trình vòng 2
+            Lịch trình vòng chung khảo
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -562,25 +588,71 @@ export default function ContestDetailPage() {
                 Số lượng thí sinh
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                {contest.round2Quantity} thí sinh có bài thi tốt nhất sau vòng 1
+                {contest.round2Quantity} thí sinh có bài thi tốt nhất sau vòng sơ khảo
               </p>
             </div>
 
-            {/* Ngày thi dự kiến */}
+            {/* Ngày thi chính thức / dự kiến */}
             <div className="space-y-1">
               <p className="text-black font-semibold text-sm sm:text-base">
-                Ngày thi dự kiến
+                {round2 && round2.startDate && round2.endDate && 
+                 new Date(round2.startDate).getTime() === new Date(round2.endDate).getTime()
+                  ? "Ngày thi chính thức"
+                  : "Ngày thi dự kiến"}
               </p>
               <p className="text-black font-light text-sm sm:text-base">
-                {(() => {
-                  const date = new Date(contest.startDate);
-                  date.setDate(date.getDate() + 2);
-                  return date.toLocaleDateString("vi-VN", {
-                    day: "numeric",
-                    month: "numeric",
-                    year: "numeric",
-                  });
-                })()}
+                {round2 ? (
+                  (() => {
+                    const examStart = new Date(round2.startDate);
+                    const examEnd = round2.endDate ? new Date(round2.endDate) : null;
+                    
+                    if (examEnd && examEnd.getTime() === examStart.getTime()) {
+                      return examStart.toLocaleDateString("vi-VN", {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      });
+                    }
+
+                    const finalEnd = (examEnd && examEnd.getTime() > examStart.getTime())
+                      ? examEnd
+                      : (() => {
+                          const end = new Date(examStart);
+                          end.setDate(examStart.getDate() + 7);
+                          return end;
+                        })();
+
+                    return `${examStart.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} - ${finalEnd.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} (Thường sẽ diễn ra vào cuối tuần)`;
+                  })()
+                ) : (
+                  (() => {
+                    // Fallback: Start 3 days after Round 1 ends (or contest ends if round 1 is missing), range of 7 days
+                    const anchorDate = round1?.endDate ? new Date(round1.endDate) : new Date(contest.endDate);
+                    const examStart = new Date(anchorDate);
+                    examStart.setDate(examStart.getDate() + 3);
+
+                    const examEnd = new Date(examStart);
+                    examEnd.setDate(examStart.getDate() + 7);
+
+                    return `${examStart.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} - ${examEnd.toLocaleDateString("vi-VN", {
+                      day: "numeric",
+                      month: "numeric",
+                      year: "numeric",
+                    })} (Thường sẽ diễn ra vào cuối tuần)`;
+                  })()
+                )}
               </p>
             </div>
           </div>
@@ -726,8 +798,8 @@ export default function ContestDetailPage() {
                               {painting.hasVoted ? (
                                 <button
                                   onClick={() => handleRemoveVote(painting)}
-                                  disabled={removeVoteMutation.isPending}
-                                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                                  disabled={removeVoteMutation.isPending || isContestEnded}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <ThumbsUp className="w-4 h-4 fill-current" />
                                   Bỏ bình chọn
@@ -737,7 +809,8 @@ export default function ContestDetailPage() {
                                   onClick={() => handleVoteClick(painting)}
                                   disabled={
                                     hasAlreadyVoted ||
-                                    submitVoteMutation.isPending
+                                    submitVoteMutation.isPending ||
+                                    isContestEnded
                                   }
                                   title={
                                     hasAlreadyVoted

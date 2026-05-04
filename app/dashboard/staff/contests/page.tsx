@@ -30,6 +30,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
@@ -52,10 +53,12 @@ const convertContestDTOToContest = (dto: ContestDTO): Contest => {
     rounds: dto.rounds,
     round2Quantity: dto.round2Quantity,
     numberOfTablesRound2: dto.numberOfTablesRound2,
+    ignoreAiCheck: dto.ignoreAiCheck,
   };
 };
 
 export default function ContestsManagementPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<ContestStatus | "ALL">(
     "ALL"
@@ -105,21 +108,23 @@ export default function ContestsManagementPage() {
     "CANCELLED",
   ];
 
-  const getStatusBadgeColor = (status: DashboardContestStatus) => {
-    const colors = {
+  const getStatusBadgeColor = (status: string) => {
+    const colors: Record<string, string> = {
       DRAFT: "staff-badge-neutral",
       ACTIVE: "staff-badge-active",
-      COMPLETED: "staff-badge-active",
+      COMPLETED: "staff-badge-neutral",
+      ENDED: "staff-badge-neutral",
       CANCELLED: "staff-badge-rejected",
     };
-    return colors[status];
+    return colors[status] || "staff-badge-neutral";
   };
 
-  const getStatusIcon = (status: DashboardContestStatus) => {
-    const icons = {
+  const getStatusIcon = (status: string) => {
+    const icons: Record<string, any> = {
       DRAFT: IconEdit,
       ACTIVE: IconCircleCheck,
       COMPLETED: IconTrophy,
+      ENDED: IconTrophy,
       CANCELLED: IconCircleX,
     };
     return icons[status] ?? IconEdit;
@@ -151,7 +156,7 @@ export default function ContestsManagementPage() {
       <SidebarInset>
         <SiteHeader title={t.contestManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.contestManagement }]}
               homeHref="/dashboard/staff"
@@ -162,12 +167,12 @@ export default function ContestsManagementPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.allContestsCount} ({totalFromAPI})
                   </h2>
-                  <p className="text-sm staff-text-secondary mt-1">
+                  {/* <p className="text-sm staff-text-secondary mt-1">
                     {t.manageArtCompetitions}
-                  </p>
+                  </p> */}
                 </div>
                 <Link
                   href="/dashboard/staff/contests/create"
@@ -184,14 +189,14 @@ export default function ContestsManagementPage() {
                   {
                     title: t.totalContests,
                     value: totalContests,
-                    subtitle: t.allCompetitions,
+                    // subtitle: t.allCompetitions,
                     icon: <IconTrophy className="h-6 w-6" />,
                     variant: "info",
                   },
                   {
                     title: t.activeContests,
                     value: activeContests,
-                    subtitle: t.currentlyRunning,
+                    // subtitle: t.currentlyRunning,
                     icon: <IconCircleCheck className="h-6 w-6" />,
                     variant: "warning",
                   },
@@ -201,13 +206,12 @@ export default function ContestsManagementPage() {
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder={t.searchContestsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -217,7 +221,7 @@ export default function ContestsManagementPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as ContestStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -248,9 +252,6 @@ export default function ContestsManagementPage() {
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium staff-text-secondary uppercase tracking-wider">
                           {t.datesTable}
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium staff-text-secondary uppercase tracking-wider">
-                          {t.actions}
                         </th>
                       </tr>
                     </thead>
@@ -296,26 +297,27 @@ export default function ContestsManagementPage() {
                           return (
                             <tr
                               key={contest.contestId}
-                              className="hover:bg-gray-50"
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => router.push(`/dashboard/staff/contests/detail?id=${contest.contestId}`)}
                             >
                               <td className="px-6 py-4">
-                                <div className="flex items-start gap-3">
+                                <div className="flex items-center gap-3">
                                   {contest.bannerUrl && (
                                     <Image
                                       src={contest.bannerUrl}
                                       alt={contest.title}
                                       width={64}
                                       height={64}
-                                      className="w-16 h-16 object-cover rounded"
+                                      className="w-16 h-16 object-cover rounded-sm"
                                     />
                                   )}
                                   <div>
                                     <div className="text-sm font-medium staff-text-primary">
                                       {contest.title}
                                     </div>
-                                    <div className="text-xs staff-text-secondary mt-1 max-w-xs truncate">
+                                    {/* <div className="text-xs staff-text-secondary mt-1 max-w-xs truncate">
                                       {contest.description}
-                                    </div>
+                                    </div> */}
                                   </div>
                                 </div>
                               </td>
@@ -356,32 +358,10 @@ export default function ContestsManagementPage() {
                                   <div className="text-xs">
                                     {t.startText}: {contest.startDate}
                                   </div>
-                                  <div className="text-xs">
+                                  <div className="text-xs bg-blue-50 px-1 py-0.5 rounded-sm inline-block mt-0.5">
                                     {t.endText}: {contest.endDate}
                                   </div>
                                 </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <Link
-                                  href={`/dashboard/staff/contests/detail?id=${contest.contestId}`}
-                                  className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors mr-2 inline-block"
-                                  title="View Details"
-                                >
-                                  <IconEye className="h-4 w-4" />
-                                </Link>
-                                {/* <Link
-                                  href={`/dashboard/staff/contests/edit?id=${contest.contestId}`}
-                                  className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors mr-2 inline-block"
-                                  title="Edit Contest"
-                                >
-                                  <IconEdit className="h-4 w-4" />
-                                </Link> */}
-                                {/* <button
-                                  className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors mr-2 inline-block"
-                                  title="Delete Contest"
-                                >
-                                  <IconTrash className="h-4 w-4" />
-                                </button> */}
                               </td>
                             </tr>
                           );
@@ -402,7 +382,7 @@ export default function ContestsManagementPage() {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="px-2 py-1 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
@@ -424,7 +404,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(1)}
                       disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="First page"
                     >
                       <IconChevronsLeft className="h-4 w-4" />
@@ -432,7 +412,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="Previous page"
                     >
                       <IconChevronLeft className="h-4 w-4" />
@@ -445,7 +425,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="Next page"
                     >
                       <IconChevronRight className="h-4 w-4" />
@@ -453,7 +433,7 @@ export default function ContestsManagementPage() {
                     <button
                       onClick={() => setCurrentPage(totalPages)}
                       disabled={currentPage === totalPages}
-                      className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="staff-pagination-btn"
                       title="Last page"
                     >
                       <IconChevronsRight className="h-4 w-4" />

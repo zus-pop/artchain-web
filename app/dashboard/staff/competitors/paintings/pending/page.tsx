@@ -152,17 +152,17 @@ export default function PendingPaintingsPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title="Pending Paintings Review" />
+        <SiteHeader title="Duyệt Tranh Chờ Phê Duyệt" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
-                  label: "Competitor Management",
+                  label: "Quản Lý Thí Sinh",
                   href: "/dashboard/staff/competitors",
                 },
-                { label: "Paintings", href: "/dashboard/staff/competitors" },
-                { label: "Pending Review" },
+                { label: "Tranh", href: "/dashboard/staff/competitors" },
+                { label: "Chờ Duyệt" },
               ]}
               homeHref="/dashboard/staff"
             />
@@ -172,11 +172,11 @@ export default function PendingPaintingsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
-                    Pending Paintings ({filteredPaintings.length})
+                  <h2 className="staff-type-page-title staff-text-primary">
+                    Tranh Chờ Duyệt ({filteredPaintings.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
-                    Review and approve or reject competitor paintings
+                    Xem xét và phê duyệt hoặc từ chối tranh của thí sinh
                   </p>
                 </div>
               </div>
@@ -184,13 +184,12 @@ export default function PendingPaintingsPage() {
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
-                    placeholder="Search by title or competitor name..."
+                    placeholder="Tìm kiếm theo tiêu đề hoặc tên thí sinh..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -198,11 +197,11 @@ export default function PendingPaintingsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
-                        {category}
+                        {category === "ALL" ? "Tất cả" : category}
                       </option>
                     ))}
                   </select>
@@ -214,7 +213,7 @@ export default function PendingPaintingsPage() {
                 <div className="text-center py-12 bg-gray-50 ">
                   <IconPalette className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                   <p className="staff-text-secondary text-lg">
-                    No pending paintings found
+                    Không tìm thấy tranh chờ duyệt nào
                   </p>
                 </div>
               ) : (
@@ -231,14 +230,14 @@ export default function PendingPaintingsPage() {
                         </div>
                         <div className="absolute top-2 right-2">
                           <span className="inline-flex  px-3 py-1 text-xs font-semibold bg-yellow-100 text-yellow-800">
-                            PENDING
+                            CHỜ DUYỆT
                           </span>
                         </div>
                       </div>
 
                       {/* Painting Info */}
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold staff-text-primary mb-2">
+                        <h3 className="staff-type-section-title staff-text-primary mb-2">
                           {painting.title}
                         </h3>
 
@@ -246,8 +245,7 @@ export default function PendingPaintingsPage() {
                           <div className="flex items-center gap-2">
                             <IconUser className="h-4 w-4" />
                             <span>
-                              {painting.competitorName} (Age{" "}
-                              {painting.competitorAge})
+                              {painting.competitorName} ({painting.competitorAge} tuổi)
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -271,19 +269,19 @@ export default function PendingPaintingsPage() {
                             className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50  hover:bg-blue-100 transition-colors"
                           >
                             <IconEye className="h-4 w-4" />
-                            View Details
+                            Xem Chi Tiết
                           </button>
                           <button
                             onClick={() => handleApprove(painting.id)}
                             className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white staff-btn-secondary transition-colors"
-                            title="Approve"
+                            title="Phê Duyệt"
                           >
                             <IconCheck className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => openRejectModal(painting)}
                             className="flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-red-600  hover:bg-red-700 transition-colors"
-                            title="Reject"
+                            title="Từ Chối"
                           >
                             <IconX className="h-4 w-4" />
                           </button>
@@ -304,7 +302,7 @@ export default function PendingPaintingsPage() {
           <div className="bg-white  max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-2xl font-bold staff-text-primary">
+                <h3 className="staff-type-page-title staff-text-primary">
                   {selectedPainting.title}
                 </h3>
                 <button
@@ -325,21 +323,21 @@ export default function PendingPaintingsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium staff-text-secondary">
-                      Competitor
+                      Thí sinh
                     </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.competitorName}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium staff-text-secondary">Age</p>
+                    <p className="text-sm font-medium staff-text-secondary">Tuổi</p>
                     <p className="text-base staff-text-primary">
-                      {selectedPainting.competitorAge} years
+                      {selectedPainting.competitorAge} tuổi
                     </p>
                   </div>
                   <div>
                     <p className="text-sm font-medium staff-text-secondary">
-                      Category
+                      Thể loại
                     </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.category}
@@ -347,7 +345,7 @@ export default function PendingPaintingsPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium staff-text-secondary">
-                      Submitted Date
+                      Ngày nộp
                     </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.submittedDate}
@@ -355,7 +353,7 @@ export default function PendingPaintingsPage() {
                   </div>
                   <div className="col-span-2">
                     <p className="text-sm font-medium staff-text-secondary">
-                      Competition
+                      Cuộc thi
                     </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.competitionName}
@@ -363,7 +361,7 @@ export default function PendingPaintingsPage() {
                   </div>
                   <div className="col-span-2">
                     <p className="text-sm font-medium staff-text-secondary">
-                      Description
+                      Mô tả
                     </p>
                     <p className="text-base staff-text-primary">
                       {selectedPainting.description}
@@ -378,7 +376,7 @@ export default function PendingPaintingsPage() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white staff-btn-secondary transition-colors"
                   >
                     <IconCheck className="h-5 w-5" />
-                    Approve Painting
+                    Phê Duyệt Tranh
                   </button>
                   <button
                     onClick={() => {
@@ -388,7 +386,7 @@ export default function PendingPaintingsPage() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600  hover:bg-red-700 transition-colors"
                   >
                     <IconX className="h-5 w-5" />
-                    Reject Painting
+                    Từ Chối Tranh
                   </button>
                 </div>
               </div>
@@ -404,7 +402,7 @@ export default function PendingPaintingsPage() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold staff-text-primary">
-                  Reject Painting
+                  Từ Chối Tranh
                 </h3>
                 <button
                   onClick={() => {
@@ -418,19 +416,19 @@ export default function PendingPaintingsPage() {
               </div>
 
               <p className="text-sm staff-text-secondary mb-4">
-                Are you sure you want to reject &ldquo;{selectedPainting.title}
-                &rdquo; by {selectedPainting.competitorName}?
+                Bạn có chắc chắn muốn từ chối tác phẩm &ldquo;{selectedPainting.title}
+                &rdquo; của {selectedPainting.competitorName}?
               </p>
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Reason for Rejection <span className="text-red-500">*</span>
+                <label className="staff-type-label text-gray-700 mb-2 block">
+                  Lý do từ chối <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  placeholder="Please provide a reason for rejection..."
-                  className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[100px]"
+                  placeholder="Vui lòng cung cấp lý do từ chối..."
+                  className="w-full px-3 py-2 border border-[var(--staff-border)]  focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] min-h-[100px]"
                   required
                 />
               </div>
@@ -443,7 +441,7 @@ export default function PendingPaintingsPage() {
                   }}
                   className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100  hover:bg-gray-200 transition-colors"
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button
                   onClick={() =>
@@ -452,7 +450,7 @@ export default function PendingPaintingsPage() {
                   disabled={!rejectionReason.trim()}
                   className="flex-1 px-4 py-2 text-sm font-medium text-white bg-red-600  hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Confirm Rejection
+                  Xác Nhận Từ Chối
                 </button>
               </div>
             </div>

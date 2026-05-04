@@ -226,7 +226,7 @@ export default function CompetitorsManagementPage() {
       <SidebarInset>
         <SiteHeader title={t.competitorManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.competitorManagement }]}
               homeHref="/dashboard/staff"
@@ -237,7 +237,7 @@ export default function CompetitorsManagementPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.competitorManagement} ({filteredCompetitors.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
@@ -289,7 +289,7 @@ export default function CompetitorsManagementPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   href="/dashboard/staff/competitors/paintings/pending"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-orange-50 hover:to-amber-50 hover:border-orange-200 transition-all duration-300 group"
                 >
                   <div className=" bg-linear-to-br from-orange-500 to-amber-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconClock className="h-5 w-5 text-white" />
@@ -306,7 +306,7 @@ export default function CompetitorsManagementPage() {
 
                 <Link
                   href="/dashboard/staff/competitors/paintings/approved"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-green-50 hover:to-emerald-50 hover:border-green-200 transition-all duration-300 group"
                 >
                   <div className=" bg-linear-to-br from-green-500 to-emerald-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconAward className="h-5 w-5 text-white" />
@@ -323,7 +323,7 @@ export default function CompetitorsManagementPage() {
 
                 <Link
                   href="/dashboard/staff/competitors/search"
-                  className="flex items-center space-x-3  border-2 border-[#e6e2da] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
+                  className="flex items-center space-x-3  border-2 border-[var(--staff-border)] p-4 hover:bg-linear-to-br hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 group"
                 >
                   <div className="bg-linear-to-br from-blue-500 to-indigo-500 p-2.5 shadow-md group-hover:scale-110 transition-transform">
                     <IconSearch className="h-5 w-5 text-white" />
@@ -342,13 +342,12 @@ export default function CompetitorsManagementPage() {
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder={t.searchCompetitorsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -360,7 +359,7 @@ export default function CompetitorsManagementPage() {
                         e.target.value as CompetitorStatus | "ALL"
                       )
                     }
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -478,7 +477,7 @@ export default function CompetitorsManagementPage() {
                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                               <button
                                 onClick={() => openViewModal(competitor)}
-                                className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                                className="staff-btn-icon-primary"
                                 title="View Details"
                               >
                                 <IconEye className="h-4 w-4" />
@@ -507,7 +506,7 @@ export default function CompetitorsManagementPage() {
                     {getInitials(selectedCompetitor.fullName)}
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold staff-text-primary">
+                    <h3 className="staff-type-page-title staff-text-primary">
                       {selectedCompetitor.fullName}
                     </h3>
                     <p className="staff-text-secondary">
@@ -533,7 +532,7 @@ export default function CompetitorsManagementPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-semibold staff-text-primary">
+                  <h4 className="staff-type-section-title staff-text-primary">
                     {t.basicInformation}
                   </h4>
                   <div className="space-y-3">
@@ -603,11 +602,11 @@ export default function CompetitorsManagementPage() {
 
                 {/* Activity Statistics */}
                 <div className="space-y-4">
-                  <h4 className="text-lg font-semibold staff-text-primary">
+                  <h4 className="staff-type-section-title staff-text-primary">
                     {t.activityStatistics}
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className=" border border-[#e6e2da] p-4">
+                    <div className=" border border-[var(--staff-border)] p-4">
                       <div className="text-2xl font-bold text-purple-600">
                         {selectedCompetitor.totalPaintings}
                       </div>
@@ -615,7 +614,7 @@ export default function CompetitorsManagementPage() {
                         {t.totalPaintings}
                       </div>
                     </div>
-                    <div className=" border border-[#e6e2da] p-4">
+                    <div className=" border border-[var(--staff-border)] p-4">
                       <div className="text-2xl font-bold text-green-600">
                         {selectedCompetitor.approvedPaintings}
                       </div>
@@ -623,7 +622,7 @@ export default function CompetitorsManagementPage() {
                         {t.approved}
                       </div>
                     </div>
-                    <div className=" border border-[#e6e2da] p-4">
+                    <div className=" border border-[var(--staff-border)] p-4">
                       <div className="text-2xl font-bold text-yellow-600">
                         {selectedCompetitor.pendingPaintings}
                       </div>
@@ -631,7 +630,7 @@ export default function CompetitorsManagementPage() {
                         {t.pending}
                       </div>
                     </div>
-                    <div className=" border border-[#e6e2da] p-4">
+                    <div className=" border border-[var(--staff-border)] p-4">
                       <div className="text-2xl font-bold text-red-600">
                         {selectedCompetitor.rejectedPaintings}
                       </div>
@@ -665,10 +664,10 @@ export default function CompetitorsManagementPage() {
                 {(selectedCompetitor.guardianName ||
                   selectedCompetitor.guardianEmail) && (
                   <div className="space-y-4 lg:col-span-2">
-                    <h4 className="text-lg font-semibold staff-text-primary">
+                    <h4 className="staff-type-section-title staff-text-primary">
                       {t.guardianInformation}
                     </h4>
-                    <div className=" border border-[#e6e2da] p-4">
+                    <div className=" border border-[var(--staff-border)] p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {selectedCompetitor.guardianName && (
                           <div>
@@ -697,7 +696,7 @@ export default function CompetitorsManagementPage() {
 
                 {/* Activity Timeline */}
                 <div className="space-y-4 lg:col-span-2">
-                  <h4 className="text-lg font-semibold staff-text-primary">
+                  <h4 className="staff-type-section-title staff-text-primary">
                     {t.activityTimeline}
                   </h4>
                   <div className="space-y-3">

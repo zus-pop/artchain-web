@@ -74,7 +74,7 @@ export default function CongratulationPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-4xl bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-2"
+          className="relative z-10 w-full max-w-4xl bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] rounded-sm overflow-hidden grid grid-cols-1 lg:grid-cols-2"
         >
           {/* Left Column: Visuals */}
           <div className="bg-[#1a1a1a] p-12 flex flex-col justify-between text-white relative overflow-hidden h-full min-h-[400px]">
@@ -150,7 +150,7 @@ export default function CongratulationPage() {
                 
                 <div className="bg-[#fcfbf9] border border-[#e6e2da] p-6 rounded-xl">
                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Giá thầu cuối</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Giá  cuối</span>
                       <span className="bg-green-100 text-green-700 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">Winner Bid</span>
                    </div>
                    <p className="text-3xl font-black text-slate-900">{winningData ? formatVnd(winningData.finalBid) : ""}</p>
@@ -190,7 +190,7 @@ export default function CongratulationPage() {
       </main>
 
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30">
-         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — CHÚC MỪNG CHIẾN THẮNG</p>
+         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ ƯỚC MƠ — CHÚC MỪNG CHIẾN THẮNG</p>
       </footer>
       
       <style jsx global>{`

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useId } from 'react';
+import styled from 'styled-components';
 
 interface CustomCheckboxProps {
   checked: boolean;
@@ -13,29 +14,93 @@ const CustomCheckbox: React.FC<CustomCheckboxProps> = ({
   label,
   className = ""
 }) => {
+  const id = useId();
+
   return (
-    <div className={`flex items-center space-x-3 ${className}`}>
-      <label className="group flex items-center cursor-pointer">
-        <input
-          className="hidden peer"
-          type="checkbox"
+    <StyledWrapper className={className}>
+      <div className="checkbox-wrapper">
+        <input 
+          id={id} 
+          name="checkbox" 
+          type="checkbox" 
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
         />
-        <span className="relative w-8 h-8 flex justify-center items-center bg-gray-100 border-2 border-[#B8AAAA] rounded-md shadow-md transition-all duration-500 peer-checked:border-orange-500 peer-checked:bg-orange-500 hover:border-orange-500/60 hover:scale-105">
-          <span className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 opacity-0 peer-checked:opacity-100 rounded-md transition-all duration-500 peer-checked:animate-pulse" />
-          <svg fill="currentColor" viewBox="0 0 20 20" className="hidden w-5 h-5 text-white peer-checked:block transition-transform duration-500 transform scale-50 peer-checked:scale-100" xmlns="http://www.w3.org/2000/svg">
-            <path clipRule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" fillRule="evenodd" />
+        <label className="terms-label" htmlFor={id}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 200 200" className="checkbox-svg">
+            <mask fill="white" id={`path-mask-${id}`}>
+              <rect height={200} width={200} />
+            </mask>
+            <rect 
+              mask={`url(#path-mask-${id})`} 
+              strokeWidth={40} 
+              className="checkbox-box" 
+              height={200} 
+              width={200} 
+            />
+            <path strokeWidth={15} d="M52 111.018L76.9867 136L149 64" className="checkbox-tick" />
           </svg>
-        </span>
-        {label && (
-          <span className="ml-3 text-gray-700 group-hover:text-orange-500 font-medium transition-colors duration-300">
-            {label}
-          </span>
-        )}
-      </label>
-    </div>
+          {label && <span className="label-text">{label}</span>}
+        </label>
+      </div>
+    </StyledWrapper>
   );
 }
+
+const StyledWrapper = styled.div`
+  display: flex;
+  align-items: center;
+
+  .checkbox-wrapper input[type="checkbox"] {
+    display: none;
+  }
+
+  .checkbox-wrapper .terms-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+  }
+
+  .checkbox-wrapper .terms-label .label-text {
+    margin-left: 10px;
+    font-weight: 500;
+    color: #4b5563;
+    transition: color 0.3s ease;
+  }
+
+  .checkbox-wrapper input[type="checkbox"]:checked + .terms-label .label-text {
+    color: #f97316;
+  }
+
+  .checkbox-wrapper .checkbox-svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .checkbox-wrapper .checkbox-box {
+    fill: rgba(207, 205, 205, 0.25);
+    stroke: #f97316;
+    stroke-dasharray: 800;
+    stroke-dashoffset: 800;
+    transition: stroke-dashoffset 0.6s ease-in-out;
+  }
+
+  .checkbox-wrapper .checkbox-tick {
+    stroke: #f97316;
+    stroke-dasharray: 172;
+    stroke-dashoffset: 172;
+    transition: stroke-dashoffset 0.6s ease-in-out;
+  }
+
+  .checkbox-wrapper input[type="checkbox"]:checked + .terms-label .checkbox-box,
+  .checkbox-wrapper input[type="checkbox"]:checked + .terms-label .checkbox-tick {
+    stroke-dashoffset: 0;
+  }
+
+  .checkbox-wrapper:hover .checkbox-box {
+    stroke-dashoffset: 740;
+  }
+`;
 
 export default CustomCheckbox;

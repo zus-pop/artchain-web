@@ -23,7 +23,7 @@ function DashboardContent() {
     if (user?.role === "ADMIN") {
       router.push("/dashboard/admin");
     } else if (user?.role === "STAFF") {
-      router.push("/dashboard/staff");
+      router.push("/dashboard/staff/contests");
     } else {
       // For COMPETITOR and GUARDIAN, redirect to home or show access denied
       router.push("/");

@@ -1,5 +1,5 @@
 "use client";
-import { createStaffCampaign } from "@/apis/staff";
+import { createStaffCampaign, getSponsorshipTierDefinitions } from "@/apis/staff";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
@@ -12,7 +12,7 @@ import {
   IconFileText,
   IconMoneybag,
 } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -20,10 +20,49 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { CreateCampaignRequest } from "@/types/staff/campaign";
+import {
+  CampaignTierInput,
+  CreateCampaignRequest,
+  TierDefinition,
+} from "@/types/staff/campaign";
 import { Lang, useTranslation } from "@/lib/i18n";
 import { useLanguageStore } from "@/store/language-store";
 import Link from "next/link";
+
+const normalizeCurrencyDigits = (value: string) => {
+  const trimmed = value.trim();
+  const hasComma = trimmed.includes(",");
+  const hasDot = trimmed.includes(".");
+
+  if (hasComma && hasDot) {
+    const lastSeparatorIndex = Math.max(
+      trimmed.lastIndexOf(","),
+      trimmed.lastIndexOf(".")
+    );
+    return trimmed.slice(0, lastSeparatorIndex).replace(/\D/g, "");
+  }
+
+  if (hasComma) {
+    return trimmed.split(",")[0].replace(/\D/g, "");
+  }
+
+  if (hasDot && /\.\d{1,2}$/.test(trimmed)) {
+    return trimmed.split(".")[0].replace(/\D/g, "");
+  }
+
+  return trimmed.replace(/\D/g, "");
+};
+
+const parseCurrencyInput = (value: string) => {
+  const digitsOnly = normalizeCurrencyDigits(value);
+  return digitsOnly ? Number(digitsOnly) : NaN;
+};
+
+const formatCurrencyInput = (value: string) => {
+  const digitsOnly = normalizeCurrencyDigits(value);
+  if (!digitsOnly) return "";
+  return new Intl.NumberFormat("vi-VN").format(Number(digitsOnly));
+};
 
 // Zod schema for form validation
 const getCampaignSchema = (t: Lang) =>
@@ -36,12 +75,51 @@ const getCampaignSchema = (t: Lang) =>
       .string()
       .min(1, t.campaignDescriptionRequired)
       .max(1000, t.campaignDescriptionMaxLength),
-    goalAmount: z.number().min(1000, t.goalAmountMin),
+    goalAmount: z
+      .string()
+      .min(1, t.goalAmountMin)
+      .refine((value) => {
+        const amount = parseCurrencyInput(value);
+        return !Number.isNaN(amount) && amount >= 1000;
+      }, t.goalAmountMin),
     deadline: z.string().min(1, t.deadlineRequired),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
+    bronzeMinPrice: z.string().optional(),
+    silverMinPrice: z.string().optional(),
+    goldMinPrice: z.string().optional(),
+    diamondMinPrice: z.string().optional(),
     image: z
       .any()
       .refine((file) => file instanceof File && file.size > 0, t.imageRequired),
+  })
+  .superRefine((data, ctx) => {
+    const bronze = parseCurrencyInput(data.bronzeMinPrice || "");
+    const silver = parseCurrencyInput(data.silverMinPrice || "");
+    const gold = parseCurrencyInput(data.goldMinPrice || "");
+    const diamond = parseCurrencyInput(data.diamondMinPrice || "");
+
+    // Validation sequence: 1 (Bronze) < 2 (Silver) < 3 (Gold) < 4 (Diamond)
+    if (!Number.isNaN(bronze) && !Number.isNaN(silver) && silver <= bronze) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["silverMinPrice"],
+        message: "Tối thiểu hạng Bạc phải lớn hơn hạng Đồng",
+      });
+    }
+    if (!Number.isNaN(silver) && !Number.isNaN(gold) && gold <= silver) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["goldMinPrice"],
+        message: "Tối thiểu hạng Vàng phải lớn hơn hạng Bạc",
+      });
+    }
+    if (!Number.isNaN(gold) && !Number.isNaN(diamond) && diamond <= gold) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["diamondMinPrice"],
+        message: "Tối thiểu hạng Kim cương phải lớn hơn hạng Vàng",
+      });
+    }
   });
 
 type CampaignFormData = z.infer<ReturnType<typeof getCampaignSchema>>;
@@ -53,6 +131,44 @@ export default function CreateCampaignPage() {
   const queryClient = useQueryClient();
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+
+  const tierOrder: Array<TierDefinition["name"]> = [
+    "bronze",
+    "silver",
+    "gold",
+    "diamond",
+  ];
+
+  const fallbackTiers: TierDefinition[] = [
+    {
+      id: 1,
+      name: "bronze",
+      display: "Đồng",
+      priority: 1,
+      benefits: "Gói cơ bản",
+    },
+    {
+      id: 2,
+      name: "silver",
+      display: "Bạc",
+      priority: 2,
+      benefits: "Gói nâng cao",
+    },
+    {
+      id: 3,
+      name: "gold",
+      display: "Vàng",
+      priority: 3,
+      benefits: "Gói cao cấp",
+    },
+    {
+      id: 4,
+      name: "diamond",
+      display: "Kim cương",
+      priority: 4,
+      benefits: "Gói cao nhất",
+    },
+  ];
 
   // Cleanup image preview URL on unmount
   useEffect(() => {
@@ -69,11 +185,27 @@ export default function CreateCampaignPage() {
     defaultValues: {
       title: "",
       description: "",
-      goalAmount: 0,
+      goalAmount: "",
       deadline: "",
       status: "DRAFT",
+      bronzeMinPrice: "",
+      silverMinPrice: "",
+      goldMinPrice: "",
+      diamondMinPrice: "",
     },
     mode: "all",
+  });
+
+  const { data: tierDefinitionsRes } = useQuery({
+    queryKey: ["tier-definitions"],
+    queryFn: getSponsorshipTierDefinitions,
+  });
+
+  const tierDefinitions = tierOrder.map((name) => {
+    return (
+      tierDefinitionsRes?.data?.find((tier) => tier.name === name) ||
+      fallbackTiers.find((tier) => tier.name === name)!
+    );
   });
 
   const watchedImage = form.watch("image");
@@ -84,7 +216,7 @@ export default function CreateCampaignPage() {
     },
     onSuccess: () => {
       toast.success(t.campaignCreatedSuccessMessage);
-      queryClient.invalidateQueries({ queryKey: ["staff-campaigns"] });
+      queryClient.invalidateQueries({ queryKey: ["campaign"] });
       router.push("/dashboard/staff/campaigns");
     },
     onError: (error) => {
@@ -98,7 +230,42 @@ export default function CreateCampaignPage() {
 
   const handleSubmit = async (data: CampaignFormData) => {
     setIsSubmitting(true);
-    await mutation.mutateAsync(data);
+
+    const tierFieldByName: Record<
+      TierDefinition["name"],
+      "bronzeMinPrice" | "silverMinPrice" | "goldMinPrice" | "diamondMinPrice"
+    > = {
+      bronze: "bronzeMinPrice",
+      silver: "silverMinPrice",
+      gold: "goldMinPrice",
+      diamond: "diamondMinPrice",
+    };
+
+    const tiersPayload: CampaignTierInput[] = tierDefinitions
+      .map((tier) => {
+        const minPrice = parseCurrencyInput(data[tierFieldByName[tier.name]] || "");
+        if (Number.isNaN(minPrice) || minPrice <= 0) {
+          return null;
+        }
+
+        return {
+          tierId: tier.id,
+          minPrice,
+        };
+      })
+      .filter((tier): tier is CampaignTierInput => tier !== null);
+
+    const payload: CreateCampaignRequest = {
+      title: data.title,
+      description: data.description,
+      goalAmount: parseCurrencyInput(data.goalAmount),
+      deadline: data.deadline,
+      status: "DRAFT",
+      image: data.image,
+      tiers: tiersPayload,
+    };
+
+    await mutation.mutateAsync(payload);
     setIsSubmitting(false);
   };
 
@@ -107,8 +274,18 @@ export default function CreateCampaignPage() {
     // Here you would typically make an API call to save as draft
   };
 
-  const formatVNDAmount = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN").format(amount);
+  const handleCurrencyInputChange = (
+    fieldName:
+      | "goalAmount"
+      | "bronzeMinPrice"
+      | "silverMinPrice"
+      | "goldMinPrice"
+      | "diamondMinPrice"
+  ) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    form.setValue(fieldName, formatCurrencyInput(e.target.value), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   return (
@@ -124,7 +301,7 @@ export default function CreateCampaignPage() {
       <SidebarInset>
         <SiteHeader title={t.createSponsorshipCampaign} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -142,13 +319,13 @@ export default function CreateCampaignPage() {
               <div className="flex items-center gap-4">
                 <Link
                   href="/dashboard/staff/campaigns"
-                  className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                  className="staff-btn-outline p-2"
                 >
                   <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                 </Link>
 
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.createNewCampaign}
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
@@ -166,7 +343,7 @@ export default function CreateCampaignPage() {
                 </button>
                 <button
                   onClick={form.handleSubmit(handleSubmit)}
-                  disabled={!form.formState.isValid || isSubmitting}
+                  disabled={!form.formState.isValid || !form.watch("title") || !form.watch("goalAmount") || !form.watch("deadline") || !form.watch("image") || isSubmitting}
                   className="staff-btn-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? t.creatingCampaign : t.createCampaignBtn}
@@ -182,22 +359,22 @@ export default function CreateCampaignPage() {
               {/* Left Column - Basic Information (takes 2/3 of space) */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Basic Information */}
-                <div className="bg-white  border border-[#e6e2da] p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                <div className="bg-white  border border-[var(--staff-border)] p-6">
+                  <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                     <IconFileText className="h-5 w-5" />
                     {t.basicInformationSection}
                   </h3>
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.campaignTitleLabel} *
                       </label>
                       <input
                         type="text"
                         {...form.register("title")}
                         placeholder={t.enterCampaignTitle}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                         required
                       />
                       {form.formState.errors.title && (
@@ -207,15 +384,53 @@ export default function CreateCampaignPage() {
                       )}
                     </div>
 
+                    {/* Moved Deadline here */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
+                        {t.deadlineLabel} *
+                      </label>
+                      <input
+                        type="date"
+                        {...form.register("deadline")}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
+                        required
+                      />
+                      {form.formState.errors.deadline && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {form.formState.errors.deadline.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Moved Goal here */}
+                    <div>
+                      <label className="staff-type-label text-gray-700 mb-2 block">
+                        {t.goalAmountVND} *
+                      </label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        {...form.register("goalAmount")}
+                        onChange={handleCurrencyInputChange("goalAmount")}
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
+                        required
+                      />
+                      {form.formState.errors.goalAmount && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {form.formState.errors.goalAmount.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.campaignDescriptionLabel} *
                       </label>
                       <textarea
                         {...form.register("description")}
                         placeholder={t.enterCampaignDescription}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none staff-field"
                         required
                       />
                       <div className="flex justify-between items-center mt-1">
@@ -228,7 +443,7 @@ export default function CreateCampaignPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="staff-type-label text-gray-700 mb-2 block">
                         {t.campaignImageLabel} *
                       </label>
                       <div className="space-y-3">
@@ -260,7 +475,7 @@ export default function CreateCampaignPage() {
                         <div className="relative">
                           <label
                             htmlFor="campaign-image"
-                            className={`flex flex-col items-center justify-center aspect-video border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 group ${
+                            className={`flex flex-col items-center justify-center aspect-video border-2 border-dashed rounded-sm cursor-pointer transition-colors duration-200 group ${
                               imagePreviewUrl
                                 ? "border-green-300 bg-green-50"
                                 : "border-gray-300 bg-gray-50 hover:bg-gray-100"
@@ -295,7 +510,7 @@ export default function CreateCampaignPage() {
 
                           {/* Preview overlay */}
                           {imagePreviewUrl && (
-                            <div className="absolute inset-0 rounded-lg overflow-hidden">
+                            <div className="absolute inset-0 rounded-sm overflow-hidden">
                               <Image
                                 src={imagePreviewUrl}
                                 alt="Campaign preview"
@@ -345,81 +560,43 @@ export default function CreateCampaignPage() {
 
               {/* Right Column - Financial & Deadline (takes 1/3 of space) */}
               <div className="space-y-6">
-                {/* Financial & Status Details */}
-                <div className="bg-white  border border-[#e6e2da] p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                {/* Sponsorship Tiers only in the right column */}
+                <div className="bg-white border border-[var(--staff-border)] p-6">
+                  <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                     <IconMoneybag className="h-5 w-5" />
-                    {t.financialStatusDetails}
+Thông tin tài trợ
                   </h3>
+                  <div className="space-y-4">
+                    {tierDefinitions.map((tier) => {
+                      const fieldName = `${tier.name}MinPrice` as
+                        | "bronzeMinPrice"
+                        | "silverMinPrice"
+                        | "goldMinPrice"
+                        | "diamondMinPrice";
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t.goalAmountVND} *
-                      </label>
-                      <input
-                        type="number"
-                        {...form.register("goalAmount", {
-                          valueAsNumber: true,
-                        })}
-                        step={100_000}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        required
-                      />
-                      {form.watch("goalAmount") > 0 && (
-                        <p className="mt-1 text-sm text-gray-600">
-                          {t.formattedAmount.replace(
-                            "{amount}",
-                            formatVNDAmount(form.watch("goalAmount"))
+                      return (
+                        <div key={tier.id} className="border border-[var(--staff-border)] p-3 bg-[#fcfbf8]">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-semibold text-gray-800">
+                              {tier.display}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">{tier.benefits}</p>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            {...form.register(fieldName)}
+                            onChange={handleCurrencyInputChange(fieldName)}
+                            className="w-full px-3 py-2 border border-gray-300 focus:outline-none staff-field"
+                          />
+                          {form.formState.errors[fieldName] && (
+                            <p className="mt-1 text-xs text-red-600">
+                              {form.formState.errors[fieldName]?.message as string}
+                            </p>
                           )}
-                        </p>
-                      )}
-                      {form.formState.errors.goalAmount && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {form.formState.errors.goalAmount.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t.campaignStatus}
-                      </label>
-                      <select
-                        {...form.register("status")}
-                        className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="DRAFT">{t.draftOption}</option>
-                        <option value="ACTIVE">{t.activeOption}</option>
-                        <option value="PAUSED">{t.pausedOption}</option>
-                        <option value="COMPLETED">{t.completedOption}</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Deadline */}
-                <div className="bg-white  border border-[#e6e2da] p-6">
-                  <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
-                    <IconCalendar className="h-5 w-5" />
-                    {t.campaignDeadline}
-                  </h3>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t.deadlineLabel} *
-                    </label>
-                    <input
-                      type="date"
-                      {...form.register("deadline")}
-                      className="w-full px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      required
-                    />
-                    {form.formState.errors.deadline && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {form.formState.errors.deadline.message}
-                      </p>
-                    )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

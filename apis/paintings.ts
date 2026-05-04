@@ -187,7 +187,7 @@ export function useUploadRound2Painting() {
       return response.data;
     },
     onSuccess: () => {
-      toast.success("Cập nhật ảnh vòng 2 thành công");
+      toast.success("Cập nhật ảnh vòng chung khảo thành công");
       queryClient.invalidateQueries({ queryKey: ["round-submissions"] });
       queryClient.invalidateQueries({ queryKey: ["submission-detail"] });
     },

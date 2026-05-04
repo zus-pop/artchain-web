@@ -4,106 +4,188 @@ import { useGetContestsPaginated } from "@/apis/contests";
 import { formatDate } from "@/lib/utils";
 import { ContestStatus } from "@/types/contest";
 import { AnimatePresence, motion } from "framer-motion";
-import { Calendar, Clock, Filter, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trophy, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import GlassSurface from "@/components/GlassSurface";
 
-const statusColors = {
-  UPCOMING: "bg-blue-500",
-  ACTIVE: "bg-green-500",
-  DRAFT: "bg-[#EAE6E0]0",
-  ENDED: "bg-orange-500",
-  COMPLETED: "bg-purple-500",
-  CANCELLED: "bg-gray-600",
-  ALL: "bg-[#EAE6E0]0",
+// ── Design tokens ──────────────
+const TOKEN = {
+  primary: "#FF6E1A",
+  primaryHover: "#FF833B",
+  textPrimary: "#423137",
+  bg: "#EAE6E0",
 };
 
-const statusLabels = {
-  UPCOMING: "Sắp diễn ra",
-  ACTIVE: "Đang diễn ra",
-  DRAFT: "Bản nháp",
-  ENDED: "Đã kết thúc",
-  COMPLETED: "Hoàn thành",
-  CANCELLED: "Đã hủy",
-  ALL: "Tất cả",
+// ── Status config ────────────────
+type StatusKey = "UPCOMING" | "ACTIVE" | "DRAFT" | "ENDED" | "COMPLETED" | "CANCELLED" | "ALL";
+
+const statusConfig: Record<StatusKey, { label: string; color: string; dot: string }> = {
+  UPCOMING: { label: "Sắp diễn ra", color: "bg-blue-100 text-blue-600",   dot: "bg-blue-500" },
+  ACTIVE:   { label: "Đang diễn ra", color: "bg-green-100 text-green-600", dot: "bg-green-500" },
+  DRAFT:    { label: "Bản nháp",     color: "bg-gray-100 text-gray-600",   dot: "bg-gray-400" },
+  ENDED:    { label: "Đã kết thúc",  color: "bg-orange-100 text-orange-600", dot: "bg-orange-400" },
+  COMPLETED:{ label: "Hoàn thành",   color: "bg-purple-100 text-purple-600", dot: "bg-purple-500" },
+  CANCELLED:{ label: "Đã hủy",       color: "bg-gray-100 text-gray-600",   dot: "bg-gray-500" },
+  ALL:      { label: "Tất cả",       color: "bg-gray-100 text-gray-600",   dot: "bg-gray-300" },
 };
 
 const PLACEHOLDER_IMAGE_URL =
-  "https://via.placeholder.com/300x150?text=No+Banner";
+  "https://placehold.co/600x400/EAE6E0/423137?text=No+Image";
 
+// ── Helper to strip markdown ────────────────
+const cleanMarkdown = (text: string | undefined) => {
+  if (!text) return "";
+  return text
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+    .replace(/#{1,6}\s/g, "")
+    .replace(/(\*\*|\*|__|_)(.*?)\1/g, "$2")
+    .replace(/^\s*[->*+]\s/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+};
+
+// ── Circular Trajectory Icon Overlay (from InteractivePostCard) ────────────────
+const InteractiveOverlay = ({ isGrid = false }: { isGrid?: boolean }) => (
+  <div className={`absolute top-0 right-0 ${isGrid ? 'w-32 h-32' : 'w-40 h-40'} pointer-events-none overflow-hidden z-40`}>
+    <div className={`absolute ${isGrid ? '-top-16 -right-16 w-32 h-32' : '-top-20 -right-20 w-40 h-40'} origin-center transition-transform duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] rotate-[-90deg] group-hover:rotate-0`}>
+      <div className="absolute bottom-4 left-4 pointer-events-auto">
+        <GlassSurface 
+          width={isGrid ? 48 : 56} 
+          height={isGrid ? 48 : 56} 
+          borderRadius={isGrid ? 24 : 28} 
+          brightness={120} 
+          opacity={0.9}
+          blur={8}
+          className="items-center justify-center shadow-2xl border border-white/60"
+        >
+          <div className="flex items-center justify-center w-full h-full text-[var(--site-ink)]">
+            <svg 
+              className={`${isGrid ? 'w-5 h-5' : 'w-6 h-6'} transition-transform duration-500 group-hover:rotate-12`} 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path 
+                d="M12 4V20M12 4L18 10M12 4L6 10" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className="rotate-45 origin-center"
+              />
+            </svg>
+          </div>
+        </GlassSurface>
+      </div>
+    </div>
+  </div>
+);
+
+// ── Skeleton Components ────────────────
+const SkeletonFeatured = ({ reverse = false }: { reverse?: boolean }) => (
+  <div className="flex flex-col animate-pulse">
+    <div className={`flex flex-col ${reverse ? "md:flex-col-reverse" : ""}`}>
+      <div className={`mb-8 ${reverse ? "mt-8 pl-8" : "pr-8"}`}>
+        <div className="h-4 w-24 bg-[#423137]/10 rounded-full mb-4" />
+        <div className="h-10 bg-[#423137]/20 rounded w-4/5 mb-4" />
+        <div className="h-4 bg-[#423137]/10 rounded w-full" />
+      </div>
+      <div className="aspect-[1.15/1] bg-[#423137]/10 rounded-[2rem]" />
+    </div>
+  </div>
+);
+
+const SkeletonGridCard = () => (
+  <div className="flex flex-col bg-white border border-[#e6e2da] rounded-md overflow-hidden animate-pulse">
+    <div className="aspect-video bg-[#423137]/10" />
+    <div className="p-6 space-y-4">
+      <div className="h-6 w-32 bg-[#423137]/10 rounded-full" />
+      <div className="h-6 bg-[#423137]/20 rounded w-full" />
+    </div>
+  </div>
+);
+
+// ── Animated Image Component ────────────────
+const ZoomImage = ({ src, alt, className = "", isGrid = false }: { src: string; alt: string; className?: string; isGrid?: boolean }) => (
+  <div className={`relative overflow-hidden ${className}`}>
+    <motion.div
+      initial={{ scale: 1.2 }}
+      whileInView={{ scale: 1 }}
+      transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true }}
+      className="w-full h-full"
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:blur-[2px]"
+      />
+    </motion.div>
+    
+    <InteractiveOverlay isGrid={isGrid} />
+    
+    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 pointer-events-none z-30" />
+  </div>
+);
+
+// ── Main page ────────────────
 export default function ContestsPage() {
-  const [selectedStatus, setSelectedStatus] = useState<
-    ContestStatus | undefined
-  >();
+  const [selectedStatus, setSelectedStatus] = useState<ContestStatus | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 50; 
 
+  // Fetch ALL contests once
   const { data: contests, isLoading, error } = useGetContestsPaginated(
-    selectedStatus,
+    undefined, 
     currentPage,
     itemsPerPage
   );
 
-  // Filter out draft contests
-  const filteredContests = contests?.filter(contest => contest.status !== 'DRAFT') || [];
+  const { featuredContests, gridContests, totalAvailable } = useMemo(() => {
+    if (!contests) return { featuredContests: [], gridContests: [], totalAvailable: 0 };
+    
+    const all = contests
+      .filter((c) => c.status !== "DRAFT")
+      .sort((a, b) => {
+        if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+        if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
+        return 0;
+      });
 
-  // Calculate total pages (assuming we have all data, adjust if API returns total count)
-  const totalPages = filteredContests && filteredContests.length === itemsPerPage ? currentPage + 1 : currentPage;
+    // Top 2 are always shown here
+    const featured = all.slice(0, 2);
+    
+    // Grid includes EVERYTHING from the list, filtered by status
+    let grid = [...all];
+    if (selectedStatus) {
+      grid = grid.filter((c) => c.status === selectedStatus);
+    }
+
+    return { featuredContests: featured, gridContests: grid, totalAvailable: all.length };
+  }, [contests, selectedStatus]);
 
   const filterOptions: { label: string; value: ContestStatus | undefined }[] = [
-    { label: "Tất cả", value: undefined },
-    { label: "Đang diễn ra", value: "ACTIVE" },
-    { label: "Sắp diễn ra", value: "UPCOMING" },
-    { label: "Đã kết thúc", value: "ENDED" },
-    { label: "Hoàn thành", value: "COMPLETED" },
+    { label: "Tất cả",         value: undefined },
+    { label: "Đang diễn ra",   value: "ACTIVE" },
+    { label: "Sắp diễn ra",    value: "UPCOMING" },
+    { label: "Đã kết thúc",    value: "ENDED" },
+    { label: "Hoàn thành",     value: "COMPLETED" },
   ];
-
-  const getTimeRemaining = (endDate: string) => {
-    const now = new Date();
-    const end = new Date(endDate);
-    const diff = end.getTime() - now.getTime();
-
-    if (diff <= 0) return "Đã kết thúc";
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-    if (days > 0) return `Còn ${days} ngày`;
-    return `Còn ${hours} giờ`;
-  };
 
   if (isLoading) {
     return (
-      <div className="w-full pt-25 min-h-screen bg-[#EAE6E0]">
-        <div className="mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="group relative rounded-md overflow-hidden shadow-xl flex flex-col animate-pulse bg-white"
-              >
-                {/* Banner skeleton with date/status placeholders */}
-                <div className="relative w-full h-48 md:h-56 lg:h-44 bg-gray-200">
-                  <div className="absolute left-4 top-4 h-4 w-28 bg-gray-300 rounded" />
-                  <div className="absolute right-4 top-4 h-3 w-16 bg-gray-300 rounded-full" />
-                </div>
-
-                {/* Content skeleton */}
-                <div className="p-4 flex flex-col flex-1">
-                  <div className="h-5 md:h-6 w-3/4 bg-gray-300 rounded mb-2" />
-                  <div className="h-4 w-full bg-gray-200 rounded mb-4" />
-
-                  <div className="mt-auto flex items-center justify-between">
-                    <div className="h-10 w-28 bg-gray-300 rounded" />
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-14 bg-gray-300 rounded" />
-                      <div className="h-5 w-5 bg-gray-300 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+      <div className="w-full pt-32 px-4 sm:px-8 lg:px-16 min-h-screen bg-[#EAE6E0]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-24">
+             <SkeletonFeatured />
+             <SkeletonFeatured reverse />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => <SkeletonGridCard key={i} />)}
           </div>
         </div>
       </div>
@@ -112,224 +194,203 @@ export default function ContestsPage() {
 
   if (error) {
     return (
-      <div className="w-full py-25 px-4 bg-[#EAE6E0]">
-        <div className="mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-            Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
-          </h2>
-          <p className="text-[#FF6E1A]">Có lỗi xảy ra khi tải dữ liệu cuộc thi</p>
-        </div>
+      <div className="w-full py-32 px-4 flex items-center justify-center min-h-screen bg-[#EAE6E0]">
+        <p className="text-sm text-gray-500">Có lỗi xảy ra khi tải dữ liệu cuộc thi.</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full py-25 px-4 bg-[#EAE6E0]">
-      <div className="mx-auto">
-        {/* Header */}
-        {/* <motion.div 
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-800 mb-4">
-            Cuộc Thi <span className="text-[#FF6E1A]">Nghệ Thuật</span>
-          </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Khám phá và tham gia các cuộc thi nghệ thuật hấp dẫn
-          </p>
-        </motion.div> */}
+    <div className="w-full pt-32 pb-24 bg-[#EAE6E0] min-h-screen px-4 sm:px-8 lg:px-16 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto">
 
-        {/* Filter Bar */}
-        <motion.div
-          className="mb-12 ml-5"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-        >
-          <div className="flex items-center space-x-4 mb-4">
-            <Filter className="h-5 w-5 text-gray-600" />
-            <span className="text-gray-700 font-medium">
-              Lọc theo trạng thái:
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2">
+        {/* ── Page Header ── */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl"
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#423137] leading-[1.1] tracking-tight">
+              Khơi nguồn sáng tạo, <br />
+              kết nối những tâm hồn.
+            </h1>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <Link 
+              href="/exhibition" 
+              className="group flex items-center gap-2 text-sm font-bold text-[#423137] hover:text-[#FF6E1A] transition-colors"
+            >
+              Xem triển lãm tranh
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* ── Featured Section ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 mb-20">
+          {featuredContests[0] && (
+            <Link href={`/contests/${featuredContests[0].contestId}`} className="group flex flex-col">
+              <div className="mb-8 pr-8">
+                 <div className="flex items-center gap-3 mb-4">
+                   <span className={`text-[10px] font-bold tracking-widest px-4 py-1.5 rounded-full uppercase ${statusConfig[featuredContests[0].status as StatusKey]?.color || 'bg-gray-100'}`}>
+                     {statusConfig[featuredContests[0].status as StatusKey]?.label}
+                   </span>
+                   <span className="text-[12px] font-medium text-[#423137]/40">
+                     {formatDate({ dateString: featuredContests[0].startDate })}
+                   </span>
+                 </div>
+                 <h2 className="text-3xl lg:text-4xl font-bold text-[#423137] leading-[1.15] mb-4 group-hover:text-[#FF6E1A] transition-colors">
+                   {featuredContests[0].title}
+                 </h2>
+                 <p className="text-sm text-[#423137]/60 leading-relaxed line-clamp-2">
+                   {cleanMarkdown(featuredContests[0].description)}
+                 </p>
+              </div>
+              <ZoomImage 
+                src={featuredContests[0].bannerUrl ?? PLACEHOLDER_IMAGE_URL}
+                alt={featuredContests[0].title}
+                className="aspect-[1.15/1] rounded-[2rem] shadow-xl border border-white/20"
+              />
+            </Link>
+          )}
+
+          {featuredContests[1] && (
+            <Link href={`/contests/${featuredContests[1].contestId}`} className="group flex flex-col">
+              <ZoomImage 
+                src={featuredContests[1].bannerUrl ?? PLACEHOLDER_IMAGE_URL}
+                alt={featuredContests[1].title}
+                className="aspect-[1.15/1] rounded-[2rem] shadow-xl border border-white/20 mb-8"
+              />
+              <div className="pl-8">
+                 <div className="flex items-center gap-3 mb-4">
+                   <span className={`text-[10px] font-bold tracking-widest px-4 py-1.5 rounded-full uppercase ${statusConfig[featuredContests[1].status as StatusKey]?.color || 'bg-gray-100'}`}>
+                     {statusConfig[featuredContests[1].status as StatusKey]?.label}
+                   </span>
+                   <span className="text-[12px] font-medium text-[#423137]/40">
+                     {formatDate({ dateString: featuredContests[1].startDate })}
+                   </span>
+                 </div>
+                 <h2 className="text-3xl lg:text-4xl font-bold text-[#423137] leading-[1.15] mb-4 group-hover:text-[#FF6E1A] transition-colors">
+                   {featuredContests[1].title}
+                 </h2>
+                 <p className="text-sm text-[#423137]/60 leading-relaxed line-clamp-2">
+                   {cleanMarkdown(featuredContests[1].description)}
+                 </p>
+              </div>
+            </Link>
+          )}
+        </div>
+
+        {/* ── Filter bar ── */}
+        <div className="mb-12 mt-12">
+          <p className="text-[10px] font-bold tracking-[0.25em] text-[#423137]/40 uppercase mb-5">
+            Tất cả cuộc thi
+          </p>
+          <div className="flex flex-wrap gap-2.5">
             {filterOptions.map((option) => (
               <button
                 key={option.label}
                 onClick={() => {
                   setSelectedStatus(option.value);
-                  setCurrentPage(1); // Reset to first page when filter changes
+                  setCurrentPage(1);
                 }}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                className={`text-[11px] font-bold tracking-wider px-5 py-2.5 rounded-full transition-all duration-300 ${
                   selectedStatus === option.value
-                    ? "bg-[#FF6E1A] text-white shadow-md"
-                    : "bg-[#EAE6E0] text-black border border-primary hover:bg-gray-100 shadow-sm"
+                    ? "bg-[#423137] text-white shadow-lg shadow-[#423137]/20"
+                    : "bg-white/50 border border-[#423137]/10 text-[#423137]/60 hover:bg-white hover:text-[#423137]"
                 }`}
               >
                 {option.label}
               </button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Contests Grid */}
+        {/* ── Grid Section (Shows ALL contests including featured ones) ── */}
         <AnimatePresence mode="wait">
-          {filteredContests && filteredContests.length > 0 ? (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              {filteredContests.map((contest, index) => (
-                <motion.div
-                  key={contest.contestId}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                >
-                  <Link href={`/contests/${contest.contestId}`}>
-                    <div className="group min-h-80 relative rounded-md overflow-hidden shadow-xl flex flex-col">
-                      {/* Banner image */}
-                      <div className="relative w-full h-48 md:h-56 lg:h-44">
-                        <Image
-                          src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
-                          alt={contest.title}
-                          fill
-                          className="object-cover w-full h-full"
-                        />
+          <motion.div
+            key={selectedStatus || "all"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {gridContests.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {gridContests.map((contest, index) => {
+                  const status = statusConfig[contest.status as StatusKey] ?? statusConfig.ALL;
 
-                        {/* Date pill (top-left) */}
-                        <div className="absolute left-4 top-4 bg-white/95 text-gray-800 rounded-md px-3 py-1 flex items-center gap-2 text-sm shadow">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatDate({ dateString: contest.startDate })}</span>
-                        </div>
-
-                        {/* Status badge (top-right) */}
-                        <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold text-white z-10 ${statusColors[contest.status]}`}>
-                          {statusLabels[contest.status]}
-                        </div>
-
-                        {/* Dark gradient overlay (kept for visual) */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                      </div>
-
-                      {/* Content moved below the banner image and anchored to bottom */}
-                      <div className="p-4 bg-transparent text-gray-800 flex flex-col flex-1">
-                        {/* Title area: reserve space even if title is empty */}
-                        <h3 className="text-xl md:text-2xl font-bold leading-tight min-h-[3rem]">
-                          {contest.title ?? ""}
-                        </h3>
-
-                        {/* Bottom actions always stay at the bottom */}
-                        <div className="mt-auto flex items-center justify-between gap-3">
-                          <button className="flex items-center gap-2 bg-[#FF6E1A] hover:bg-[#ff7f35] text-white px-4 py-2 rounded-lg font-semibold shadow">
-                            Chi tiết
-                            <span className="sr-only">Chi tiết {contest.title}</span>
-                          </button>
-
-                          <div className="flex items-center gap-2">
-                            <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{contest.numOfAward} giải</span>
-                            {/* <Trophy className="h-4 w-4 text-gray-600" /> */}
+                  return (
+                    <motion.div
+                      key={contest.contestId}
+                      initial={{ opacity: 0, y: 16 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: index * 0.05 }}
+                    >
+                      <Link href={`/contests/${contest.contestId}`} className="group block h-full">
+                        <div className="flex flex-col h-full bg-white border border-[#e6e2da] shadow-sm rounded-md overflow-hidden transition-all duration-300 hover:shadow-md hover:scale-[1.01]">
+                          <div className="relative w-full aspect-video overflow-hidden border-b border-[#e6e2da]">
+                            <ZoomImage
+                              src={contest.bannerUrl ?? PLACEHOLDER_IMAGE_URL}
+                              alt={contest.title}
+                              className="w-full h-full"
+                              isGrid
+                            />
+                          </div>
+                          <div className="flex flex-col flex-1 p-6">
+                            <div className="flex items-center gap-4 mb-4">
+                              <span className={`text-[9px] font-bold tracking-widest px-3 py-1 rounded-full uppercase ${status.color}`}>
+                                {status.label}
+                              </span>
+                              <span className="text-[10px] font-semibold text-[#423137]/40">
+                                {formatDate({ dateString: contest.startDate })}
+                              </span>
+                            </div>
+                            <h3 className="text-xl font-bold text-[#423137] leading-tight group-hover:text-[#FF6E1A] transition-colors line-clamp-2">
+                              {contest.title}
+                            </h3>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              className="text-center py-16 min-h-screen"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6 }}
-            >
-              <Trophy className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                Không có cuộc thi nào
-              </h3>
-              <p className="text-gray-600">
-                {selectedStatus
-                  ? `Không có cuộc thi nào với trạng thái "${
-                      filterOptions.find((f) => f.value === selectedStatus)
-                        ?.label
-                    }"`
-                  : "Hiện tại chưa có cuộc thi nào được tổ chức"}
-              </p>
-            </motion.div>
-          )}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-32 bg-white/10 rounded-3xl border border-dashed border-[#423137]/10">
+                <Trophy className="h-12 w-12 text-[#423137]/10 mx-auto mb-6" />
+                <p className="text-base font-semibold text-[#423137]/30">Không tìm thấy cuộc thi nào</p>
+              </div>
+            )}
+          </motion.div>
         </AnimatePresence>
 
-        {/* Pagination */}
-        {filteredContests && filteredContests.length > 0 && (
-          <motion.div
-            className="flex justify-center items-center gap-2 mt-12 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+        {/* ── Pagination ── */}
+        {totalAvailable > itemsPerPage && (
+          <div className="flex justify-center items-center gap-2 mt-14">
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                currentPage === 1
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
-              }`}
+              className="flex items-center gap-1 text-xs font-semibold px-3.5 py-2 rounded-sm border border-[#423137]/20 text-[#423137]/60 hover:border-[#FF6E1A] hover:text-[#FF6E1A] transition-colors duration-200 disabled:opacity-30"
             >
-              <ChevronLeft className="h-4 w-4" />
-              Trước
+              <ChevronLeft className="h-3.5 w-3.5" /> Trước
             </button>
-
-            <div className="flex items-center gap-2">
-              {/* Show page numbers */}
-              {[...Array(Math.min(5, totalPages))].map((_, idx) => {
-                let pageNumber;
-                if (totalPages <= 5) {
-                  pageNumber = idx + 1;
-                } else if (currentPage <= 3) {
-                  pageNumber = idx + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNumber = totalPages - 4 + idx;
-                } else {
-                  pageNumber = currentPage - 2 + idx;
-                }
-
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentPage(pageNumber)}
-                    className={`w-10 h-10 rounded-lg font-medium transition-all duration-200 ${
-                      currentPage === pageNumber
-                        ? "bg-[#FF6E1A] text-white shadow-md"
-                        : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100"
-                    }`}
-                  >
-                    {pageNumber}
-                  </button>
-                );
-              })}
-            </div>
-
+            <span className="text-sm font-bold text-[#423137] px-4">{currentPage}</span>
             <button
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              disabled={filteredContests.length < itemsPerPage}
-              className={`flex items-center gap-1 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                filteredContests.length < itemsPerPage
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#EAE6E0] text-black border border-gray-300 hover:bg-gray-100 shadow-sm"
-              }`}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              disabled={totalAvailable <= currentPage * itemsPerPage}
+              className="flex items-center gap-1 text-xs font-semibold px-3.5 py-2 rounded-sm border border-[#423137]/20 text-[#423137]/60 hover:border-[#FF6E1A] hover:text-[#FF6E1A] transition-colors duration-200 disabled:opacity-30"
             >
-              Sau
-              <ChevronRight className="h-4 w-4" />
+              Sau <ChevronRight className="h-3.5 w-3.5" />
             </button>
-          </motion.div>
+          </div>
         )}
       </div>
     </div>

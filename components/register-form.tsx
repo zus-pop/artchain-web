@@ -162,8 +162,8 @@ export function RegisterForm({
   // Calculate valid grade range based on birthday
   const getValidGrades = () => {
     if (!watchedBirthday) {
-      // If no birthday selected, show all grades 1-9
-      return Array.from({ length: 9 }, (_, i) => i + 1);
+      // If no birthday selected, show all grades 6-9
+      return Array.from({ length: 4 }, (_, i) => i + 6);
     }
 
     const birthYear = new Date(watchedBirthday).getFullYear();
@@ -173,8 +173,8 @@ export function RegisterForm({
     // Expected grade = age - 5 (since grade 1 = 6 years old)
     const expectedGrade = age - 5;
 
-    // For strict validation: only allow grades that match expected age ±1 year
-    const minGrade = Math.max(1, expectedGrade - 1);
+    // For strict validation: only allow grades that match expected age ±1 year, restricted to 6-9
+    const minGrade = Math.max(6, expectedGrade - 1);
     const maxGrade = Math.min(9, expectedGrade + 1);
 
     const validGrades = [];
@@ -184,7 +184,7 @@ export function RegisterForm({
 
     return validGrades.length > 0
       ? validGrades
-      : Array.from({ length: 9 }, (_, i) => i + 1);
+      : Array.from({ length: 4 }, (_, i) => i + 6);
   };
 
   const validGrades = getValidGrades();
@@ -831,8 +831,8 @@ export function RegisterForm({
                       <input
                         id="competitor-birthday"
                         type="date"
-                        min={`${new Date().getFullYear() - 16}-01-01`}
-                        max={`${new Date().getFullYear() - 5}-12-31`}
+                        min={`${new Date().getFullYear() - 15}-01-01`}
+                        max={`${new Date().getFullYear() - 10}-12-31`}
                         className="w-full mt-2 h-10 px-4 rounded-md border border-gray-300 bg-white focus:outline-none focus:border-[#B8AAAA] focus:ring-1 focus:ring-[#B8AAAA]"
                         {...field}
                       />

@@ -40,7 +40,7 @@ export const MDXEditorWrapper = forwardRef<
   MDXEditorWrapperProps
 >(({ markdown = "", placeholder }, ref) => {
   return (
-    <div className="mdx-editor-wrapper border border-[#e6e2da]">
+    <div className="mdx-editor-wrapper border border-[var(--staff-border)]">
       <MDXEditor
         ref={ref}
         markdown={markdown}

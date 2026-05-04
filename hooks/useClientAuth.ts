@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { WhoAmI } from "@/types/auth";
 
@@ -21,7 +22,7 @@ export function useClientAuth(): AuthState {
   const { accessToken, user, isHydrated, setAccessToken, setUser, logout } =
     useAuthStore();
 
-  return {
+  return React.useMemo(() => ({
     isAuthenticated: !!accessToken,
     user,
     accessToken,
@@ -32,5 +33,5 @@ export function useClientAuth(): AuthState {
     logout,
     isLoading: !isHydrated,
     isHydrated,
-  };
+  }), [accessToken, user, isHydrated, setAccessToken, setUser, logout]);
 }

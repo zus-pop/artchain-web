@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { Timer, Hammer, Eye, TrendingUp } from "lucide-react";
+import { Timer, Gavel, Eye, TrendingUp } from "lucide-react";
 import { Auction, AuctionStatus } from "@/types/auction";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -81,7 +81,7 @@ function timeLabel(auction: Auction) {
 function getThumb(auction: Auction) {
   return (
     auction.auctionPaintings?.[0]?.painting?.imageUrl ||
-    "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?q=80&w=800"
+    " "
   );
 }
 
@@ -124,7 +124,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               <div className="flex items-center gap-3 text-[10px] opacity-70">
                 {auction.bidCount !== undefined && (
                   <span className="flex items-center gap-1">
-                    <Hammer size={11} /> {auction.bidCount}
+                    <Gavel size={11} /> {auction.bidCount}
                   </span>
                 )}
                 {auction.participantCount !== undefined && (
@@ -146,7 +146,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
             {auction.auctionPaintings?.length ?? 0} tác phẩm
           </p>
 
-          {topPrice !== null && (
+          {/* {topPrice !== null && (
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest opacity-40 mb-1">
                 Giá cao nhất
@@ -156,7 +156,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
                 <TrendingUp size={14} className="opacity-60" />
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </Link>

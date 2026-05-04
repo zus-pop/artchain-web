@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useGetWonPaintings } from "@/apis/auction";
 import { WonPainting } from "@/types/auction";
 import { formatCurrency } from "@/lib/utils";
@@ -33,7 +34,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
 
   if (!wonPaintings || wonPaintings.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-black/10 rounded-2xl bg-gray-50/50">
+      <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-black/10 rounded-sm bg-gray-50/50">
         <div className="text-4xl mb-4">🎨</div>
         <p className="text-lg font-bold uppercase opacity-30">Chưa có đơn hàng nào</p>
         <p className="text-sm opacity-40">Các tác phẩm bạn đấu giá thành công sẽ xuất hiện tại đây.</p>
@@ -57,7 +58,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
               className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
             <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
-              Đã trúng thầu
+              Đã trúng 
             </div>
           </div>
 
@@ -69,7 +70,7 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
             
             <div className="space-y-3 pt-3 border-t border-gray-100">
               <div className="flex justify-between items-center text-sm">
-                <span className="opacity-50 font-medium">Giá trúng thầu:</span>
+                <span className="opacity-50 font-medium">Giá trúng :</span>
                 <span className="font-black text-[#f07d44]">
                   {formatCurrency(wp.finalBid)}
                 </span>
@@ -86,10 +87,21 @@ export default function WonPaintings({ userId }: WonPaintingsProps) {
               </div>
             </div>
 
-            {/* Action Button (Optional) */}
-            <button className="w-full mt-5 bg-black text-white py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition shadow-sm active:scale-95">
-              Chi tiết đơn hàng
-            </button>
+            {/* Action Buttons */}
+            <div className="mt-5">
+              <Link
+                href={{
+                  pathname: "/mint-nft",
+                  query: {
+                    paintingId: wp.painting.paintingId,
+                    competitorUserId: wp.painting.competitorId,
+                  },
+                }}
+                className="block w-full bg-[#FF6E1A] text-white py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition shadow-sm active:scale-95 text-center"
+              >
+                Mint NFT
+              </Link>
+            </div>
           </div>
         </div>
       ))}

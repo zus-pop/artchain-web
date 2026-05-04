@@ -124,7 +124,7 @@ export default function RejectedPaintingsPage() {
       <SidebarInset>
         <SiteHeader title="Paintings - Rejected" />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -142,7 +142,7 @@ export default function RejectedPaintingsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     Rejected Paintings ({filteredPaintings.length})
                   </h2>
                   <p className="text-sm staff-text-secondary mt-1">
@@ -154,13 +154,12 @@ export default function RejectedPaintingsPage() {
               {/* Search and Filter */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder="Search by title or competitor name..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -168,7 +167,7 @@ export default function RejectedPaintingsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -209,7 +208,7 @@ export default function RejectedPaintingsPage() {
 
                       {/* Painting Info */}
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold staff-text-primary mb-2">
+                        <h3 className="staff-type-section-title staff-text-primary mb-2">
                           {painting.title}
                         </h3>
 
@@ -265,7 +264,7 @@ export default function RejectedPaintingsPage() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold staff-text-primary">
+                  <h3 className="staff-type-page-title staff-text-primary">
                     {selectedPainting.title}
                   </h3>
                   <span className="inline-flex  px-3 py-1 text-xs font-semibold bg-red-100 text-red-800 mt-2">

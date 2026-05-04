@@ -13,13 +13,14 @@ import {
   IconArrowLeft,
   IconCalendar,
   IconDeviceFloppy,
-  IconHammer,
+  IconGavel,
   IconX,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import React from "react";
 import { toast } from "sonner";
 
 // Validation schema
@@ -27,19 +28,42 @@ const auctionSchema = z
   .object({
     title: z
       .string()
-      .min(1, "Auction title is required")
-      .max(100, "Title must be less than 100 characters"),
+      .min(1, "Tiêu đề đấu giá là bắt buộc")
+      .max(100, "Tiêu đề phải ít hơn 100 ký tự"),
     description: z
       .string()
-      .min(1, "Description is required")
-      .max(1000, "Description must be less than 1000 characters"),
-    startTime: z.string().min(1, "Start time is required"),
-    endTime: z.string().min(1, "End time is required"),
+      .min(1, "Mô tả là bắt buộc")
+      .max(1000, "Mô tả phải ít hơn 1000 ký tự"),
+    startTime: z.string().min(1, "Thời gian bắt đầu là bắt buộc"),
+    endTime: z.string().min(1, "Thời gian kết thúc là bắt buộc"),
   })
+  .refine(
+    (data) => {
+      const now = new Date();
+      const start = new Date(data.startTime);
+      return start.getTime() > now.getTime() - 60000;
+    },
+    {
+      message: "Thời gian bắt đầu phải ở tương lai",
+      path: ["startTime"],
+    }
+  )
   .refine((data) => new Date(data.endTime) > new Date(data.startTime), {
-    message: "End time must be after start time",
+    message: "Thời gian kết thúc phải sau thời gian bắt đầu",
     path: ["endTime"],
-  });
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      const diffInHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      return diffInHours <= 24;
+    },
+    {
+      message: "Thời gian đấu giá không được quá 24 giờ",
+      path: ["endTime"],
+    }
+  );
 
 type AuctionFormData = z.infer<typeof auctionSchema>;
 
@@ -49,14 +73,19 @@ export default function CreateAuctionPage() {
   const t = useTranslation(currentLanguage);
   const { user } = useAuthStore();
 
+  const now = new Date();
+  const minDateTime = now.toISOString().slice(0, 16);
+
   // Form setup
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
     watch,
   } = useForm<AuctionFormData>({
     resolver: zodResolver(auctionSchema),
+    mode: "onChange",
     defaultValues: {
       title: "",
       description: "",
@@ -67,13 +96,25 @@ export default function CreateAuctionPage() {
 
   const watchedStartTime = watch("startTime");
 
+  // Automatically set endTime to 23:59 of the same day as startTime
+  React.useEffect(() => {
+    if (watchedStartTime) {
+      const date = new Date(watchedStartTime);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const formattedEndTime = `${year}-${month}-${day}T23:59`;
+      setValue("endTime", formattedEndTime, { shouldValidate: true });
+    }
+  }, [watchedStartTime, setValue]);
+
   // Mutation
   const createAuctionMutation = useCreateAuction();
 
   const onSubmit = async (data: AuctionFormData) => {
     try {
       if (!user?.userId) {
-        toast.error("User session not found");
+        toast.error("Không tìm thấy phiên đăng nhập người dùng");
         return;
       }
 
@@ -100,7 +141,7 @@ export default function CreateAuctionPage() {
       <SidebarInset>
         <SiteHeader title={t.createAuction} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -114,13 +155,12 @@ export default function CreateAuctionPage() {
           </div>
           <div className="flex-1 overflow-y-auto">
             <div className="@container/main">
-              <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 max-w-7xl mx-auto">
-                {/* Header */}
+              <div className="flex flex-col gap-6 py-6 px-4 lg:px-6 max-w-4xl mx-auto">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Link
                       href="/dashboard/staff/auctions"
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                      className="p-2 hover:bg-gray-100 rounded-sm transition-colors border border-gray-200"
                       title={t.allAuctions}
                     >
                       <IconArrowLeft className="h-5 w-5" />
@@ -136,185 +176,124 @@ export default function CreateAuctionPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* Main Form Column */}
-                  <div className="lg:col-span-2 space-y-6">
-                    <div className="staff-card p-6">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-blue-100 rounded-lg">
-                          <IconHammer className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <h2 className="text-xl font-semibold staff-text-primary">
-                            {t.auctionDetails}
-                          </h2>
-                          <p className="text-sm staff-text-secondary">
-                            {t.basicAuctionInfo || "General information about the auction"}
-                          </p>
-                        </div>
+                <div className="space-y-6">
+                  <div className="staff-card p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-100 rounded-sm">
+                        <IconGavel className="h-5 w-5 text-blue-600" />
                       </div>
+                      <div>
+                        {/* <h2 className="text-xl font-semibold staff-text-primary">
+                          {t.auctionDetails}
+                        </h2> */}
+                        <p className="text-sm staff-text-secondary">
+                          {t.basicAuctionInfo ||
+                            "General information about the auction"}
+                        </p>
+                      </div>
+                    </div>
 
-                      <form
-                        onSubmit={handleSubmit(onSubmit)}
-                        className="space-y-6"
-                      >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.auctionTitle}
-                            </label>
+                    <form
+                      onSubmit={handleSubmit(onSubmit)}
+                      className="space-y-6"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
+                            {t.auctionTitle}
+                          </label>
+                          <input
+                            type="text"
+                            {...register("title")}
+                            className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all ${
+                              errors.title
+                                ? "border-red-300 bg-red-50"
+                                : "border-[var(--staff-border)] bg-white"
+                            }`}
+                            placeholder={
+                              t.enterAuctionTitle || "Nhập tiêu đề đấu giá"
+                            }
+                          />
+                          {errors.title && (
+                            <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
+                              {errors.title.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
+                            {t.descriptionLabel}
+                          </label>
+                          <textarea
+                            {...register("description")}
+                            rows={5}
+                            className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all resize-none ${
+                              errors.description
+                                ? "border-red-300 bg-red-50"
+                                : "border-[var(--staff-border)] bg-white"
+                            }`}
+                            placeholder={
+                              t.describeAuction ||
+                              "Mô tả ngắn gọn về phiên đấu giá"
+                            }
+                          />
+                          {errors.description && (
+                            <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
+                              {errors.description.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="staff-type-label staff-text-primary mb-2 block">
+                            {t.auctionStartTime}
+                          </label>
+                          <div className="relative">
                             <input
-                              type="text"
-                              {...register("title")}
-                              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                                errors.title
+                              type="datetime-local"
+                              {...register("startTime")}
+                              min={minDateTime}
+                              className={`w-full px-4 py-3 border rounded-sm focus:outline-none staff-field transition-all ${
+                                errors.startTime
                                   ? "border-red-300 bg-red-50"
-                                  : "border-[#e6e2da] bg-white"
+                                  : "border-[var(--staff-border)] bg-white"
                               }`}
-                              placeholder={t.enterAuctionTitle || "Enter auction title"}
                             />
-                            {errors.title && (
-                              <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
-                                {errors.title.message}
-                              </p>
-                            )}
+                            <p className="mt-2 text-xs text-blue-600 font-medium italic">
+                              * Cuộc đấu giá sẽ tự động kết thúc vào 23:59 cùng ngày.
+                            </p>
                           </div>
-
-                          <div className="md:col-span-2">
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.descriptionLabel}
-                            </label>
-                            <textarea
-                              {...register("description")}
-                              rows={5}
-                              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none ${
-                                errors.description
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-[#e6e2da] bg-white"
-                              }`}
-                              placeholder={t.describeAuction || "Briefly describe the auction purpose and theme"}
-                            />
-                            {errors.description && (
-                              <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
-                                {errors.description.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.auctionStartTime}
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="datetime-local"
-                                {...register("startTime")}
-                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                                  errors.startTime
-                                    ? "border-red-300 bg-red-50"
-                                    : "border-[#e6e2da] bg-white"
-                                }`}
-                              />
-                            </div>
-                            {errors.startTime && (
-                              <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
-                                {errors.startTime.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium staff-text-primary mb-2">
-                              {t.auctionEndTime}
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="datetime-local"
-                                {...register("endTime")}
-                                min={watchedStartTime}
-                                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                                  errors.endTime
-                                    ? "border-red-300 bg-red-50"
-                                    : "border-[#e6e2da] bg-white"
-                                }`}
-                              />
-                            </div>
-                            {errors.endTime && (
-                              <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
-                                {errors.endTime.message}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Form Actions */}
-                        <div className="flex items-center justify-end gap-3 pt-8 border-t border-[#e6e2da]">
-                          <Link
-                            href="/dashboard/staff/auctions"
-                            className="staff-btn-secondary flex items-center gap-2 px-6"
-                          >
-                            <IconX className="h-4 w-4" />
-                            {t.cancel}
-                          </Link>
-                          <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="staff-btn-primary flex items-center gap-2 px-8 py-2.5"
-                          >
-                            {isSubmitting ? (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                            ) : (
-                              <IconDeviceFloppy className="h-4 w-4" />
-                            )}
-                            {isSubmitting ? t.creating : t.createAuction}
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-
-                  {/* Sidebar Help Column */}
-                  <div className="space-y-6">
-                    <div className="staff-card p-6 bg-blue-50 border-blue-100">
-                      <h3 className="text-lg font-bold staff-text-primary mb-4 uppercase tracking-widest flex items-center gap-2 text-sm">
-                        <IconCalendar className="h-4 w-4" />
-                        {t.schedulingTips || "Scheduling Tips"}
-                      </h3>
-                      <ul className="space-y-3">
-                        <li className="flex gap-2 text-xs text-blue-800 leading-relaxed font-medium">
-                          <span className="shrink-0">•</span>
-                          Ensure the start time is set in the future.
-                        </li>
-                        <li className="flex gap-2 text-xs text-blue-800 leading-relaxed font-medium">
-                          <span className="shrink-0">•</span>
-                          Allow at least 24 hours between start and end times for better competition.
-                        </li>
-                        <li className="flex gap-2 text-xs text-blue-800 leading-relaxed font-medium">
-                          <span className="shrink-0">•</span>
-                          Double-check the timezone settings (UTC).
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div className="staff-card p-6 bg-gray-50 border-[#e6e2da]">
-                      <h3 className="text-lg font-bold staff-text-primary mb-4 uppercase tracking-widest text-sm">
-                        {t.auctionAccountability || "Staff Responsibility"}
-                      </h3>
-                      <p className="text-xs staff-text-secondary leading-relaxed font-bold">
-                        As the creator of this auction, you will be listed as the primary moderator. You are responsible for ensuring all included paintings meet quality standards.
-                      </p>
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-black text-xs uppercase">
-                              {user?.fullName?.charAt(0) || "S"}
-                           </div>
-                           <div>
-                              <p className="text-[10px] font-black uppercase tracking-tighter text-gray-400">{t.moderator || "Moderator"}</p>
-                              <p className="text-sm font-bold staff-text-primary">{user?.fullName || "Staff Member"}</p>
-                           </div>
+                          {errors.startTime && (
+                            <p className="mt-1 text-xs font-bold text-red-600 uppercase tracking-tighter">
+                              {errors.startTime.message}
+                            </p>
+                          )}
                         </div>
                       </div>
-                    </div>
+
+                      <div className="flex items-center justify-end gap-3 pt-8 border-t border-[var(--staff-border)]">
+                        <Link
+                          href="/dashboard/staff/auctions"
+                          className="staff-btn-secondary flex items-center gap-2 px-6"
+                        >
+                          <IconX className="h-4 w-4" />
+                          {t.cancel}
+                        </Link>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="staff-btn-primary flex items-center gap-2 px-8 py-2.5"
+                        >
+                          {isSubmitting ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          ) : (
+                            <IconDeviceFloppy className="h-4 w-4" />
+                          )}
+                          {isSubmitting ? t.creating : t.createAuction}
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>

@@ -70,3 +70,12 @@ export interface CreateSponsorRequest {
   campaignId: number;
   file?: File; // Logo file (optional)
 }
+
+export interface SponsorshipTier {
+  id: number;
+  campaignId: number;
+  tierId: number;
+  tierName: string;
+  tierDisplay: string;
+  minPrice: number;
+}

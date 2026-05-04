@@ -41,6 +41,7 @@ export interface GlassSurfaceProps {
     | "plus-lighter";
   className?: string;
   style?: React.CSSProperties;
+  overflow?: "hidden" | "visible";
 }
 
 // const useDarkMode = () => {
@@ -81,6 +82,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   mixBlendMode = "difference",
   className = "",
   style = {},
+  overflow = "hidden",
 }) => {
   const uniqueId = useId().replace(/:/g, "-");
   const filterId = `glass-filter-${uniqueId}`;
@@ -201,15 +203,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
   }, [width, height]);
 
   const supportsSVGFilters = () => {
-    // if (typeof window === 'undefined') return false;
-
-    const isWebkit =
-      /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
-    const isFirefox = /Firefox/.test(navigator.userAgent);
-
-    if (isWebkit || isFirefox) {
-      return false;
-    }
+    if (typeof window === "undefined") return false;
 
     const div = document.createElement("div");
     div.style.backdropFilter = `url(#${filterId})`;
@@ -260,10 +254,14 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
       } else {
         return {
           ...baseStyles,
-          background: "rgba(255, 255, 255, 0.25)",
-          backdropFilter: "blur(12px) saturate(1.8) brightness(1.1)",
-          WebkitBackdropFilter: "blur(12px) saturate(1.8) brightness(1.1)",
-          border: "1px solid rgba(255, 255, 255, 0.3)",
+          background: `rgba(255, 255, 255, ${backgroundOpacity})`,
+          backdropFilter: `blur(${blur}px) saturate(${saturation}) brightness(${
+            brightness / 50
+          })`,
+          WebkitBackdropFilter: `blur(${blur}px) saturate(${saturation}) brightness(${
+            brightness / 50
+          })`,
+          border: `${borderWidth}px solid rgba(255, 255, 255, 0.3)`,
           boxShadow: `0 8px 32px 0 rgba(31, 38, 135, 0.2),
                         0 2px 16px 0 rgba(31, 38, 135, 0.1),
                         inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
@@ -273,8 +271,9 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
     }
   };
 
-  const glassSurfaceClasses =
-    "relative flex items-center justify-center overflow-hidden transition-opacity duration-[260ms] ease-out";
+  const glassSurfaceClasses = `relative flex min-w-0 ${
+    overflow === "hidden" ? "overflow-hidden" : "overflow-visible"
+  } transition-opacity duration-[260ms] ease-out`;
 
   const focusVisibleClasses =
     "focus-visible:outline-2 focus-visible:outline-[#007AFF] focus-visible:outline-offset-2";
@@ -370,7 +369,7 @@ const GlassSurface: React.FC<GlassSurfaceProps> = ({
         </defs>
       </svg>
 
-      <div className="w-full h-full flex items-center justify-center p-2 rounded-[inherit] relative z-10">
+      <div className="w-full h-full relative z-10 flex">
         {children}
       </div>
     </div>

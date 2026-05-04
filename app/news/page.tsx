@@ -267,8 +267,8 @@ export default function Page() {
         <GlassSurface
           width="100%"
           height="auto"
-          borderRadius={50}
-          backgroundOpacity={0.58}
+          borderRadius={15}
+          backgroundOpacity={0.08}
           blur={5}
           saturation={3}
           brightness={54}
@@ -359,7 +359,7 @@ export default function Page() {
                 animation="animate-fade-in-down"
               >
                 CUỘC THI <br />
-                NÉT VẼ XANH <br />
+                NÉT VẼ ƯỚC MƠ <br />
                 2025
               </AnimatedContainer>
               <AnimatedContainer
@@ -726,7 +726,7 @@ export default function Page() {
             <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
               <li>
                 <a href="#" className="hover:text-white">
-                  Nét Vẽ Xanh 2025
+                  NÉT VẼ ƯỚC MƠ 2025
                 </a>
               </li>
               <li>
@@ -782,7 +782,7 @@ export default function Page() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 mt-8 sm:mt-12 border-t border-[#FF833B] rounded-sm pt-6 sm:pt-8 text-center text-xs sm:text-sm">
-          <p>&copy; 2025 Cuộc Thi Nét Vẽ Xanh. Đã đăng ký bản quyền.</p>
+          <p>&copy; 2025 Cuộc Thi NÉT VẼ ƯỚC MƠ. Đã đăng ký bản quyền.</p>
         </div>
       </footer>
     </div>

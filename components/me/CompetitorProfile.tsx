@@ -12,8 +12,22 @@ import { WhoAmI } from "@/types";
 import { AchievementItem } from "@/types/achievement";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import WonPaintings from "./WonPaintings";
+import { UpdateUserRequest } from "@/apis/user";
+import { useUpdateUserMutation } from "@/hooks/useUpdateUserMutation";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Edit } from "lucide-react";
 
 interface CompetitorProfileScreenProps {
   authUser: WhoAmI | null;
@@ -39,6 +53,25 @@ export default function CompetitorProfileScreen({
     useState<AchievementItem | null>(null);
   const [isAwardDialogOpen, setIsAwardDialogOpen] = useState(false);
   const [isCertificateViewerOpen, setIsCertificateViewerOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
+
+  const updateUserMutation = useUpdateUserMutation();
+
+  // Initialize form data when authUser is available
+  useEffect(() => {
+    if (authUser && isEditDialogOpen) {
+      setEditFormData({
+        fullName: authUser.fullName || "",
+        email: authUser.email || "",
+        phone: authUser.phone || "",
+      });
+    }
+  }, [authUser, isEditDialogOpen]);
 
   // Fetch submissions data
   const { data: submissions } = useGetMySubmissions();
@@ -80,12 +113,42 @@ export default function CompetitorProfileScreen({
     setIsCertificateViewerOpen(false);
   };
 
+  const handleOpenEditDialog = () => {
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+  };
+
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authUser?.userId) return;
+
+    try {
+      await updateUserMutation.mutateAsync({
+        id: authUser.userId,
+        data: editFormData,
+      });
+      toast.success("Cập nhật thông tin thành công!");
+      handleCloseEditDialog();
+    } catch (error) {
+      console.error("Update profile error:", error);
+      toast.error("Cập nhật thông tin thất bại. Vui lòng thử lại sau.");
+    }
+  };
+
   // Map submissions data to the required format
   const submittedArtworks = submissions
     ? submissions.map((painting) => ({
         id: painting.paintingId,
         imageUrl: painting.imageUrl,
-        submissionDate: painting.submissionDate,
+        submissionDate: painting.updatedAt,
         competitionName: painting.contest.title,
       }))
     : [];
@@ -94,11 +157,11 @@ export default function CompetitorProfileScreen({
   // LƯU Ý: Kiểu WhoAmI của bạn có thể không có 'class', bạn cần thêm vào nếu muốn dùng
   const profile = {
     name: authUser?.fullName || "Việt Hoàng",
-    school: authUser?.schoolName || "Trường Tiểu học Nha Trang",
-    class: authUser?.grade ? `Lớp ${authUser.grade}` : "Lớp 5", // Giả sử authUser có 'class'
+    school: authUser?.schoolName || "Trường THCS Nha Trang",
+    class: authUser?.grade ? `Lớp ${authUser.grade}` : "Lớp 6",
     dob: authUser?.birthday
       ? new Date(authUser.birthday).toLocaleDateString("vi-VN")
-      : "15/10/2004",
+      : "15/10/2012",
     ward: authUser?.ward || "Phường Sài Gòn",
     avatarUrl:
       authUser?.avatarUrl ||
@@ -108,7 +171,8 @@ export default function CompetitorProfileScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[#EAE6E0]">
+    <>
+      <div className="min-h-screen bg-[#EAE6E0]">
       {/* === Banner Section === */}
       {/* Lấy banner có style giống ảnh (watercolor) */}
       <div className="relative h-48 w-full sm:h-56">
@@ -162,6 +226,17 @@ export default function CompetitorProfileScreen({
                 {profile.ward}
               </p>
             </div>
+
+            {/* Edit Button */}
+            <div className="flex items-center pb-1">
+              <button
+                onClick={handleOpenEditDialog}
+                className="flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-black hover:text-white"
+              >
+                <Edit className="h-4 w-4" />
+                Sửa hồ sơ
+              </button>
+            </div>
           </div>
         </div>
 
@@ -212,7 +287,7 @@ export default function CompetitorProfileScreen({
                   whitespace-nowrap cursor-pointer border-b-2 px-1 py-4 text-base font-medium
                 `}
               >
-                Đơn hàng
+                Tranh sở hữu
               </button>
             </nav>
           </div>
@@ -370,9 +445,9 @@ export default function CompetitorProfileScreen({
                                 Ngày nộp
                               </p>
                               <p className="text-black">
-                                {painting.submissionDate
+                                {painting.updatedAt
                                   ? new Date(
-                                      painting.submissionDate,
+                                      painting.updatedAt,
                                     ).toLocaleDateString("vi-VN")
                                   : "-"}
                               </p>
@@ -454,12 +529,12 @@ export default function CompetitorProfileScreen({
                             <div className="text-right">
                               {evaluation.scoreRound1 && (
                                 <p className="text-lg font-semibold text-blue-600">
-                                  Điểm vòng 1: {evaluation.scoreRound1}/10
+                                  Điểm vòng sơ khảo: {evaluation.scoreRound1}/10
                                 </p>
                               )}
                               {evaluation.scoreRound2 && (
                                 <p className="text-lg font-semibold text-green-600">
-                                  Điểm vòng 2: {evaluation.scoreRound2}/10
+                                  Điểm vòng chung khảo: {evaluation.scoreRound2}/10
                                 </p>
                               )}
                             </div>
@@ -471,57 +546,18 @@ export default function CompetitorProfileScreen({
                             evaluation.colorScore ||
                             evaluation.technicalScore ||
                             evaluation.aestheticScore) && (
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
-                              {evaluation.creativityScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Sáng tạo
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.creativityScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.compositionScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Bố cục
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.compositionScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.colorScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Màu sắc
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.colorScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.technicalScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Kỹ thuật
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.technicalScore}/10
-                                  </p>
-                                </div>
-                              )}
-                              {evaluation.aestheticScore && (
-                                <div className="text-center">
-                                  <p className="text-xs text-gray-600">
-                                    Thẩm mỹ
-                                  </p>
-                                  <p className="font-medium">
-                                    {evaluation.aestheticScore}/10
-                                  </p>
-                                </div>
-                              )}
+                            <div className="mb-3 flex items-center justify-between bg-gray-50 p-3 rounded border border-gray-100">
+                              <span className="text-sm font-medium text-gray-600">
+                                Tổng điểm:
+                              </span>
+                              <span className="font-bold text-[#FF6E1A] text-lg">
+                                {(evaluation.creativityScore || 0) +
+                                  (evaluation.compositionScore || 0) +
+                                  (evaluation.colorScore || 0) +
+                                  (evaluation.technicalScore || 0) +
+                                  (evaluation.aestheticScore || 0)}
+                                /100
+                              </span>
                             </div>
                           )}
 
@@ -583,18 +619,7 @@ export default function CompetitorProfileScreen({
                       >
                         Xem chứng chỉ
                       </button>
-                      <Link
-                        href={{
-                          pathname: "/mint-nft",
-                          query: {
-                            paintingId: selectedAchievement.paintingId,
-                          },
-                        }}
-                        onClick={handleCloseAwardDialog}
-                        className="inline-flex items-center rounded bg-[#FF6E1A] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-                      >
-                        NFT
-                      </Link>
+
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -740,5 +765,71 @@ export default function CompetitorProfileScreen({
         )}
       </div>
     </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Chỉnh sửa hồ sơ</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateProfile} className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-sm font-medium">Họ và tên</Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={editFormData.fullName}
+                  onChange={handleEditFormChange}
+                  className="rounded-md border-gray-300 focus:border-black focus:ring-black"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={editFormData.email}
+                  onChange={handleEditFormChange}
+                  className="rounded-md border-gray-300 focus:border-black focus:ring-black"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">Số điện thoại</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={editFormData.phone}
+                  onChange={handleEditFormChange}
+                  className="rounded-md border-gray-300 focus:border-black focus:ring-black"
+                  placeholder="Nhập số điện thoại"
+                />
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseEditDialog}
+                disabled={updateUserMutation.isPending}
+                className="rounded-md"
+              >
+                Hủy
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateUserMutation.isPending}
+                className="bg-black text-white hover:bg-gray-800 rounded-md"
+              >
+                {updateUserMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

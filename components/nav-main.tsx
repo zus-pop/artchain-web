@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { type Icon } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,15 +13,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-export function NavMain({
-  items,
-}: {
+interface NavMainProps {
   items: {
     title: string;
     url: string;
     icon?: Icon;
   }[];
-}) {
+}
+
+export const NavMain = React.memo(function NavMain({ items }: NavMainProps) {
   const pathname = usePathname();
 
   return (
@@ -28,10 +29,18 @@ export function NavMain({
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => {
-            const isActive = pathname === item.url;
+            // Fix: For dashboard root paths, only exact match should be active.
+            // Otherwise, sub-pages will always keep the main dashboard tab highlighted.
+            const isDashboardRoot = 
+              item.url === "/dashboard/staff" || 
+              item.url === "/dashboard/admin";
+              
+            const isActive = isDashboardRoot 
+              ? pathname === item.url 
+              : pathname === item.url || pathname.startsWith(item.url + "/");
 
             return (
-              <SidebarMenuItem key={item.title}>
+              <SidebarMenuItem key={item.url}>
                 <SidebarMenuButton
                   tooltip={item.title}
                   isActive={isActive}
@@ -49,4 +58,4 @@ export function NavMain({
       </SidebarGroupContent>
     </SidebarGroup>
   );
-}
+});

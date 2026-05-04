@@ -1,6 +1,10 @@
 "use client";
 
-import { useDeleteExhibition, useGetExhibitionById } from "@/apis/exhibition";
+import {
+  useDeleteExhibition,
+  useGetExhibitionById,
+  useUpdateExhibition,
+} from "@/apis/exhibition";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
@@ -20,10 +24,13 @@ import {
   IconPlus,
   IconTrash,
   IconTrophy,
+  IconCircleCheck,
+  IconEyeOff,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function ExhibitionDetailPage({
   params,
@@ -41,10 +48,22 @@ export default function ExhibitionDetailPage({
   // Delete mutation
   const deleteExhibitionMutation = useDeleteExhibition();
 
+  // Status update mutation
+  const updateExhibitionMutation = useUpdateExhibition();
+
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleUpdateStatus = (newStatus: ExhibitionStatus) => {
+    updateExhibitionMutation.mutate({
+      exhibitionId: id,
+      status: newStatus,
+    });
+  };
+
   const handleDeleteExhibition = async () => {
-    if (!confirm("Are you sure you want to delete this exhibition?")) return;
     deleteExhibitionMutation.mutate(id, {
       onSuccess: () => {
+        setIsDeleteDialogOpen(false);
         // Redirect to exhibitions list
         window.location.href = "/dashboard/staff/exhibitions";
       },
@@ -132,7 +151,7 @@ export default function ExhibitionDetailPage({
       <SidebarInset>
         <SiteHeader title={t.exhibitionDetail} />
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-[#fffdf9]">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -156,7 +175,7 @@ export default function ExhibitionDetailPage({
                         <div className="flex items-center gap-4 mb-4">
                           <Link
                             href="/dashboard/staff/exhibitions"
-                            className="p-2 hover:bg-white/80 rounded-lg transition-colors"
+                            className="p-2 hover:bg-white/80 rounded-sm transition-colors"
                             title={t.backToExhibitions}
                           >
                             <IconArrowLeft className="h-5 w-5 text-gray-600" />
@@ -169,9 +188,9 @@ export default function ExhibitionDetailPage({
                               <h1 className="text-3xl font-bold staff-text-primary">
                                 {exhibition.name}
                               </h1>
-                              <p className="text-sm staff-text-secondary mt-1">
+                              {/* <p className="text-sm staff-text-secondary mt-1">
                                 {t.exhibitionDetailsManagement}
-                              </p>
+                              </p> */}
                             </div>
                           </div>
                         </div>
@@ -185,7 +204,7 @@ export default function ExhibitionDetailPage({
                             <div
                               className={`w-2 h-2 rounded-full ${
                                 exhibition.status === "ACTIVE"
-                                  ? "bg-green-500"
+                                  ? "bg-green-200"
                                   : exhibition.status === "COMPLETED"
                                   ? "bg-blue-500"
                                   : exhibition.status === "DRAFT"
@@ -195,7 +214,7 @@ export default function ExhibitionDetailPage({
                             ></div>
                             {exhibition.status}
                           </span>
-                          <div className="flex items-center gap-2 text-sm staff-text-secondary">
+                          {/* <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconCalendar className="h-4 w-4" />
                             {formatDate({
                               dateString: exhibition.startDate,
@@ -206,7 +225,7 @@ export default function ExhibitionDetailPage({
                               dateString: exhibition.endDate,
                               language: currentLanguage,
                             })}
-                          </div>
+                          </div> */}
                           <div className="flex items-center gap-2 text-sm staff-text-secondary">
                             <IconPhoto className="h-4 w-4" />
                             {exhibition.numberOfPaintings} {t.paintingsText}
@@ -226,14 +245,44 @@ export default function ExhibitionDetailPage({
                           <IconEdit className="h-4 w-4" />
                           {t.editExhibition}
                         </Link>
-                        <button
-                          onClick={handleDeleteExhibition}
-                          className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
-                          disabled={deleteExhibitionMutation.isPending}
-                        >
-                          <IconTrash className="h-4 w-4" />
-                          {t.deleteExhibition}
-                        </button>
+                        
+                        {exhibition.status === "DRAFT" ? (
+                          <button
+                            onClick={() => handleUpdateStatus("ACTIVE")}
+                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
+                            disabled={updateExhibitionMutation.isPending}
+                          >
+                            <IconCircleCheck className="h-4 w-4" />
+                            {updateExhibitionMutation.isPending &&
+                            updateExhibitionMutation.variables?.status ===
+                              "ACTIVE"
+                              ? t.publishingExhibition
+                              : t.publishExhibition}
+                          </button>
+                        ) : exhibition.status === "ACTIVE" ? (
+                          <button
+                            onClick={() => handleUpdateStatus("DRAFT")}
+                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
+                            disabled={updateExhibitionMutation.isPending}
+                          >
+                            <IconEyeOff className="h-4 w-4" />
+                            {updateExhibitionMutation.isPending &&
+                            updateExhibitionMutation.variables?.status ===
+                              "DRAFT"
+                              ? t.hidingExhibition
+                              : t.hideExhibition}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setIsDeleteDialogOpen(true)}
+                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
+                            disabled={deleteExhibitionMutation.isPending}
+                          >
+                            <IconTrash className="h-4 w-4" />
+                            {t.deleteExhibition}
+                          </button>
+                        )}
+
                         <Link
                           href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/3d`}
                           className="col-span-2 bg-linear-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
@@ -247,14 +296,14 @@ export default function ExhibitionDetailPage({
                 </div>
 
                 {/* Key Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="staff-card p-6">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-blue-100">
                         <IconPhoto className="h-6 w-6 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-2xl font-bold staff-text-primary">
+                        <p className="staff-type-page-title staff-text-primary">
                           {exhibition.numberOfPaintings}
                         </p>
                         <p className="text-sm staff-text-secondary">
@@ -295,7 +344,7 @@ export default function ExhibitionDetailPage({
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -310,12 +359,13 @@ export default function ExhibitionDetailPage({
                           </div>
                           <div>
                             <h2 className="text-xl font-semibold staff-text-primary">
-                              {t.exhibitionPaintingsGallery}
+                              {t.exhibitionPaintingsGallery} ({" "}
+                              {exhibition.exhibitionPaintings?.length || 0}{" "})
                             </h2>
-                            <p className="text-sm staff-text-secondary">
+                            {/* <p className="text-sm staff-text-secondary">
                               {exhibition.exhibitionPaintings?.length || 0}{" "}
                               {t.paintingsCurated}
-                            </p>
+                            </p> */}
                           </div>
                         </div>
                       </div>
@@ -365,7 +415,7 @@ export default function ExhibitionDetailPage({
                                   <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300 flex items-center justify-center">
                                     <Link
                                       href={`/dashboard/staff/competitors/paintings/${exhibitionPainting.paintingId}`}
-                                      className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-white transition-all duration-200 flex items-center gap-2"
+                                      className="opacity-0 group-hover:opacity-100 bg-white/90 backdrop-blur-sm text-gray-900 px-4 py-2 rounded-sm font-medium hover:bg-white transition-all duration-200 flex items-center gap-2"
                                     >
                                       <IconEye className="h-4 w-4" />
                                       View Details
@@ -426,7 +476,7 @@ export default function ExhibitionDetailPage({
                         <div className="p-2 bg-blue-100">
                           <IconCalendar className="h-5 w-5 text-blue-600" />
                         </div>
-                        <h3 className="text-lg font-semibold staff-text-primary">
+                        <h3 className="staff-type-section-title staff-text-primary">
                           {t.exhibitionTimeline}
                         </h3>
                       </div>
@@ -496,7 +546,7 @@ export default function ExhibitionDetailPage({
                         <div className="p-2 bg-green-100">
                           <IconTrophy className="h-5 w-5 text-green-600" />
                         </div>
-                        <h3 className="text-lg font-semibold staff-text-primary">
+                        <h3 className="staff-type-section-title staff-text-primary">
                           {t.quickActions}
                         </h3>
                       </div>
@@ -517,7 +567,7 @@ export default function ExhibitionDetailPage({
                           {t.managePaintings}
                         </Link>
                         <button
-                          onClick={handleDeleteExhibition}
+                          onClick={() => setIsDeleteDialogOpen(true)}
                           className="w-full bg-red-50 hover:bg-red-100 text-red-700 px-4 py-3 font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                           disabled={deleteExhibitionMutation.isPending}
                         >
@@ -534,7 +584,7 @@ export default function ExhibitionDetailPage({
                         <div className="p-2 bg-orange-100">
                           <IconUsers className="h-5 w-5 text-orange-600" />
                         </div>
-                        <h3 className="text-lg font-semibold staff-text-primary">
+                        <h3 className="staff-type-section-title staff-text-primary">
                           {t.exhibitionStatus}
                         </h3>
                       </div>
@@ -584,6 +634,18 @@ export default function ExhibitionDetailPage({
           </div>
         </div>
       </SidebarInset>
+
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={handleDeleteExhibition}
+        title="Xác nhận xóa"
+        description="Bạn có chắc chắn muốn xóa triển lãm này không? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="destructive"
+        isLoading={deleteExhibitionMutation.isPending}
+      />
     </SidebarProvider>
   );
 }

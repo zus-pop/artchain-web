@@ -72,7 +72,7 @@ interface ChildFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialData?: ChildFormData & { id?: string };
-  onSubmit: (data: ChildFormData & { id?: string }) => void;
+  onSubmit: (data: ChildFormData & { id?: string }) => boolean; // Changed to boolean
   isEditing?: boolean;
 }
 
@@ -91,6 +91,7 @@ export function ChildForm({
     formState: { errors, isValid },
     watch,
     setValue,
+    reset,
   } = useForm<ChildFormData>({
     mode: "all",
     resolver: zodResolver(childFormSchema),
@@ -107,14 +108,37 @@ export function ChildForm({
     },
   });
 
+  // Sync form with initialData when drawer opens or initialData changes
+  useEffect(() => {
+    if (open) {
+      if (initialData) {
+        reset({
+          ...initialData,
+        });
+      } else {
+        reset({
+          username: "",
+          password: "",
+          confirmPassword: "",
+          fullName: "",
+          email: "",
+          birthday: "",
+          schoolName: "",
+          ward: "",
+          grade: "",
+        });
+      }
+    }
+  }, [initialData, open, reset]);
+
   // Watch birthday field for dynamic grade options
   const watchedBirthday = watch("birthday");
 
   // Calculate valid grade range based on birthday
   const getValidGrades = () => {
     if (!watchedBirthday) {
-      // If no birthday selected, show all grades 1-9
-      return Array.from({ length: 9 }, (_, i) => i + 1);
+      // If no birthday selected, show all grades 6-9
+      return Array.from({ length: 4 }, (_, i) => i + 6);
     }
 
     const birthYear = new Date(watchedBirthday).getFullYear();
@@ -124,8 +148,8 @@ export function ChildForm({
     // Expected grade = age - 5 (since grade 1 = 6 years old)
     const expectedGrade = age - 5;
 
-    // For strict validation: only allow grades that match expected age ±1 year
-    const minGrade = Math.max(1, expectedGrade - 1);
+    // For strict validation: only allow grades that match expected age ±1 year, restricted to 6-9
+    const minGrade = Math.max(6, expectedGrade - 1);
     const maxGrade = Math.min(9, expectedGrade + 1);
 
     const validGrades = [];
@@ -135,7 +159,7 @@ export function ChildForm({
 
     return validGrades.length > 0
       ? validGrades
-      : Array.from({ length: 9 }, (_, i) => i + 1);
+      : Array.from({ length: 4 }, (_, i) => i + 6);
   };
 
   const validGrades = getValidGrades();
@@ -150,11 +174,15 @@ export function ChildForm({
   }, [watchedBirthday, setValue, validGrades, watch]);
 
   const handleFormSubmit = (data: ChildFormData) => {
-    onSubmit({
+    const success = onSubmit({
       ...data,
       id: initialData?.id,
     });
-    onOpenChange(false);
+    
+    if (success) {
+      onOpenChange(false);
+    }
+    // If not successful (duplicate error), keep it open for user to fix
   };
 
   const wardOptions = wards.map((ward) => ({
@@ -285,8 +313,8 @@ export function ChildForm({
                         }}
                         placeholder="Chọn ngày sinh *"
                         error={errors.birthday?.message}
-                        min={`${new Date().getFullYear() - 16}-01-01`}
-                        max={`${new Date().getFullYear() - 5}-12-31`}
+                        min={`${new Date().getFullYear() - 15}-01-01`}
+                        max={`${new Date().getFullYear() - 10}-12-31`}
                       />
                     )}
                   />

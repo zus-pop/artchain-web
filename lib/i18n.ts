@@ -14,9 +14,9 @@ export const translations = {
     join: "Tham Gia",
 
     // Hero Section
-    heroTitle: "Thể Hiện",
-    heroTitleHighlight: "Tài Năng",
-    heroTitleSuffix: "Nghệ Thuật Của Bạn",
+    heroTitle: "CUỘC THI",
+    heroTitleHighlight: "NÉT VẼ ƯỚC MƠ",
+    heroTitleSuffix: "2026",
     heroDescription:
       "Tham gia ArtChain - Nền tảng cuộc thi vẽ tranh nghệ thuật hàng đầu. Khám phá tài năng, thể hiện sự sáng tạo và chinh phục những giải thưởng hấp dẫn. Hành trình nghệ thuật của bạn bắt đầu từ đây.",
     joinCompetition: "Tham Gia",
@@ -81,7 +81,7 @@ export const translations = {
     prize: "Giải thưởng",
     participants: "Thí sinh tham gia",
     deadline: "Hạn nộp",
-    status: "Đang mở",
+    status: "Trạng thái",
 
     // OnboardingFeatures
     contestsTitle: "Cuộc Thi",
@@ -153,15 +153,17 @@ export const translations = {
     campaignManagement: "Quản Lý Chiến Dịch",
     exhibitionManagement: "Quản Lý Triển Lãm",
     competitorManagement: "Quản Lý Thí Sinh",
+    financeManagement: "Quản Lý Tài Chính",
+    finance: "Tài Chính",
     settings: "Cài Đặt",
     artChainStaff: "ArtChain Staff",
 
     // Dashboard Stats
     totalCompetitors: "Tổng Thí Sinh",
     pendingPaintings: "Tranh Chờ Duyệt",
-    activeContests: "Cuộc Thi Đang Diễn Ra",
+    activeContests: "Đang Diễn Ra",
     activeSponsors: "Nhà Tài Trợ Đang Hoạt Động",
-    totalContests: "Tổng Cuộc Thi",
+    totalContests: "Tổng Số Cuộc Thi",
     totalRounds: "Tổng Vòng Thi",
     totalAwards: "Tổng Giải Thưởng",
     allCompetitions: "Tất cả cuộc thi",
@@ -222,8 +224,8 @@ export const translations = {
     noExaminersAssigned:
       "Chưa có giám khảo nào được chỉ định cho cuộc thi này.",
     role: "Vai Trò",
-    round1: "Vòng 1",
-    round2: "Vòng 2",
+    round1: "Sơ khảo",
+    round2: "Chung khảo",
     currentExaminers: "Giám Khảo Hiện Tại",
     scheduled: "Đã lên lịch",
     schedule: "Lên lịch",
@@ -249,7 +251,7 @@ export const translations = {
     roundEndDateLabel: "Ngày Kết Thúc",
     submissionDetail: "Chi tiết bài nộp",
     submissionDate: "Ngày Nộp Bài",
-    submissionRound2ImageUpload: "Cập nhật ảnh cho bài nộp vòng 2",
+    submissionRound2ImageUpload: "Cập nhật ảnh cho bài nộp vòng chung khảo",
     roundSubmissionDeadlineLabel: "Hạn Nộp Bài",
     resultAnnounce: "Công Bố Kết Quả",
     submissions: "Bài Nộp",
@@ -263,20 +265,25 @@ export const translations = {
     pendingReview: "Đang Chờ Duyệt",
     submissionsAwaitingReview:
       "Bài nộp đang chờ phê duyệt hoặc từ chối của bạn",
+    flaggedSubmissionsDescription:
+      "Xem xét các tác phẩm bị hệ thống cảnh báo có vấn đề",
     allCaughtUp: "Đã xử lý xong!",
     noPendingSubmissions: "Không có bài nộp đang chờ để duyệt.",
     confirmAcceptSubmission: "Bạn có chắc chắn muốn chấp nhận bài nộp này?",
     confirmRejectSubmission: "Bạn có chắc chắn muốn từ chối bài nộp này?",
+    normalReview: "Tranh Chờ Duyệt",
+    warningPaintings: "Tranh Bị Cảnh Báo",
 
     // Selection and Bulk Actions
     selectAll: "Chọn Tất Cả",
+    deselectAll: "Bỏ Chọn Tất Cả",
     selected: "Đã Chọn",
     acceptAll: "Chấp Nhận Tất Cả",
     accepting: "Đang Chấp Nhận...",
     noPendingSubmissionsSelected:
       "Không có bài nộp đang chờ nào được chọn để chấp nhận.",
     acceptAllSelectedPending:
-      "Chấp nhận tất cả ${count} bài nộp đang chờ đã chọn?",
+      "Chấp nhận tất cả ${count} bài nộp đã chọn?",
 
     // Admin Dashboard
     totalUsersAdmin: "Tổng Người Dùng",
@@ -355,7 +362,7 @@ export const translations = {
     contest: "Cuộc Thi",
     statusTable: "Trạng Thái",
     awards: "Giải Thưởng",
-    rounds: "Vòng Thi",
+    rounds: "Vòng",
     dates: "Ngày",
     actions: "Hành Động",
     prizes: "giải thưởng",
@@ -365,7 +372,7 @@ export const translations = {
     viewDetails: "Xem Chi Tiết",
     editContest: "Chỉnh Sửa Cuộc Thi",
     deleteContest: "Xóa Cuộc Thi",
-    notifyRound2: "Thông Báo Vòng 2",
+    notifyRound2: "Thông Báo Vòng Chung Khảo",
 
     // Search and Filter
     searchContests: "Tìm kiếm cuộc thi theo tiêu đề, mô tả hoặc danh mục...",
@@ -470,6 +477,7 @@ export const translations = {
     activeCompetitors: "Thí Sinh Hoạt Động",
     currentlyParticipating: "Đang tham gia",
     allSubmissions: "Tất cả bài nộp",
+    submittedPaintings: "Tranh Đã Nộp",
     approvedPaintings: "Tranh Đã Duyệt",
     viewAllApproved: "Xem tất cả đã duyệt",
     searchFilter: "Tìm Kiếm & Lọc",
@@ -523,17 +531,18 @@ export const translations = {
     roundEndDate: "Ngày Kết Thúc Vòng",
     submissionDeadline: "Hạn Nộp",
     resultAnnounceDate: "Ngày Công Bố Kết Quả",
-    round1Schedule: "Lịch trình vòng 1",
+    round1Schedule: "Lịch trình vòng sơ khảo",
     sendOriginalDeadline: "Hạn Gửi Bản Gốc",
-    round2Settings: "Cài Đặt Vòng 2",
-    numberOfTopCompetitorsRound2: "Số thí sinh xuất sắc vòng 2",
-    numberOfTablesRound2: "Số bảng vòng 2",
+    round2Settings: "Cài Đặt Vòng chung khảo",
+    numberOfTopCompetitorsRound2: "Số thí sinh xuất sắc vòng chung khảo",
+    numberOfTablesRound2: "Số bảng vòng chung khảo",
     disabledWhenNoCompetitors: "Vô hiệu hóa khi không có thí sinh",
     competitorsDivideTables: "thí sinh chia bảng",
     competitorsDivisionMessage:
       "{count} thí sinh sẽ được chia thành {tables} bảng ({perTable} mỗi bảng)",
     topCompetitors: "Số Thí Sinh Xuất Sắc",
     numberOfTables: "Số Bảng",
+    numberOfCompetitors: "Số Thí Sinh",
     saveContest: "Lưu Cuộc Thi",
     savingContest: "Đang lưu...",
     contestSaved: "Cuộc thi đã được lưu thành công",
@@ -541,19 +550,19 @@ export const translations = {
     contestManagementBreadcrumb: "Quản Lý Cuộc Thi",
     contestIdLabelDetail: "ID Cuộc Thi:",
     contestIdLabel: "ID Cuộc Thi:",
-    round2CompetitorsLabel: "Số thí sinh vòng 2",
-    round2Configuration: "Tiêu chí Vòng 2",
+    round2CompetitorsLabel: "Số thí sinh vòng chung khảo",
+    round2Configuration: "Tiêu chí Vòng chung khảo",
     bannerPreview: "Xem Trước Banner",
     currentFile: "Tệp hiện tại:",
     pdfPreview: "Xem Trước PDF",
-    roundDates: "Lịch trình vòng 1",
+    roundDates: "Lịch trình vòng sơ khảo",
     files: "Tệp",
     bannerImage: "Hình Ảnh Banner",
     rulesFile: "Tệp Quy Tắc",
     selectedFile: "Đã chọn:",
     rulesFilePDF: "Tệp Quy Tắc PDF",
     creatingContest: "Đang tạo cuộc thi...",
-    contestScheduleRound2Settings: "Lịch trình vòng 2 cuộc thi",
+    contestScheduleRound2Settings: "Lịch trình vòng chung khảo cuộc thi",
     resultAnnouncementDate: "Ngày công bố kết quả",
 
     // Form Validation
@@ -579,10 +588,10 @@ export const translations = {
     submissionBeforeRoundEnd: "Hạn nộp phải trước hoặc bằng ngày kết thúc vòng",
     resultDateRequired: "Ngày công bố kết quả là bắt buộc",
     originalDeadlineRequired: "Hạn gửi bản gốc là bắt buộc",
-    topCompetitorsMin: "Số thí sinh xuất sắc phải ít nhất là 1",
-    topCompetitorsMax: "Số thí sinh xuất sắc quá cao",
+    topCompetitorsMin: "Số thí sinh tham gia vòng chung khảo phải ít nhất là 6",
+    topCompetitorsMax: "Số thí sinh tham gia vòng chung khảo quá cao",
     tablesMin: "Số bảng phải ít nhất là 3",
-    tablesMax: "Tối đa 6 bảng cho vòng 2",
+    tablesMax: "Tối đa 6 bảng cho vòng chung khảo",
     competitorsEvenlyDivided: "Thí sinh phải được chia đều vào các bảng",
 
     // Date Range Validation
@@ -643,6 +652,8 @@ export const translations = {
       "Không tìm thấy nhà tài trợ nào phù hợp với tiêu chí của bạn",
     showingSponsors: "Hiển thị",
     sponsors: "nhà tài trợ",
+    paidStatus: "Đã thanh toán",
+    pendingStatus: "Chờ thanh toán",
 
     // Edit Campaign
     editCampaignTitle: "Chỉnh Sửa Chiến Dịch",
@@ -672,6 +683,10 @@ export const translations = {
     // Campaign Success/Error Messages
     campaignUpdatedSuccessMessage: "Chiến dịch đã được cập nhật thành công!",
     failedUpdateCampaignMessage: "Không thể cập nhật chiến dịch",
+    publishCampaign: "Công khai chiến dịch",
+    completeCampaign: "Kết thúc chiến dịch",
+    publishingCampaign: "Đang công khai...",
+    completingCampaign: "Đang kết thúc...",
 
     // Create Campaign
     createSponsorshipCampaign: "Tạo Chiến Dịch Tài Trợ",
@@ -713,7 +728,7 @@ export const translations = {
     searchExhibitions: "Tìm kiếm triển lãm theo tên hoặc mô tả...",
     totalExhibitions: "Tổng Triển Lãm",
     allExhibitionsText: "Tất cả triển lãm",
-    activeExhibitions: "Triển Lãm Đang Diễn Ra",
+    activeExhibitions: "Đang Diễn Ra",
     paintingsOnDisplay: "Tranh đang trưng bày",
     finishedExhibitions: "Triển lãm đã kết thúc",
     exhibitionsTip:
@@ -724,6 +739,10 @@ export const translations = {
     exhibitions: "triển lãm",
     activate: "Kích Hoạt",
     complete: "Hoàn Thành",
+    publishExhibition: "Công khai triển lãm",
+    hideExhibition: "Ẩn triển lãm",
+    publishingExhibition: "Đang công khai...",
+    hidingExhibition: "Đang ẩn...",
 
     // Exhibition Detail
     exhibitionDetail: "Chi Tiết Triển Lãm",
@@ -973,9 +992,9 @@ export const translations = {
     confirmDeleteRoundDetail: "Bạn có chắc chắn muốn xóa vòng thi này?",
 
     // Qualified Paintings Review
-    round1QualifiedPaintingsReview: "Đánh giá tranh vòng 1 đủ điều kiện",
+    round1QualifiedPaintingsReview: "Đánh giá tranh vòng sơ khảo đủ điều kiện",
     round1QualifiedPaintingsReviewDesc:
-      "Đánh giá tranh vòng 1 đủ điều kiện và quản lý trạng thái nộp bản gốc. Sử dụng giao diện này để theo dõi những nghệ sĩ nào đã nộp bản gốc trước khi tiến hành vòng 2.",
+      "Đánh giá tranh vòng sơ khảo đủ điều kiện và quản lý trạng thái nộp bản gốc. Sử dụng giao diện này để theo dõi những nghệ sĩ nào đã nộp bản gốc trước khi tiến hành vòng chung khảo.",
     originalPending: "Bản gốc đang chờ",
     artistLabel: "Tác giả",
     emailLabel: "Email",
@@ -1004,6 +1023,10 @@ export const translations = {
     contestNotFoundDetail: "Không tìm thấy cuộc thi",
     editContestDetail: "Chỉnh Sửa",
     publishContestDetail: "Xuất Bản",
+    endContestDetail: "Kết thúc cuộc thi",
+    endContestConfirmDetail: "Bạn có chắc chắn muốn kết thúc cuộc thi này do không đủ số lượng bài nộp bản gốc để vào vòng chung khảo không?",
+    endingContestDetail: "Đang kết thúc...",
+    endContestSuccess: "Kết thúc cuộc thi thành công",
     descriptionDetail: "Mô Tả",
     contestInformationDetail: "Thông Tin Cuộc Thi",
     startDateDetail: "Ngày Bắt Đầu",
@@ -1012,6 +1035,10 @@ export const translations = {
     currentStatusDetail: "Trạng Thái Hiện Tại",
     scheduleEnforcementDetail: "Thực Thi Lịch Trình",
     controlExaminerScheduleDetail: "Kiểm Soát Lịch Giám Khảo",
+    ignoreAICheckDetail: "Bỏ qua kiểm tra AI",
+    ignoreAICheckSubDetail: "Cho phép nộp tranh không qua AI",
+    contestAdvancedSettings: "Cài đặt nâng cao",
+    contestSettings: "Cài đặt cuộc thi",
     awardsDetail: "Giải Thưởng",
     participantsDetail: "Thí Sinh",
     examinersDetail: "Giám Khảo",
@@ -1031,12 +1058,12 @@ export const translations = {
     manageAwardsDetail: "Quản Lý Giải Thưởng",
     assignPrizesToWinnersDetail: "Trao Giải Thưởng Cho Người Thắng Cuộc",
     contestRoundsDetail: "Vòng Thi Cuộc Thi",
-    round2Detail: "Vòng 2",
+    round2Detail: "Vòng chung khảo",
     viewRoundDetailsDetail: "Xem Chi Tiết Vòng Thi",
     submissionDeadlineDetail: "Hạn Nộp Bài",
     resultAnnounceDetail: "Công Bố Kết Quả",
     originalDeadlineDetail: "Hạn Gửi Bản Gốc",
-    totalTablesDetail: "Tổng Số lượng Bảng",
+    totalTablesDetail: "Tổng Số Lượng Bảng",
     viewTableDetailsDetail: "Xem Chi Tiết Bảng",
     startDetail: "Bắt Đầu",
     endDetail: "Kết Thúc",
@@ -1055,24 +1082,24 @@ export const translations = {
       "Tất cả giải thưởng phải có giá trị được đặt trước khi xuất bản",
     publishContestToMakeVisible:
       "Xuất bản cuộc thi để hiển thị cho người tham gia",
-    createRound2Detail: "Tạo Vòng 2",
-    round2Date: "Ngày Vòng 2",
+    createRound2Detail: "Tạo Vòng chung khảo",
+    round2Date: "Ngày Vòng chung khảo",
     dateConstraints: "Chi tiết các mốc thời gian",
     contestStart: "Ngày bắt đầu cuộc thi",
     contestEnd: "Ngày kết thúc cuộc thi",
-    round1Results: "Kết quả Vòng 1",
+    round1Results: "Kết quả Vòng sơ khảo",
     validRange: "Khoảng thời gian hợp lệ",
     round2DateHelp:
-      "Ngày phải sau khi công bố kết quả Vòng 1 và trong khoảng thời gian cuộc thi",
+      "Ngày phải sau khi công bố kết quả Vòng sơ khảo và trong khoảng thời gian cuộc thi",
     createRound2ConfirmDetail:
-      "Bạn có chắc chắn muốn tạo vòng 2 với cài đặt hiện tại?",
-    round2Quantity: "Số lượng thí sinh vào vòng 2",
+      "Bạn có chắc chắn muốn tạo vòng chung khảo với cài đặt hiện tại?",
+    round2Quantity: "Số lượng thí sinh vào vòng chung khảo",
     numberOfTablesDetail: "Số Bảng",
     currentContestSettingDetail: "Cài Đặt Số Bảng Của Cuộc Thi Hiện Tại",
     tablesDetail: "bảng",
     enterNumberOfTablesDetail: "Nhập số bảng",
     creatingDetail: "Đang tạo...",
-    createRound2BtnDetail: "Tạo Vòng 2",
+    createRound2BtnDetail: "Tạo Vòng chung khảo",
 
     // Awards Management
     awardsManagement: "Quản Lý Giải Thưởng",
@@ -1235,6 +1262,24 @@ export const translations = {
     color: "Màu Sắc",
     technical: "Kỹ Thuật",
     aesthetic: "Thẩm Mỹ",
+    allRound2EvaluationsMustBeCompletedFirst:
+      "Tất cả các đánh giá vòng 2 phải được hoàn thành trước",
+    assignAllAvailableAwardsToTopPaintings:
+      "Gán tất cả giải thưởng hiện có cho các bức tranh hàng đầu",
+    allTopPaintingsAreAlreadyAssigned:
+      "Tất cả các bức tranh hàng đầu đã được gán giải thưởng",
+    removeAllAwardsFromPaintingsTooltip:
+      "Gỡ bỏ tất cả giải thưởng khỏi các bức tranh",
+    noAwardsAreCurrentlyAssigned: "Hiện chưa có giải thưởng nào được gán",
+    invalidPrize: "Giải thưởng không hợp lệ",
+    allTopAwardsMustBeAssignedBeforeAnnouncing:
+      "Tất cả giải thưởng hàng đầu phải được gán trước khi công bố",
+    allVoteAwardsMustBeAssignedBeforeAnnouncing:
+      "Tất cả giải thưởng bình chọn phải được gán trước khi công bố",
+    fullImageView: "Xem ảnh đầy đủ",
+    fullSizePainting: "Ảnh gốc của bức tranh",
+    backToContestTooltip: "Quay lại cuộc thi",
+    contestDetail: "Chi tiết cuộc thi",
 
     // Admin Accounts Management
     accountManagement: "Quản Lý Tài Khoản",
@@ -1248,6 +1293,13 @@ export const translations = {
     staffFilter: "Nhân Viên",
     adminsFilter: "Quản Trị Viên",
     examinersFilter: "Giám Khảo",
+    artChainAdmin: "ArtChain Quản Trị",
+    competitors: "Thí Sinh",
+    guardians: "Người Đại Diện",
+    contestAnalysis: "Phân Tích Cuộc Thi",
+    overview: "Tổng Quan",
+    userAnalysis: "Phân Tích Người Dùng",
+    reportAnalysis: "Phân Tích Báo Cáo",
     userTable: "Người Dùng",
     emailTable: "Email",
     roleTable: "Vai Trò",
@@ -1282,14 +1334,14 @@ export const translations = {
     
     // Auction Management
     auctionManagement: "Quản Lý Đấu Giá",
-    allAuctions: "Tất Cả Phiên Đấu Giá",
+    allAuctions: "Tổng Phiên Đấu Giá",
     createAuction: "Tạo Phiên Đấu Giá",
     auctionStatus: "Trạng Thái",
     totalAuctions: "Tổng Phiên Đấu Giá",
-    activeAuctions: "Đấu Giá Đang Diễn Ra",
-    upcomingAuctions: "Đấu Giá Sắp Diễn Ra",
-    completedAuctions: "Đấu Giá Đã Kết Thúc",
-    pendingAuctions: "Đấu Giá Chờ Duyệt",
+    activeAuctions: "Đang Diễn Ra",
+    upcomingAuctions: "Sắp Diễn Ra",
+    completedAuctions: "Đã Kết Thúc",
+    pendingAuctions: "Chờ Duyệt",
     auctionTitle: "Tiêu Đề",
     startingPrice: "Giá Khởi Điểm",
     currentPrice: "Giá Hiện Tại",
@@ -1320,6 +1372,20 @@ export const translations = {
     startingPriceLabelAuction: "Giá Khởi Điểm (VND)",
     searchPaintingsToAddPlaceholder: "Tìm kiếm tranh theo tiêu đề hoặc nghệ sĩ...",
     viewAuctionDetails: "Xem Chi Tiết Đấu Giá",
+
+    // Auction Promotion
+    promoteAuction: "Quảng bá đấu giá",
+    createPromotionPost: "Tạo bài viết quảng bá",
+    auctionPromotionDesc: "Tạo một bài viết công khai để quảng bá phiên đấu giá này và các tác phẩm tiêu biểu.",
+    auctionPromotionTitleLabel: "Thông báo phiên đấu giá mới",
+    promoteNow: "Quảng bá ngay",
+    auctionPromotionSuccess: "Đã tạo bài viết quảng bá thành công!",
+    postPromotionBreadcrumb: "Quảng bá đấu giá",
+    featuredArtworksLabel: "Các tác phẩm tiêu biểu",
+    upcomingAuctionAnnounced: "Một phiên đấu giá mới sắp diễn ra!",
+    thrilledToAnnounceAuction: "Chúng tôi rất vui được giới thiệu các tác phẩm đặc sắc trong phiên đấu giá sắp tới.",
+    auctionTime: "Thời gian đấu giá",
+    auctionSummary: "Tóm tắt đấu giá",
     selectContestPrompt: "Vui lòng chọn một cuộc thi để xem danh sách tranh nhận giải",
     addedToAuction: "Đã nằm trong đấu giá",
     totalBids: "Tổng Lượt Giá",
@@ -1327,7 +1393,7 @@ export const translations = {
     selectPaintingsToConfigure: "Chọn tranh để cấu hình giá",
     ceilPrice: "Giá Trần",
     bidStep: "Bước Giá",
-    auctionDuration: "Thời Lượng Đấu Giá (Phút)",
+    auctionDuration: "Thời Lượng (Phút)",
     auctionDurationPlaceholder: "15",
     minutes: "phút",
     openAuctionNow: "Mở Phiên Đấu Giá Ngay",
@@ -1351,9 +1417,9 @@ export const translations = {
     join: "Join Now",
 
     // Hero Section
-    heroTitle: "Express",
-    heroTitleHighlight: "Your Talent",
-    heroTitleSuffix: "Artistically",
+    heroTitle: "COMPETITION",
+    heroTitleHighlight: "NÉT VẼ ƯỚC MƠ",
+    heroTitleSuffix: "2026",
     heroDescription:
       "Join ArtChain - The premier art competition platform. Discover talent, express creativity and compete for attractive prizes. Your artistic journey starts here.",
     joinCompetition: "Join",
@@ -1491,6 +1557,8 @@ export const translations = {
     campaignManagement: "Campaign Management",
     exhibitionManagement: "Exhibition Management",
     competitorManagement: "Competitor Management",
+    financeManagement: "Finance Management",
+    finance: "Finance",
     settings: "Settings",
     artChainStaff: "ArtChain Staff",
 
@@ -1600,8 +1668,11 @@ export const translations = {
     pendingReview: "Pending Review",
     submissionsAwaitingReview:
       "Submissions awaiting approval or rejection from you",
+    flaggedSubmissionsDescription: "Review paintings flagged for potential issues",
     allCaughtUp: "All caught up!",
     noPendingSubmissions: "No pending submissions to review.",
+    normalReview: "Normal Review",
+    warningPaintings: "Flagged Paintings",
     confirmAcceptSubmission: "Are you sure you want to accept this submission?",
     confirmRejectSubmission: "Are you sure you want to reject this submission?",
 
@@ -1733,6 +1804,7 @@ export const translations = {
     activeCompetitors: "Active Competitors",
     currentlyParticipating: "Currently participating",
     allSubmissions: "All submissions",
+    submittedPaintings: "Submitted Paintings",
     approvedPaintings: "Approved Paintings",
     viewAllApproved: "View all approved",
     searchFilter: "Search & Filter",
@@ -1796,6 +1868,7 @@ export const translations = {
       "{count} competitors will be divided into {tables} tables ({perTable} per table)",
     topCompetitors: "Top Competitors",
     numberOfTables: "Number of Tables",
+    numberOfCompetitors: "Number of Competitors",
     saveContest: "Save Contest",
     savingContest: "Saving...",
     contestSaved: "Contest saved successfully",
@@ -1903,6 +1976,8 @@ export const translations = {
     noSponsorsFound: "No sponsors found matching your criteria",
     showingSponsors: "Showing",
     sponsors: "sponsors",
+    paidStatus: "Paid",
+    pendingStatus: "Pending",
 
     // Edit Campaign
     editCampaignTitle: "Edit Campaign",
@@ -1933,6 +2008,10 @@ export const translations = {
     // Campaign Success/Error Messages
     campaignUpdatedSuccessMessage: "Campaign updated successfully!",
     failedUpdateCampaignMessage: "Failed to update campaign",
+    publishCampaign: "Publish Campaign",
+    completeCampaign: "Complete Campaign",
+    publishingCampaign: "Publishing...",
+    completingCampaign: "Completing...",
 
     // Create Campaign
     createSponsorshipCampaign: "Create Sponsorship Campaign",
@@ -1985,6 +2064,10 @@ export const translations = {
     exhibitions: "exhibitions",
     activate: "Activate",
     complete: "Complete",
+    publishExhibition: "Publish Exhibition",
+    hideExhibition: "Hide Exhibition",
+    publishingExhibition: "Publishing...",
+    hidingExhibition: "Hiding...",
 
     // Exhibition Detail
     exhibitionDetail: "Exhibition Detail",
@@ -2235,6 +2318,10 @@ export const translations = {
     contestNotFoundDetail: "Contest not found",
     editContestDetail: "Edit",
     publishContestDetail: "Publish",
+    endContestDetail: "End Contest",
+    endContestConfirmDetail: "Are you sure you want to end this contest due to insufficient original submissions for the final round?",
+    endingContestDetail: "Ending...",
+    endContestSuccess: "Contest ended successfully",
     descriptionDetail: "Description",
     contestInformationDetail: "Contest Information",
     startDateDetail: "Start Date",
@@ -2243,6 +2330,10 @@ export const translations = {
     currentStatusDetail: "Current Status",
     scheduleEnforcementDetail: "Schedule Enforcement",
     controlExaminerScheduleDetail: "Control Examiner Schedule",
+    ignoreAICheckDetail: "Ignore AI Check",
+    ignoreAICheckSubDetail: "Allow submissions without AI check",
+    contestAdvancedSettings: "Advanced Settings",
+    contestSettings: "Contest Settings",
     awardsDetail: "Awards",
     participantsDetail: "Participants",
     examinersDetail: "Examiners",
@@ -2488,6 +2579,22 @@ export const translations = {
     color: "Color",
     technical: "Technical",
     aesthetic: "Aesthetic",
+    allRound2EvaluationsMustBeCompletedFirst:
+      "All Round 2 evaluations must be completed first",
+    assignAllAvailableAwardsToTopPaintings:
+      "Assign all available awards to top paintings",
+    allTopPaintingsAreAlreadyAssigned: "All top paintings are already assigned",
+    removeAllAwardsFromPaintingsTooltip: "Remove all awards from paintings",
+    noAwardsAreCurrentlyAssigned: "No awards are currently assigned",
+    invalidPrize: "Invalid prize",
+    allTopAwardsMustBeAssignedBeforeAnnouncing:
+      "All top awards must be assigned before announcing",
+    allVoteAwardsMustBeAssignedBeforeAnnouncing:
+      "All vote awards must be assigned before announcing",
+    fullImageView: "Full Image View",
+    fullSizePainting: "Full size painting",
+    backToContestTooltip: "Back to Contest",
+    contestDetail: "Contest Detail",
 
     // Admin Accounts Management
     accountManagement: "Account Management",
@@ -2501,6 +2608,13 @@ export const translations = {
     staffFilter: "Staff",
     adminsFilter: "Admins",
     examinersFilter: "Examiners",
+    artChainAdmin: "ArtChain Administrator",
+    competitors: "Competitors",
+    guardians: "Guardians",
+    contestAnalysis: "Contest Analysis",
+    overview: "Overview",
+    userAnalysis: "User Analysis",
+    reportAnalysis: "Report Analysis",
     userTable: "User",
     emailTable: "Email",
     roleTable: "Role",
@@ -2576,6 +2690,7 @@ export const translations = {
 
     // Selection and Bulk Actions
     selectAll: "Select All",
+    deselectAll: "Deselect All",
     selected: "Selected",
     acceptAll: "Accept All",
     accepting: "Accepting...",
@@ -2643,6 +2758,20 @@ export const translations = {
     totalBids: "Total Bids",
     pricingConfiguration: "Pricing Configuration",
     selectPaintingsToConfigure: "Select paintings to configure prices",
+
+    // Auction Promotion
+    promoteAuction: "Promote Auction",
+    createPromotionPost: "Create Promotion Post",
+    auctionPromotionDesc: "Create a public post to promote this auction and its featured paintings.",
+    auctionPromotionTitleLabel: "New Auction Announcement",
+    promoteNow: "Promote Now",
+    auctionSummary: "Auction Summary",
+    auctionPromotionSuccess: "Promotion post created successfully!",
+    postPromotionBreadcrumb: "Promote Auction",
+    featuredArtworksLabel: "Featured Artworks",
+    upcomingAuctionAnnounced: "A new auction session is coming!",
+    thrilledToAnnounceAuction: "We are thrilled to introduce the exceptional artworks in the upcoming auction.",
+    auctionTime: "Auction Time",
     ceilPrice: "Ceiling Price",
     bidStep: "Bid Step",
     auctionDuration: "Duration (Minutes)",

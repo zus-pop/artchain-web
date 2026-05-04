@@ -15,13 +15,13 @@ import { Eye, EyeOff } from "lucide-react";
 // Định nghĩa schema validation
 const schema = z.object({
   username: z
-    .string({ message: "Username is required" })
+    .string({ message: "Tên đăng nhập là bắt buộc " })
     .trim()
-    .nonempty("Username is required"),
+    .nonempty("Tên đăng nhập là bắt buộc "),
   password: z
-    .string({ message: "Password is required" })
+    .string({ message: "Mật khẩu là bắt buộc " })
     .trim()
-    .nonempty("Password is required"),
+    .nonempty("Mật khẩu là bắt buộc "),
   staySignedIn: z.boolean().optional(),
 });
 

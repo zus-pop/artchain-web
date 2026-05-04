@@ -36,12 +36,12 @@ import { z } from "zod";
 const paintingDetailsSchema = z.object({
   title: z
     .string()
-    .min(2, "Title must be at least 2 character")
-    .max(200, "Title must be less than 200 characters")
+    .min(2, "Tiêu đề phải có ít nhất 2 ký tự")
+    .max(200, "Tiêu đề phải ít hơn 200 ký tự")
     .optional(),
   description: z
     .string()
-    .max(1000, "Description must be less than 1000 characters")
+    .max(1000, "Mô tả phải ít hơn 1000 ký tự")
     .optional(),
   round2Image: z.any().optional(),
 });
@@ -65,6 +65,7 @@ export function SubmissionDetailDialog({
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
   // React Hook Form setup
@@ -119,6 +120,7 @@ export function SubmissionDetailDialog({
     if (!isOpen) {
       form.setValue("round2Image", undefined);
       setPreviewUrl(null);
+      setIsImageRemoved(false);
     }
   }, [isOpen, form]);
 
@@ -183,14 +185,14 @@ export function SubmissionDetailDialog({
   };
 
   const handleAccept = () => {
-    if (confirm("Are you sure you want to accept this submission?")) {
+    if (confirm("Bạn có chắc chắn muốn chấp nhận bài nộp này không?")) {
       acceptMutation.mutate();
     }
   };
 
   const handleReject = () => {
     if (showRejectInput) {
-      if (confirm("Are you sure you want to reject this submission?")) {
+      if (confirm("Bạn có chắc chắn muốn từ chối bài nộp này không?")) {
         rejectMutation.mutate(rejectReason || undefined);
       }
     } else {
@@ -230,7 +232,11 @@ export function SubmissionDetailDialog({
       return;
     }
 
-    uploadRound2PaintingMutation.mutate(updateData);
+    uploadRound2PaintingMutation.mutate(updateData, {
+      onSuccess: () => {
+        onClose();
+      },
+    });
   });
 
   if (isLoading) {
@@ -239,7 +245,7 @@ export function SubmissionDetailDialog({
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogTitle className="sr-only">{t.loading}</DialogTitle>
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#d9534f]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--staff-primary)]"></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -274,21 +280,83 @@ export function SubmissionDetailDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Image */}
-          <div className="relative w-full h-96 bg-gray-100">
-            {submission.imageUrl ? (
-              <Image
-                src={submission.imageUrl}
-                alt={submission.title}
-                fill
-                className="object-contain"
-              />
+          {/* Image Slot - Integrated Upload */}
+          <div className="relative w-full h-96 bg-gray-100 rounded-sm overflow-hidden border-2 border-[var(--staff-border)]">
+            {submission.imageUrl && !isImageRemoved ? (
+              <div className="relative w-full h-full">
+                <Image
+                  src={submission.imageUrl}
+                  alt={submission.title}
+                  fill
+                  className="object-contain"
+                />
+                {roundName?.toUpperCase().includes("ROUND_2") && (
+                  <button
+                    onClick={() => setIsImageRemoved(true)}
+                    className="absolute top-4 right-4 bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all group"
+                    title="Xóa ảnh hiện tại để thay đổi"
+                  >
+                    <IconX className="h-5 w-5" />
+                    <span className="absolute right-full mr-2 bg-black/80 text-white text-xs px-2 py-1 rounded-sm opacity-0 group-hover:opacity-100 whitespace-nowrap">
+                      Xóa ảnh hiện tại
+                    </span>
+                  </button>
+                )}
+              </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                <div className="text-center">
-                  <IconPhoto className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">{t.noImageAvailable}</p>
-                </div>
+              <div className="flex flex-col items-center justify-center h-full text-gray-400 bg-gray-50/50">
+                {roundName?.toUpperCase().includes("ROUND_2") && submission.status === "ACCEPTED" ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    {previewUrl ? (
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={previewUrl}
+                          alt="Preview"
+                          fill
+                          className="object-contain"
+                        />
+                        <button
+                          onClick={() => form.setValue("round2Image", undefined)}
+                          className="absolute top-4 right-4 bg-red-500/90 hover:bg-red-600 text-white p-2 rounded-full shadow-md z-10"
+                        >
+                          <IconX className="h-5 w-5" />
+                        </button>
+                        <div className="absolute bottom-4 left-4 right-4 bg-black/60 text-white p-2 rounded-sm text-xs backdrop-blur-sm">
+                          <p className="font-bold">Ảnh mới đã chọn:</p>
+                          <p className="truncate">{(round2Image as File)?.name}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-all w-full h-full border-4 border-dashed border-gray-200 rounded-sm group bg-gray-50/50">
+                        <div className="p-6 rounded-full bg-white text-gray-400 group-hover:text-gray-600 group-hover:scale-110 transition-all shadow-sm">
+                          <IconPhoto className="h-16 w-16" />
+                        </div>
+                        <p className="text-xl font-bold text-gray-700 mt-6 mb-2 uppercase tracking-wide">
+                          Tải lên hình Vòng Chung Khảo
+                        </p>
+                        <p className="text-sm text-gray-400 font-medium italic">
+                          Nhấp để chọn tệp hoặc kéo thả vào đây
+                        </p>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) form.setValue("round2Image", file);
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center p-8">
+                    <IconPhoto className="h-20 w-20 mx-auto mb-4 opacity-20" />
+                    <p className="text-xl font-bold text-gray-400">
+                      {t.noImageAvailable}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -296,18 +364,18 @@ export function SubmissionDetailDialog({
           {/* Title and Description - Editable */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium staff-text-primary mb-2">
+              <label className="staff-type-label staff-text-primary mb-2 block">
                 {t.titleLabel}
               </label>
               <input
                 {...form.register("title")}
                 readOnly={roundName === "ROUND_1"}
-                className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none transition-all duration-200 ${
+                className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none transition-all duration-200 ${
                   roundName === "ROUND_1"
                     ? "bg-gray-100 cursor-not-allowed"
-                    : "bg-white focus:ring-2 focus:ring-blue-500"
+                    : "bg-white focus:ring-2 focus:ring-[var(--staff-primary)]"
                 }`}
-                placeholder="Enter painting title"
+                placeholder="Nhập tiêu đề tranh"
               />
               {form.formState.errors.title && (
                 <p className="text-red-500 text-sm mt-1">
@@ -316,19 +384,19 @@ export function SubmissionDetailDialog({
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium staff-text-primary mb-2">
+              <label className="staff-type-label staff-text-primary mb-2 block">
                 {t.descriptionLabel}
               </label>
               <textarea
                 {...form.register("description")}
                 rows={4}
                 readOnly={roundName === "ROUND_1"}
-                className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none transition-all duration-200 resize-none ${
+                className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none transition-all duration-200 resize-none ${
                   roundName === "ROUND_1"
                     ? "bg-gray-100 cursor-not-allowed"
-                    : "bg-white focus:ring-2 focus:ring-blue-500"
+                    : "bg-white focus:ring-2 focus:ring-[var(--staff-primary)]"
                 }`}
-                placeholder="Enter painting description"
+                placeholder="Nhập mô tả tranh"
               />
               {form.formState.errors.description && (
                 <p className="text-red-500 text-sm mt-1">
@@ -337,125 +405,20 @@ export function SubmissionDetailDialog({
               )}
             </div>
 
-            {/* Round 2 Image Upload - Integrated */}
-            {roundName &&
-              (roundName.toLowerCase().includes("round 2") ||
-                roundName.toLowerCase().includes("round_2") ||
-                roundName.toLowerCase().includes(" 2")) &&
-              submission.status === "ACCEPTED" && (
-                <div className="border border-[#e6e2da] rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-center gap-2 mb-3">
-                    <IconPhoto className="h-5 w-5 staff-text-secondary" />
-                    <h4 className="font-semibold staff-text-primary">
-                      {t.image} {t.rounds} 2
-                    </h4>
-                  </div>
-                  <p className="text-sm staff-text-secondary mb-4">
-                    {t.submissionRound2ImageUpload}
-                  </p>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium staff-text-primary mb-2 block">
-                        {t.selectValidImage}
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          form.setValue("round2Image", file);
-                        }}
-                        className="w-full px-3 py-2 border border-[#e6e2da] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                      />
-                      {round2Image && (
-                        <p className="text-xs staff-text-secondary mt-1">
-                          {t.selectedFile}: {round2Image.name}
-                        </p>
-                      )}
-                      {form.formState.errors.round2Image && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {typeof form.formState.errors.round2Image.message ===
-                          "string"
-                            ? form.formState.errors.round2Image.message
-                            : "Invalid file"}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Image Preview */}
-                    {round2Image && previewUrl && (
-                      <div className="border border-[#e6e2da] rounded-lg p-4 bg-white">
-                        <h5 className="text-sm font-medium staff-text-primary mb-3">
-                          {t.previewMode}
-                        </h5>
-                        <div className="relative w-full h-48 bg-white rounded border">
-                          <Image
-                            src={previewUrl}
-                            alt="Round 2 image preview"
-                            fill
-                            className="object-contain rounded"
-                          />
-                        </div>
-                        <div className="mt-2 text-xs staff-text-secondary">
-                          <p>
-                            {t.fileSize}:{" "}
-                            {(round2Image.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                          <p>
-                            {t.fileType}: {round2Image.type}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-            {roundName === "ROUND_2" && (
-              <div className="flex justify-end">
-                <button
-                  onClick={handleUpdatePaintingDetails}
-                  disabled={
-                    uploadRound2PaintingMutation.isPending ||
-                    (!form.watch("title")?.trim() &&
-                      !form.watch("description")?.trim() &&
-                      !round2Image) ||
-                    !!form.formState.errors.title ||
-                    !!form.formState.errors.description ||
-                    (roundName &&
-                      (roundName.toLowerCase().includes("round 2") ||
-                        roundName.toLowerCase().includes("round_2") ||
-                        roundName.toLowerCase().includes(" 2")) &&
-                      submission.status === "ACCEPTED" &&
-                      !!form.formState.errors.round2Image)
-                  }
-                  className="staff-btn-primary disabled:opacity-50 flex items-center gap-2"
-                >
-                  <IconCheck className="h-4 w-4" />
-                  {uploadRound2PaintingMutation.isPending
-                    ? t.updating
-                    : t.update}
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
 
           {/* Information Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconUser className="h-5 w-5 staff-text-secondary" />
-                <p className="text-sm font-medium staff-text-secondary">
-                  {t.artistLabel}
-                </p>
               </div>
               <p className="text-sm staff-text-primary font-semibold break-all">
                 {submission.competitor.fullName}
               </p>
-            </div>
+            </div> */}
 
-            {/* <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconTrophy className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
@@ -467,7 +430,7 @@ export function SubmissionDetailDialog({
               </p>
             </div> */}
 
-            {/* <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
                 <p className="text-sm font-medium staff-text-secondary">
@@ -478,64 +441,50 @@ export function SubmissionDetailDialog({
                 {submission.roundId}
               </p>
             </div> */}
-
-            <div className="border border-[#e6e2da] p-4">
+            {/* <div className="border border-[var(--staff-border)] p-4">
               <div className="flex items-center gap-2 mb-2">
                 <IconCalendar className="h-5 w-5 staff-text-secondary" />
-                <p className="text-sm font-medium staff-text-secondary">
-                  {t.submissionDate}
-                </p>
               </div>
               {submission.submissionDate && (
                 <p className="text-sm staff-text-primary font-semibold">
                   {formatDate({ dateString: submission.submissionDate })}
                 </p>
               )}
-            </div>
+            </div> */}
+          </div>
 
-            {/* {submission.awardId && (
-              <div className="border border-[#e6e2da] p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <IconTrophy className="h-5 w-5 staff-text-secondary" />
-                  <p className="text-sm font-medium staff-text-secondary">
-                    {t.awards} ID
-                  </p>
-                </div>
-                <p className="text-sm staff-text-primary font-semibold">
-                  {submission.awardId}
+
+
+          {/* Metadata - Hide for Round 2 */}
+          {/* {!roundName.toUpperCase().includes("ROUND_2") && (
+            <div className=" ">
+              <div>
+                <p className="text-xs staff-text-secondary mb-1">{t.created}</p>
+                <p className="text-sm staff-text-primary">
+                  {formatDate({ dateString: submission.createdAt })}
                 </p>
               </div>
-            )} */}
-          </div>
-
-          {/* Metadata */}
-          <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#e6e2da]">
-            <div>
-              <p className="text-xs staff-text-secondary mb-1">{t.created}</p>
-              <p className="text-sm staff-text-primary">
-                {formatDate({ dateString: submission.createdAt })}
-              </p>
+              <div>
+                <p className="text-xs staff-text-secondary mb-1">{t.updated}</p>
+                <p className="text-sm staff-text-primary">
+                  {formatDate({ dateString: submission.updatedAt })}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs staff-text-secondary mb-1">{t.updated}</p>
-              <p className="text-sm staff-text-primary">
-                {formatDate({ dateString: submission.updatedAt })}
-              </p>
-            </div>
-          </div>
+          )} */}
 
           {/* Reject Reason Input */}
           {showRejectInput && (
             <div className="border-2 border-red-300 bg-red-50 p-4">
               <label className="text-sm font-medium text-red-700 mb-2 block">
-                Rejection Reason (Optional)
+                Lý do từ chối (Tùy chọn)
               </label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-200"
+                className="w-full px-3 py-2 border border-red-300 focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] transition-all duration-200"
                 rows={3}
-                placeholder="Provide a reason for rejection..."
+                placeholder="Cung cấp lý do từ chối..."
               />
             </div>
           )}
@@ -548,7 +497,7 @@ export function SubmissionDetailDialog({
               <>
                 <button
                   onClick={handleCancelReject}
-                  className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
+                  className="px-4 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
                   disabled={rejectMutation.isPending}
                 >
                   {t.cancel}
@@ -559,14 +508,14 @@ export function SubmissionDetailDialog({
                   disabled={rejectMutation.isPending}
                 >
                   <IconX className="h-4 w-4 inline mr-2" />
-                  {rejectMutation.isPending ? "Rejecting..." : "Confirm Reject"}
+                  {rejectMutation.isPending ? "Đang từ chối..." : "Xác nhận từ chối"}
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={onClose}
-                  className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
+                  className="px-4 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
                 >
                   {t.close}
                 </button>
@@ -592,15 +541,42 @@ export function SubmissionDetailDialog({
         )}
 
         {submission.status !== "PENDING" && (
-          <DialogFooter>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors"
-            >
-              {t.close}
-            </button>
-          </DialogFooter>
-        )}
+  <DialogFooter>
+    <div className="flex flex-row w-full gap-3 mt-4">
+      {/* Nút Đóng - flex-1 để chiếm 1/2 chiều rộng */}
+      <button
+        onClick={onClose}
+        className="flex-1 px-4 py-2.5 border-2 border-[var(--staff-border)] staff-text-primary font-bold hover:bg-[#f7f7f7] transition-all rounded-sm"
+      >
+        {t.close}
+      </button>
+      
+      {/* Nút Cập nhật - flex-1 để chiếm 1/2 chiều rộng còn lại */}
+      {roundName?.toUpperCase().includes("ROUND_2") && submission.status === "ACCEPTED" && (
+        <button
+          onClick={handleUpdatePaintingDetails}
+          disabled={
+            uploadRound2PaintingMutation.isPending ||
+            (!form.watch("title")?.trim() &&
+              !form.watch("description")?.trim() &&
+              !round2Image) ||
+            !!form.formState.errors.title ||
+            !!form.formState.errors.description ||
+            !!form.formState.errors.round2Image
+          }
+          className="flex-1 staff-btn-primary flex items-center justify-center gap-2 py-2.5 rounded-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <IconCheck className="h-5 w-5" />
+          <span className="font-bold uppercase tracking-wider text-sm whitespace-nowrap">
+            {uploadRound2PaintingMutation.isPending
+              ? t.updating
+              : t.update}
+          </span>
+        </button>
+      )}
+    </div>
+  </DialogFooter>
+)}
       </DialogContent>
     </Dialog>
   );

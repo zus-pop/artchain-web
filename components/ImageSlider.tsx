@@ -88,7 +88,7 @@ const ImageSlider: React.FC = () => {
   };
 
   return (
-    <section className="py-10 bg-[#EAE6E0] px-6">
+    <section className="py-10 bg-[#EAE6E0] px-6 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-20">
           <h2 className="text-2xl font-semibold text-[#423137]">Bộ sưu tập</h2>

@@ -11,7 +11,9 @@ import {
   IconCircleCheck,
   IconChevronRight,
   IconInfoCircle,
-  IconQuestionMark
+  IconQuestionMark,
+  IconClock,
+  IconTrophy
 } from '@tabler/icons-react';
 
 export default function AuctionGuidePage() {
@@ -25,34 +27,76 @@ export default function AuctionGuidePage() {
 
   const steps = [
     {
-      title: "Đăng ký & Xác thực",
-      description: "Tạo tài khoản và cập nhật thông tin cá nhân. Để tham gia đấu giá, bạn cần đảm bảo ví nội bộ có đủ số dư tối thiểu hoặc thực hiện nạp tiền.",
+      title: "Chuẩn bị trước khi đấu giá",
+      description: (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li>Người dùng cần tham gia phiên đấu giá trước khi đặt giá.</li>
+          <li>Phiên phải đang ở trạng thái LIVE thì mới đặt giá được.</li>
+          <li>Người dùng cần có ví hoạt động và đủ số dư tối thiểu bằng mức giá muốn đặt.</li>
+        </ul>
+      ),
       icon: <IconUserCheck size={32} />,
       color: "blue"
     },
     {
-      title: "Tìm kiếm & Đặt giá",
-      description: "Khám phá danh mục các tác phẩm đang diễn ra. Bạn có thể đặt giá thủ công hoặc sử dụng tính năng đặt giá tối đa. Hệ thống sẽ khóa một khoản tiền tương ứng khi bạn là người dẫn đầu.",
+      title: "Cách đấu giá trong phiên",
+      description: (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li>Mỗi thời điểm chỉ có 1 tranh đang LIVE để đấu giá.</li>
+          <li>Chỉ được đặt giá cho tranh đang LIVE, không đặt cho tranh khác trong cùng phiên.</li>
+          <li>Giá đặt mới phải lớn hơn hoặc bằng giá hiện tại + bước giá.</li>
+          <li>Khi đặt giá thành công, hệ thống cập nhật người dẫn đầu và phát realtime cho phòng đấu giá.</li>
+        </ul>
+      ),
       icon: <IconGavel size={32} />,
       color: "orange"
     },
     {
-      title: "Thắng cuộc & Thanh toán",
-      description: "Khi phiên kết thúc và bạn là người trả giá cao nhất, hệ thống sẽ tự động chuyển trạng thái đơn hàng. Bạn cần xác nhận nhận hàng trong vòng 24 giờ.",
-      icon: <IconCreditCard size={32} />,
-      color: "green"
-    },
-    {
-      title: "Kiểm định & Vận chuyển",
-      description: "Tác phẩm sẽ được chuyên gia kiểm định chất lượng và niêm phong. Sau đó, đơn vị vận chuyển chuyên dụng sẽ giao tới tận tay bạn.",
-      icon: <IconTruck size={32} />,
+      title: "Luật giá trần",
+      description: (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li>Nếu tranh có giá trần, khi người dùng đặt giá đạt hoặc vượt giá trần, hệ thống sẽ phát thông báo realtime.</li>
+          <li>Thông báo này chỉ phát 1 lần đầu tiên cho mỗi người dùng trên mỗi tranh.</li>
+          <li>Các lần sau cùng người dùng đó tiếp tục đặt &gt;= giá trần sẽ không phát lại thông báo.</li>
+        </ul>
+      ),
+      icon: <IconInfoCircle size={32} />,
       color: "purple"
     },
     {
-      title: "Hoàn tất & Sở hữu",
-      description: "Sau khi nhận hàng và kiểm tra tính nguyên vẹn, bạn xác nhận trên hệ thống. Chúc mừng bạn đã sở hữu một kiệt tác nghệ thuật!",
-      icon: <IconCircleCheck size={32} />,
-      color: "emerald"
+      title: "Luật gia hạn thời gian (anti-sniping)",
+      description: (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li>Nếu đặt giá trong 60 giây cuối, thời gian kết thúc tranh được cộng thêm 60 giây.</li>
+          <li>Nếu đặt giá đạt/vượt giá trần, thời gian kết thúc tranh được đẩy thành thời điểm hiện tại + 60 giây.</li>
+        </ul>
+      ),
+      icon: <IconClock size={32} />,
+      color: "red"
+    },
+    {
+      title: "Kết thúc tranh và xác định thắng",
+      description: (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li>Khi hết thời gian của tranh LIVE, tranh được chuyển trạng thái END.</li>
+          <li>Nếu có người dẫn đầu, người đó là người thắng tranh.</li>
+          <li>Nếu không có người dẫn đầu, tranh được mở lại trạng thái bán phù hợp theo nghiệp vụ.</li>
+        </ul>
+      ),
+      icon: <IconTrophy size={32} />,
+      color: "yellow"
+    },
+    {
+      title: "Thanh toán sau đấu giá",
+      description: (
+        <ul className="list-disc pl-5 space-y-2 mt-2">
+          <li>Hệ thống trừ tiền ví người thắng khi tranh kết thúc hoặc khi phiên bị kết thúc thủ công.</li>
+          <li>Có cơ chế chống trừ tiền trùng cho cùng 1 tranh.</li>
+          <li>Nếu ví người thắng không đủ số dư tại thời điểm chốt, hệ thống sẽ báo lỗi xử lý thanh toán.</li>
+        </ul>
+      ),
+      icon: <IconCreditCard size={32} />,
+      color: "green"
     }
   ];
 
@@ -106,7 +150,7 @@ export default function AuctionGuidePage() {
                className="relative flex flex-col md:flex-row gap-8 md:items-start group"
              >
                 {/* Icon Circle */}
-                <div className="relative z-10 w-20 h-20 shrink-0 bg-white border border-black/5 shadow-sm rounded-2xl flex items-center justify-center text-black/40 group-hover:text-[#f07d44] group-hover:border-[#f07d44]/30 transition-all duration-500">
+                <div className="relative z-10 w-20 h-20 shrink-0 bg-white border border-black/5 shadow-sm rounded-sm flex items-center justify-center text-black/40 group-hover:text-[#f07d44] group-hover:border-[#f07d44]/30 transition-all duration-500">
                    {step.icon}
                    <div className="absolute -top-2 -right-2 w-7 h-7 bg-[#1a1a1a] text-white text-[10px] font-black flex items-center justify-center rounded-lg">
                       0{index + 1}
@@ -144,7 +188,7 @@ export default function AuctionGuidePage() {
               </button>
            </div>
            
-           <div className="relative z-10 w-40 h-40 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 flex items-center justify-center">
+           <div className="relative z-10 w-40 h-40 bg-white/5 backdrop-blur-xl rounded-sm border border-white/10 flex items-center justify-center">
               <IconQuestionMark size={80} className="text-[#f07d44] opacity-50" />
            </div>
 
@@ -154,7 +198,7 @@ export default function AuctionGuidePage() {
       </main>
 
       <footer className="py-20 px-[5%] text-center border-t border-black/5 opacity-30 mt-20">
-         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ XANH — NÂNG TẦM TRẢI NGHIỆM NGHỆ THUẬT</p>
+         <p className="text-[10px] font-bold uppercase tracking-[0.5em]">© 2026 NÉT VẼ ƯỚC MƠ — NÂNG TẦM TRẢI NGHIỆM NGHỆ THUẬT</p>
       </footer>
     </div>
   );

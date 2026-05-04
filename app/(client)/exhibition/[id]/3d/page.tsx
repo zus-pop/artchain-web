@@ -2,39 +2,46 @@
 
 import { useGetExhibitionById } from "@/apis/exhibition";
 import {
+  Arrows,
+  Exhibition,
+  LocalModel,
+  Logo,
+  Mascot,
+  PaintingFrame,
+  RemoteModel,
+} from "@/components/3d";
+import ChatBox from "@/components/3d/ChatBox";
+import Panel from "@/components/3d/Panel";
+import Loader from "@/components/Loaders";
+import { Button } from "@/components/ui/button";
+import {
+  CameraMovementOptions,
+  useCameraMovement,
+} from "@/lib/useCameraMovement";
+import { useSocket } from "@/providers";
+import { usePersonStore } from "@/store/person";
+import { ExhibitionPainting } from "@/types";
+import { useSpring } from "@react-spring/three";
+import {
   CameraControls,
   Environment,
+  Float,
   Html,
   Preload,
   Sparkles,
   useCursor,
   useProgress,
 } from "@react-three/drei";
-import { Suspense, use, useEffect, useRef, useState } from "react";
-import { Arrows, Exhibition, PaintingFrame } from "@/components/3d";
-import { proxy, useSnapshot } from "valtio";
-import { ExhibitionPainting } from "@/types";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { button, buttonGroup, folder, useControls } from "leva";
-import ChatBox from "@/components/3d/ChatBox";
-import Image from "next/image";
-import Panel from "@/components/3d/Panel";
-import {
-  CameraMovementOptions,
-  useCameraMovement,
-} from "@/lib/useCameraMovement";
-import { usePersonStore } from "@/store/person";
-import { useSocket } from "@/providers";
-import { Color, Group, Vector3 } from "three";
-import { CustomEcctrlRigidBody } from "ecctrl";
-import { useSpring } from "@react-spring/three";
 import { Physics, RigidBody } from "@react-three/rapier";
-import RemoteModel from "../../../../../components/3d/RemoteModel";
-import LocalModel from "../../../../../components/3d/LocalModel";
-import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
-import { Button } from "../../../../../components/ui/button";
+import { CustomEcctrlRigidBody } from "ecctrl";
+import { button, buttonGroup, folder, useControls } from "leva";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Suspense, use, useEffect, useRef, useState } from "react";
+import { Color, Group, Vector3 } from "three";
+import { proxy, useSnapshot } from "valtio";
 
 interface ExhibitionSceneProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -75,7 +82,7 @@ function Exhibition3DScene({
   const { socket } = useSocket();
   const localModelRef = useRef<CustomEcctrlRigidBody | null>(null);
   const [currentFrame, setCurrentFrame] = useState<ExhibitionPainting | null>(
-    null
+    null,
   );
   useControls({
     "Danh sách": folder(
@@ -88,13 +95,13 @@ function Exhibition3DScene({
               const options: CameraMovementOptions = { zoom: 1.2 };
               moveCameraToObject(
                 scene.getObjectByName(item.paintingId)!,
-                options
+                options,
               );
             });
           });
         return obj;
       })(),
-      { collapsed: true }
+      { collapsed: true },
     ),
   });
 
@@ -141,9 +148,9 @@ function Exhibition3DScene({
       const distance = new Vector3(
         modelPosition.x,
         modelPosition.y,
-        modelPosition.z
+        modelPosition.z,
       ).distanceTo(
-        new Vector3(item.position[0], item.position[1], item.position[2])
+        new Vector3(item.position[0], item.position[1], item.position[2]),
       );
       if (distance < minDistance && distance < offset) {
         minDistance = distance;
@@ -210,8 +217,21 @@ function Exhibition3DScene({
                 skinColor={p.colors.skinColor}
               />
             )
-          )
+          ),
         )}
+        <RigidBody type="fixed" colliders="hull">
+          <Float
+            speed={4}
+            rotationIntensity={0.05}
+            floatIntensity={2}
+            floatingRange={[0, 0.05]}
+            position={[0.36, 2.6, -0.25]}
+            scale={3.6}
+          >
+            <Logo scale={0.28} position={[-0.3, 0.65, 0.1]} />
+            <Mascot />
+          </Float>
+        </RigidBody>
         <RigidBody type="fixed" colliders="trimesh">
           <Exhibition scale={2} name="exhibition" />
         </RigidBody>
@@ -302,7 +322,7 @@ export default function Exhibition3DPage({
   const { progress } = useProgress();
   const { data: exhibitionResponse, isLoading } = useGetExhibitionById(id);
   const [selectedItem, setSelectedItem] = useState<ExhibitionPainting | null>(
-    null
+    null,
   );
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -319,7 +339,7 @@ export default function Exhibition3DPage({
         disabled: state.viewMode === "camera",
       },
     },
-    [state.viewMode]
+    [state.viewMode],
   );
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -341,23 +361,10 @@ export default function Exhibition3DPage({
   }, [snap.viewMode]);
   if (isLoading) {
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px",
-          color: "white",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          zIndex: 1000,
-        }}
-      >
-        Đang tải...
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <Loader />
+        </div>
       </div>
     );
   }
@@ -387,21 +394,11 @@ export default function Exhibition3DPage({
       >
         <Suspense
           fallback={
-            <Html
-              center
-              style={{
-                color: "white",
-                fontSize: "24px",
-                textAlign: "center",
-                whiteSpace: "nowrap",
-                backgroundColor: "black",
-              }}
-            >
-              <div>
-                <p>Đang tải...</p>
-                <p>
-                  {progress === 100 ? "Hoàn thành" : `${progress.toFixed(0)}%`}
-                </p>
+            <Html center>
+              <div className="flex min-h-screen min-w-screen items-center justify-center bg-white">
+                <div className="text-center">
+                  <Loader text={`Đang tải... ${progress.toFixed(0)}%`} />
+                </div>
               </div>
             </Html>
           }
@@ -412,7 +409,7 @@ export default function Exhibition3DPage({
                 (item) =>
                   item.position !== null &&
                   item.rotation !== null &&
-                  item.scale !== null
+                  item.scale !== null,
               ) || []
             }
             mode={snap.viewMode}
@@ -441,7 +438,8 @@ export default function Exhibition3DPage({
           <ChatBox
             isOpen={isChatOpen}
             onClose={() => (
-              canvasRef.current?.requestPointerLock(), setIsChatOpen(false)
+              canvasRef.current?.requestPointerLock(),
+              setIsChatOpen(false)
             )}
             onSendCallback={(message: string) => {
               state.localChatMessage = message;

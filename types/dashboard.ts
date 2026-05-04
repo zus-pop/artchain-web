@@ -148,6 +148,7 @@ export interface Contest {
   createdAt: string;
   createdBy: string;
   isScheduleEnforced: boolean;
+  ignoreAiCheck: boolean;
   bannerUrl?: string;
   ruleUrl: string | null;
   numOfAward: number;

@@ -299,7 +299,7 @@ Ready to join the revolution? Create your free account today and start exploring
       <SidebarInset>
         <SiteHeader title={isEditing ? t.editPost : t.createPost} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 { label: t.postsManagement, href: "/dashboard/staff/posts" },
@@ -315,12 +315,12 @@ Ready to join the revolution? Create your free account today and start exploring
                 <div className="flex items-center gap-4">
                   <Link
                     href="/dashboard/staff/posts"
-                    className="border border-[#e6e2da] p-2 hover:bg-gray-50 transition-colors"
+                    className="border border-[var(--staff-border)] p-2 hover:bg-gray-50 transition-colors"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       {isEditing ? t.editPost : t.createNewPost}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
@@ -347,7 +347,7 @@ Ready to join the revolution? Create your free account today and start exploring
                     <div className="lg:col-span-2 space-y-6">
                       {/* Title */}
                       <div className="staff-card p-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.postTitleLabel} *
                         </label>
                         <input
@@ -356,7 +356,7 @@ Ready to join the revolution? Create your free account today and start exploring
                           onChange={(e) =>
                             handleInputChange("title", e.target.value)
                           }
-                          className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-medium"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field text-lg font-medium"
                           placeholder={t.enterEngagingTitle}
                           required
                         />
@@ -364,14 +364,14 @@ Ready to join the revolution? Create your free account today and start exploring
 
                       {/* Image Upload */}
                       <div className="staff-card p-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.featuredImage}
                         </label>
 
                         {/* Upload Area */}
                         <div className="space-y-4">
                           <div
-                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
+                            className="border-2 border-dashed border-gray-300 rounded-sm p-6 text-center hover:border-red-400 transition-colors cursor-pointer"
                             onClick={() =>
                               document.getElementById("image-upload")?.click()
                             }
@@ -385,7 +385,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                     )}
                                     alt="Preview"
                                     fill
-                                    className="object-cover rounded-lg border border-gray-200"
+                                    className="object-cover rounded-sm border border-gray-200"
                                     onError={(e) => {
                                       (
                                         e.target as HTMLImageElement
@@ -488,7 +488,7 @@ Ready to join the revolution? Create your free account today and start exploring
 
                       {/* Content */}
                       <div className="staff-card p-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="staff-type-label text-gray-700 mb-2 block">
                           {t.contentLabel} *
                         </label>
                         <MDXEditorWrapper
@@ -506,7 +506,7 @@ Ready to join the revolution? Create your free account today and start exploring
                     <div className="space-y-6">
                       {/* Publishing Settings */}
                       <div className="staff-card p-6">
-                        <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                           <IconSend className="h-5 w-5 " />
                           {t.statusLabel}
                         </h3>
@@ -521,7 +521,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                   e.target.value as PostStatus
                                 )
                               }
-                              className="w-full px-3 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="w-full px-3 py-2 border border-[var(--staff-border)]  focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
                             >
                               <option value="DRAFT">{t.draftStatusPost}</option>
                               <option value="PUBLISHED">
@@ -534,7 +534,7 @@ Ready to join the revolution? Create your free account today and start exploring
 
                       {/* Tags */}
                       <div className="staff-card p-6">
-                        <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                           <IconTag className="h-5 w-5 " />
                           {t.tagsLabel}
                         </h3>
@@ -575,13 +575,13 @@ Ready to join the revolution? Create your free account today and start exploring
                                 }}
                                 onFocus={() => setShowTagDropdown(true)}
                                 placeholder={t.searchOrCreateTags}
-                                className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field text-sm"
                               />
                             </div>
 
                             {/* Tag Dropdown */}
                             {showTagDropdown && (
-                              <div className="absolute z-10 w-full mt-1 bg-white border border-[#e6e2da]  shadow-lg max-h-60 overflow-y-auto">
+                              <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--staff-border)]  shadow-lg max-h-60 overflow-y-auto">
                                 {isLoadingTags ? (
                                   <div className="px-4 py-3 text-sm text-gray-500 text-center">
                                     {t.loadingTags}
@@ -628,7 +628,7 @@ Ready to join the revolution? Create your free account today and start exploring
                                           type="button"
                                           onClick={handleCreateTag}
                                           disabled={isCreatingTag}
-                                          className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[#e6e2da] text-blue-700 font-medium disabled:opacity-50"
+                                          className="w-full px-4 py-2 text-left text-sm bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-2 border-t border-[var(--staff-border)] text-blue-700 font-medium disabled:opacity-50"
                                         >
                                           <IconPlus className="h-4 w-4" />
                                           {isCreatingTag
@@ -650,7 +650,7 @@ Ready to join the revolution? Create your free account today and start exploring
 
                       {/* Post Stats Preview */}
                       <div className="staff-card p-6">
-                        <h3 className="text-lg font-semibold staff-text-primary mb-4 flex items-center gap-2">
+                        <h3 className="staff-type-section-title staff-text-primary mb-4 flex items-center gap-2">
                           <IconEye className="h-5 w-5 " />
                           {t.previewStats}
                         </h3>
@@ -699,10 +699,10 @@ Ready to join the revolution? Create your free account today and start exploring
                   </div>
 
                   {/* Form Actions */}
-                  <div className="flex justify-end gap-4 pt-6 border-t border-[#e6e2da]">
+                  <div className="flex justify-end gap-4 pt-6 border-t border-[var(--staff-border)]">
                     <Link
                       href="/dashboard/staff/posts"
-                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="px-6 py-2 border border-[var(--staff-border)]  text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       {t.cancelBtn}
                     </Link>
@@ -710,7 +710,7 @@ Ready to join the revolution? Create your free account today and start exploring
                       type="button"
                       onClick={handleSaveDraft}
                       disabled={isSubmitting}
-                      className="px-6 py-2 border border-[#e6e2da]  text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-2 border border-[var(--staff-border)]  text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       <IconDeviceFloppy className="h-4 w-4" />
                       {t.saveDraftBtn}

@@ -27,7 +27,7 @@ export default function FooterGlow() {
         <div className="absolute -top-32 left-1/4 h-72 w-72 rounded-full bg-rose-600/20 blur-3xl"></div>
         <div className="absolute right-1/4 -bottom-24 h-80 w-80 rounded-full bg-rose-600/20 blur-3xl"></div>
       </div>
-      <div className="glass relative mx-auto flex flex-col items-center gap-8 rounded-2xl px-6 py-10 md:flex-row md:items-start md:justify-between md:gap-12">
+      <div className="glass relative mx-auto flex flex-col items-center gap-8 rounded-sm px-6 py-10 md:flex-row md:items-start md:justify-between md:gap-12">
         <div className="flex flex-col items-center md:items-start">
           <a href="#" className="mb-4 flex items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-rose-400 to-rose-700 text-2xl font-extrabold text-white shadow-md">

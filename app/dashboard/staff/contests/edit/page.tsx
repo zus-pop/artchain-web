@@ -28,6 +28,12 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+const addDays = (dateString: string, days: number) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + days);
+  return formatDateForInput(date);
+};
+
 // Zod validation schema with translations
 const editContestSchema = (t: Lang) =>
   z
@@ -39,7 +45,7 @@ const editContestSchema = (t: Lang) =>
         .max(2000, t.descriptionTooLong),
       round2Quantity: z
         .number()
-        .min(1, t.topCompetitorsMin)
+        .min(6, t.topCompetitorsMin)
         .max(100, t.topCompetitorsMax),
       numberOfTablesRound2: z.number().min(3, t.tablesMin).max(6, t.tablesMax),
       startDate: z.string().min(1, t.startDateRequired),
@@ -51,16 +57,16 @@ const editContestSchema = (t: Lang) =>
         .refine(
           (file) =>
             !file || (file instanceof File && file.size <= 5 * 1024 * 1024), // 5MB
-          t.bannerTooLarge
+          t.bannerTooLarge,
         )
         .refine(
           (file) =>
             !file ||
             (file instanceof File &&
               ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
-                file.type
+                file.type,
               )),
-          t.bannerInvalidType
+          t.bannerInvalidType,
         ),
       rule: z
         .any()
@@ -69,12 +75,12 @@ const editContestSchema = (t: Lang) =>
         .refine(
           (file) =>
             !file || (file instanceof File && file.size <= 20 * 1024 * 1024), // 20MB
-          t.rulesTooLarge
+          t.rulesTooLarge,
         )
         .refine(
           (file) =>
             !file || (file instanceof File && file.type === "application/pdf"),
-          t.rulesInvalidType
+          t.rulesInvalidType,
         ),
       roundStartDate: z.string().optional(),
       roundEndDate: z.string().optional(),
@@ -94,7 +100,7 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.roundEndAfterStart,
         path: ["roundEndDate"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -107,7 +113,7 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.submissionAfterRoundStart,
         path: ["roundSubmissionDeadline"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -119,7 +125,7 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.submissionBeforeRoundEnd,
         path: ["roundSubmissionDeadline"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -132,7 +138,19 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.resultDateWithinContest,
         path: ["roundResultAnnounceDate"],
-      }
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.roundResultAnnounceDate || !data.roundEndDate) return true;
+        return (
+          new Date(data.roundResultAnnounceDate) >= new Date(data.roundEndDate)
+        );
+      },
+      {
+        message: t.resultDateWithinContest,
+        path: ["roundResultAnnounceDate"],
+      },
     )
     .refine(
       (data) => {
@@ -144,7 +162,7 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.resultDateWithinContest,
         path: ["roundResultAnnounceDate"],
-      }
+      },
     )
     .refine(
       (data) => {
@@ -158,20 +176,50 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.originalDeadlineWithinContest,
         path: ["roundSendOriginalDeadline"],
-      }
+      },
     )
     .refine(
       (data) => {
         if (!data.roundSendOriginalDeadline || !data.roundEndDate) return true;
-        return (
-          new Date(data.roundSendOriginalDeadline) <=
-          new Date(data.roundEndDate)
-        );
+        const roundEndMinusOneDay = new Date(data.roundEndDate);
+        roundEndMinusOneDay.setDate(roundEndMinusOneDay.getDate() - 1);
+        return new Date(data.roundSendOriginalDeadline) <= roundEndMinusOneDay;
       },
       {
         message: t.originalDeadlineWithinContest,
         path: ["roundSendOriginalDeadline"],
-      }
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.roundSendOriginalDeadline || !data.roundSubmissionDeadline)
+          return true;
+        const subDate = new Date(data.roundSubmissionDeadline);
+        const originalDate = new Date(data.roundSendOriginalDeadline);
+        subDate.setHours(0, 0, 0, 0);
+        originalDate.setHours(0, 0, 0, 0);
+        const diffTime = originalDate.getTime() - subDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+        return diffDays >= 3 && diffDays <= 7;
+      },
+      {
+        message: "Hạn gửi bản gốc phải sau hạn nộp bài từ 3 đến 7 ngày",
+        path: ["roundSendOriginalDeadline"],
+      },
+    )
+    .refine(
+      (data) => {
+        if (!data.roundResultAnnounceDate || !data.roundSendOriginalDeadline)
+          return true;
+        return (
+          new Date(data.roundResultAnnounceDate) >=
+          new Date(data.roundSendOriginalDeadline)
+        );
+      },
+      {
+        message: t.resultDateWithinContest,
+        path: ["roundResultAnnounceDate"],
+      },
     )
     .refine(
       (data) => {
@@ -188,7 +236,7 @@ const editContestSchema = (t: Lang) =>
       {
         message: t.competitorsEvenlyDivided,
         path: ["numberOfTablesRound2"],
-      }
+      },
     );
 
 type EditContestFormData = z.infer<ReturnType<typeof editContestSchema>>;
@@ -226,6 +274,8 @@ function EditContestContent() {
   const watchedEndDate = watch("endDate");
   const watchedRoundStartDate = watch("roundStartDate");
   const watchedRoundEndDate = watch("roundEndDate");
+  const watchedRoundSubmissionDeadline = watch("roundSubmissionDeadline");
+  const watchedRoundSendOriginalDeadline = watch("roundSendOriginalDeadline");
   const watchedRule = watch("rule");
   const watchedBanner = watch("banner");
   const watchedNumberOfTablesRound2 = watch("numberOfTablesRound2");
@@ -251,7 +301,7 @@ function EditContestContent() {
         (round) =>
           round.roundId === 1 ||
           round.name?.toLowerCase().includes("round 1") ||
-          round.name?.toLowerCase().includes("round_1")
+          round.name?.toLowerCase().includes("round_1"),
       );
 
       setValue("title", contest.title || "");
@@ -260,41 +310,43 @@ function EditContestContent() {
       setValue("numberOfTablesRound2", contest.numberOfTablesRound2);
       setValue(
         "startDate",
-        contest.startDate ? formatDateForInput(new Date(contest.startDate)) : ""
+        contest.startDate
+          ? formatDateForInput(new Date(contest.startDate))
+          : "",
       );
       setValue(
         "endDate",
-        contest.endDate ? formatDateForInput(new Date(contest.endDate)) : ""
+        contest.endDate ? formatDateForInput(new Date(contest.endDate)) : "",
       );
       setValue(
         "roundStartDate",
         round1Data?.startDate
           ? formatDateForInput(new Date(round1Data.startDate))
-          : ""
+          : "",
       );
       setValue(
         "roundEndDate",
         round1Data?.endDate
           ? formatDateForInput(new Date(round1Data.endDate))
-          : ""
+          : "",
       );
       setValue(
         "roundSubmissionDeadline",
         round1Data?.submissionDeadline
           ? formatDateForInput(new Date(round1Data.submissionDeadline))
-          : ""
+          : "",
       );
       setValue(
         "roundResultAnnounceDate",
         round1Data?.resultAnnounceDate
           ? formatDateForInput(new Date(round1Data.resultAnnounceDate))
-          : ""
+          : "",
       );
       setValue(
         "roundSendOriginalDeadline",
         round1Data?.sendOriginalDeadline
           ? formatDateForInput(new Date(round1Data.sendOriginalDeadline))
-          : ""
+          : "",
       );
 
       if (contest.bannerUrl) {
@@ -328,6 +380,14 @@ function EditContestContent() {
     }
   }, [watchedRound2Quantity, setValue, watch]);
 
+  useEffect(() => {
+    if (watchedRoundEndDate) {
+      setValue("roundResultAnnounceDate", watchedRoundEndDate, {
+        shouldValidate: true,
+      });
+    }
+  }, [watchedRoundEndDate, setValue]);
+
   // Update mutation
   const updateMutation = useMutation({
     mutationFn: updateStaffContest,
@@ -352,7 +412,7 @@ function EditContestContent() {
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: "banner" | "rule"
+    type: "banner" | "rule",
   ) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -386,7 +446,7 @@ function EditContestContent() {
     };
 
     updateMutation.mutate(
-      contest.status !== "DRAFT" ? postDraftData : updateData
+      contest.status !== "DRAFT" ? postDraftData : updateData,
     );
   };
 
@@ -472,7 +532,7 @@ function EditContestContent() {
       <SidebarInset>
         <SiteHeader title={t.editContestTitle} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -495,12 +555,12 @@ function EditContestContent() {
                 <div className="flex items-center gap-4">
                   <Link
                     href={`/dashboard/staff/contests/detail?id=${contestId}`}
-                    className="border-2 border-[#e6e2da] p-2 hover:bg-[#f9f7f4] transition-colors"
+                    className="staff-btn-outline p-2"
                   >
                     <IconArrowLeft className="h-5 w-5 staff-text-secondary" />
                   </Link>
                   <div>
-                    <h2 className="text-2xl font-bold staff-text-primary">
+                    <h2 className="staff-type-page-title staff-text-primary">
                       {t.editContestTitle}
                     </h2>
                   </div>
@@ -516,14 +576,14 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.contestTitle} *
                       </label>
                       <input
                         type="text"
                         {...register("title")}
                         readOnly={readOnly}
-                        className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                           readOnly
                             ? "opacity-50 bg-gray-50 cursor-not-allowed"
                             : ""
@@ -537,7 +597,7 @@ function EditContestContent() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <label className="block text-sm font-medium staff-text-primary mb-2">
+                    <label className="staff-type-label staff-text-primary mb-2 block">
                       {t.description} *
                     </label>
                     <textarea
@@ -545,7 +605,7 @@ function EditContestContent() {
                       required
                       rows={4}
                       readOnly={readOnly}
-                      className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                         readOnly
                           ? "opacity-50 bg-gray-50 cursor-not-allowed"
                           : ""
@@ -566,7 +626,7 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.startDate} *
                       </label>
                       <Controller
@@ -584,7 +644,7 @@ function EditContestContent() {
                             required
                             min={todayString}
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -599,7 +659,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.endDate} *
                       </label>
                       <Controller
@@ -622,7 +682,7 @@ function EditContestContent() {
                                 : todayString
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly || !watchedStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -646,7 +706,7 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.roundStartDate}
                       </label>
                       <Controller
@@ -673,7 +733,7 @@ function EditContestContent() {
                                 : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly || !watchedStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -688,7 +748,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.roundEndDate}
                       </label>
                       <Controller
@@ -707,11 +767,13 @@ function EditContestContent() {
                             min={
                               watchedRoundStartDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
+                                    new Date(watchedRoundStartDate),
                                   )
                                 : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
+                                  ? formatDateForInput(
+                                      new Date(watchedStartDate),
+                                    )
+                                  : todayString
                             }
                             max={
                               watchedEndDate
@@ -719,7 +781,7 @@ function EditContestContent() {
                                 : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly || !watchedRoundStartDate
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
@@ -734,7 +796,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.submissionDeadline}
                       </label>
                       <Controller
@@ -757,23 +819,25 @@ function EditContestContent() {
                             min={
                               watchedRoundStartDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
+                                    new Date(watchedRoundStartDate),
                                   )
                                 : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
+                                  ? formatDateForInput(
+                                      new Date(watchedStartDate),
+                                    )
+                                  : todayString
                             }
                             max={
                               watchedRoundEndDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundEndDate)
+                                    new Date(watchedRoundEndDate),
                                   )
                                 : watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
-                                : undefined
+                                  ? formatDateForInput(new Date(watchedEndDate))
+                                  : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly ||
                               !watchedRoundStartDate ||
                               !watchedRoundEndDate
@@ -790,7 +854,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.resultAnnouncementDate}
                       </label>
                       <Controller
@@ -805,34 +869,29 @@ function EditContestContent() {
                             onChange={(e) =>
                               onChange(e.target.value || undefined)
                             }
-                            disabled={
-                              !watchedRoundStartDate ||
-                              !watchedRoundEndDate ||
-                              readOnly
-                            }
+                            disabled
                             min={
                               watchedRoundStartDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
+                                    new Date(watchedRoundStartDate),
                                   )
                                 : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
-                                : todayString
+                                  ? formatDateForInput(
+                                      new Date(watchedStartDate),
+                                    )
+                                  : todayString
                             }
                             max={
                               watchedRoundEndDate
                                 ? formatDateForInput(
-                                    new Date(watchedRoundEndDate)
+                                    new Date(watchedRoundEndDate),
                                   )
                                 : watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
-                                : undefined
+                                  ? formatDateForInput(new Date(watchedEndDate))
+                                  : undefined
                             }
-                            readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                              readOnly ||
-                              !watchedRoundStartDate ||
-                              !watchedRoundEndDate
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
+                              !watchedRoundEndDate || readOnly
                                 ? "opacity-50 bg-gray-50 cursor-not-allowed"
                                 : ""
                             }`}
@@ -846,7 +905,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.sendOriginalDeadline}
                       </label>
                       <Controller
@@ -867,25 +926,17 @@ function EditContestContent() {
                               readOnly
                             }
                             min={
-                              watchedRoundStartDate
-                                ? formatDateForInput(
-                                    new Date(watchedRoundStartDate)
-                                  )
-                                : watchedStartDate
-                                ? formatDateForInput(new Date(watchedStartDate))
+                              watchedRoundSubmissionDeadline
+                                ? addDays(watchedRoundSubmissionDeadline, 3)
                                 : todayString
                             }
                             max={
-                              watchedRoundEndDate
-                                ? formatDateForInput(
-                                    new Date(watchedRoundEndDate)
-                                  )
-                                : watchedEndDate
-                                ? formatDateForInput(new Date(watchedEndDate))
+                              watchedRoundSubmissionDeadline
+                                ? addDays(watchedRoundSubmissionDeadline, 7)
                                 : undefined
                             }
                             readOnly={readOnly}
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field ${
                               readOnly ||
                               !watchedRoundStartDate ||
                               !watchedRoundEndDate
@@ -911,7 +962,7 @@ function EditContestContent() {
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.round2CompetitorsLabel}
                       </label>
                       <Controller
@@ -925,8 +976,8 @@ function EditContestContent() {
                               const value = parseInt(e.target.value) || 0;
                               field.onChange(value);
                             }}
-                            min="0"
-                            className={`w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                            min="6"
+                            className={`w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field`}
                           />
                         )}
                       />
@@ -937,7 +988,7 @@ function EditContestContent() {
                       )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium staff-text-primary mb-2">
+                      <label className="staff-type-label staff-text-primary mb-2 block">
                         {t.numberOfTablesRound2}
                       </label>
                       <Controller
@@ -953,7 +1004,7 @@ function EditContestContent() {
                             }}
                             disabled={watchedRound2Quantity === 0}
                             step={1}
-                            className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:bg-gray-100 disabled:cursor-not-allowed"
                             placeholder={
                               watchedRound2Quantity === 0
                                 ? "0"
@@ -991,21 +1042,21 @@ function EditContestContent() {
                             {t.competitorsDivisionMessage
                               .replace(
                                 "{count}",
-                                watchedRound2Quantity.toString()
+                                watchedRound2Quantity.toString(),
                               )
                               .replace(
                                 "{tables}",
-                                (watch("numberOfTablesRound2") || 0).toString()
+                                (watch("numberOfTablesRound2") || 0).toString(),
                               )
                               .replace(
                                 "{perTable}",
                                 (watch("numberOfTablesRound2")
                                   ? Math.floor(
                                       watchedRound2Quantity /
-                                        (watch("numberOfTablesRound2") || 1)
+                                        (watch("numberOfTablesRound2") || 1),
                                     )
                                   : 0
-                                ).toString()
+                                ).toString(),
                               )}
                           </p>
                         )}
@@ -1022,7 +1073,7 @@ function EditContestContent() {
                     {/* Banner Section */}
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.bannerImage}
                         </label>
                         <input
@@ -1030,7 +1081,7 @@ function EditContestContent() {
                           accept="image/*"
                           onChange={(e) => handleFileChange(e, "banner")}
                           disabled={readOnly}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                         />
                       </div>
                       {bannerPreview && (
@@ -1043,7 +1094,7 @@ function EditContestContent() {
                             alt="Banner preview"
                             width={300}
                             height={150}
-                            className="object-cover rounded border shadow-sm w-full"
+                            className="object-cover rounded-sm border shadow-sm w-full"
                           />
                         </div>
                       )}
@@ -1052,7 +1103,7 @@ function EditContestContent() {
                     {/* PDF Section */}
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium staff-text-primary mb-2">
+                        <label className="staff-type-label staff-text-primary mb-2 block">
                           {t.rulesFile}
                         </label>
                         <input
@@ -1060,7 +1111,7 @@ function EditContestContent() {
                           accept=".pdf"
                           disabled={readOnly}
                           onChange={(e) => handleFileChange(e, "rule")}
-                          className="w-full px-3 py-2 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                          className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                         />
                         {watchedRule && (
                           <p className="text-sm staff-text-secondary mt-1">
@@ -1076,8 +1127,8 @@ function EditContestContent() {
 
                       {/* Small PDF Viewer */}
                       {(contest?.ruleUrl || watchedRule) && (
-                        <div className="border border-[#e6e2da] rounded overflow-hidden">
-                          <div className="bg-blue-50 px-3 py-2 border-b border-[#e6e2da]">
+                        <div className="border border-[var(--staff-border)] rounded-sm overflow-hidden">
+                          <div className="bg-blue-50 px-3 py-2 border-b border-[var(--staff-border)]">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
                                 <IconFileText className="h-4 w-4 text-blue-600" />
@@ -1122,7 +1173,7 @@ function EditContestContent() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-2 border-2 border-[#e6e2da] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
+                    className="px-6 py-2 border-2 border-[var(--staff-border)] staff-text-primary font-semibold hover:bg-[#f7f7f7] transition-colors flex items-center gap-2"
                   >
                     <IconX className="h-4 w-4" />
                     {t.cancel}
@@ -1132,7 +1183,7 @@ function EditContestContent() {
                     disabled={
                       isSubmitting || updateMutation.isPending || !isValid
                     }
-                    className="px-6 py-2 bg-linear-to-r from-[#d9534f] to-[#e67e73] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
+                    className="px-6 py-2 bg-[var(--staff-primary)] text-white font-semibold shadow-md hover:shadow-lg transition-shadow disabled:opacity-50 flex items-center gap-2"
                   >
                     <IconDeviceFloppy className="h-4 w-4" />
                     {isSubmitting || updateMutation.isPending
@@ -1154,7 +1205,7 @@ export default function EditContestPage() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#d9534f]"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--staff-primary)]"></div>
         </div>
       }
     >

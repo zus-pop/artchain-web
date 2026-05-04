@@ -21,6 +21,20 @@ export interface CreateCampaignRequest {
   deadline: string;
   status: CampaignStatus;
   image: File;
+  tiers: CampaignTierInput[];
+}
+
+export interface CampaignTierInput {
+  tierId: number;
+  minPrice: number;
+}
+
+export interface TierDefinition {
+  id: number;
+  name: "bronze" | "silver" | "gold" | "diamond";
+  display: string;
+  priority: number;
+  benefits: string;
 }
 
 export interface CampaignsAPIResponse {

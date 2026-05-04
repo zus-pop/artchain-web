@@ -7,7 +7,7 @@ import {
 } from "@/apis/award";
 import { useAnnounceWinners } from "@/apis/email";
 import { useGetRound2TopByContestId } from "@/apis/paintings";
-import { getStaffContestById } from "@/apis/staff";
+import { getStaffContestById, getStaffContestExaminers } from "@/apis/staff";
 import { getVotedAward, getVotedPaintings } from "@/apis/vote";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
@@ -98,6 +98,20 @@ function AwardsManagementPage() {
 
   const awards = awardsData?.data || [];
   const contest = contestData?.data as Contest;
+
+  // Fetch examiners to check evaluation status
+  const { data: examinersData } = useQuery({
+    queryKey: ["contest-examiners", contestId],
+    queryFn: () => getStaffContestExaminers(Number(contestId)),
+    enabled: !!contestId,
+  });
+
+  const isRound2Completed = (() => {
+    if (!examinersData?.data) return true;
+    const round2Examiners = examinersData.data.filter((e: any) => e.role === "ROUND_2");
+    if (round2Examiners.length === 0) return true;
+    return round2Examiners.every((e: any) => e.evaluatedCount === e.totalCount && e.totalCount > 0);
+  })();
 
   const assignMutation = useAssignAward();
   const removeMutation = useRemoveAward();
@@ -335,9 +349,51 @@ function AwardsManagementPage() {
     votedAwardsData?.data.awards?.some((award) => award.totalVotes === 0) ||
     false;
 
+  const parseContestEndDate = (value?: string) => {
+    if (!value) return null;
+    const trimmed = value.trim();
+    let parsed = new Date(trimmed);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+    const match = trimmed.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const contestEndDate = parseContestEndDate(contest?.endDate);
+  const contestEndTimestamp = contestEndDate
+    ? new Date(
+        contestEndDate.getFullYear(),
+        contestEndDate.getMonth(),
+        contestEndDate.getDate(),
+        23,
+        59,
+        59,
+        999
+      ).getTime()
+    : null;
+  const isContestEnded = contestEndTimestamp
+    ? contestEndTimestamp <= Date.now()
+    : false;
+
+  const topAwards = awards.filter((award) => award.rank <= 3);
+  const votedAwardsList = awards.filter((award) => award.rank > 3 || !award.rank);
+
+  const topTotalSlots = topAwards.reduce((acc, curr) => acc + curr.quantity, 0);
+  const topAssignedSlots = topAwards.reduce((acc, curr) => acc + curr.paintings.length, 0);
+  const isTopAwardsFullyAssigned = topTotalSlots > 0 && topAssignedSlots >= topTotalSlots;
+
+  const voteTotalSlots = votedAwardsList.reduce((acc, curr) => acc + curr.quantity, 0);
+  const voteAssignedSlots = votedAwardsList.reduce((acc, curr) => acc + curr.paintings.length, 0);
+  const isVoteAwardsFullyAssigned = voteTotalSlots > 0 && voteAssignedSlots >= voteTotalSlots;
+
   // Button disable states
-  const isAnnounceDisabled =
-    !allAwardSlotsFilled || hasVoteResultMismatches || hasAwardsWithNoVotes;
+  const isTopAnnounceDisabled = !isTopAwardsFullyAssigned;
+  const isVoteAnnounceDisabled = !isVoteAwardsFullyAssigned;
+
   const isEmailDisabled =
     !allAwardSlotsFilled ||
     hasVoteResultMismatches ||
@@ -365,9 +421,9 @@ function AwardsManagementPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title={`${contest?.title || "Contest"}`} />
+        <SiteHeader title={`${contest?.title || t.contest}`} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[
                 {
@@ -375,7 +431,7 @@ function AwardsManagementPage() {
                   href: "/dashboard/staff/contests",
                 },
                 {
-                  label: contest?.title || "Contest Detail",
+                  label: contest?.title || t.contestDetail,
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
                 { label: t.awardsBreadcrumb },
@@ -395,13 +451,13 @@ function AwardsManagementPage() {
                       )
                     }
                     className="staff-btn-outline p-2"
-                    title="Back to Contest"
+                    title={t.backToContestTooltip}
                   >
                     <IconArrowLeft className="h-4 w-4" />
                   </button>
                   <div>
                     <h2 className="text-xl font-bold staff-text-primary">
-                      {t.awardAssignment} - {contest?.title || "Contest"}
+                      {t.awardAssignment} - {contest?.title || t.contest}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
                       {assignedSlots} / {totalAwardSlots} {t.slotsFilled}
@@ -420,28 +476,7 @@ function AwardsManagementPage() {
                     <IconTrophy className="h-4 w-4" />
                     <span className="ml-2">{t.manageAwards}</span>
                   </button>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/staff/contests/awards/announce?id=${contestId}`
-                        )
-                      }
-                      disabled={isAnnounceDisabled}
-                      className="staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title={
-                        hasAwardsWithNoVotes
-                          ? "Cannot announce results when awards have no votes"
-                          : !allAwardSlotsFilled
-                          ? "All award slots must be filled before announcing results"
-                          : hasVoteResultMismatches
-                          ? t.allAwardSlotsMustBeFilledMismatchTooltip
-                          : t.announceContestResults
-                      }
-                    >
-                      <IconSpeakerphone className="h-4 w-4" />
-                      <span className="ml-2">{t.announceResults}</span>
-                    </button>
+                  {/* <div className="flex gap-2">
                     <button
                       onClick={handleSendEmailAnnouncement}
                       disabled={isEmailDisabled}
@@ -470,12 +505,12 @@ function AwardsManagementPage() {
                         </>
                       )}
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
               {/* Tabs */}
-              <div className="border-b border-[#e6e2da]">
+              <div className="border-b border-[var(--staff-border)]">
                 <div className="flex space-x-8">
                   <button
                     onClick={() => setActiveTab("top-paintings")}
@@ -522,6 +557,19 @@ function AwardsManagementPage() {
                               (p) => p.paintingId === topPainting.paintingId
                             )
                           );
+                          const assignedAwardInTable = awards.find((award) =>
+                            award.paintings.some((p) =>
+                              tableData.paintings.some(
+                                (tablePainting) =>
+                                  tablePainting.paintingId === p.paintingId
+                              )
+                            )
+                          );
+                          const headerAward =
+                            assignedAward ?? assignedAwardInTable ?? null;
+                          const headerAwardLabel = headerAward
+                            ? headerAward.name
+                            : t.unassigned;
 
                           return (
                             <div
@@ -592,31 +640,31 @@ function AwardsManagementPage() {
                                     </div>
                                   )}
 
-                                  {/* Award Status - Only for Top Painting */}
+                                  {/* Award Status - Table Header */}
                                   <div className="shrink-0 flex flex-col items-end gap-3">
-                                    {assignedAward ? (
+                                    {headerAward ? (
                                       <div className="flex flex-col items-center gap-2">
                                         <div className="flex flex-col items-center gap-1">
-                                          <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg">
+                                          <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-sm">
                                             <IconTrophy className="h-4 w-4" />
-                                            {assignedAward.name}
+                                            {headerAwardLabel}
                                           </div>
                                           <div className="text-xs text-green-600">
                                             {(() => {
                                               const prizeValue = parseFloat(
-                                                assignedAward.prize
+                                                headerAward.prize
                                               );
                                               return isNaN(prizeValue)
-                                                ? "Invalid prize"
+                                                ? t.invalidPrize
                                                 : formatCurrency(prizeValue);
                                             })()}
                                           </div>
                                         </div>
                                       </div>
                                     ) : (
-                                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg">
+                                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-sm">
                                         <IconTrophy className="h-4 w-4" />
-                                        {t.unassigned}
+                                        {headerAwardLabel}
                                       </div>
                                     )}
                                   </div>
@@ -653,7 +701,7 @@ function AwardsManagementPage() {
                                     (painting, index) => (
                                       <div
                                         key={painting.paintingId}
-                                        className={`border border-[#e6e2da] p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30 rounded-lg ${
+                                        className={`border border-[var(--staff-border)] p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 hover:bg-blue-50/30 rounded-sm ${
                                           isExpanded
                                             ? `animate-slide-in-up`
                                             : ""
@@ -678,14 +726,14 @@ function AwardsManagementPage() {
                                                   )
                                               );
                                               return assignedAward ? (
-                                                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium">
-                                                  <IconTrophy className="h-3 w-3" />
-                                                  {t.awarded}
+                                                <div>
+                                                  {/* <IconTrophy className="h-3 w-3" />
+                                                  {t.awarded} */}
                                                 </div>
                                               ) : (
-                                                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium">
-                                                  <IconTrophy className="h-3 w-3" />
-                                                  {t.unassigned}
+                                                <div>
+                                                  {/* <IconTrophy className="h-3 w-3" />
+                                                  {t.unassigned} */}
                                                 </div>
                                               );
                                             })()}
@@ -696,7 +744,7 @@ function AwardsManagementPage() {
                                           {/* Painting Image - Left side with click to view full */}
                                           {painting.imageUrl && (
                                             <div
-                                              className="shrink-0 w-40 h-40 bg-gray-100 overflow-hidden border-2 border-[#e6e2da] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                              className="shrink-0 w-40 h-40 bg-gray-100 overflow-hidden border-2 border-[var(--staff-border)] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                                               onClick={() =>
                                                 setSelectedImage(
                                                   painting.imageUrl
@@ -734,7 +782,7 @@ function AwardsManagementPage() {
                                             </div>
 
                                             {/* Detailed Score Breakdown */}
-                                            <div className="bg-gray-50 border border-[#e6e2da] rounded-lg p-3 mb-4">
+                                            <div className="bg-gray-50 border border-[var(--staff-border)] rounded-sm p-3 mb-4">
                                               <div className="text-xs font-semibold staff-text-primary mb-2">
                                                 {t.scoreBreakdown}:
                                               </div>
@@ -881,12 +929,12 @@ function AwardsManagementPage() {
                                       : "bg-linear-to-r from-yellow-50 to-amber-50 hover:shadow-md"
                                   }`}
                                 >
-                                  <div className="flex items-center justify-between gap-4">
+                                  <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                                     {/* Left side - Trophy, Name, Prize */}
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="flex min-w-0 flex-1 items-start gap-3">
                                       <div className="shrink-0">
                                         <div
-                                          className={`w-12 h-12 flex rounded-full items-center justify-center shadow-sm transition-all duration-300 ${
+                                          className={`flex h-12 w-12 items-center justify-center rounded-full shadow-sm transition-all duration-300 ${
                                             isExpanded
                                               ? "bg-yellow-200 scale-110"
                                               : "bg-yellow-100"
@@ -899,22 +947,27 @@ function AwardsManagementPage() {
                                           />
                                         </div>
                                       </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                          <h3 className="text-lg font-bold text-yellow-900">
+                                      <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                          <h3 className="min-w-0 text-lg leading-tight font-bold text-yellow-900 break-words">
                                             {award.name}
                                           </h3>
-                                          <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-sm font-semibold whitespace-nowrap">
+                                          {currentlyAssignedPainting && (
+                                            <div className="shrink-0 whitespace-nowrap rounded-sm border border-green-300 bg-green-100 px-2 py-1 text-xs font-semibold text-green-800">
+                                              {t.assignedStatus}
+                                            </div>
+                                          )}
+                                          <div className="shrink-0 whitespace-nowrap bg-yellow-100 px-2 py-1 text-sm font-semibold text-yellow-800">
                                             {(() => {
                                               const prizeValue = parseFloat(
                                                 award.prize
                                               );
                                               return isNaN(prizeValue)
-                                                ? "Invalid prize"
+                                                ? t.invalidPrize
                                                 : formatCurrency(prizeValue);
                                             })()}
                                           </div>
-                                          <div className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium whitespace-nowrap">
+                                          <div className="shrink-0 whitespace-nowrap bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
                                             {t.totalVotesLabel}{" "}
                                             {award.totalVotes}
                                           </div>
@@ -923,26 +976,9 @@ function AwardsManagementPage() {
                                     </div>
 
                                     {/* Right side - Assign action and status */}
-                                    <div className="shrink-0 flex items-center gap-3">
+                                    <div className="flex items-center justify-end gap-2 lg:ml-4 lg:gap-3">
                                       {currentlyAssignedPainting ? (
-                                        <div className="flex items-center gap-2">
-                                          {award.totalVotes > 0 &&
-                                            topVotedPainting && (
-                                              <div
-                                                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg ${
-                                                  currentlyAssignedPainting.paintingId ===
-                                                  topVotedPainting.paintingId
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-red-100 text-red-800"
-                                                }`}
-                                              >
-                                                <IconTrophy className="h-4 w-4" />
-                                                {currentlyAssignedPainting.paintingId ===
-                                                topVotedPainting.paintingId
-                                                  ? t.correctStatus
-                                                  : t.mismatchStatus}
-                                              </div>
-                                            )}
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
                                           <button
                                             onClick={() =>
                                               handleRemoveAward(
@@ -951,34 +987,21 @@ function AwardsManagementPage() {
                                             }
                                             disabled={
                                               assignMutation.isPending ||
-                                              removeMutation.isPending ||
-                                              !!(
-                                                award.totalVotes > 0 &&
-                                                topVotedPainting &&
-                                                currentlyAssignedPainting.paintingId ===
-                                                  topVotedPainting.paintingId
-                                              )
+                                              removeMutation.isPending
                                             }
-                                            className="px-2 py-1 staff-btn-outline text-xs font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                            title={
-                                              award.totalVotes > 0 &&
-                                              topVotedPainting &&
-                                              currentlyAssignedPainting.paintingId ===
-                                                topVotedPainting.paintingId
-                                                ? t.cannotRemoveTopVotedTitle
-                                                : t.removeAwardTitle
-                                            }
+                                            className="flex items-center gap-1 rounded-sm px-2 py-1 text-xs font-medium staff-btn-outline transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                            title={t.removeAwardTitle}
                                           >
                                             <IconX className="h-3 w-3" />
                                             {t.remove}
                                           </button>
                                         </div>
                                       ) : (
-                                        <div className="flex items-center gap-2">
-                                          <label className="text-sm font-semibold staff-text-primary">
+                                        <div className="flex flex-wrap items-center justify-end gap-2">
+                                          <label className="whitespace-nowrap text-sm font-semibold staff-text-primary">
                                             {t.assignAward}
                                           </label>
-                                          <div className="flex gap-2">
+                                          <div className="flex flex-wrap justify-end gap-2">
                                             {(() => {
                                               const isAlreadyAssigned =
                                                 prizeAward
@@ -1004,9 +1027,15 @@ function AwardsManagementPage() {
                                                   }
                                                   disabled={
                                                     assignMutation.isPending ||
-                                                    removeMutation.isPending
+                                                    removeMutation.isPending ||
+                                                    !isContestEnded
                                                   }
-                                                  className="px-3 py-1.5 text-sm bg-white hover:bg-gray-50 border border-[#e6e2da] staff-text-primary rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                  title={
+                                                    !isContestEnded
+                                                      ? "Contest must end before awarding"
+                                                      : undefined
+                                                  }
+                                                  className="rounded-sm border border-[var(--staff-border)] bg-white px-3 py-1.5 text-sm whitespace-nowrap staff-text-primary transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
                                                 >
                                                   {award.totalVotes > 0 &&
                                                   topVotedPainting
@@ -1016,17 +1045,17 @@ function AwardsManagementPage() {
                                               ) : award.totalVotes === 0 ? (
                                                 <button
                                                   disabled
-                                                  className="px-3 py-1.5 text-sm bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg cursor-not-allowed"
+                                                  className="cursor-not-allowed rounded-sm border border-[var(--staff-border)] bg-gray-50 px-3 py-1.5 text-sm whitespace-nowrap text-gray-500"
                                                 >
                                                   {t.noVotesYet}
                                                 </button>
                                               ) : isAlreadyAssigned ? (
-                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 border border-green-300 text-green-800 rounded-lg text-sm">
+                                                <div className="flex items-center gap-2 rounded-sm border border-green-300 bg-green-100 px-3 py-1.5 text-sm whitespace-nowrap text-green-800">
                                                   <IconTrophy className="h-4 w-4" />
                                                   {t.assignedStatus}
                                                 </div>
                                               ) : (
-                                                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-[#e6e2da] text-gray-500 rounded-lg text-sm">
+                                                <div className="flex items-center gap-2 rounded-sm border border-[var(--staff-border)] bg-gray-50 px-3 py-1.5 text-sm whitespace-nowrap text-gray-500">
                                                   <IconTrophy className="h-4 w-4" />
                                                   {t.awardSlotsFull}
                                                 </div>
@@ -1035,24 +1064,24 @@ function AwardsManagementPage() {
                                           </div>
                                         </div>
                                       )}
-                                    </div>
 
-                                    <button
-                                      onClick={() =>
-                                        toggleAwardExpansion(award.awardId)
-                                      }
-                                      className={`shrink-0 p-2 transition-all duration-300 border ${
-                                        isExpanded
-                                          ? "bg-yellow-100 border-yellow-300 hover:bg-yellow-200 shadow-md"
-                                          : "hover:bg-yellow-100 border-yellow-200"
-                                      }`}
-                                    >
-                                      <IconChevronDown
-                                        className={`h-4 w-4 text-yellow-600 transition-transform duration-300 ${
-                                          isExpanded ? "rotate-180" : ""
+                                      <button
+                                        onClick={() =>
+                                          toggleAwardExpansion(award.awardId)
+                                        }
+                                        className={`shrink-0 border p-2 transition-all duration-300 ${
+                                          isExpanded
+                                            ? "bg-yellow-100 border-yellow-300 hover:bg-yellow-200 shadow-md"
+                                            : "hover:bg-yellow-100 border-yellow-200"
                                         }`}
-                                      />
-                                    </button>
+                                      >
+                                        <IconChevronDown
+                                          className={`h-4 w-4 text-yellow-600 transition-transform duration-300 ${
+                                            isExpanded ? "rotate-180" : ""
+                                          }`}
+                                        />
+                                      </button>
+                                    </div>
                                   </div>
 
                                   {/* Painting Comparison at Bottom */}
@@ -1132,7 +1161,7 @@ function AwardsManagementPage() {
                                                     2
                                                   ) || "N/A"}
                                                 </div>
-                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-sm">
                                                   {currentlyAssignedVoteCount}{" "}
                                                   {t.votesLabel.toLowerCase()}
                                                 </div>
@@ -1201,7 +1230,7 @@ function AwardsManagementPage() {
                                                     2
                                                   ) || "N/A"}
                                                 </div>
-                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                                                <div className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-sm">
                                                   {t.votesLabel.toLowerCase()}
                                                   {
                                                     topVotedPainting.voteCount
@@ -1315,7 +1344,7 @@ function AwardsManagementPage() {
                                         return (
                                           <div
                                             key={painting.paintingId}
-                                            className={`border border-[#e6e2da] p-4 hover:shadow-md transition-all duration-300 rounded-lg ${
+                                            className={`border border-[var(--staff-border)] p-4 hover:shadow-md transition-all duration-300 rounded-sm ${
                                               isTopVoted
                                                 ? "hover:border-yellow-300 hover:bg-yellow-50/50 ring-1 ring-yellow-200/50"
                                                 : "hover:border-yellow-300 hover:bg-yellow-50/30"
@@ -1332,7 +1361,7 @@ function AwardsManagementPage() {
                                               {/* Painting Image */}
                                               {painting.imageUrl && (
                                                 <div
-                                                  className="shrink-0 w-40 h-40 bg-gray-100 rounded-lg overflow-hidden border-2 border-[#e6e2da] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                                                  className="shrink-0 w-40 h-40 bg-gray-100 rounded-sm overflow-hidden border-2 border-[var(--staff-border)] shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                                                   onClick={() =>
                                                     setSelectedImage(
                                                       painting.imageUrl
@@ -1358,7 +1387,7 @@ function AwardsManagementPage() {
                                                       {isTopVoted &&
                                                         award.totalVotes >
                                                           0 && (
-                                                          <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                                                          <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-sm">
                                                             🏆 {t.topVoted}{" "}
                                                           </div>
                                                         )}
@@ -1382,9 +1411,9 @@ function AwardsManagementPage() {
                                                   </div>
 
                                                   {/* Assignment Status and Actions */}
-                                                  <div className="ml-4 flex flex-col items-end gap-1">
+                                                  {/* <div className="ml-4 flex flex-col items-end gap-1">
                                                     {isAssignedToThisAward ? (
-                                                      <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                                      <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                                         <IconTrophy className="h-3 w-3" />
                                                         {t.currentWinner}
                                                       </div>
@@ -1410,17 +1439,17 @@ function AwardsManagementPage() {
                                                       prizeAward.paintings
                                                         .length >=
                                                         prizeAward.quantity ? (
-                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-sm">
                                                         {t.awardSlotsFull}
                                                       </div>
                                                     ) : (
-                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded">
+                                                      <div className="px-2 py-1 text-xs bg-gray-100 text-gray-500 rounded-sm">
                                                         {
                                                           t.noMatchingAwardStatus
                                                         }
                                                       </div>
                                                     )}
-                                                  </div>
+                                                  </div> */}
                                                 </div>
                                               </div>
                                             </div>
@@ -1451,7 +1480,7 @@ function AwardsManagementPage() {
                 <div className="space-y-4">
                   {/* Awards Summary */}
                   <div className="staff-card p-4 sticky top-4">
-                    <h3 className="text-lg font-semibold staff-text-primary mb-4">
+                    <h3 className="staff-type-section-title staff-text-primary mb-4">
                       {activeTab === "top-paintings"
                         ? t.topAwardsSummary
                         : t.votedAwardsSummary}
@@ -1463,13 +1492,16 @@ function AwardsManagementPage() {
                           disabled={
                             !hasUnassignedTopPaintings ||
                             assignMutation.isPending ||
-                            removeMutation.isPending
+                            removeMutation.isPending ||
+                            !isRound2Completed
                           }
                           className="flex-1 staff-btn-primary flex items-center justify-center px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                           title={
-                            hasUnassignedTopPaintings
-                              ? "Assign all available awards to top paintings"
-                              : "All top paintings are already assigned"
+                            !isRound2Completed
+                              ? t.allRound2EvaluationsMustBeCompletedFirst
+                              : hasUnassignedTopPaintings
+                              ? t.assignAllAvailableAwardsToTopPaintings
+                              : t.allTopPaintingsAreAlreadyAssigned
                           }
                         >
                           <IconTrophy className="h-4 w-4 mr-2" />
@@ -1485,8 +1517,8 @@ function AwardsManagementPage() {
                           className="flex-1 staff-btn-outline flex items-center justify-center px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                           title={
                             hasAssignedAwards
-                              ? "Remove all awards from paintings"
-                              : "No awards are currently assigned"
+                              ? t.removeAllAwardsFromPaintingsTooltip
+                              : t.noAwardsAreCurrentlyAssigned
                           }
                         >
                           <IconX className="h-4 w-4 mr-2" />
@@ -1507,7 +1539,7 @@ function AwardsManagementPage() {
                               return (
                                 <div
                                   key={award.awardId}
-                                  className={`p-4 rounded-lg border-2 ${
+                                  className={`p-4 rounded-sm border-2 ${
                                     isFull
                                       ? "bg-green-50 border-green-300"
                                       : "bg-blue-50 border-blue-300"
@@ -1531,7 +1563,7 @@ function AwardsManagementPage() {
                                             award.prize
                                           );
                                           return isNaN(prizeValue)
-                                            ? "Invalid prize"
+                                            ? t.invalidPrize
                                             : formatCurrency(prizeValue);
                                         })()}
                                       </div>
@@ -1543,7 +1575,7 @@ function AwardsManagementPage() {
                                         </div>
                                       </div>
                                       {isFull && (
-                                        <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                        <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                           {t.completeStatus}
                                         </div>
                                       )}
@@ -1592,7 +1624,7 @@ function AwardsManagementPage() {
                             return (
                               <div
                                 key={award.awardId}
-                                className={`p-4 rounded-lg border-2 ${
+                                className={`p-4 rounded-sm border-2 ${
                                   hasMismatch && award.totalVotes === 0
                                     ? "bg-orange-50 border-orange-300"
                                     : hasMismatch && award.totalVotes > 0
@@ -1624,7 +1656,7 @@ function AwardsManagementPage() {
                                           award.prize
                                         );
                                         return isNaN(prizeValue)
-                                          ? "Invalid prize"
+                                          ? t.invalidPrize
                                           : formatCurrency(prizeValue);
                                       })()}
                                     </div>
@@ -1644,17 +1676,17 @@ function AwardsManagementPage() {
                                       </div>
                                     </div>
                                     {hasMismatch && award.totalVotes === 0 && (
-                                      <div className="mt-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">
+                                      <div className="mt-2 px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-sm">
                                         {t.noVotesYet}
                                       </div>
                                     )}
                                     {hasMismatch && award.totalVotes > 0 && (
-                                      <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+                                      <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-sm">
                                         {t.mismatchStatus}
                                       </div>
                                     )}
                                     {isFull && !hasMismatch && (
-                                      <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                                      <div className="mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-sm">
                                         {t.completeStatus}
                                       </div>
                                     )}
@@ -1666,8 +1698,8 @@ function AwardsManagementPage() {
                     </div>
 
                     {/* Overall Progress */}
-                    <div className="mt-6 pt-4 border-t border-[#e6e2da]">
-                      <div className="flex justify-between text-sm mb-2">
+                    <div className="mt-6 pt-4]">
+                      {/* <div className="flex justify-between text-sm mb-2">
                         <span className="staff-text-primary font-medium">
                           {t.overallProgress}
                         </span>
@@ -1691,22 +1723,71 @@ function AwardsManagementPage() {
                                 : "0%",
                           }}
                         ></div>
-                      </div>
+                      </div> */}
                       {activeTab === "vote-results" && mismatchCount > 0 && (
-                        <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+                        <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-sm">
                           {mismatchCount} {t.mismatchesFound}
                         </div>
                       )}
                       {allAwardSlotsFilled &&
                         (activeTab !== "vote-results" ||
                           mismatchCount === 0) && (
-                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-sm">
                             <div className="flex items-center gap-2 text-green-800 text-sm font-medium">
                               <IconTrophy className="h-4 w-4" />
                               {t.allAwardsAssignedReady}
                             </div>
                           </div>
                         )}
+                        
+                      {/* Announce Buttons - Specific to active tab */}
+                      {activeTab === "top-paintings" && (
+                        <div className="mt-4 border-t border-[var(--staff-border)] pt-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isTopAnnounceDisabled) return;
+                              router.push(
+                                `/dashboard/staff/contests/awards/announce?id=${contestId}&type=top`
+                              );
+                            }}
+                            disabled={isTopAnnounceDisabled}
+                            className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                              !isTopAwardsFullyAssigned
+                                ? t.allTopAwardsMustBeAssignedBeforeAnnouncing
+                                : t.announceResults
+                            }
+                          >
+                            <IconSpeakerphone className="h-4 w-4" />
+                            <span className="ml-2">{t.announceResults}</span>
+                          </button>
+                        </div>
+                      )}
+                      
+                      {activeTab === "vote-results" && (
+                        <div className="mt-4 border-t border-[var(--staff-border)] pt-4">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (isVoteAnnounceDisabled) return;
+                              router.push(
+                                `/dashboard/staff/contests/awards/announce?id=${contestId}&type=vote`
+                              );
+                            }}
+                            disabled={isVoteAnnounceDisabled}
+                            className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={
+                              !isVoteAwardsFullyAssigned
+                                ? t.allVoteAwardsMustBeAssignedBeforeAnnouncing
+                                : t.announceResults
+                            }
+                          >
+                            <IconSpeakerphone className="h-4 w-4" />
+                            <span className="ml-2">{t.announceResults}</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1722,12 +1803,12 @@ function AwardsManagementPage() {
         onOpenChange={() => setSelectedImage(null)}
       >
         <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0">
-          <DialogTitle className="sr-only">Full Image View</DialogTitle>
+          <DialogTitle className="sr-only">{t.fullImageView}</DialogTitle>
           <div className="relative">
             {selectedImage && (
               <img
                 src={selectedImage}
-                alt="Full size painting"
+                alt={t.fullSizePainting}
                 className="w-full h-auto max-h-[85vh] object-contain"
               />
             )}

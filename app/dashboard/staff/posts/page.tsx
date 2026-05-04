@@ -155,7 +155,7 @@ export default function PostsPage() {
       <SidebarInset>
         <SiteHeader title={t.postsManagement} />
         <div className="flex flex-1 flex-col">
-          <div className="px-4 lg:px-6 py-2 border-b border-[#e6e2da] bg-white">
+          <div className="staff-page-header">
             <Breadcrumb
               items={[{ label: t.postsManagement }]}
               homeHref="/dashboard/staff"
@@ -166,17 +166,17 @@ export default function PostsPage() {
               {/* Page Header */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold staff-text-primary">
+                  <h2 className="staff-type-page-title staff-text-primary">
                     {t.postsManagement} ({totalPosts})
                   </h2>
-                  <p className="text-sm staff-text-secondary mt-1">
+                  {/* <p className="text-sm staff-text-secondary mt-1">
                     {t.manageArtCompetitions}
-                  </p>
-                  <p className="text-xs staff-text-secondary mt-1">
+                  </p> */}
+                  {/* <p className="text-xs staff-text-secondary mt-1">
                     💡 <strong>{t.archivedStatus}</strong>{" "}
                     {t.archivedStatus.toLowerCase()} old content accessible but
                     hidden from main listings for better organization
-                  </p>
+                  </p> */}
                 </div>
                 <Link
                   href="/dashboard/staff/posts/create"
@@ -193,7 +193,7 @@ export default function PostsPage() {
                   {
                     title: t.totalPosts,
                     value: totalPosts,
-                    subtitle: t.allContent,
+                    // subtitle: t.allContent,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "info",
                   },
@@ -201,7 +201,7 @@ export default function PostsPage() {
                     title: t.publishedStatus,
                     value: posts.filter((p: Post) => p.status === "PUBLISHED")
                       .length,
-                    subtitle: t.liveContent,
+                    // subtitle: t.liveContent,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "warning",
                   },
@@ -209,7 +209,7 @@ export default function PostsPage() {
                     title: t.drafts,
                     value: posts.filter((p: Post) => p.status === "DRAFT")
                       .length,
-                    subtitle: t.workInProgress,
+                    // subtitle: t.workInProgress,
                     icon: <IconFileText className="h-6 w-6" />,
                     variant: "success",
                   },
@@ -222,7 +222,7 @@ export default function PostsPage() {
                         )
                       )
                     ).length,
-                    subtitle: t.uniqueTags,
+                    // subtitle: t.uniqueTags,
                     icon: <IconEye className="h-6 w-6" />,
                     variant: "primary",
                   },
@@ -232,13 +232,12 @@ export default function PostsPage() {
               {/* Search and Filters */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                  <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
+                   <input
                     type="text"
                     placeholder={t.searchPostsPlaceholder}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-[var(--staff-border)]  focus:outline-none staff-field"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -248,7 +247,7 @@ export default function PostsPage() {
                     onChange={(e) =>
                       setSelectedStatus(e.target.value as PostStatus | "ALL")
                     }
-                    className="px-4 py-2 border border-[#e6e2da]  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="staff-select"
                   >
                     {statusOptions.map((status) => (
                       <option key={status} value={status}>
@@ -313,7 +312,7 @@ export default function PostsPage() {
                                         src={post.image_url}
                                         alt={post.title}
                                         fill
-                                        className="object-cover rounded"
+                                        className="object-cover rounded-sm"
                                       />
                                     </div>
                                   )}
@@ -337,13 +336,13 @@ export default function PostsPage() {
                                         .map((postTag) => (
                                           <span
                                             key={postTag.tag_id}
-                                            className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded"
+                                            className="inline-flex px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-sm"
                                           >
                                             {postTag.tag.tag_name}
                                           </span>
                                         ))}
                                       {post.postTags.length > 3 && (
-                                        <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+                                        <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-sm">
                                           +{post.postTags.length - 3}{" "}
                                           {t.moreTags}
                                         </span>
@@ -358,7 +357,7 @@ export default function PostsPage() {
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
-                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded ${getStatusBadgeColor(
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-sm ${getStatusBadgeColor(
                                     post.status
                                   )}`}
                                 >
@@ -387,18 +386,18 @@ export default function PostsPage() {
                                 <div className="flex items-center justify-end gap-2">
                                   <Link
                                     href={`/dashboard/staff/posts/${post.post_id}`}
-                                    className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                                    className="staff-btn-icon-primary"
                                     title="View Details"
                                   >
                                     <IconEye className="h-4 w-4" />
                                   </Link>
-                                  <Link
+                                  {/* <Link
                                     href={`/dashboard/staff/posts/create?id=${post.post_id}`}
-                                    className="staff-text-secondary hover:staff-text-primary p-1 rounded hover:bg-gray-50 transition-colors"
+                                    className="staff-btn-icon-neutral"
                                     title="Edit"
                                   >
                                     <IconEdit className="h-4 w-4" />
-                                  </Link>
+                                  </Link> */}
                                   {post.status === "DRAFT" && (
                                     <button
                                       onClick={() =>
@@ -407,7 +406,7 @@ export default function PostsPage() {
                                           "PUBLISHED"
                                         )
                                       }
-                                      className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition-colors"
+                                      className="staff-btn-icon-success"
                                       title="Publish"
                                       disabled={
                                         updatePostStatusMutation.isPending
@@ -424,7 +423,7 @@ export default function PostsPage() {
                                           "ARCHIVED"
                                         )
                                       }
-                                      className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50 transition-colors"
+                                      className="staff-btn-icon-warning"
                                       title="Archive"
                                       disabled={
                                         updatePostStatusMutation.isPending
@@ -437,7 +436,7 @@ export default function PostsPage() {
                                     onClick={() =>
                                       handleDeletePost(post.post_id)
                                     }
-                                    className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                                    className="staff-btn-icon-danger"
                                     title="Delete"
                                     disabled={deletePostMutation.isPending}
                                   >
@@ -467,7 +466,7 @@ export default function PostsPage() {
                         setPageSize(Number(e.target.value));
                         setCurrentPage(1); // Reset to first page when changing page size
                       }}
-                      className="px-2 py-1 border border-[#e6e2da] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      className="px-2 py-1 border border-[var(--staff-border)] focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)] text-sm"
                     >
                       <option value={5}>5</option>
                       <option value={10}>10</option>
@@ -487,7 +486,7 @@ export default function PostsPage() {
                   <button
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="First page"
                   >
                     <IconChevronsLeft className="h-4 w-4" />
@@ -497,7 +496,7 @@ export default function PostsPage() {
                       setCurrentPage((prev) => Math.max(1, prev - 1))
                     }
                     disabled={currentPage === 1}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="Previous page"
                   >
                     <IconChevronLeft className="h-4 w-4" />
@@ -512,7 +511,7 @@ export default function PostsPage() {
                       setCurrentPage((prev) => Math.min(totalPages, prev + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="Next page"
                   >
                     <IconChevronRight className="h-4 w-4" />
@@ -520,7 +519,7 @@ export default function PostsPage() {
                   <button
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="p-1 border border-[#e6e2da] hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="staff-pagination-btn"
                     title="Last page"
                   >
                     <IconChevronsRight className="h-4 w-4" />

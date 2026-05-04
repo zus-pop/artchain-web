@@ -9,6 +9,7 @@ export interface ScheduleDTO {
   task: string;
   date: string;
   status: string;
+  round2Table?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +20,7 @@ export interface CreateScheduleRequest {
   task: string;
   date: string;
   status: string;
+  round2Table?: string;
 }
 
 export interface UpdateScheduleRequest {
@@ -27,6 +29,7 @@ export interface UpdateScheduleRequest {
   task: string;
   date: string;
   status: string;
+  round2Table?: string;
 }
 
 export interface ScheduleResponseDTO {
