@@ -652,6 +652,8 @@ export const translations = {
       "Không tìm thấy nhà tài trợ nào phù hợp với tiêu chí của bạn",
     showingSponsors: "Hiển thị",
     sponsors: "nhà tài trợ",
+    paidStatus: "Đã thanh toán",
+    pendingStatus: "Chờ thanh toán",
 
     // Edit Campaign
     editCampaignTitle: "Chỉnh Sửa Chiến Dịch",
@@ -681,6 +683,10 @@ export const translations = {
     // Campaign Success/Error Messages
     campaignUpdatedSuccessMessage: "Chiến dịch đã được cập nhật thành công!",
     failedUpdateCampaignMessage: "Không thể cập nhật chiến dịch",
+    publishCampaign: "Công khai chiến dịch",
+    completeCampaign: "Kết thúc chiến dịch",
+    publishingCampaign: "Đang công khai...",
+    completingCampaign: "Đang kết thúc...",
 
     // Create Campaign
     createSponsorshipCampaign: "Tạo Chiến Dịch Tài Trợ",
@@ -733,6 +739,10 @@ export const translations = {
     exhibitions: "triển lãm",
     activate: "Kích Hoạt",
     complete: "Hoàn Thành",
+    publishExhibition: "Công khai triển lãm",
+    hideExhibition: "Ẩn triển lãm",
+    publishingExhibition: "Đang công khai...",
+    hidingExhibition: "Đang ẩn...",
 
     // Exhibition Detail
     exhibitionDetail: "Chi Tiết Triển Lãm",
@@ -1948,6 +1958,8 @@ export const translations = {
     noSponsorsFound: "No sponsors found matching your criteria",
     showingSponsors: "Showing",
     sponsors: "sponsors",
+    paidStatus: "Paid",
+    pendingStatus: "Pending",
 
     // Edit Campaign
     editCampaignTitle: "Edit Campaign",
@@ -1978,6 +1990,10 @@ export const translations = {
     // Campaign Success/Error Messages
     campaignUpdatedSuccessMessage: "Campaign updated successfully!",
     failedUpdateCampaignMessage: "Failed to update campaign",
+    publishCampaign: "Publish Campaign",
+    completeCampaign: "Complete Campaign",
+    publishingCampaign: "Publishing...",
+    completingCampaign: "Completing...",
 
     // Create Campaign
     createSponsorshipCampaign: "Create Sponsorship Campaign",
@@ -2030,6 +2046,10 @@ export const translations = {
     exhibitions: "exhibitions",
     activate: "Activate",
     complete: "Complete",
+    publishExhibition: "Publish Exhibition",
+    hideExhibition: "Hide Exhibition",
+    publishingExhibition: "Publishing...",
+    hidingExhibition: "Hiding...",
 
     // Exhibition Detail
     exhibitionDetail: "Exhibition Detail",

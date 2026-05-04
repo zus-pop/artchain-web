@@ -35,7 +35,6 @@ const exhibitionSchema = z
       .string()
       .min(1, "Description is required")
       .max(500, "Description must be less than 500 characters"),
-    status: z.enum(["DRAFT", "ACTIVE", "COMPLETED", "CANCEL"]),
   });
 
 type ExhibitionFormData = z.infer<typeof exhibitionSchema>;
@@ -62,7 +61,6 @@ export default function EditExhibitionPage({
     defaultValues: {
       name: "",
       description: "",
-      status: "DRAFT",
     },
   });
 
@@ -81,7 +79,6 @@ export default function EditExhibitionPage({
       reset({
         name: exhibition.name,
         description: exhibition.description,
-        status: exhibition.status,
       });
     }
   }, [exhibition, reset]);
@@ -99,12 +96,6 @@ export default function EditExhibitionPage({
     }
   };
 
-  const statusOptions: ExhibitionStatus[] = [
-    "DRAFT",
-    "ACTIVE",
-    "COMPLETED",
-    "CANCEL",
-  ];
 
   if (isLoading) {
     return (
@@ -291,21 +282,6 @@ export default function EditExhibitionPage({
 
 
 
-                          <div>
-                            <label className="staff-type-label staff-text-primary mb-2 block">
-                              {t.statusLabel}
-                            </label>
-                            <select
-                              {...register("status")}
-                              className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none staff-field transition-colors"
-                            >
-                              {statusOptions.map((status) => (
-                                <option key={status} value={status}>
-                                  {status}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
                         </div>
 
                         {/* Form Actions */}

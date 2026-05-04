@@ -1,6 +1,10 @@
 "use client";
 
-import { useDeleteExhibition, useGetExhibitionById } from "@/apis/exhibition";
+import {
+  useDeleteExhibition,
+  useGetExhibitionById,
+  useUpdateExhibition,
+} from "@/apis/exhibition";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { SiteHeader } from "@/components/site-header";
 import { StaffSidebar } from "@/components/staff-sidebar";
@@ -20,6 +24,8 @@ import {
   IconPlus,
   IconTrash,
   IconTrophy,
+  IconCircleCheck,
+  IconEyeOff,
 } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -42,7 +48,17 @@ export default function ExhibitionDetailPage({
   // Delete mutation
   const deleteExhibitionMutation = useDeleteExhibition();
 
+  // Status update mutation
+  const updateExhibitionMutation = useUpdateExhibition();
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const handleUpdateStatus = (newStatus: ExhibitionStatus) => {
+    updateExhibitionMutation.mutate({
+      exhibitionId: id,
+      status: newStatus,
+    });
+  };
 
   const handleDeleteExhibition = async () => {
     deleteExhibitionMutation.mutate(id, {
@@ -188,7 +204,7 @@ export default function ExhibitionDetailPage({
                             <div
                               className={`w-2 h-2 rounded-full ${
                                 exhibition.status === "ACTIVE"
-                                  ? "bg-green-500"
+                                  ? "bg-green-200"
                                   : exhibition.status === "COMPLETED"
                                   ? "bg-blue-500"
                                   : exhibition.status === "DRAFT"
@@ -229,14 +245,44 @@ export default function ExhibitionDetailPage({
                           <IconEdit className="h-4 w-4" />
                           {t.editExhibition}
                         </Link>
-                        <button
-                          onClick={() => setIsDeleteDialogOpen(true)}
-                          className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
-                          disabled={deleteExhibitionMutation.isPending}
-                        >
-                          <IconTrash className="h-4 w-4" />
-                          {t.deleteExhibition}
-                        </button>
+                        
+                        {exhibition.status === "DRAFT" ? (
+                          <button
+                            onClick={() => handleUpdateStatus("ACTIVE")}
+                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
+                            disabled={updateExhibitionMutation.isPending}
+                          >
+                            <IconCircleCheck className="h-4 w-4" />
+                            {updateExhibitionMutation.isPending &&
+                            updateExhibitionMutation.variables?.status ===
+                              "ACTIVE"
+                              ? t.publishingExhibition
+                              : t.publishExhibition}
+                          </button>
+                        ) : exhibition.status === "ACTIVE" ? (
+                          <button
+                            onClick={() => handleUpdateStatus("DRAFT")}
+                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer bg-amber-600 hover:bg-amber-700 border-amber-600 hover:border-amber-700"
+                            disabled={updateExhibitionMutation.isPending}
+                          >
+                            <IconEyeOff className="h-4 w-4" />
+                            {updateExhibitionMutation.isPending &&
+                            updateExhibitionMutation.variables?.status ===
+                              "DRAFT"
+                              ? t.hidingExhibition
+                              : t.hideExhibition}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setIsDeleteDialogOpen(true)}
+                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
+                            disabled={deleteExhibitionMutation.isPending}
+                          >
+                            <IconTrash className="h-4 w-4" />
+                            {t.deleteExhibition}
+                          </button>
+                        )}
+
                         <Link
                           href={`/dashboard/staff/exhibitions/${exhibition.exhibitionId}/3d`}
                           className="col-span-2 bg-linear-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"

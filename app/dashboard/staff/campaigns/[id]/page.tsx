@@ -9,15 +9,19 @@ import {
   IconFilter,
   IconSearch,
   IconEdit,
+  IconCircleCheck,
+  IconPlayerStop,
 } from "@tabler/icons-react";
 import { useState, use } from "react";
-import { getCampaignSponsors } from "@/apis/staff";
+import { getCampaignSponsors, updateStaffCampaign } from "@/apis/staff";
 import { getCampaign } from "@/apis/campaign";
 import { CampaignAPIResponse } from "@/types/campaign";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useLanguageStore } from "@/store/language-store";
 import { useTranslation } from "@/lib/i18n";
+import { toast } from "sonner";
+import { AxiosError } from "axios";
 
 interface Sponsor {
   sponsorId: number;
@@ -55,8 +59,27 @@ export default function CampaignDetailPage({
 
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
+  const queryClient = useQueryClient();
 
   const statusOptions = ["ALL", "PENDING", "PAID"];
+
+  // Status update mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: (newStatus: string) =>
+      updateStaffCampaign(id, { status: newStatus as any }),
+    onSuccess: () => {
+      toast.success(t.campaignUpdatedSuccessMessage);
+      queryClient.invalidateQueries({ queryKey: ["campaign", id] });
+    },
+    onError: (error: any) => {
+      const message = error.message || t.failedUpdateCampaignMessage;
+      toast.error(message);
+    },
+  });
+
+  const handleUpdateStatus = (newStatus: string) => {
+    updateStatusMutation.mutate(newStatus);
+  };
 
   // React Query for campaign data
   const {
@@ -164,15 +187,44 @@ export default function CampaignDetailPage({
                     </p> */}
                   </div>
                 </div>
-                {campaignData && (
-                  <Link
-                    href={`/dashboard/staff/campaigns/${id}/edit`}
-                    className="staff-btn-primary flex items-center gap-2"
-                  >
-                    <IconEdit className="h-4 w-4" />
-                    {t.editCampaignTitle}
-                  </Link>
-                )}
+                <div className="flex items-center gap-2">
+                  {campaignData?.status === "DRAFT" && (
+                    <>
+                      <Link
+                        href={`/dashboard/staff/campaigns/${id}/edit`}
+                        className="staff-btn-outline flex items-center gap-2"
+                      >
+                        <IconEdit className="h-4 w-4" />
+                        {t.editCampaignTitle}
+                      </Link>
+                      <button
+                        onClick={() => handleUpdateStatus("ACTIVE")}
+                        disabled={updateStatusMutation.isPending}
+                        className="staff-btn-primary flex items-center gap-2"
+                      >
+                        <IconCircleCheck className="h-4 w-4" />
+                        {updateStatusMutation.isPending &&
+                        updateStatusMutation.variables === "ACTIVE"
+                          ? t.publishingCampaign
+                          : t.publishCampaign}
+                      </button>
+                    </>
+                  )}
+
+                  {campaignData?.status === "ACTIVE" && (
+                    <button
+                      onClick={() => handleUpdateStatus("COMPLETED")}
+                      disabled={updateStatusMutation.isPending}
+                      className="staff-btn-primary flex items-center gap-2 bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700"
+                    >
+                      <IconPlayerStop className="h-4 w-4" />
+                      {updateStatusMutation.isPending &&
+                      updateStatusMutation.variables === "COMPLETED"
+                        ? t.completingCampaign
+                        : t.completeCampaign}
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Campaign Information */}
@@ -378,7 +430,11 @@ export default function CampaignDetailPage({
                       >
                         {statusOptions.map((status) => (
                           <option key={status} value={status}>
-                            {status}
+                            {status === "ALL"
+                              ? t.all
+                              : status === "PAID"
+                              ? t.paidStatus
+                              : t.pendingStatus}
                           </option>
                         ))}
                       </select>
@@ -464,7 +520,9 @@ export default function CampaignDetailPage({
                                       sponsor.status
                                     )}`}
                                   >
-                                    {sponsor.status}
+                                    {sponsor.status === "PAID"
+                                      ? t.paidStatus
+                                      : t.pendingStatus}
                                   </span>
                                 </td>
                                 {/* <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

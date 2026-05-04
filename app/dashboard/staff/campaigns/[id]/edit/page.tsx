@@ -275,7 +275,6 @@ export default function EditCampaignPage({
       description: formData.description.trim(),
       goalAmount: goalAmountValue,
       deadline: formData.deadline,
-      status: formData.status as CampaignStatus,
       tiers: tiersPayload,
       ...(selectedImage && { image: selectedImage }),
     };
@@ -463,24 +462,6 @@ export default function EditCampaignPage({
                           />
                         </div>
 
-                        <div>
-                          <label className="staff-type-label staff-text-primary mb-2 block">
-                            {t.statusRequiredEdit}
-                          </label>
-                          <select
-                            value={formData.status}
-                            onChange={(e) =>
-                              handleInputChange("status", e.target.value)
-                            }
-                            className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--staff-primary)]"
-                          >
-                            <option value="DRAFT">Draft</option>
-                            <option value="ACTIVE">Active</option>
-                            <option value="PAUSED">Paused</option>
-                            <option value="COMPLETED">Completed</option>
-                            <option value="CANCELLED">Cancelled</option>
-                          </select>
-                        </div>
                       </div>
                     </div>
 
