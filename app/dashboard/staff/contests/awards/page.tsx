@@ -421,7 +421,7 @@ function AwardsManagementPage() {
     >
       <StaffSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader title={`${contest?.title || "Contest"}`} />
+        <SiteHeader title={`${contest?.title || t.contest}`} />
         <div className="flex flex-1 flex-col">
           <div className="staff-page-header">
             <Breadcrumb
@@ -431,7 +431,7 @@ function AwardsManagementPage() {
                   href: "/dashboard/staff/contests",
                 },
                 {
-                  label: contest?.title || "Contest Detail",
+                  label: contest?.title || t.contestDetail,
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
                 { label: t.awardsBreadcrumb },
@@ -451,13 +451,13 @@ function AwardsManagementPage() {
                       )
                     }
                     className="staff-btn-outline p-2"
-                    title="Back to Contest"
+                    title={t.backToContestTooltip}
                   >
                     <IconArrowLeft className="h-4 w-4" />
                   </button>
                   <div>
                     <h2 className="text-xl font-bold staff-text-primary">
-                      {t.awardAssignment} - {contest?.title || "Contest"}
+                      {t.awardAssignment} - {contest?.title || t.contest}
                     </h2>
                     <p className="text-sm staff-text-secondary mt-1">
                       {assignedSlots} / {totalAwardSlots} {t.slotsFilled}
@@ -655,7 +655,7 @@ function AwardsManagementPage() {
                                                 headerAward.prize
                                               );
                                               return isNaN(prizeValue)
-                                                ? "Invalid prize"
+                                                ? t.invalidPrize
                                                 : formatCurrency(prizeValue);
                                             })()}
                                           </div>
@@ -726,14 +726,14 @@ function AwardsManagementPage() {
                                                   )
                                               );
                                               return assignedAward ? (
-                                                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium">
-                                                  <IconTrophy className="h-3 w-3" />
-                                                  {t.awarded}
+                                                <div>
+                                                  {/* <IconTrophy className="h-3 w-3" />
+                                                  {t.awarded} */}
                                                 </div>
                                               ) : (
-                                                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium">
-                                                  <IconTrophy className="h-3 w-3" />
-                                                  {t.unassigned}
+                                                <div>
+                                                  {/* <IconTrophy className="h-3 w-3" />
+                                                  {t.unassigned} */}
                                                 </div>
                                               );
                                             })()}
@@ -963,7 +963,7 @@ function AwardsManagementPage() {
                                                 award.prize
                                               );
                                               return isNaN(prizeValue)
-                                                ? "Invalid prize"
+                                                ? t.invalidPrize
                                                 : formatCurrency(prizeValue);
                                             })()}
                                           </div>
@@ -1498,10 +1498,10 @@ function AwardsManagementPage() {
                           className="flex-1 staff-btn-primary flex items-center justify-center px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                           title={
                             !isRound2Completed
-                              ? "All Round 2 evaluations must be completed first"
+                              ? t.allRound2EvaluationsMustBeCompletedFirst
                               : hasUnassignedTopPaintings
-                              ? "Assign all available awards to top paintings"
-                              : "All top paintings are already assigned"
+                              ? t.assignAllAvailableAwardsToTopPaintings
+                              : t.allTopPaintingsAreAlreadyAssigned
                           }
                         >
                           <IconTrophy className="h-4 w-4 mr-2" />
@@ -1517,8 +1517,8 @@ function AwardsManagementPage() {
                           className="flex-1 staff-btn-outline flex items-center justify-center px-3 py-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                           title={
                             hasAssignedAwards
-                              ? "Remove all awards from paintings"
-                              : "No awards are currently assigned"
+                              ? t.removeAllAwardsFromPaintingsTooltip
+                              : t.noAwardsAreCurrentlyAssigned
                           }
                         >
                           <IconX className="h-4 w-4 mr-2" />
@@ -1563,7 +1563,7 @@ function AwardsManagementPage() {
                                             award.prize
                                           );
                                           return isNaN(prizeValue)
-                                            ? "Invalid prize"
+                                            ? t.invalidPrize
                                             : formatCurrency(prizeValue);
                                         })()}
                                       </div>
@@ -1656,7 +1656,7 @@ function AwardsManagementPage() {
                                           award.prize
                                         );
                                         return isNaN(prizeValue)
-                                          ? "Invalid prize"
+                                          ? t.invalidPrize
                                           : formatCurrency(prizeValue);
                                       })()}
                                     </div>
@@ -1755,12 +1755,12 @@ function AwardsManagementPage() {
                             className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={
                               !isTopAwardsFullyAssigned
-                                ? "All top awards must be assigned before announcing"
-                                : "Công Bố Giải Thưởng"
+                                ? t.allTopAwardsMustBeAssignedBeforeAnnouncing
+                                : t.announceResults
                             }
                           >
                             <IconSpeakerphone className="h-4 w-4" />
-                            <span className="ml-2">Công Bố Giải Thưởng</span>
+                            <span className="ml-2">{t.announceResults}</span>
                           </button>
                         </div>
                       )}
@@ -1779,12 +1779,12 @@ function AwardsManagementPage() {
                             className="w-full staff-btn-primary flex items-center justify-center px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={
                               !isVoteAwardsFullyAssigned
-                                ? "All vote awards must be assigned before announcing"
-                                : "Công Bố Giải Thưởng"
+                                ? t.allVoteAwardsMustBeAssignedBeforeAnnouncing
+                                : t.announceResults
                             }
                           >
                             <IconSpeakerphone className="h-4 w-4" />
-                            <span className="ml-2">Công Bố Giải Thưởng</span>
+                            <span className="ml-2">{t.announceResults}</span>
                           </button>
                         </div>
                       )}
@@ -1803,12 +1803,12 @@ function AwardsManagementPage() {
         onOpenChange={() => setSelectedImage(null)}
       >
         <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0">
-          <DialogTitle className="sr-only">Full Image View</DialogTitle>
+          <DialogTitle className="sr-only">{t.fullImageView}</DialogTitle>
           <div className="relative">
             {selectedImage && (
               <img
                 src={selectedImage}
-                alt="Full size painting"
+                alt={t.fullSizePainting}
                 className="w-full h-auto max-h-[85vh] object-contain"
               />
             )}

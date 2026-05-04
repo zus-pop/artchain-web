@@ -1262,6 +1262,24 @@ export const translations = {
     color: "Màu Sắc",
     technical: "Kỹ Thuật",
     aesthetic: "Thẩm Mỹ",
+    allRound2EvaluationsMustBeCompletedFirst:
+      "Tất cả các đánh giá vòng 2 phải được hoàn thành trước",
+    assignAllAvailableAwardsToTopPaintings:
+      "Gán tất cả giải thưởng hiện có cho các bức tranh hàng đầu",
+    allTopPaintingsAreAlreadyAssigned:
+      "Tất cả các bức tranh hàng đầu đã được gán giải thưởng",
+    removeAllAwardsFromPaintingsTooltip:
+      "Gỡ bỏ tất cả giải thưởng khỏi các bức tranh",
+    noAwardsAreCurrentlyAssigned: "Hiện chưa có giải thưởng nào được gán",
+    invalidPrize: "Giải thưởng không hợp lệ",
+    allTopAwardsMustBeAssignedBeforeAnnouncing:
+      "Tất cả giải thưởng hàng đầu phải được gán trước khi công bố",
+    allVoteAwardsMustBeAssignedBeforeAnnouncing:
+      "Tất cả giải thưởng bình chọn phải được gán trước khi công bố",
+    fullImageView: "Xem ảnh đầy đủ",
+    fullSizePainting: "Ảnh gốc của bức tranh",
+    backToContestTooltip: "Quay lại cuộc thi",
+    contestDetail: "Chi tiết cuộc thi",
 
     // Admin Accounts Management
     accountManagement: "Quản Lý Tài Khoản",
@@ -2561,6 +2579,22 @@ export const translations = {
     color: "Color",
     technical: "Technical",
     aesthetic: "Aesthetic",
+    allRound2EvaluationsMustBeCompletedFirst:
+      "All Round 2 evaluations must be completed first",
+    assignAllAvailableAwardsToTopPaintings:
+      "Assign all available awards to top paintings",
+    allTopPaintingsAreAlreadyAssigned: "All top paintings are already assigned",
+    removeAllAwardsFromPaintingsTooltip: "Remove all awards from paintings",
+    noAwardsAreCurrentlyAssigned: "No awards are currently assigned",
+    invalidPrize: "Invalid prize",
+    allTopAwardsMustBeAssignedBeforeAnnouncing:
+      "All top awards must be assigned before announcing",
+    allVoteAwardsMustBeAssignedBeforeAnnouncing:
+      "All vote awards must be assigned before announcing",
+    fullImageView: "Full Image View",
+    fullSizePainting: "Full size painting",
+    backToContestTooltip: "Back to Contest",
+    contestDetail: "Contest Detail",
 
     // Admin Accounts Management
     accountManagement: "Account Management",
