@@ -2,6 +2,7 @@
 
 import {
   acceptMultipleSubmissions,
+  getStaffContestById,
   getStaffRoundById,
   getStaffSubmissions,
   rejectStaffSubmission,
@@ -91,7 +92,16 @@ function RoundDetailContent() {
     enabled: !!contestId && !!roundId,
   });
 
+  // Fetch contest details (for breadcrumb title)
+  const { data: contestData } = useQuery({
+    queryKey: ["staff-contest", contestId],
+    queryFn: () => getStaffContestById(Number(contestId)),
+    enabled: !!contestId,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const round: RoundDTO = roundData?.data;
+  const contestTitle: string = contestData?.data?.title || "";
 
   // Set default status based on round name
   useEffect(() => {
@@ -503,7 +513,7 @@ function RoundDetailContent() {
                   href: "/dashboard/staff/contests",
                 },
                 {
-                  label: t.contestDetailBreadcrumb,
+                  label: contestTitle || t.contestDetailBreadcrumb,
                   href: `/dashboard/staff/contests/detail?id=${contestId}`,
                 },
                 { label: t.roundDetailBreadcrumb },
