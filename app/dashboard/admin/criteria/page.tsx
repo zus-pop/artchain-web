@@ -378,6 +378,7 @@ export default function CriteriaPage() {
               <Input
                 id="maxScore"
                 type="number"
+                min={1}
                 {...form.register("maxScore", { valueAsNumber: true })}
               />
               {form.formState.errors.maxScore && (
@@ -441,6 +442,7 @@ export default function CriteriaPage() {
               <Input
                 id="edit-maxScore"
                 type="number"
+                min={1}
                 {...form.register("maxScore", { valueAsNumber: true })}
               />
               {form.formState.errors.maxScore && (

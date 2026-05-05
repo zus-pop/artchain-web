@@ -709,7 +709,8 @@ function AuctionDetailContent() {
                       <label className="text-xs font-black uppercase tracking-widest text-gray-400">Thời lượng (Phút)</label>
                       <input
                         type="number"
-                        value={editForm.auctionDurationMinutes}
+                        min={1}
+                        value={editForm.auctionDurationMinutes || ""}
                         onChange={(e) => setEditForm(prev => ({ ...prev, auctionDurationMinutes: parseInt(e.target.value) || 0 }))}
                         className="w-full rounded-sm border border-[var(--staff-border)] px-3 py-2 text-sm font-bold focus:border-blue-500 focus:outline-none"
                       />
@@ -967,6 +968,7 @@ function AuctionDetailContent() {
                                           <label className="text-xs font-black uppercase tracking-widest text-gray-400 mb-0.5 block">{t.auctionDuration || "Thời lượng (phút)"}</label>
                                           <input 
                                              type="number"
+                                             min={1}
                                              value={prices.auctionDurationMinutes || ""}
                                           onChange={(e) => handlePriceChange(id, "auctionDurationMinutes", e.target.value)}
                                              className="w-full px-2 py-1 text-xs border border-[var(--staff-border)] rounded-sm focus:ring-1 focus:ring-[var(--staff-primary)] outline-none"

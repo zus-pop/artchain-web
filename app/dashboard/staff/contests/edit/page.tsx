@@ -972,6 +972,7 @@ function EditContestContent() {
                           <input
                             type="number"
                             {...field}
+                            value={field.value || ""}
                             onChange={(e) => {
                               const value = parseInt(e.target.value) || 0;
                               field.onChange(value);
@@ -998,11 +999,13 @@ function EditContestContent() {
                           <input
                             type="number"
                             {...field}
+                            value={field.value || ""}
                             onChange={(e) => {
                               const value = parseInt(e.target.value) || 0;
                               field.onChange(value);
                             }}
                             disabled={watchedRound2Quantity === 0}
+                            min={1}
                             step={1}
                             className="w-full px-3 py-2 border border-[var(--staff-border)] focus:outline-none staff-field disabled:bg-gray-100 disabled:cursor-not-allowed"
                             placeholder={

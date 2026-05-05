@@ -179,8 +179,8 @@ export default function CampaignDetailPage({
                   </Link>
                   <div>
                     <h2 className="staff-type-page-title staff-text-primary">
-                      {campaignData?.title || `Campaign ${id}`} | {t.sponsor} (
-                      {filteredSponsors.length})
+                      {campaignData?.title}
+
                     </h2>
                     {/* <p className="text-sm staff-text-secondary mt-1">
                       {t.viewManageSponsors}
