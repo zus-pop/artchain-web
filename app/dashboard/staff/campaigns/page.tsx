@@ -66,7 +66,7 @@ export default function CampaignsPage() {
           status: selectedStatus === "PAUSED" ? "CLOSED" : selectedStatus,
         }),
       }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0,
   });
 
   const { data: activeCampaignsResponse } = useQuery({
@@ -77,7 +77,7 @@ export default function CampaignsPage() {
         limit: 1,
         status: "ACTIVE",
       }),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 
   const hasActiveCampaign = (activeCampaignsResponse?.meta?.total || 0) > 0;

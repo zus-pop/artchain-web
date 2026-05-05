@@ -69,7 +69,7 @@ export default function CampaignDetailPage({
       updateStaffCampaign(id, { status: newStatus as any }),
     onSuccess: () => {
       toast.success(t.campaignUpdatedSuccessMessage);
-      queryClient.invalidateQueries({ queryKey: ["campaign", id] });
+      queryClient.invalidateQueries({ queryKey: ["campaign"] });
     },
     onError: (error: any) => {
       const message = error.message || t.failedUpdateCampaignMessage;
