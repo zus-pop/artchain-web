@@ -182,7 +182,7 @@ const ExhibitionContent = () => {
             >
               {/* Back Button and Title */}
               {/* Centered Header with Back Button and 3D Action */}
-              <div className="grid grid-cols-3 items-center mb-8">
+              <div className="grid grid-cols-3 items-center mb-8 relative z-30">
                 <div className="flex items-start">
                   <button
                     onClick={() => router.push("/exhibition")}
@@ -207,7 +207,7 @@ const ExhibitionContent = () => {
               </div>
 
               {/* Gallery Loader / Content - Responsive height */}
-              <div className="relative w-full overflow-hidden h-[70vh] min-h-[600px] max-h-[850px]">
+              <div className="relative w-full overflow-hidden h-[75vh] -mt-24 sm:-mt-32 lg:-mt-36">
                 {/* Side Overlays for Fade Effect */}
                 <div className="absolute top-0 left-0 bottom-0 w-32 z-20 bg-gradient-to-r from-[#EAE6E0] to-transparent pointer-events-none" />
                 <div className="absolute top-0 right-0 bottom-0 w-32 z-20 bg-gradient-to-l from-[#EAE6E0] to-transparent pointer-events-none" />

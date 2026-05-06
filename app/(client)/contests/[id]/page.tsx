@@ -318,22 +318,16 @@ export default function ContestDetailPage() {
                   </p>
                   <p className="text-black">
                     Thí sinh cần nộp bản cứng tác phẩm trước ngày{" "}
-                    {contest.rounds?.[0]?.sendOriginalDeadline
-                      ? (() => {
-                          const deadline =
-                            contest.rounds[0].sendOriginalDeadline;
-                          const date = new Date(deadline);
-                          const day = date
-                            .getUTCDate()
-                            .toString()
-                            .padStart(2, "0");
-                          const month = (date.getUTCMonth() + 1)
-                            .toString()
-                            .padStart(2, "0");
-                          const year = date.getUTCFullYear();
-                          return `${day}/${month}/${year}`;
-                        })()
-                      : "quy định."}
+                    {round1?.sendOriginalDeadline
+                  ? new Date(round1.sendOriginalDeadline).toLocaleDateString(
+                      "vi-VN",
+                      {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric",
+                      }
+                    )
+                  : "Chưa xác định"}
                   </p>
                 </div>
               </div>
