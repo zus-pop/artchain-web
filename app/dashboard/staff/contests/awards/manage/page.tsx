@@ -59,6 +59,8 @@ function AwardManagementPage() {
       prize: number;
     }>
   >([{ name: "", description: "", rank: 4, quantity: 1, prize: 0 }]);
+  const [newAwardsErrors, setNewAwardsErrors] = useState<string[]>([]);
+  const [editAwardError, setEditAwardError] = useState<string | null>(null);
 
   const { currentLanguage } = useLanguageStore();
   const t = useTranslation(currentLanguage);
@@ -82,15 +84,35 @@ function AwardManagementPage() {
   const updateMutation = useUpdateAward(editingAward?.awardId || "");
   const deleteMutation = useDeleteAward();
 
-  const getPrizeMaxLimit = (currentRank: number, skipAwardId?: string) => {
-    const higherRankingAwards = awards
-      .filter((a) => a.awardId !== skipAwardId && a.rank < currentRank)
-      .map((a) => parseFloat(a.prize));
+  const validateAwardPrize = (rank: number, prize: number, name: string, skipAwardId?: string) => {
+    if (prize < 1000) return { valid: false, message: "Giá trị giải thưởng phải lớn hơn 1000" };
 
-    if (higherRankingAwards.length === 0) return undefined;
+    const higherRankingAwards = awards.filter(
+      (a) => a.awardId !== skipAwardId && a.rank < rank && parseFloat(a.prize) > 0
+    );
+    const lowerRankingAwards = awards.filter(
+      (a) => a.awardId !== skipAwardId && a.rank > rank && parseFloat(a.prize) > 0
+    );
 
-    // The maximum allowed prize is strictly less than the lowest prize among higher-ranked awards
-    return Math.min(...higherRankingAwards) - 1;
+    for (const a of higherRankingAwards) {
+      if (prize >= parseFloat(a.prize)) {
+        return { 
+          valid: false, 
+          message: `${name} phải nhỏ hơn ${a.name}` 
+        };
+      }
+    }
+
+    for (const a of lowerRankingAwards) {
+      if (prize <= parseFloat(a.prize)) {
+        return { 
+          valid: false, 
+          message: `${name} phải lớn hơn ${a.name}` 
+        };
+      }
+    }
+
+    return { valid: true };
   };
 
   const validatePrizeHierarchy = (
@@ -136,16 +158,23 @@ function AwardManagementPage() {
       return;
     }
 
-    // Check each new award against existing awards max limit
-    for (const award of validAwards) {
-      const maxLimit = getPrizeMaxLimit(award.rank);
-      if (maxLimit !== undefined && award.prize > maxLimit) {
-        toast.error(
-          "Giá trị giải thưởng tạo mới không được lớn hơn giải thưởng của thứ hạng cao hơn đã có.",
-        );
-        return;
+    // Check each new award against existing awards
+    const errors = [...newAwardsErrors];
+    let hasError = false;
+
+    for (let i = 0; i < validAwards.length; i++) {
+      const award = validAwards[i];
+      const validation = validateAwardPrize(award.rank, award.prize, award.name);
+      if (!validation.valid) {
+        errors[i] = validation.message || "";
+        hasError = true;
+      } else {
+        errors[i] = "";
       }
     }
+
+    setNewAwardsErrors(errors);
+    if (hasError) return;
 
     await createBatchMutation.mutateAsync(
       {
@@ -170,13 +199,12 @@ function AwardManagementPage() {
     awardId: string,
     updateData: UpdateAwardRequest,
   ) => {
-    const maxLimit = getPrizeMaxLimit(updateData.rank as number, awardId);
-    if (maxLimit !== undefined && (updateData.prize as number) > maxLimit) {
-      toast.error(
-        "Giải thưởng không được lớn hơn giải thưởng của thứ hạng cao hơn.",
-      );
+    const validation = validateAwardPrize(updateData.rank as number, updateData.prize as number, updateData.name as string, awardId);
+    if (!validation.valid) {
+      setEditAwardError(validation.message || "");
       return;
     }
+    setEditAwardError(null);
 
     await updateMutation.mutateAsync(updateData, {
       onSuccess: () => {
@@ -215,8 +243,21 @@ function AwardManagementPage() {
     value: string | number,
   ) => {
     const updated = [...newAwards];
-    updated[index] = { ...updated[index], [field]: value };
+    const award = { ...updated[index], [field]: value };
+    updated[index] = award;
     setNewAwards(updated);
+
+    // Real-time validation
+    if (field === "prize" || field === "rank" || field === "name") {
+      const updatedErrors = [...newAwardsErrors];
+      const validation = validateAwardPrize(award.rank, award.prize, award.name);
+      if (!validation.valid) {
+        updatedErrors[index] = validation.message || "";
+      } else {
+        updatedErrors[index] = "";
+      }
+      setNewAwardsErrors(updatedErrors);
+    }
   };
 
   const removeNewAward = (index: number) => {
@@ -227,6 +268,7 @@ function AwardManagementPage() {
 
   const startEditingAward = (award: Award) => {
     setEditingAward(award);
+    setEditAwardError(null);
     setEditFormData({
       contestId,
       name: award.name,
@@ -337,24 +379,15 @@ function AwardManagementPage() {
                                 value={award.prize === 0 ? "" : award.prize}
                                 step={100_000}
                                 min={0}
-                                max={getPrizeMaxLimit(award.rank)}
                                 onKeyDown={(e) => {
                                   if (["-", "e", "E"].includes(e.key)) {
                                     e.preventDefault();
                                   }
                                 }}
                                 onChange={(e) => {
-                                  let val =
-                                    e.target.value === ""
-                                      ? 0
-                                      : Math.max(0, Number(e.target.value));
-                                  const maxLimit = getPrizeMaxLimit(award.rank);
-                                  if (
-                                    maxLimit !== undefined &&
-                                    val > maxLimit
-                                  ) {
-                                    val = maxLimit;
-                                  }
+                                  const val = e.target.value === ""
+                                    ? 0
+                                    : Math.max(0, Number(e.target.value));
                                   updateNewAward(index, "prize", val);
                                 }}
                                 className="staff-input w-full pr-20"
@@ -364,6 +397,11 @@ function AwardManagementPage() {
                                 {formatCurrency(award.prize)} ₫
                               </div>
                             </div>
+                            {newAwardsErrors[index] && (
+                              <p className="mt-1 text-xs text-red-600 font-medium animate-in fade-in slide-in-from-top-1">
+                                {newAwardsErrors[index]}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-end mt-2">
@@ -439,13 +477,14 @@ function AwardManagementPage() {
                                 <input
                                   type="text"
                                   value={editFormData?.name || ""}
+                                  disabled={award.rank <= 3}
                                   onChange={(e) =>
                                     setEditFormData({
                                       ...editFormData!,
                                       name: e.target.value,
                                     })
                                   }
-                                  className="staff-input w-full"
+                                  className="staff-input w-full disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                                 />
                               </div>
                               <div>
@@ -467,37 +506,42 @@ function AwardManagementPage() {
                                       }
                                     }}
                                     onChange={(e) => {
-                                      let val =
-                                        e.target.value === ""
-                                          ? 0
-                                          : Math.max(0, Number(e.target.value));
-                                      const maxLimit = getPrizeMaxLimit(
-                                        editFormData?.rank || award.rank,
-                                        award.awardId,
-                                      );
-                                      if (
-                                        maxLimit !== undefined &&
-                                        val > maxLimit
-                                      ) {
-                                        val = maxLimit;
-                                      }
-                                      setEditFormData({
+                                      const val = e.target.value === ""
+                                        ? 0
+                                        : Math.max(0, Number(e.target.value));
+                                      
+                                      const newFormData = {
                                         ...editFormData!,
                                         prize: val,
-                                      });
+                                      };
+                                      setEditFormData(newFormData);
+
+                                      // Real-time validation for edit mode
+                                      const validation = validateAwardPrize(
+                                        newFormData.rank as number, 
+                                        newFormData.prize as number, 
+                                        newFormData.name as string,
+                                        editingAward?.awardId
+                                      );
+                                      if (!validation.valid) {
+                                        setEditAwardError(validation.message || "");
+                                      } else {
+                                        setEditAwardError(null);
+                                      }
                                     }}
                                     step={100_000}
                                     min={0}
-                                    max={getPrizeMaxLimit(
-                                      editFormData?.rank || award.rank,
-                                      award.awardId,
-                                    )}
                                     className="staff-input w-full pr-20"
                                   />
                                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">
                                     {formatCurrency(editFormData?.prize || 0)} ₫
                                   </div>
                                 </div>
+                                {editAwardError && (
+                                  <p className="mt-1 text-xs text-red-600 font-medium animate-in fade-in slide-in-from-top-1">
+                                    {editAwardError}
+                                  </p>
+                                )}
                               </div>
                             </div>
                             <div>
