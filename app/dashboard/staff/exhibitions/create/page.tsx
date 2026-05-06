@@ -31,7 +31,6 @@ const exhibitionSchema = z
       .string()
       .min(1, "Description is required")
       .max(500, "Description must be less than 500 characters"),
-    status: z.enum(["DRAFT", "ACTIVE", "COMPLETED", "CANCEL"]),
   });
 
 type ExhibitionFormData = z.infer<typeof exhibitionSchema>;
@@ -52,7 +51,6 @@ export default function CreateExhibitionPage() {
     defaultValues: {
       name: "",
       description: "",
-      status: "DRAFT",
     },
   });
 
@@ -63,7 +61,10 @@ export default function CreateExhibitionPage() {
 
   const onSubmit = async (data: ExhibitionFormData) => {
     try {
-      await createExhibitionMutation.mutateAsync(data);
+      await createExhibitionMutation.mutateAsync({
+        ...data,
+        status: "DRAFT",
+      });
       router.push("/dashboard/staff/exhibitions");
     } catch (error) {
       console.error("Failed to create exhibition:", error);
@@ -197,22 +198,8 @@ export default function CreateExhibitionPage() {
 
 
 
-                          <div>
-                            <label className="staff-type-label staff-text-primary mb-2 block">
-                              {t.statusLabel}
-                            </label>
-                            <select
-                              {...register("status")}
-                              className="w-full px-3 py-2 border border-[var(--staff-border)] rounded-sm focus:outline-none staff-field transition-colors"
-                            >
-                              {statusOptions.map((status) => (
-                                <option key={status} value={status}>
-                                  {status}
-                                </option>
-                              ))}
-                            </select>
                           </div>
-                        </div>
+
 
                         {/* Form Actions */}
                         <div className="flex items-center justify-end gap-3 pt-6 border-t border-[var(--staff-border)]">
