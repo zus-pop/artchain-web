@@ -29,6 +29,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export default function ExhibitionsPage() {
   const { currentLanguage } = useLanguageStore();
@@ -39,6 +40,10 @@ export default function ExhibitionsPage() {
   >("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [exhibitionToDelete, setExhibitionToDelete] = useState<string | null>(
+    null,
+  );
 
   const statusOptions: (ExhibitionStatus | "ALL")[] = [
     "ALL",
@@ -114,8 +119,19 @@ export default function ExhibitionsPage() {
   };
 
   const handleDeleteExhibition = async (exhibitionId: string) => {
-    if (!confirm(t.confirmDelete)) return;
-    deleteExhibitionMutation.mutate(exhibitionId);
+    setExhibitionToDelete(exhibitionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (exhibitionToDelete) {
+      deleteExhibitionMutation.mutate(exhibitionToDelete, {
+        onSuccess: () => {
+          setIsDeleteDialogOpen(false);
+          setExhibitionToDelete(null);
+        },
+      });
+    }
   };
 
   const handleStatusChange = async (
@@ -483,6 +499,20 @@ export default function ExhibitionsPage() {
           </div>
         </div>
       </SidebarInset>
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setExhibitionToDelete(null);
+        }}
+        onConfirm={confirmDelete}
+        title="Xác nhận xóa"
+        description="Bạn có chắc chắn muốn xóa triển lãm này không? Hành động này không thể hoàn tác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        variant="destructive"
+        isLoading={deleteExhibitionMutation.isPending}
+      />
     </SidebarProvider>
   );
 }
