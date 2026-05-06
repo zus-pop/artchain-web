@@ -41,8 +41,8 @@ function createTextTexture(
   if (!context) throw new Error('Could not get 2d context');
 
   // Define fonts for different lines - Refined for "web" look
-  const titleFont = `600 44px Figtree, sans-serif`;
-  const subFont = `400 30px Figtree, sans-serif`;
+  const titleFont = `600 49px Figtree, sans-serif`;
+  const subFont = `400 42px Figtree, sans-serif`;
 
   // Calculate dimensions
   let maxLineWidth = 0;
@@ -52,7 +52,7 @@ function createTextTexture(
     maxLineWidth = Math.max(maxLineWidth, metrics.width);
   });
 
-  const lineHeight = 50;
+  const lineHeight = 46;
   const padding = 20;
   const textHeight = lines.length * lineHeight;
 
@@ -379,8 +379,8 @@ class Media {
       }
     }
     this.scale = this.screen.height / 1500;
-    this.plane.scale.y = (this.viewport.height * (700 * this.scale)) / this.screen.height;
-    this.plane.scale.x = (this.viewport.width * (1000 * this.scale)) / this.screen.width;
+    this.plane.scale.y = (this.viewport.height * (850 * this.scale)) / this.screen.height;
+    this.plane.scale.x = (this.viewport.width * (1500 * this.scale)) / this.screen.width;
     this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
     this.padding = 2;
     this.width = this.plane.scale.x + this.padding;
