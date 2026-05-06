@@ -250,7 +250,7 @@ const CampaignDetailPage = () => {
       const response: SponsorResponse = await createSponsor(sponsorData);
 
       if (!response.error && response.data.checkoutUrl) {
-        window.open(response.data.checkoutUrl, "_blank", "noopener,noreferrer");
+        window.location.href = response.data.checkoutUrl;
       } else {
         setFormError("Không thể tạo tài trợ. Vui lòng thử lại.");
       }

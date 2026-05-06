@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getPosts } from "@/apis/post";
 import { Post } from "@/types/post";
+import ReactMarkdown from "react-markdown";
 
 import { InteractivePostCard } from "@/components/ui/InteractivePostCard";
 import { InteractiveHeroButton } from "@/components/ui/InteractiveHeroButton";
@@ -100,9 +101,11 @@ export const PostSection = () => {
                       {activePost.title}
                     </h3>
                   </Link>
-                  <p className="text-base text-[var(--site-ink)]/60 leading-relaxed line-clamp-3 max-w-2xl">
-                    {activePost.content.replace(/<[^>]*>/g, '')}
-                  </p>
+                  <div className="text-base text-[var(--site-ink)]/60 leading-relaxed max-w-2xl line-clamp-3 prose prose-sm prose-headings:text-[var(--site-ink)] prose-p:text-[var(--site-ink)]/60 prose-strong:text-[var(--site-ink)] prose-li:text-[var(--site-ink)]/60">
+                    <ReactMarkdown>
+                      {activePost.content}
+                    </ReactMarkdown>
+                  </div>
                   <span className="text-sm font-medium text-[var(--site-ink)]/40">
                     Đăng ngày {new Date(activePost.created_at).toLocaleDateString("vi-VN", {
                       day: "2-digit",

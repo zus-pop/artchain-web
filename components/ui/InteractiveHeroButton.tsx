@@ -7,6 +7,7 @@ interface InteractiveHeroButtonProps {
   href: string;
   label: string;
   variant?: "primary" | "secondary";
+  className?: string;
 }
 
 /**
@@ -19,13 +20,14 @@ export const InteractiveHeroButton: React.FC<InteractiveHeroButtonProps> = ({
   href,
   label,
   variant = "primary",
+  className = "",
 }) => {
   return (
     <Link
       href={href}
       className={`
-        relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-3 sm:py-3.5 
-        overflow-hidden border-[0.5px] rounded-sm group shadow-lg 
+        relative flex items-center justify-center gap-3 px-6 sm:px-8 py-3 sm:py-3.5 
+        overflow-hidden border-[0.5px] rounded-sm group shadow-lg text-[var(--site-ink)]
         transition-all duration-500 backdrop-blur-md font-semibold text-sm sm:text-base
         ${
           variant === "primary"
@@ -39,15 +41,16 @@ export const InteractiveHeroButton: React.FC<InteractiveHeroButtonProps> = ({
         before:transition-all before:duration-700 before:-left-full 
         before:bg-[var(--site-accent)] before:-z-10 before:aspect-square 
         hover:before:left-0 hover:before:scale-150
+        ${className}
       `}
     >
       <span className="relative z-10 flex items-center gap-2.5">
         {label}
         <svg
-          className={`w-7 h-7 sm:w-8 sm:h-8 group-hover:rotate-90 group-hover:bg-[var(--site-accent)] ease-linear duration-300 rounded-full border group-hover:border-none p-1.5 rotate-45 transition-all
+          className={`w-7 h-7 sm:w-8 sm:h-8 group-hover:rotate-90 group-hover:bg-[var(--site-accent)] ease-linear duration-300 rounded-full border p-1.5 rotate-45 transition-all
             ${variant === "primary" 
-              ? "text-[var(--site-accent)] border-[var(--site-ink)]/20" 
-              : "text-black border-black/20"
+              ? "bg-white text-[var(--site-ink)] border-[var(--site-ink)]/10 group-hover:border-none" 
+              : "bg-white text-black border-black/10 group-hover:border-none"
             }
           `}
           viewBox="0 0 16 19"

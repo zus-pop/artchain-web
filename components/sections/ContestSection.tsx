@@ -178,20 +178,13 @@ export const ContestSection = () => {
                   <strong>Lưu ý:</strong>
                   <br />
                   {activeContest?.rounds?.[0]?.sendOriginalDeadline
-                    ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${(() => {
-                        const deadline =
-                          activeContest.rounds[0].sendOriginalDeadline;
-                        const date = new Date(deadline);
-                        const day = date
-                          .getUTCDate()
-                          .toString()
-                          .padStart(2, "0");
-                        const month = (date.getUTCMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const year = date.getUTCFullYear();
-                        return `${day}/${month}/${year}`;
-                      })()}`
+                    ? `Thí sinh cần nộp bản cứng tác phẩm trước ngày ${new Date(
+                        activeContest.rounds[0].sendOriginalDeadline
+                      ).toLocaleDateString("vi-VN", {
+                        day: "numeric",
+                        month: "numeric",
+                        year: "numeric"
+                      })}`
                     : "Thông tin deadline sẽ được cập nhật sớm."}
                 </p>
               </div>
