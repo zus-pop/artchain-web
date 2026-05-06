@@ -22,7 +22,7 @@ const ExhibitionCard = ({ exhibition }: { exhibition: any }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => router.push(`/exhibition?id=${exhibition.exhibitionId}`)}
-      className="relative h-[500px] rounded-[2rem] overflow-hidden cursor-pointer shadow-lg bg-white border border-[#e6e2da] group/ex-card"
+      className="relative h-[500px] rounded-sm overflow-hidden cursor-pointer shadow-lg bg-white border border-[#e6e2da] group/ex-card"
     >
       {/* Background/Top Image Container */}
       <motion.div
@@ -64,9 +64,9 @@ const ExhibitionCard = ({ exhibition }: { exhibition: any }) => {
             <p className="text-sm opacity-80 line-clamp-1">{exhibition.numberOfPaintings} Tác Phẩm</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/20">
+          <div className=" gap-4 pt-6 border-t border-white/20">
             <div>
-              <p className="text-lg font-bold"></p>
+              <p className="text-sm font-normal line-clamp-2 h-10">{exhibition.description}</p>
             </div>
           </div>
         </div>
