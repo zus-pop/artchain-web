@@ -56,7 +56,7 @@ export default function BidForm({
         duration: 6000,
         action: {
           label: "Nạp tiền ngay",
-          onClick: () => router.push("/wallet"),
+          onClick: () => router.push("/me/wallet"),
         },
       });
       return;
