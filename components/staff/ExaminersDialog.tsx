@@ -10,6 +10,7 @@ import {
   getStaffSchedulesByExaminer,
   updateStaffSchedule,
 } from "@/apis/staff";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useTranslation } from "@/lib/i18n";
 import { formatDate, formatDateForInput } from "@/lib/utils";
 import { useLanguageStore } from "@/store/language-store";
@@ -18,6 +19,7 @@ import { AvailableExaminerDTO, ExaminerDTO } from "@/types/staff/examiner-dto";
 import { ScheduleDTO } from "@/types/staff/schedule-dto";
 import {
   IconCalendar,
+  IconCheck,
   IconMail,
   IconPlus,
   IconSearch,
@@ -25,12 +27,10 @@ import {
   IconTrash,
   IconUser,
   IconX,
-  IconCheck,
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ExaminersDialogProps {
   isOpen: boolean;
@@ -284,6 +284,11 @@ export function ExaminersDialog({
       if (activeRoleTab === "ROUND_2") {
         setActiveRoleTab("ROUND_1");
       }
+      return;
+    }
+
+    if (selectedRole !== "ROUND_2") {
+      setSelectedRole("ROUND_2");
     }
   }, [hasRound2, selectedRole, activeRoleTab]);
 
@@ -376,7 +381,7 @@ export function ExaminersDialog({
   const getContestScheduleForExaminer = (examiner: ExaminerDTO) => {
     const fetchedSchedules = examinerSchedules[examiner.examinerId] || [];
     const embeddedSchedules = (examiner as any).schedules || [];
-    
+
     // Prefer fetchedSchedules as they are reloaded after updates
     const allSchedules = [...fetchedSchedules, ...embeddedSchedules];
 
@@ -439,7 +444,9 @@ export function ExaminersDialog({
       } else if (round2Tables.length > 1) {
         // Count how many examiners are already assigned to each table
         const tableCountMap: Record<string, number> = {};
-        round2Tables.forEach((t) => { tableCountMap[t] = 0; });
+        round2Tables.forEach((t) => {
+          tableCountMap[t] = 0;
+        });
         round2Examiners.forEach((ex) => {
           const s = getContestScheduleForExaminer(ex);
           const tbl = s?.round2Table || (ex as any).round2Table || "";
@@ -449,17 +456,21 @@ export function ExaminersDialog({
         });
         // Pick the table with the minimum count
         const minTable = round2Tables.reduce((prev, curr) =>
-          tableCountMap[curr] < tableCountMap[prev] ? curr : prev
+          tableCountMap[curr] < tableCountMap[prev] ? curr : prev,
         );
         suggestedTable = minTable;
       }
     }
 
-    let initialDate = currentSchedule?.date ? formatDateForInput(currentSchedule.date) : "";
+    let initialDate = currentSchedule?.date
+      ? formatDateForInput(currentSchedule.date)
+      : "";
 
     // If we have a table but no date, try to fetch the date from the table info
     if (examiner.role === "ROUND_2" && suggestedTable && !initialDate) {
-      const tableInfo = round2Round?.tables?.find((t) => t.table === suggestedTable);
+      const tableInfo = round2Round?.tables?.find(
+        (t) => t.table === suggestedTable,
+      );
       if (tableInfo?.startDate) {
         initialDate = formatDateForInput(tableInfo.startDate);
       }
@@ -532,7 +543,9 @@ export function ExaminersDialog({
 
       // Reload schedules and invalidate examiners query to get updated totalCount
       await loadExaminerSchedules(examiner.examinerId);
-      queryClient.invalidateQueries({ queryKey: ["contest-examiners", contestId] });
+      queryClient.invalidateQueries({
+        queryKey: ["contest-examiners", contestId],
+      });
       toast.success(t.scheduleUpdateSuccess);
       return true;
     } catch (error) {
@@ -565,7 +578,9 @@ export function ExaminersDialog({
   // Compute per-table examiner counts for ROUND_2 and detect imbalance
   const round2TableAssignments = useMemo(() => {
     const countMap: Record<string, number> = {};
-    round2Tables.forEach((tbl) => { countMap[tbl] = 0; });
+    round2Tables.forEach((tbl) => {
+      countMap[tbl] = 0;
+    });
     round2Examiners.forEach((ex) => {
       const tbl = getExaminerRound2Table(ex);
       if (tbl && countMap[tbl] !== undefined) {
@@ -597,7 +612,8 @@ export function ExaminersDialog({
 
   const handleClose = () => {
     if (isRound2CountInvalid) {
-      const nextMultiple = Math.ceil(round2Examiners.length / round2TableCount) * round2TableCount;
+      const nextMultiple =
+        Math.ceil(round2Examiners.length / round2TableCount) * round2TableCount;
       const needed = nextMultiple - round2Examiners.length;
       toast.error(
         `Số giám khảo vòng chung khảo (${round2Examiners.length}) chưa phải bội số của số bảng (${round2TableCount}). Cần thêm ${needed} giám khảo nữa để đạt ${nextMultiple} người.`,
@@ -636,7 +652,9 @@ export function ExaminersDialog({
   };
 
   const handleAddExaminer = () => {
-    if (!selectedExaminerId || !selectedRole) {
+    const roleToAdd: ExaminerRole = hasRound2 ? "ROUND_2" : selectedRole;
+
+    if (!selectedExaminerId || !roleToAdd) {
       toast.error(t.selectExaminerAndRole);
       return;
     }
@@ -650,23 +668,35 @@ export function ExaminersDialog({
       return;
     }
 
-    if (selectedRole === "ROUND_2" && !hasRound2) {
+    if (roleToAdd === "ROUND_2" && !hasRound2) {
       toast.error(
         "Vui lòng tạo vòng chung khảo trước khi thêm giám khảo cho vòng này",
       );
       return;
     }
 
+    if (hasRound2 && roleToAdd === "ROUND_1") {
+      toast.error(
+        "Đã có vòng chung khảo nên chỉ có thể thêm giám khảo cho vòng này",
+      );
+      return;
+    }
+
     addExaminerMutation.mutate({
       examinerId: selectedExaminerId,
-      role: selectedRole,
+      role: roleToAdd,
     });
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white/60 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}>
+    <div
+      className="fixed inset-0 bg-white/60 flex items-center justify-center z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleClose();
+      }}
+    >
       <div className="bg-white shadow-xl max-w-5xl w-full mx-4 max-h-[120vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -775,16 +805,21 @@ export function ExaminersDialog({
                     </label>
                     <select
                       value={selectedRole}
-                      onChange={(e) =>
-                        setSelectedRole(e.target.value as ExaminerRole)
-                      }
+                      onChange={(e) => {
+                        const nextRole = e.target.value as ExaminerRole;
+                        if (hasRound2 && nextRole === "ROUND_1") {
+                          setSelectedRole("ROUND_2");
+                          return;
+                        }
+                        setSelectedRole(nextRole);
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
                     >
-                      <option value="ROUND_1">{t.round1}</option>
+                      <option value="ROUND_1" disabled={hasRound2}>
+                        {t.round1}
+                      </option>
                       <option value="ROUND_2" disabled={!hasRound2}>
-                        {hasRound2
-                          ? t.round2
-                          : `${t.round2}`}
+                        {hasRound2 ? t.round2 : `${t.round2}`}
                       </option>
                     </select>
                   </div>
@@ -805,7 +840,9 @@ export function ExaminersDialog({
                   type="button"
                   onClick={() => {
                     setActiveRoleTab("ROUND_1");
-                    setSelectedRole("ROUND_1");
+                    if (!hasRound2) {
+                      setSelectedRole("ROUND_1");
+                    }
                     setShowScheduleDropdown(null);
                   }}
                   className={`px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -970,11 +1007,15 @@ export function ExaminersDialog({
                               </div>
                             )}
 
-                            {(examiner.role === "ROUND_1" || (examiner.role === "ROUND_2" && currentSchedule)) && (
+                            {(examiner.role === "ROUND_1" ||
+                              (examiner.role === "ROUND_2" &&
+                                currentSchedule)) && (
                               <div className="flex items-center gap-2 mt-1.5 text-[var(--staff-primary)] font-medium">
                                 <IconCheck className="h-4 w-4" />
                                 <span>
-                                  Đã chấm: {(examiner as any).evaluatedCount || 0}/{(examiner as any).totalCount || 0} bài
+                                  Đã chấm:{" "}
+                                  {(examiner as any).evaluatedCount || 0}/
+                                  {(examiner as any).totalCount || 0} bài
                                 </span>
                               </div>
                             )}
@@ -983,7 +1024,9 @@ export function ExaminersDialog({
 
                         {/* Column 3: Delete Icon */}
                         <div className="flex justify-end">
-                          {((examiner as any).evaluatedCount !== (examiner as any).totalCount || (examiner as any).totalCount === 0) && (
+                          {((examiner as any).evaluatedCount !==
+                            (examiner as any).totalCount ||
+                            (examiner as any).totalCount === 0) && (
                             <button
                               onClick={() => handleDeleteExaminer(examiner)}
                               disabled={deleteExaminerMutation.isPending}
@@ -1016,82 +1059,126 @@ export function ExaminersDialog({
                                 </button>
                               )}
 
-                              {examiner.role === "ROUND_2" && (() => {
-                                const hasStartedGrading = ((examiner as any).evaluatedCount || 0) > 0;
-                                return (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      !hasStartedGrading && handleToggleScheduleDropdown(examiner)
-                                    }
-                                    disabled={hasStartedGrading}
-                                    title={
-                                      hasStartedGrading
-                                        ? `Không thể đổi bảng — giám khảo đã chấm ${(examiner as any).evaluatedCount}/${(examiner as any).totalCount} bài`
-                                        : undefined
-                                    }
-                                    className={`staff-btn-outline !px-3 !py-2 text-sm flex items-center gap-2 whitespace-nowrap ${
-                                      hasStartedGrading
-                                        ? "text-gray-400 border-gray-200 cursor-not-allowed opacity-60"
-                                        : "text-blue-700 border-blue-300 hover:bg-blue-50"
-                                    }`}
-                                  >
-                                    {hasStartedGrading ? (
-                                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                    ) : (
-                                      <IconTag className="h-4 w-4" />
-                                    )}
-                                    {displayedRound2Table
-                                      ? `${t.table}: ${displayedRound2Table}`
-                                      : "Chọn bảng"}
-                                  </button>
-                                );
-                              })()}
+                              {examiner.role === "ROUND_2" &&
+                                (() => {
+                                  const hasStartedGrading =
+                                    ((examiner as any).evaluatedCount || 0) > 0;
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        !hasStartedGrading &&
+                                        handleToggleScheduleDropdown(examiner)
+                                      }
+                                      disabled={hasStartedGrading}
+                                      title={
+                                        hasStartedGrading
+                                          ? `Không thể đổi bảng — giám khảo đã chấm ${(examiner as any).evaluatedCount}/${(examiner as any).totalCount} bài`
+                                          : undefined
+                                      }
+                                      className={`staff-btn-outline !px-3 !py-2 text-sm flex items-center gap-2 whitespace-nowrap ${
+                                        hasStartedGrading
+                                          ? "text-gray-400 border-gray-200 cursor-not-allowed opacity-60"
+                                          : "text-blue-700 border-blue-300 hover:bg-blue-50"
+                                      }`}
+                                    >
+                                      {hasStartedGrading ? (
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                        >
+                                          <rect
+                                            x="3"
+                                            y="11"
+                                            width="18"
+                                            height="11"
+                                            rx="2"
+                                            ry="2"
+                                          />
+                                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                        </svg>
+                                      ) : (
+                                        <IconTag className="h-4 w-4" />
+                                      )}
+                                      {displayedRound2Table
+                                        ? `${t.table}: ${displayedRound2Table}`
+                                        : "Chọn bảng"}
+                                    </button>
+                                  );
+                                })()}
                             </div>
 
                             {showScheduleDropdown === assignmentKey && (
                               <div className="absolute right-0 bottom-full mb-2 z-50 bg-white border border-gray-200 rounded-sm shadow-lg p-3 min-w-[280px]">
-                                {examiner.role === "ROUND_2" && (() => {
-                                  const hasStartedGrading = ((examiner as any).evaluatedCount || 0) > 0;
-                                  return (
-                                    <div className="mb-3">
-                                      <label className="staff-type-label text-gray-700 mb-2 block">
-                                        {t.table}
-                                      </label>
-                                      <select
-                                        value={scheduleDraft.round2Table}
-                                        disabled={hasStartedGrading}
-                                        onChange={(e) =>
-                                          updateScheduleDraft(
-                                            examiner,
-                                            "round2Table",
-                                            e.target.value,
-                                          )
-                                        }
-                                        className={`staff-select w-full border-gray-300 ${
-                                          hasStartedGrading ? "opacity-60 cursor-not-allowed bg-gray-50" : ""
-                                        }`}
-                                      >
-                                      <option value="">
-                                        {availableTables.length > 0
-                                          ? "Select table"
-                                          : "No tables available"}
-                                      </option>
-                                      {availableTables.map((table) => (
-                                        <option key={table} value={table}>
-                                          {table}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    {hasStartedGrading && (
-                                      <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                        Đã chấm {(examiner as any).evaluatedCount} bài, không thể đổi bảng
-                                      </p>
-                                    )}
-                                  </div>
-                                  );
-                                })()}
+                                {examiner.role === "ROUND_2" &&
+                                  (() => {
+                                    const hasStartedGrading =
+                                      ((examiner as any).evaluatedCount || 0) >
+                                      0;
+                                    return (
+                                      <div className="mb-3">
+                                        <label className="staff-type-label text-gray-700 mb-2 block">
+                                          {t.table}
+                                        </label>
+                                        <select
+                                          value={scheduleDraft.round2Table}
+                                          disabled={hasStartedGrading}
+                                          onChange={(e) =>
+                                            updateScheduleDraft(
+                                              examiner,
+                                              "round2Table",
+                                              e.target.value,
+                                            )
+                                          }
+                                          className={`staff-select w-full border-gray-300 ${
+                                            hasStartedGrading
+                                              ? "opacity-60 cursor-not-allowed bg-gray-50"
+                                              : ""
+                                          }`}
+                                        >
+                                          <option value="">
+                                            {availableTables.length > 0
+                                              ? "Select table"
+                                              : "No tables available"}
+                                          </option>
+                                          {availableTables.map((table) => (
+                                            <option key={table} value={table}>
+                                              {table}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        {hasStartedGrading && (
+                                          <p className="mt-1 text-xs text-amber-600 flex items-center gap-1">
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              className="h-3 w-3"
+                                              viewBox="0 0 24 24"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              strokeWidth="2"
+                                            >
+                                              <rect
+                                                x="3"
+                                                y="11"
+                                                width="18"
+                                                height="11"
+                                                rx="2"
+                                                ry="2"
+                                              />
+                                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                            </svg>
+                                            Đã chấm{" "}
+                                            {(examiner as any).evaluatedCount}{" "}
+                                            bài, không thể đổi bảng
+                                          </p>
+                                        )}
+                                      </div>
+                                    );
+                                  })()}
 
                                 {examiner.role === "ROUND_1" ? (
                                   <input
@@ -1191,8 +1278,6 @@ export function ExaminersDialog({
                             )}
                           </div>
                         </div>
-
-                        
                       </div>
                     </div>
                   );
@@ -1208,16 +1293,42 @@ export function ExaminersDialog({
           <div className="flex flex-col gap-1.5 flex-1 mr-4">
             {isRound2CountInvalid && (
               <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
                 <span>
-                  Số giám khảo chung khảo ({round2Examiners.length}) chưa phải bội số của số bảng ({round2TableCount}).
-                  Cần thêm {Math.ceil(round2Examiners.length / round2TableCount) * round2TableCount - round2Examiners.length} giám khảo nữa.
+                  Số giám khảo chung khảo ({round2Examiners.length}) chưa phải
+                  bội số của số bảng ({round2TableCount}). Cần thêm{" "}
+                  {Math.ceil(round2Examiners.length / round2TableCount) *
+                    round2TableCount -
+                    round2Examiners.length}{" "}
+                  giám khảo nữa.
                 </span>
               </div>
             )}
             {isRound2Imbalanced && (
               <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
                 <span>
                   Giám khảo chưa được phân bổ đều:{" "}
                   {Object.entries(round2TableAssignments)
