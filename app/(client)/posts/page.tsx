@@ -125,7 +125,7 @@ const HeroPost = () => (
 
     <div className="relative max-w-4xl mx-auto px-6 flex flex-col items-center text-center">
        {/* Blinking Badge (Shrunk) */}
-       <motion.div
+       {/* <motion.div
          initial={{ opacity: 0, scale: 0.9 }}
          animate={{ opacity: 1, scale: 1 }}
          transition={{ duration: 0.5 }}
@@ -133,7 +133,7 @@ const HeroPost = () => (
        >
           <div className="w-1.5 h-1.5 rounded-full bg-[#FF6E1A] animate-pulse shadow-[0_0_6px_rgba(255,110,26,0.8)]" />
           Cập nhật tin tức mới nhất
-       </motion.div>
+       </motion.div> */}
 
        <motion.h1
          initial={{ opacity: 0, y: 20 }}

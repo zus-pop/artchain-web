@@ -232,7 +232,7 @@ const CampaignPage = () => {
             className="max-w-2xl"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#423137] leading-[1.1] tracking-tight">
-              Gây quỹ nghệ thuật, <br />
+              <span className="text-[#FF6E1A]">Gây quỹ</span> nghệ thuật, <br />
               lan tỏa những ước mơ.
             </h1>
           </motion.div>
