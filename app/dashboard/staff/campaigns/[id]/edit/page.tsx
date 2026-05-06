@@ -228,6 +228,16 @@ export default function EditCampaignPage({
       return;
     }
 
+    const [year, month, day] = formData.deadline.split("-").map(Number);
+    const selectedDate = new Date(year, month - 1, day);
+    selectedDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (selectedDate < today) {
+      toast.error(t.deadlineMustBeFutureEdit);
+      return;
+    }
+
     // Tier price validation
     const bronze = parseCurrencyInput(formData.bronzeMinPrice);
     const silver = parseCurrencyInput(formData.silverMinPrice);

@@ -82,7 +82,17 @@ const getCampaignSchema = (t: Lang) =>
         const amount = parseCurrencyInput(value);
         return !Number.isNaN(amount) && amount >= 1000;
       }, t.goalAmountMin),
-    deadline: z.string().min(1, t.deadlineRequired),
+    deadline: z
+      .string()
+      .min(1, t.deadlineRequired)
+      .refine((value) => {
+        const [year, month, day] = value.split("-").map(Number);
+        const selectedDate = new Date(year, month - 1, day);
+        selectedDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selectedDate >= today;
+      }, t.deadlineMustBeFutureEdit),
     status: z.enum(["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"]),
     bronzeMinPrice: z.string().optional(),
     silverMinPrice: z.string().optional(),
