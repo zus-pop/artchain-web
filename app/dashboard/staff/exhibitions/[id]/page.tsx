@@ -249,8 +249,20 @@ export default function ExhibitionDetailPage({
                         {exhibition.status === "DRAFT" ? (
                           <button
                             onClick={() => handleUpdateStatus("ACTIVE")}
-                            className="staff-btn-primary flex items-center justify-center gap-2 cursor-pointer"
-                            disabled={updateExhibitionMutation.isPending}
+                            className={`staff-btn-primary flex items-center justify-center gap-2 ${
+                              (exhibition.numberOfPaintings || 0) === 0
+                                ? "opacity-50 cursor-not-allowed"
+                                : "cursor-pointer"
+                            }`}
+                            disabled={
+                              updateExhibitionMutation.isPending ||
+                              (exhibition.numberOfPaintings || 0) === 0
+                            }
+                            title={
+                              (exhibition.numberOfPaintings || 0) === 0
+                                ? "Triển lãm phải có ít nhất một bức tranh để công khai"
+                                : ""
+                            }
                           >
                             <IconCircleCheck className="h-4 w-4" />
                             {updateExhibitionMutation.isPending &&
