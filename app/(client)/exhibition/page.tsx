@@ -220,7 +220,7 @@ const ExhibitionContent = () => {
                   <CircularGallery 
                     items={detailData?.data.exhibitionPaintings.map(p => ({
                       image: p.imageUrl,
-                      text: `${p.competitor.fullName}\n${p.award?.name || ""}`
+                      text: `${p.competitor.fullName}\n${p.award?.description || ""}`
                     })) || []}
                     bend={3} 
                     textColor="#423137" 
